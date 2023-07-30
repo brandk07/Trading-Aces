@@ -7,58 +7,64 @@ from Defs import *
 
     
 class Stock():
-    def __init__(self,name,startingpos,endingpos,startingvalue_range,volatility) -> None:
+    def __init__(self,name,startingpos,endingpos,startingvalue_range,volatility,Playerclass,windowoffset) -> None:
         """Xpos is the starting x position of the graph, startingvalue is the starting value of the stock"""
-        self.startingpos = startingpos
+        self.winset = windowoffset
+        self.Playerclass = Playerclass
+        self.startingpos = (startingpos[0] - self.winset[0], startingpos[1] - self.winset[1])
         self.starting_value_range = startingvalue_range
-        print(startingvalue_range,name)
         self.pricepoints = [[startingpos[0]-5,randint(*startingvalue_range)]]
-        self.endingpos = endingpos
+        print(startingvalue_range,name)
+        self.endingpos = (endingpos[0] - self.winset[0], endingpos[1] - self.winset[1])
         self.volatility = volatility#determines how much the price can change
-        self.temporary_movement = randint(-2*volatility,volatility)#determines overall trend in the movement of the price
+        self.temporary_movement = randint(volatility,volatility)#determines overall trend in the movement of the price
         self.movement_length = randint(60,360)#determines the length of the movement (60 is 1 second)
         self.name = name
-        self.stockimages = [pygame.transform.scale(pygame.image.load(f'assets/stock{txt}.png'),(30,30)) for txt in ['up','down']]
-        self.recent_movementvar = (None,None,(180,180,180))
+        self.recent_movementvar = [None,None,(180,180,180)]
         self.control_images = {txt:pygame.transform.scale(pygame.image.load(f'assets/player controls/{txt}.png'),(60,38)) for txt in ['buy','buyhover','sell','sellhover']}
         self.pricereset_time = None
     def buy_sell(self,player,screen:pygame.Surface,Mousebuttons):
         """buy or sell stock"""
-        mousex,mousey = pygame.mouse.get_pos()
-        if self.startingpos[0]-140 < mousex < self.startingpos[0]-80 and self.endingpos[1]-51 < mousey < self.endingpos[1]-13:#if mouse is over buy button
-            screen.blit(self.control_images['buyhover'],(self.startingpos[0]-140,self.endingpos[1]-51))#draws the buy button with hover image
-            if Mousebuttons == 1 and self.pricepoints[-1][1] <= player.cash:#if mouse is clicked and player has enough money
-                player.buy(self.name,self.pricepoints[-1][1])
-            elif Mousebuttons == 1 and self.pricepoints[-1][1] > player.cash:
-                print('you dont have enough money')
-        else:
-            screen.blit(self.control_images['buy'],(self.startingpos[0]-140,self.endingpos[1]-51))#draws the buy button with normal image
-            
-        if self.startingpos[0]-75 < mousex < self.startingpos[0]-15 and self.endingpos[1]-51 < mousey < self.endingpos[1]-13:#if mouse is over sell button
-            screen.blit(self.control_images['sellhover'],(self.startingpos[0]-75,self.endingpos[1]-51))#draws the sell button with hover image
-            if Mousebuttons == 1 and [stock[0] for stock in player.stocks if stock[0] == self.name]:#if mouse is clicked and player has the stock
-                player.sell(self.name,self.pricepoints[-1][1])
-            elif Mousebuttons == 1 and not [stock[0] for stock in player.stocks if stock[0] == self.name]:
-                print('you dont have this stock')
-        else:
-            screen.blit(self.control_images['sell'],(self.startingpos[0]-75,self.endingpos[1]-51))#draws the sell button with normal image
+        if self.pricereset_time == None:#if stock is not bankrupt
+            mousex,mousey = pygame.mouse.get_pos()
+            if self.startingpos[0]-140 < mousex < self.startingpos[0]-80 and self.endingpos[1]-51 < mousey < self.endingpos[1]-13:#if mouse is over buy button
+                screen.blit(self.control_images['buyhover'],(self.startingpos[0]-140,self.endingpos[1]-51))#draws the buy button with hover image
+                if Mousebuttons == 1 and self.pricepoints[-1][1] <= player.cash:#if mouse is clicked and player has enough money
+                    player.buy(self.name,self.pricepoints[-1][1])
+                elif Mousebuttons == 1 and self.pricepoints[-1][1] > player.cash:
+                    print('you dont have enough money')
+            else:
+                screen.blit(self.control_images['buy'],(self.startingpos[0]-140,self.endingpos[1]-51))#draws the buy button with normal image
+                
+            if self.startingpos[0]-75 < mousex < self.startingpos[0]-15 and self.endingpos[1]-51 < mousey < self.endingpos[1]-13:#if mouse is over sell button
+                screen.blit(self.control_images['sellhover'],(self.startingpos[0]-75,self.endingpos[1]-51))#draws the sell button with hover image
+                if Mousebuttons == 1 and [stock[0] for stock in player.stocks if stock[0] == self.name]:#if mouse is clicked and player has the stock
+                    player.sell(self.name,self.pricepoints[-1][1])
+                elif Mousebuttons == 1 and not [stock[0] for stock in player.stocks if stock[0] == self.name]:
+                    print('you dont have this stock')
+            else:
+                screen.blit(self.control_images['sell'],(self.startingpos[0]-75,self.endingpos[1]-51))#draws the sell button with normal image
     def recent_price_movement(self):
-        """returns the recent price movement"""
+        """returns the recent price movement in percent, None is no recent movement"""
         if self.recent_movementvar[1] != None:#if there is a recent movement then check if it is still recent
             if self.recent_movementvar[1] < time.time():#if it is no longer recent then set it to none
-                self.recent_movementvar = (None,None,(180,180,180))
+                self.recent_movementvar = [None,None,(180,180,180)]
                 
             else:#if it is still recent then return the movement
-                return self.recent_movementvar[0]
+                # if self.recent_movementvar[0] >= 0:
+                if (percent:=round(((self.pricepoints[-1][1]/self.pricepoints[-50][1])-1)*100,2)) > 0:
+                    self.recent_movementvar[2] = (0,200,0)
+                else:
+                    self.recent_movementvar[2] = (200,0,0)
+                return percent
             
-        if len(self.pricepoints) < 10:#if there are less then 10 points then return none
+        if len(self.pricepoints) < 50:#if there are less then 10 points then return none
             return None
-        if self.pricepoints[-1][1]-self.pricepoints[-10][1] > 20:#price going down, know its counter intuitive but it works
-            self.recent_movementvar = (0,time.time()+3,(0,200,0))
-            return 0
-        elif self.pricepoints[-1][1]-self.pricepoints[-10][1] < -20:
-            self.recent_movementvar = (1,time.time()+3,(200,0,0))
-            return 1
+
+        if abs(percent:=round(((self.pricepoints[-1][1]/self.pricepoints[-50][1])-1)*100,2)) > 5:#if it is going down by a change greater than 150%
+            color = (0,200,0) if percent >= 0 else (200,0,0)
+            self.recent_movementvar = [percent,time.time()+3,color]
+            return percent
         return None
     
     def price_movement(self,lastprice):
@@ -69,38 +75,66 @@ class Stock():
             self.movement_length = randint(60,360)
         
         if self.temporary_movement > 0:#if price greater then set it as the high for the movement
-            return lastprice + randint(-2,self.temporary_movement)
+            return lastprice * 1+(randint(-2,self.temporary_movement)/100)#percent based changes (otherwise it can do some really crazy changes)
         elif self.temporary_movement < 0:# if price less then set it as the low for the movement
-            return lastprice + randint(self.temporary_movement,2)
+            return lastprice * 1+(randint(self.temporary_movement,2)/100)
         else:
-            return lastprice + randint(-3,3)
+            return lastprice * 1+(randint(-3,3)/100)
     
     def resize_graph(self):
         medianpoint = statistics.median([point[1] for point in self.pricepoints])
         
         #below we are checking if the max or min is further away from the median point, and then returning the distance from the median point
         if abs(min(self.pricepoints, key=lambda x: x[1])[1]-medianpoint) > abs(max(self.pricepoints, key=lambda x: x[1])[1]-medianpoint):
-            return abs(min(self.pricepoints, key=lambda x: x[1])[1]-medianpoint)+30
-        return abs(max(self.pricepoints, key=lambda x: x[1])[1]-medianpoint)+30
-    
-    def update(self,screen,update:bool,Player:object):
+            return (abs(min(self.pricepoints, key=lambda x: x[1])[1]-medianpoint)+30)*1.5
+        return (abs(max(self.pricepoints, key=lambda x: x[1])[1]-medianpoint)+30)*1.5
+    def bankrupcy(self,screen:pygame.Surface):
+        """returns False if stock is not bankrupt"""	
         if self.pricepoints[-1][1] < 0 and self.pricereset_time == None:#if stock goes bankrupt, and no time has been set
             self.pricereset_time = time.time()
-            self.pricepoints = [[self.startingpos[0]-5,randint(*self.starting_value_range)]]
             print('stock went bankrupt')
+            return False
+
         elif self.pricereset_time != None and time.time() > self.pricereset_time+5:#if stock goes bankrupt and 5 seconds have passed
             self.pricepoints[-1][1] = randint(*self.starting_value_range)
             self.temporary_movement = randint(-1*(self.volatility-1),self.volatility)
             self.movement_length = randint(60,360); self.pricereset_time = None
             gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(255,0,0))#draws the background of the graph red
+            return False
 
         elif self.pricereset_time != None and time.time() < self.pricereset_time+5:#if stock goes bankrupt and less then 5 seconds have passed
             gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(255,0,0))#draws the background of the graph red
             screen.blit(font40.render(f'BANKRUPT',1,(255,255,255)),(self.endingpos[0]+15,self.startingpos[1]+15))
-        else:
+            return False
+        return True
+    def stock_split(self,player:object):
+        if self.pricepoints[-1][1] >= 2500:
+            player.messagedict[f'{self.name} has split'] = (time.time(),(0,0,200))
+            for point in self.pricepoints:
+                point[1] *= 0.5
+            print(self.pricepoints)
+            stock_quantity = len([stock for stock in player.stocks if stock[0] == self.name])
+            if stock_quantity > 0:
+                player.messagedict[f'You now have {stock_quantity*2} shares of {self.name}'] = (time.time(),(0,0,200))
+                for stock in player.stocks.copy():
+                    player.stocks.remove(stock)
+                    if stock[0] == self.name:
+                        player.stocks.append([stock[0],stock[1]*0.5])
+                        player.stocks.append([stock[0],stock[1]*0.5])
+            
+
+    def update(self,screen,update:bool,player:object,stocklist=None):
+        if type(self) == self.Playerclass:#if it is a Player object
+            self.graph(stocklist)#graph the stocks
+            self.message(screen)#display the messages
+
+        if self.bankrupcy(screen):#if stock is not bankrupt
+
             gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(60,60,60))#draws the background of the graph
             if type(self) == Stock and update:#making sure that it is a Stock object and that update is true
                 self.pricepoints.append([self.startingpos[0]-5,self.price_movement(self.pricepoints[-1][1])])#if update is true then add a new point to the graph
+                self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
+
             graphsize = self.resize_graph()
             if graphsize <= 0: graphsize = 1#graphsize is the distance from the median point to the max or min point
 
@@ -126,21 +160,23 @@ class Stock():
             
             
             # pygame.draw.rect(screen,(0,0,0),pygame.Rect(self.endingpos[0],self.startingpos[1],(self.startingpos[0]-self.endingpos[0]),self.endingpos[1]),10)#draws the perimeter around graphed values
-            gfxdraw.rectangle(screen,pygame.Rect(self.endingpos[0],self.startingpos[1],(self.startingpos[0]-self.endingpos[0]),self.endingpos[1]),(0,0,0),)#draws the perimeter around graphed values
-            #price text, had to separte because I need the width of the text to draw the stock image
-        
-            pricetext = font40.render(f'{self.name} ${self.pricepoints[-1][1]}',1,(255,255,255))
+            gfxdraw.rectangle(screen,pygame.Rect(self.endingpos[0],self.startingpos[1],(self.startingpos[0]-self.endingpos[0]),(self.endingpos[1]-self.startingpos[1])),(0,0,0))#draws the perimeter around graphed values
+            #price text, had to separate because I need the width of the text to draw the stock image
+            pricetext = font40.render(f'{self.name} ${round(self.pricepoints[-1][1],2)}',1,(255,255,255))
             #draws the price text
-            screen.blit(pricetext,(self.endingpos[0]+15,self.startingpos[1]+15))
-            # if type(self) == Stock:#text displaying the temporary movement and the movement length (not needed for final version and only for Stock objects)
-            #     screen.blit(font18.render(f'temp move {self.temporary_movement}, move length {self.movement_length}',1,(255,255,255)),(self.endingpos[0]+15,self.startingpos[1]+50))
-    
+            screen.blit(pricetext,(self.endingpos[0]+15,self.startingpos[1]+15))    
 
             #if recent_price_movement returns a value then draw the stock image with imagenum as the index
-            if (imagenum:=self.recent_price_movement()) is not None:
-                screen.blit(self.stockimages[imagenum],(self.endingpos[0]+15+round(pricetext.get_width(),-2),self.startingpos[1]+10))
-            if type(self) == Player:#text displaying the cash
-                screen.blit(font40.render(f'Cash ${self.cash}',1,(255,255,255)),(self.endingpos[0]+15,self.startingpos[1]+50))
+            if (percentchange:=self.recent_price_movement()) is not None:
+                # screen.blit(self.stockimages[imagenum],(self.endingpos[0]+15+round(pricetext.get_width(),-2),self.startingpos[1]+10))
+                color = (0,200,0) if percentchange >= 1 else (200,0,0)
+                if type(self) == Stock:
+                    screen.blit(font40.render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",1,color),(self.endingpos[0]+15,self.startingpos[1]+45))
+                elif type(self) == self.Playerclass:
+                    screen.blit(font40.render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",1,color),(self.endingpos[0]+15,self.startingpos[1]+80))
+
+            if type(self) == self.Playerclass:#text displaying the cash
+                screen.blit(font40.render(f'Cash ${round(self.cash,2)}',1,(255,255,255)),(self.endingpos[0]+15,self.startingpos[1]+50))
         
 
     

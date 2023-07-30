@@ -1,5 +1,6 @@
 import pygame
 import time
+from pygame import gfxdraw
 pygame.font.init()
 def update_fps(clock):
     fps = str(int(clock.get_fps()))
@@ -29,6 +30,7 @@ fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 font40 = fonts(40)
 font25 = fonts(25)
 font18 = fonts(18)
+
 
 
 #for time testing

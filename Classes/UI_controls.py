@@ -2,7 +2,7 @@ import pygame
 from Defs import *
 
 class UI_controls():
-    def __init__(self) -> None:
+    def __init__(self,windowoffset) -> None:
         path = 'Assets/UI controls/'
         self.images = {
             "reverse":pygame.transform.flip(pygame.image.load(path+"fastforward.png").convert_alpha(),True,False),
@@ -10,6 +10,7 @@ class UI_controls():
             "play":pygame.image.load(path+"play.png").convert_alpha(),
             "fastforward":pygame.image.load(path+"fastforward.png").convert_alpha(),
         }
+        self.winset = windowoffset
         for key,image in self.images.items():
             surface = pygame.Surface((image.get_width(),image.get_height()))
             surface.fill((110,110,110))
@@ -33,7 +34,7 @@ class UI_controls():
         
     def draw(self,screen,mousebuttons:int):
         for i,image in enumerate(self.images.values()):
-            screen.blit(image,(1605+sum([self.imagelengths[x] for x in range(i)]),405))
+            screen.blit(image,(1605+self.winset[0]+sum([self.imagelengths[x] for x in range(i)]),405+self.winset[1]))
         self.clicksensing(mousebuttons)#740,750
         
     def clicksensing(self,mousebuttons:int):
@@ -41,7 +42,7 @@ class UI_controls():
         if mousebuttons == 1:
             print(mousex,mousey)
             for i,image in enumerate(self.images.values()):
-                if mousex > 1605+sum([self.imagelengths[x] for x in range(i)]) and mousex < 1605+sum([self.imagelengths[x] for x in range(i)])+image.get_width() and mousey > 405 and mousey < 405+image.get_height():
+                if mousex > 1605+self.winset[0]+sum([self.imagelengths[x] for x in range(i)]) and mousex < 1605+self.winset[0]+sum([self.imagelengths[x] for x in range(i)])+image.get_width() and mousey > (405+self.winset[1]) and mousey < 405+image.get_height()+self.winset[1]:
                     print('clicked',i)
                     if i == 0:#if reverse
                         if self.gameplay_speed == 2:
