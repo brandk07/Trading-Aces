@@ -1,7 +1,3 @@
-
-import time
-firsttime = time.time()
-firsttime += 3
-time.sleep(3.1)
-
-print(firsttime > time.time())
+import math
+mytuple = (2,3)
+print(math.prod(mytuple))

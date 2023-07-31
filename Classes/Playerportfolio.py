@@ -7,16 +7,14 @@ from pygame import gfxdraw
 
 
 class Player(Stock):
-    def __init__(self,startingpos,endingpos,window_offset) -> None:
+    def __init__(self,window_offset) -> None:
         name = 'Net Worth'
-        super().__init__(name,startingpos,endingpos,(2500,2500),0,Player,window_offset)
+        super().__init__(name,(2500,2500),0,Player,window_offset)
         self.name = name
-        self.startingpos = (startingpos[0] - self.winset[0], startingpos[1] - self.winset[1])
-        self.endingpos = (endingpos[0] - self.winset[0], endingpos[1] - self.winset[1])
         self.cash = 2500
         self.stocks = []
+        self.pricepoints = []
         self.stockvalues = []
-        self.pricepoints = [[startingpos[0]-5,self.cash]]
         self.messagedict = {}
         self.font = fonts(25)
         # self.recent_movementvar = (None,None,(180,180,180))
@@ -63,6 +61,8 @@ class Player(Stock):
             del self.messagedict[key]
 
     def graph(self,stocklist:list):
+        # print(self.cash,'cash')
+        # print(self.pricepoints)
         self.stockvalues.clear()
         if self.stocks:#if there are stocks
             bankruptamounts = []#list containing the amount of money lost from each bankrupt stocks - all in 1 message so it doesn't spam the message box

@@ -7,17 +7,15 @@ from Defs import *
 
     
 class Stock():
-    def __init__(self,name,startingpos,endingpos,startingvalue_range,volatility,Playerclass,windowoffset) -> None:
+    def __init__(self,name,startingvalue_range,volatility,Playerclass,window_offset) -> None:
         """Xpos is the starting x position of the graph, startingvalue is the starting value of the stock"""
-        self.winset = windowoffset
+        self.winset = window_offset
+        self.pricepoints = []
+        self.startingpos,self.endingpos = (0,0),(0,0)
         self.Playerclass = Playerclass
-        self.startingpos = (startingpos[0] - self.winset[0], startingpos[1] - self.winset[1])
         self.starting_value_range = startingvalue_range
-        self.pricepoints = [[startingpos[0]-5,randint(*startingvalue_range)]]
-        print(startingvalue_range,name)
-        self.endingpos = (endingpos[0] - self.winset[0], endingpos[1] - self.winset[1])
         self.volatility = volatility#determines how much the price can change
-        self.temporary_movement = randint(volatility,volatility)#determines overall trend in the movement of the price
+        self.temporary_movement = randint(-1*volatility,volatility)#determines overall trend in the movement of the price
         self.movement_length = randint(60,360)#determines the length of the movement (60 is 1 second)
         self.name = name
         self.recent_movementvar = [None,None,(180,180,180)]
@@ -77,7 +75,8 @@ class Stock():
         if self.temporary_movement > 0:#if price greater then set it as the high for the movement
             return lastprice * 1+(randint(-2,self.temporary_movement)/100)#percent based changes (otherwise it can do some really crazy changes)
         elif self.temporary_movement < 0:# if price less then set it as the low for the movement
-            return lastprice * 1+(randint(self.temporary_movement,2)/100)
+            changednum = lastprice * 1+(randint(self.temporary_movement,2)/100)
+            return changednum
         else:
             return lastprice * 1+(randint(-3,3)/100)
     
@@ -88,31 +87,33 @@ class Stock():
         if abs(min(self.pricepoints, key=lambda x: x[1])[1]-medianpoint) > abs(max(self.pricepoints, key=lambda x: x[1])[1]-medianpoint):
             return (abs(min(self.pricepoints, key=lambda x: x[1])[1]-medianpoint)+30)*1.5
         return (abs(max(self.pricepoints, key=lambda x: x[1])[1]-medianpoint)+30)*1.5
-    def bankrupcy(self,screen:pygame.Surface):
+    def bankrupcy(self,screen:pygame.Surface,drawn):
         """returns False if stock is not bankrupt"""	
         if self.pricepoints[-1][1] < 0 and self.pricereset_time == None:#if stock goes bankrupt, and no time has been set
             self.pricereset_time = time.time()
-            print('stock went bankrupt')
+            print(f'{self.name} went bankrupt')
             return False
 
         elif self.pricereset_time != None and time.time() > self.pricereset_time+5:#if stock goes bankrupt and 5 seconds have passed
             self.pricepoints[-1][1] = randint(*self.starting_value_range)
             self.temporary_movement = randint(-1*(self.volatility-1),self.volatility)
             self.movement_length = randint(60,360); self.pricereset_time = None
-            gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(255,0,0))#draws the background of the graph red
+            if drawn:
+                gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(255,0,0))#draws the background of the graph red
             return False
 
         elif self.pricereset_time != None and time.time() < self.pricereset_time+5:#if stock goes bankrupt and less then 5 seconds have passed
-            gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(255,0,0))#draws the background of the graph red
-            screen.blit(font40.render(f'BANKRUPT',1,(255,255,255)),(self.endingpos[0]+15,self.startingpos[1]+15))
+            if drawn:
+                gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(255,0,0))#draws the background of the graph red
+                screen.blit(font40.render(f'BANKRUPT',1,(255,255,255)),(self.endingpos[0]+15,self.startingpos[1]+15))
             return False
         return True
+    
     def stock_split(self,player:object):
         if self.pricepoints[-1][1] >= 2500:
             player.messagedict[f'{self.name} has split'] = (time.time(),(0,0,200))
             for point in self.pricepoints:
                 point[1] *= 0.5
-            print(self.pricepoints)
             stock_quantity = len([stock for stock in player.stocks if stock[0] == self.name])
             if stock_quantity > 0:
                 player.messagedict[f'You now have {stock_quantity*2} shares of {self.name}'] = (time.time(),(0,0,200))
@@ -123,60 +124,82 @@ class Stock():
                         player.stocks.append([stock[0],stock[1]*0.5])
             
 
-    def update(self,screen,update:bool,player:object,stocklist=None):
+    def update(self,screen,update:bool,player:object,startingpos,endingpos,drawn=True,stocklist=None):
+        
+        """updates the graph"""
+        if startingpos != self.startingpos or endingpos != self.endingpos:
+            xdif = self.startingpos[0]-startingpos[0]
+            self.pricepoints = [[point[0]-xdif,point[1]] for point in self.pricepoints]
+            #setting the starting and ending positions - where the graphs are located is constantly changing
+            self.startingpos = (startingpos[0] - self.winset[0], startingpos[1] - self.winset[1])
+            self.endingpos = (endingpos[0] - self.winset[0], endingpos[1] - self.winset[1])
+
+        # If there is only 1 point in the graph then reset the graph with the new starting and ending positions
+        if len(self.pricepoints) <= 1: self.pricepoints = [[startingpos[0]-5,randint(*self.starting_value_range)]]
+
         if type(self) == self.Playerclass:#if it is a Player object
-            self.graph(stocklist)#graph the stocks
+            self.graph(stocklist)#graph the player networth
             self.message(screen)#display the messages
-
-        if self.bankrupcy(screen):#if stock is not bankrupt
-
-            gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(60,60,60))#draws the background of the graph
-            if type(self) == Stock and update:#making sure that it is a Stock object and that update is true
+        
+        if self.bankrupcy(screen,drawn):#if stock is not bankrupt
+            if not drawn and type(self) == Stock and update:#still running the update function but not drawing
                 self.pricepoints.append([self.startingpos[0]-5,self.price_movement(self.pricepoints[-1][1])])#if update is true then add a new point to the graph
                 self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
 
-            graphsize = self.resize_graph()
-            if graphsize <= 0: graphsize = 1#graphsize is the distance from the median point to the max or min point
+            elif not drawn and type(self) == Stock and not update:#still running the update function but not drawing
+                pass
 
-            medianpoint = statistics.median([point[1] for point in self.pricepoints])# the median point of the graph
+            else:#if it is being drawn
+                gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(60,60,60))#draws the background of the graph
+                if type(self) == Stock and update:#making sure that it is a Stock object and that update is true
+                    self.pricepoints.append([self.startingpos[0]-5,self.price_movement(self.pricepoints[-1][1])])#if update is true then add a new point to the graph
+                    self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
+                    # print(self.pricepoints)
+                graphsize = self.resize_graph()
+                if graphsize <= 0: graphsize = 1#graphsize is the distance from the median point to the max or min point
 
-            graphheight = (self.endingpos[1]-self.startingpos[1])/2# graphheight is the height of the graph
+                medianpoint = statistics.median([point[1] for point in self.pricepoints])# the median point of the graph
 
-            #yvaluefinder is a function that takes a value and returns the y value of the point - look in assets for pic of equation
-            yvaluefinder = lambda x: int(graphheight+(((medianpoint-x)/graphsize)*graphheight)+self.startingpos[1])
+                graphheight = (self.endingpos[1]-self.startingpos[1])/2# graphheight is the height of the graph
 
-            #new_y_values is a list of all the y values of the points in the graph - had to use so I could access all of the y values for lines in the for loop
-            new_y_values = list(map(yvaluefinder,[point[1] for point in self.pricepoints]))
+                #yvaluefinder is a function that takes a value and returns the y value of the point - look in assets for pic of equation
+                yvaluefinder = lambda x: int(graphheight+(((medianpoint-x)/graphsize)*graphheight)+self.startingpos[1])
+
+                #new_y_values is a list of all the y values of the points in the graph - had to use so I could access all of the y values for lines in the for loop
+                new_y_values = list(map(yvaluefinder,[point[1] for point in self.pricepoints]))
+                
+                
+                for i,point in enumerate(self.pricepoints):
+                    if i >= len(self.pricepoints)-1:
+                        pass#if last one in list then don't draw line
+                    else:
+                        gfxdraw.line(screen,point[0],new_y_values[i],self.pricepoints[i+1][0],new_y_values[i+1],self.recent_movementvar[2])#draws the line between the points
+                    if update:
+                        point[0] -= 1
+                        if point[0] <= self.endingpos[0]: 
+                            self.pricepoints.remove(point)
+                
+                
+                # pygame.draw.rect(screen,(0,0,0),pygame.Rect(self.endingpos[0],self.startingpos[1],(self.startingpos[0]-self.endingpos[0]),self.endingpos[1]),10)#draws the perimeter around graphed values
+                gfxdraw.rectangle(screen,pygame.Rect(self.endingpos[0],self.startingpos[1],(self.startingpos[0]-self.endingpos[0]),(self.endingpos[1]-self.startingpos[1])),(0,0,0))#draws the perimeter around graphed values
+                #price text, had to separate because I need the width of the text to draw the stock image
+                pricetext = font40.render(f'{self.name} ${round(self.pricepoints[-1][1],2)}',1,(255,255,255))
+                #draws the price text
+                screen.blit(pricetext,(self.endingpos[0]+15,self.startingpos[1]+15))    
+
+                #if recent_price_movement returns a value then draw the stock image with imagenum as the index
+                if (percentchange:=self.recent_price_movement()) is not None:
+                    # screen.blit(self.stockimages[imagenum],(self.endingpos[0]+15+round(pricetext.get_width(),-2),self.startingpos[1]+10))
+                    color = (0,200,0) if percentchange >= 1 else (200,0,0)
+                    if type(self) == Stock:
+                        screen.blit(font40.render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",1,color),(self.endingpos[0]+15,self.startingpos[1]+45))
+                    elif type(self) == self.Playerclass:
+                        screen.blit(font40.render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",1,color),(self.endingpos[0]+15,self.startingpos[1]+80))
+
+                if type(self) == self.Playerclass:#text displaying the cash
+                    screen.blit(font40.render(f'Cash ${round(self.cash,2)}',1,(255,255,255)),(self.endingpos[0]+15,self.startingpos[1]+50))
+
             
-            
-            for i,point in enumerate(self.pricepoints):
-                if i >= len(self.pricepoints)-1:pass#if last one in list then don't draw line
-                else:
-                    gfxdraw.line(screen,point[0],new_y_values[i],self.pricepoints[i+1][0],new_y_values[i+1],self.recent_movementvar[2])#draws the line between the points
-                if update:
-                    point[0] -= 1
-                    if point[0] <= self.endingpos[0]: 
-                        self.pricepoints.remove(point)
-            
-            
-            # pygame.draw.rect(screen,(0,0,0),pygame.Rect(self.endingpos[0],self.startingpos[1],(self.startingpos[0]-self.endingpos[0]),self.endingpos[1]),10)#draws the perimeter around graphed values
-            gfxdraw.rectangle(screen,pygame.Rect(self.endingpos[0],self.startingpos[1],(self.startingpos[0]-self.endingpos[0]),(self.endingpos[1]-self.startingpos[1])),(0,0,0))#draws the perimeter around graphed values
-            #price text, had to separate because I need the width of the text to draw the stock image
-            pricetext = font40.render(f'{self.name} ${round(self.pricepoints[-1][1],2)}',1,(255,255,255))
-            #draws the price text
-            screen.blit(pricetext,(self.endingpos[0]+15,self.startingpos[1]+15))    
-
-            #if recent_price_movement returns a value then draw the stock image with imagenum as the index
-            if (percentchange:=self.recent_price_movement()) is not None:
-                # screen.blit(self.stockimages[imagenum],(self.endingpos[0]+15+round(pricetext.get_width(),-2),self.startingpos[1]+10))
-                color = (0,200,0) if percentchange >= 1 else (200,0,0)
-                if type(self) == Stock:
-                    screen.blit(font40.render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",1,color),(self.endingpos[0]+15,self.startingpos[1]+45))
-                elif type(self) == self.Playerclass:
-                    screen.blit(font40.render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",1,color),(self.endingpos[0]+15,self.startingpos[1]+80))
-
-            if type(self) == self.Playerclass:#text displaying the cash
-                screen.blit(font40.render(f'Cash ${round(self.cash,2)}',1,(255,255,255)),(self.endingpos[0]+15,self.startingpos[1]+50))
         
 
     
