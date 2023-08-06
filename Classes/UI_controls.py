@@ -17,7 +17,7 @@ class UI_controls():
             surface = pygame.Surface((image.get_width()+10,image.get_height()+10))
             surface.fill((110,110,110))
             surface.blit(image,(5,5))
-            self.images[key] = surface
+            self.images[key] = surface.convert_alpha()
 
         self.gameplay_speed = 2
         self.playing = True
@@ -28,7 +28,7 @@ class UI_controls():
         self.playrect = pygame.Rect(self.pauseplayxy[0],self.pauseplayxy[1],self.images['play'].get_width(),self.images['play'].get_height())
         self.fastrect = pygame.Rect(self.fastwardxy[0],self.fastwardxy[1],self.images['fastforward'].get_width(),self.images['fastforward'].get_height())
         self.blankrect = pygame.Rect(self.fastwardxy[0]+70,self.fastwardxy[1],self.images['blankbutton'].get_width(),self.images['blankbutton'].get_height())
-    
+        self.gamespeedtexts = [fontlist[40].render(f'x{speed}',(0,0,0))[0] for speed in range(0,4)]
     def logic(self,Tick:int):
         if self.playing:#if not paused
             if self.gameplay_speed == 1 and Tick == 0:#if halfspeed, and on an odd tick
@@ -40,7 +40,7 @@ class UI_controls():
         else:#if paused
             return False
         
-    def draw(self,screen,mousebuttons:int):
+    def draw(self,screen,mousebuttons:int,menudrawn:bool):
         
         if self.playing:
             screen.blit(self.images['pause'],self.pauseplayxy)
@@ -51,19 +51,24 @@ class UI_controls():
         screen.blit(self.images['fastforward'],self.fastwardxy )
         
         screen.blit(self.images['blankbutton'],(self.fastwardxy[0]+70,self.fastwardxy[1]))
-        screen.blit(fonts(40).render(f'x{self.gameplay_speed}',True,(0,0,0)),(self.fastwardxy[0]+85,self.fastwardxy[1]+20))
-
-        self.clicksensing(mousebuttons)#740,750
+        if self.playing:
+            screen.blit(self.gamespeedtexts[self.gameplay_speed],(self.fastwardxy[0]+88,self.fastwardxy[1]+17))
+        else:
+            screen.blit(self.gamespeedtexts[0],(self.fastwardxy[0]+88,self.fastwardxy[1]+17))
         
+        self.clicksensing(mousebuttons)#740,750
     def clicksensing(self,mousebuttons:int):
         mousex,mousey = pygame.mouse.get_pos()
-        
         
         if mousebuttons == 1:
             if self.playrect.collidepoint(mousex,mousey):
                 self.playing = not self.playing
             elif self.fastrect.collidepoint(mousex,mousey) or self.blankrect.collidepoint(mousex,mousey):
-                if self.gameplay_speed == 3:
+                if not self.playing:#if paused, then play
+                    self.playing = True
                     self.gameplay_speed = 1
-                else:
-                    self.gameplay_speed += 1
+                else:#if playing, then change speed
+                    if self.gameplay_speed == 3:
+                        self.gameplay_speed = 1
+                    else:
+                        self.gameplay_speed += 1

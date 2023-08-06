@@ -7,16 +7,15 @@ from pygame import gfxdraw
 
 
 class Player(Stock):
-    def __init__(self,window_offset) -> None:
+    def __init__(self,window_offset,stocknames) -> None:
         name = 'Net Worth'
-        super().__init__(name,(2500,2500),0,Player,window_offset)
+        super().__init__(name,(2500,2500),0,Player,window_offset,stocknames)
         self.name = name
         self.cash = 2500
         self.stocks = []
-        self.pricepoints = []
+        self.pricepoints = [[self.startingpos[0]-5,self.cash]]
         self.stockvalues = []
         self.messagedict = {}
-        self.font = fonts(25)
         # self.recent_movementvar = (None,None,(180,180,180))
         
     def buy(self,name:str,price:int):
@@ -49,10 +48,9 @@ class Player(Stock):
         keys_to_delete = []
         for i,(text,(starttime,color)) in enumerate(self.messagedict.items()):
             if i < 8 and time.time() < starttime+15:
-                text = self.font.render(text,True,(255,255,255))
                 #draw a box around the text using gfxdraw filled polygon
                 gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.endingpos[1]+35+(i*40)),(self.startingpos[0],self.endingpos[1]+35+(i*40)),(self.startingpos[0]+10,self.endingpos[1]+65+(i*40)),(self.endingpos[0]+10,self.endingpos[1]+65+(i*40))],color)
-                screen.blit(text,(self.endingpos[0]+10,self.endingpos[1]+40+(i*40)))
+                screen.blit(fontlist[25].render(text,(255,255,255))[0],(self.endingpos[0]+10,self.endingpos[1]+40+(i*40)))
             else:
                 if list(self.messagedict.keys())[0] not in keys_to_delete:
                     keys_to_delete.append(list(self.messagedict.keys())[0])

@@ -1,10 +1,11 @@
 import pygame
 import time
 from pygame import gfxdraw
+from pygame import freetype
 pygame.font.init()
 def update_fps(clock):
     fps = str(int(clock.get_fps()))
-    fps_text = font25.render(fps, 1, pygame.Color("coral"))
+    fps_text = fontlist[25].render(fps, pygame.Color("coral"))[0]
     return fps_text
 
 def time_it(func):
@@ -25,12 +26,15 @@ def time_loop(loop):
         print(f"Loop took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-
-fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
-font40 = fonts(40)
-font25 = fonts(25)
-font18 = fonts(18)
-
+pygame.init()
+# fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Regular.ttf',font_size)
+# fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Bold.ttf',font_size)
+fonts = lambda font_size: freetype.Font(r'Assets/antonio/Antonio-Regular.ttf', font_size*.75)
+fontsbold = lambda font_size: freetype.Font(r'Assets/antonio/Antonio-Bold.ttf', font_size*.75)
+# fonts = lambda font_size: freetype.Font(r'Assets\antonio\Liquid_Crystal_Extra_Characters.otf', font_size)
+bold40 = fontsbold(45)
+fontlist = [fonts(num) for num in range(0,100)]#list of fonts from 0-100
+font45 = fonts(45)
 
 
 #for time testing

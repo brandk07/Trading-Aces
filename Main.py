@@ -6,6 +6,7 @@ from Classes.Stockprice import Stock
 from Classes.UI_controls import *
 from Classes.Playerportfolio import Player
 from Classes.StockGraphManager import StockGraphManager
+from Classes.Stockbook import Stockbook
 
 pygame.init()
 
@@ -29,14 +30,14 @@ pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 window_offset = (window_x*-1,window_y)
-
-stockgraphmanager = StockGraphManager()
-
-player = Player(window_offset)
-
 stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
+stockgraphmanager = StockGraphManager()
+stockbook = Stockbook(stocknames)
+player = Player(window_offset,stocknames)
+
+
 #name, startingvalue_range, volatility, Playerclass, window_offset
-stockdict = {name:Stock(name,(500,2500),10,Player,window_offset) for name in stocknames}
+stockdict = {name:Stock(name,(500,2500),100,Player,window_offset,stocknames) for name in stocknames}
 
 # stock1 = Stock('SNTOK',(1600,0),(800,400),(500,2500),75,Player,window_offset)
 # # stock1 = Stock('SNTOK',(1600,0),(0,800),randint(500,2500),5)
@@ -47,22 +48,20 @@ ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]))
 Mousebuttons = 0
 Tick = 0
 stocklist = [stockdict[name] for name in stocknames]
+
 while True:
     mousex,mousey = pygame.mouse.get_pos()
     screen.fill((20,20,20))
     
     if Tick < 4: Tick += 1#used for ui_controls.update
     else: Tick = 0
-    
-    stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons)
-    # for stock in stocklist:#drawing things to screen  
-    #     stock.update(screen,ui_controls.logic(Tick),player)
-    #     stock.buy_sell(player,screen,Mousebuttons)
-    
-    # player.graph(stocklist)
-    # player.update(screen,ui_controls.logic(Tick),player,stocklist)
 
-    ui_controls.draw(screen,Mousebuttons)#draws the ui controls to the screen, and senses for clicks
+    stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons,stockbook.menudrawn,stockbook)
+  
+    ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
+
+    stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick))
+
     screen.blit(update_fps(clock),(1570,0))
     
     Mousebuttons = 0
