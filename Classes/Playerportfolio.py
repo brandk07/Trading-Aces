@@ -18,25 +18,36 @@ class Player(Stock):
         self.messagedict = {}
         # self.recent_movementvar = (None,None,(180,180,180))
         
-    def buy(self,name:str,price:int):
-        if self.cash >= price:
-            self.cash -= price
-            self.stocks.append([name,price])
-        self.messagedict[f'Purchased {round(price,2)} from {name}'] = (time.time(),(0,200,0))
+    def buy(self,name:str,price:int,quantity:int=1):
+        for _ in range(quantity+1):
+            if self.cash >= price:
+                self.cash -= price
+                self.stocks.append([name,price])
+
+        self.messagedict[f'Purchased {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
         print(f'buying {name} for {price}')
         print('cash is',self.cash)
         print('stocks are',self.stocks)
         print('/'*20)
-    def sell(self,name:str,price:int):
-        self.cash += price
-        originalprice = [stock[1] for stock in self.stocks if stock[0] == name][0]
-        self.stocks.remove([name,originalprice])
-        if price < originalprice:
-            self.messagedict[f'Lost {round(price-originalprice,2)} from {name}'] = (time.time(),(200,0,0))
+    def sell(self,name:str,price:int,quantity:int=1):
+        self.cash += price*quantity
+        print(self.stocks)
+        self.messagedict[f'Sold {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
+        if price*quantity < sum([stock[1] for stock in self.stocks if stock[0] == name]):
+            self.messagedict[f'Lost {round((price*quantity)-sum([self.stocks[i][1] for i in range(quantity) if self.stocks[i][0] == name]),2)} from {name}'] = (time.time(),(200,0,0))
         else:
-            self.messagedict[f'Profited {round(price-originalprice,2)} from {name}'] = (time.time(),(0,200,0))
+            self.messagedict[f'Profited {round((price*quantity)-sum([self.stocks[i][1] for i in range(quantity) if self.stocks[i][0] == name]),2)} from {quantity} {name} shares'] = (time.time(),(0,200,0))
+        for _ in range(quantity):
+            # originalprice = [stock[1] for stock in self.stocks if stock[0] == name][0]
+            print([stock[0] for stock in self.stocks],'stocks')
+            originalprice = self.stocks[[stock[0] for stock in self.stocks].index(name)][1]
+            self.stocks.remove([name,originalprice])
+            # if price < originalprice:
+            #     self.messagedict[f'Lost {round(price-originalprice,2)} from {name}'] = (time.time(),(200,0,0))
+            # else:
+            #     self.messagedict[f'Profited {round(price-originalprice,2)} from {name}'] = (time.time(),(0,200,0))
         
-
+        
         print(f'selling {name} for {price}')
         print('profited ',price-originalprice)
         print('cash is',self.cash)

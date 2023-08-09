@@ -44,23 +44,26 @@ stockdict = {name:Stock(name,(500,2500),100,Player,window_offset,stocknames) for
 # stock2 = Stock('KSTON',(800,0),(0,400),(500,2500),110,Player,window_offset)
 # stock3 = Stock('STKCO',(800,400),(0,1080),(500,2500),140,Player,window_offset)
 # stock4 = Stock('XKSTO',(1600,400),(800,1080),(2300,2310),180,Player,window_offset)
+
 ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]))
 Mousebuttons = 0
 Tick = 0
 stocklist = [stockdict[name] for name in stocknames]
-
+gametime = [9,30,0,'am']
 while True:
     mousex,mousey = pygame.mouse.get_pos()
     screen.fill((20,20,20))
     
     if Tick < 4: Tick += 1#used for ui_controls.update
     else: Tick = 0
-
+    # print(time.time())
+    # print(time.asctime())
+    gametime = Gametime(gametime,ui_controls.gameplay_speed,ui_controls.playing,screen,clock.get_fps())
     stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons,stockbook.menudrawn,stockbook)
   
     ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
 
-    stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick))
+    stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player)
 
     screen.blit(update_fps(clock),(1570,0))
     
@@ -85,6 +88,6 @@ while True:
     
     pygame.display.update()
 
-    clock.tick(120)
+    clock.tick(60)
 
 

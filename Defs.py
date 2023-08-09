@@ -2,6 +2,7 @@ import pygame
 import time
 from pygame import gfxdraw
 from pygame import freetype
+import math
 pygame.font.init()
 def update_fps(clock):
     fps = str(int(clock.get_fps()))
@@ -27,6 +28,32 @@ def time_loop(loop):
         return result
     return wrapper
 pygame.init()
+
+# currentime = [hours,minutes,update interval ,am/pm]
+def Gametime(currentime,gamespeed,playing,screen:pygame.Surface,fps):
+    if playing:
+        currentime[2] += gamespeed
+        if currentime[2] >= 3*60:#update interval, 3*fps(60) = 1 minute in game
+            currentime[2] = 0
+            currentime[1] += 1
+        if currentime[1] >= 60:#if minutes is 60, reset minutes to 0 and add 1 to hours
+            currentime[1] = 0
+            currentime[0] += 1
+        if currentime[0] >= 12:#if hours is 12, reset hours to 1 and change am/pm
+            currentime[0] = 1
+            currentime[3] = 'pm' if currentime[3] == 'am' else 'am'
+    numtime_text,rect = fontlist[50].render(f'{currentime[0]}:{"0" if currentime[1] < 10 else ""}{currentime[1]}{currentime[3]}',(255,255,255))
+
+    numtime_rect = numtime_text.get_rect(center=(100, 950))
+
+    polygon_points = [(25, 925), (175, 925), (175, 975), (25, 975)]
+    pygame.draw.polygon(screen, (80, 80, 80), polygon_points)
+    pygame.draw.polygon(screen, (255, 255, 255), polygon_points, 5)
+    pygame.draw.polygon(screen, (0, 0, 0), polygon_points, 1)
+    screen.blit(numtime_text, numtime_rect)
+
+    return currentime
+    
 # fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Regular.ttf',font_size)
 # fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Bold.ttf',font_size)
 fonts = lambda font_size: freetype.Font(r'Assets/antonio/Antonio-Regular.ttf', font_size*.75)
