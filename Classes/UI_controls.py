@@ -19,7 +19,7 @@ class UI_controls():
             surface.blit(image,(5,5))
             self.images[key] = surface.convert_alpha()
 
-        self.gameplay_speed = 2
+        self.gameplay_speed = 3
         self.playing = True
 
         self.pauseplayxy = (805+self.winset[0],980+self.winset[1])
@@ -31,7 +31,7 @@ class UI_controls():
         self.gamespeedtexts = [fontlist[40].render(f'x{speed}',(0,0,0))[0] for speed in range(0,4)]
     def logic(self,Tick:int):
         if self.playing:#if not paused
-            if self.gameplay_speed == 1 and Tick == 0:#if halfspeed, and on an odd tick
+            if self.gameplay_speed == 1 and not Tick % 3:#if halfspeed, and on an odd tick
                 return True
             if self.gameplay_speed == 2 and Tick % 2:#if not paused, not fastforward, and on an even tick
                 return True

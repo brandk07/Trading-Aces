@@ -2,6 +2,7 @@ import pygame
 from pygame import gfxdraw
 import math
 from Defs import *
+import timeit
 class StockGraphManager:
     def __init__(self):
         self.graph_config = {
@@ -52,15 +53,6 @@ class StockGraphManager:
                     self.current_config = list(self.images.keys())[i]
                     self.picked_stocks.clear()#reset stock list and repopulate it with the correct amount of stocks (using math.prod which is a little unnecessary) in allstocks list
                     self.picked_stocks = self.pickedstockconfig[self.current_config].copy()#uses the pickedstockconfig dict to see which stocks it needs to use
-                    #code below resets the graphs of the stocks before the screen switches, not sure if still needed
-                    # for i in range(self.graph_config[self.current_config][1]):
-                    #     for ii in range(self.graph_config[self.current_config][0]):
-                    #         lengths = (int(1400/self.graph_config[self.current_config][0]), int(880/self.graph_config[self.current_config][1]))
-                    #         startpos = ((ii+1)*lengths[0]+200,i*lengths[1]+100)           
-                    #         stockname = self.picked_stocks[(i*self.graph_config[self.current_config][0])+ii]
-                    #         #reset all the stocks that will be changed on the display (otherwise all their pricepoints will be messed up
-                    #         stock = [stock for stock in stocklist if stock.name == stockname][0]
-                    #         stock.pricepoints = [[startpos[0],stock.pricepoints[-1][1]]]
 
 
         if collide == None:
@@ -97,10 +89,10 @@ class StockGraphManager:
                         color = (0,180,180)
                         if Mousebuttons == 1:
                             Mousebuttons = 0
-                            oldstockobj = [stockobj for stockobj in stocklist if stockobj.name == stockname][0]#finds the stock object of the stock that is being replaced
-                            stockobj = [stockobj for stockobj in stocklist if stockobj.name == stock][0]#finds the stock object of the stock that is replacing the old stock
+                            # oldstockobj = [stockobj for stockobj in stocklist if stockobj.name == stockname][0]#finds the stock object of the stock that is being replaced
+                            # stockobj = [stockobj for stockobj in stocklist if stockobj.name == stock][0]#finds the stock object of the stock that is replacing the old stock
                             #resets the pricepoints except for the last one, which keeps the y (current price) and uses the x from the old stock object
-                            stockobj.pricepoints = [[oldstockobj.startingpos[0],stockobj.pricepoints[-1][1]]] 
+                            # stockobj.pricepoints = [[oldstockobj.startingpos[0],stockobj.pricepoints[-1][1]]] 
                             self.picked_stocks[self.picked_stocks.index(stockname)] = stock#replaces the old stock with the new stock in the picked_stocks list
                             self.pickedstockconfig[self.current_config][self.pickedstockconfig[self.current_config].index(stockname)] = stock#replaces the old stock with the new stock in the pickedstockconfig dict
                             self.mousehovering = None
@@ -114,7 +106,7 @@ class StockGraphManager:
             self.mousehovering = None
 
 
-    def draw_graphs(self, screen, stocklist:list, player, play_pause, Mousebuttons, menudrawn:bool, stockbook):
+    def draw_graphs(self, screen, stocklist:list, player, play_pause, Mousebuttons, menudrawn:bool, stockbook,currentime):
         self.draw_ui(screen,Mousebuttons,stocklist)
         
         for i in range(self.graph_config[self.current_config][1]):
@@ -129,17 +121,20 @@ class StockGraphManager:
                 stockname = self.picked_stocks[(i*self.graph_config[self.current_config][0])+ii]
 
                 stock = [stock for stock in stocklist if stock.name == stockname][0]
-                if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
+                # if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
+                #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
+                if not menudrawn:
+                    stock.draw(screen,player,startpos,endpos,stocklist)
                     
-                    stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
-                    if self.current_config != 'nona' and not menudrawn:
-                        self.changestockbutton(screen,startpos,endpos,Mousebuttons,stockname,stocklist)
+                if self.current_config != 'nona' and not menudrawn:
+                    self.changestockbutton(screen,startpos,endpos,Mousebuttons,stockname,stocklist)
                 # stock.buy_sell(player,screen,Mousebuttons)
                 
 
-        for stock in stocklist:
-            if not [obj.name for obj in stocklist][stockbook.selectedstock] == stock.name or not stockbook.menudrawn:
-                if stock.name not in self.picked_stocks:
-                    stock.update(screen,play_pause,player,startpos,endpos,drawn=False)
+        # for stock in stocklist:
+        #     if not [obj.name for obj in stocklist][stockbook.selectedstock] == stock.name or not stockbook.menudrawn:
+        #         if stock.name not in self.picked_stocks:
+        #             stock.update(screen,play_pause,player,startpos,endpos,drawn=False)
 
-        player.update(screen,play_pause,player,(1920,0),(1600,400),stocklist=stocklist)
+        # player.update(screen,play_pause,player,(1920,0),(1600,400),stocklist=stocklist)
+        # player.draw(screen,player,(1920,0),(1600,400),stocklist,currentime)

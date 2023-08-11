@@ -65,12 +65,22 @@ class Stockbook:
         for i,stock in enumerate(stocklist):
             if pygame.Rect.collidepoint(pygame.Rect(215+(i*8),120+(i*65),175,35),mousex,mousey) and Mousebuttons == 1:
                 self.selectedstock = i
-            if stock.recent_movementvar[2] == (180,180,180):
-                color = (0,0,150)  if self.selectedstock == i else (80,80,80) 
+            if len(stock.pricepoints) > (numrange:=stock.graphrangeoptions[stock.graphrange][1]):# 
+                if stock.pricepoints[-1][0] > stock.pricepoints[-numrange][0]:
+                    color = (0,150,0) if self.selectedstock == i else (0,80,0)
+                else:
+                    color = (150,0,0) if self.selectedstock == i else (80,0,0)
             else:
-                color = stock.recent_movementvar[2]
+                if stock.pricepoints[-1][0] > stock.pricepoints[0][0]:
+                    color = (0,150,0) if self.selectedstock == i else (0,80,0)
+                else:
+                    color = (150,0,0) if self.selectedstock == i else (80,0,0)
+            # if stock.recent_movementvar[2] == (180,180,180): 
+            #     color = (0,0,150)  if self.selectedstock == i else (80,80,80) 
+            # else:
+            #     color = stock.recent_movementvar[2]
             gfxdraw.filled_polygon(screen,((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),color)
-            screen.blit(fontlist[36].render(f'{stock.name} ${round(stock.pricepoints[-1][1],2)}',(255,255,255))[0],(225+(i*8),125+(i*65)))
+            screen.blit(fontlist[36].render(f'{stock.name} ${round(stock.pricepoints[-1][0],2)}',(255,255,255))[0],(225+(i*8),125+(i*65)))
             if self.selectedstock == i:
                 pygame.draw.polygon(screen, (0,0,0), ((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),5)
                 self.selected_stock(screen,stocklist,play_pause,player,Mousebuttons)
@@ -85,7 +95,8 @@ class Stockbook:
         screen.blit(fontlist[90].render(f'{stocklist[self.selectedstock].name}',(255,255,255))[0],(300,710))
         screen.blit(self.renderedstocknames[stocklist[self.selectedstock].name],(300,710))
 
-        stocklist[self.selectedstock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
+        # stocklist[self.selectedstock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
+        stocklist[self.selectedstock].draw(screen,player,(1100,130),(500,680),stocklist)
         for i,line in enumerate(self.stocktext[stocklist[self.selectedstock].name]):
             x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))
@@ -122,7 +133,7 @@ class Stockbook:
                     if i == 0: self.quantity += 2
                     elif i == 1: self.quantity += 5
                     elif i == 2: 
-                        if self.buying:self.quantity = int(player.cash/stocklist[self.selectedstock].pricepoints[-1][1])
+                        if self.buying:self.quantity = int(player.cash/stocklist[self.selectedstock].pricepoints[-1][0])
                         else: self.quantity = [stock[0] for stock in player.stocks].count(stocklist[self.selectedstock].name)
         if not self.buying:# if selling
             
@@ -152,8 +163,8 @@ class Stockbook:
         # gfxdraw.filled_polygon(screen,((1125,260),(1110,310),(1450,310),(1465,260)),(30,30,30))#polygon for the buy and sell button
         # # add text inside the polygon above for the total cost
         # pygame.draw.polygon(screen, (0,0,0), ((1125,260),(1110,310),(1450,310),(1465,260)),5)#outline for the buy and sell button
-        # screen.blit(fontlist[45].render(f'Total : ${round(self.quantity*stocklist[self.selectedstock].pricepoints[-1][1],2)}',(255,255,255))[0],(1130,270))
-        text_surface, _ = fontlist[45].render(f'Total : ${round(self.quantity*stocklist[self.selectedstock].pricepoints[-1][1],2)}', (255, 255, 255))
+        # screen.blit(fontlist[45].render(f'Total : ${round(self.quantity*stocklist[self.selectedstock].pricepoints[-1][0],2)}',(255,255,255))[0],(1130,270))
+        text_surface, _ = fontlist[45].render(f'Total : ${round(self.quantity*stocklist[self.selectedstock].pricepoints[-1][0],2)}', (255, 255, 255))
         text_width = text_surface.get_width()
         #the x coords on the left of the polygon need to be switched
         gfxdraw.filled_polygon(screen, ((1125, 260), (1125 + text_width + 35, 260), (1125 + text_width + 20, 310), (1110, 310)), (30, 30, 30))
@@ -168,20 +179,20 @@ class Stockbook:
         
         confirmcolor = (30,30,30)
         if pygame.Rect.collidepoint(pygame.Rect(1125,320,340,80),mousex,mousey) and self.quantity > 0:
-            if self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][1] <= player.cash:
+            if self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][0] <= player.cash:
                  confirmcolor = (0,150,0) 
             elif not self.buying and self.quantity <= [stock[0] for stock in player.stocks].count(stocklist[self.selectedstock].name):
                 confirmcolor = (0,150,0)
             else:
                 confirmcolor = (150,0,0)
             if Mousebuttons == 1:
-                if self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][1] <= player.cash:
-                    player.buy(stocklist[self.selectedstock].name,stocklist[self.selectedstock].pricepoints[-1][1],self.quantity)
-                elif self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][1] > player.cash:
-                    self.quantity = int(player.cash/stocklist[self.selectedstock].pricepoints[-1][1])
+                if self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][0] <= player.cash:
+                    player.buy(stocklist[self.selectedstock].name,stocklist[self.selectedstock].pricepoints[-1][0],self.quantity)
+                elif self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][0] > player.cash:
+                    self.quantity = int(player.cash/stocklist[self.selectedstock].pricepoints[-1][0])
                     player.messagedict[f"Not Enough Funds"] = (time.time(),(200,0,0))
                 else:
-                    player.sell(stocklist[self.selectedstock].name,stocklist[self.selectedstock].pricepoints[-1][1],self.quantity)
+                    player.sell(stocklist[self.selectedstock].name,stocklist[self.selectedstock].pricepoints[-1][0],self.quantity)
                     if self.quantity > (num:=[stock[0] for stock in player.stocks].count(stocklist[self.selectedstock].name)):
                         self.quantity = num
 
@@ -193,13 +204,13 @@ class Stockbook:
         # if pygame.Rect.collidepoint(pygame.Rect(1125,320,340,80),mousex,mousey):
         #     if Mousebuttons == 1:
                 
-        #         if self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][1] <= player.cash:
-        #             player.buy(stocklist[self.selectedstock].name,stocklist[self.selectedstock].pricepoints[-1][1],self.quantity)
-        #         elif self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][1] > player.cash:
-        #             self.quantity = int(player.cash/stocklist[self.selectedstock].pricepoints[-1][1])
+        #         if self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][0] <= player.cash:
+        #             player.buy(stocklist[self.selectedstock].name,stocklist[self.selectedstock].pricepoints[-1][0],self.quantity)
+        #         elif self.buying and self.quantity*stocklist[self.selectedstock].pricepoints[-1][0] > player.cash:
+        #             self.quantity = int(player.cash/stocklist[self.selectedstock].pricepoints[-1][0])
         #             player.messagedict[f"Not Enough Funds"] = (time.time(),(200,0,0))
         #         else:
-        #             player.sell(stocklist[self.selectedstock].name,stocklist[self.selectedstock].pricepoints[-1][1],self.quantity)
+        #             player.sell(stocklist[self.selectedstock].name,stocklist[self.selectedstock].pricepoints[-1][0],self.quantity)
         #             if self.quantity > (num:=[stock[0] for stock in player.stocks].count(stocklist[self.selectedstock].name)):
         #                 self.quantity = num
         

@@ -1,19 +1,19 @@
 import pygame
 from random import randint
 import time
-from Classes.Stockprice import Stock
+from Classes.Stock import Stock
 from Defs import *
 from pygame import gfxdraw
 
 
 class Player(Stock):
-    def __init__(self,window_offset,stocknames) -> None:
+    def __init__(self,window_offset,stocknames,currenttime) -> None:
         name = 'Net Worth'
-        super().__init__(name,(2500,2500),0,Player,window_offset,stocknames)
+        super().__init__(name,(2500,2500),0,Player,window_offset,stocknames,currenttime)
         self.name = name
         self.cash = 2500
         self.stocks = []
-        self.pricepoints = [[self.startingpos[0]-5,self.cash]]
+        self.pricepoints = [[self.cash,currenttime]]
         self.stockvalues = []
         self.messagedict = {}
         # self.recent_movementvar = (None,None,(180,180,180))
@@ -69,9 +69,9 @@ class Player(Stock):
         for key in keys_to_delete:
             del self.messagedict[key]
 
-    def graph(self,stocklist:list):
+    def graph(self,stocklist:list,currenttime):
         # print(self.cash,'cash')
-        # print(self.pricepoints)
+        print(self.pricepoints)
         self.stockvalues.clear()
         if self.stocks:#if there are stocks
             bankruptamounts = []#list containing the amount of money lost from each bankrupt stocks - all in 1 message so it doesn't spam the message box
@@ -82,14 +82,14 @@ class Player(Stock):
                     bankruptamounts += [stock[1]]#add the amount of money lost from the bankrupt stock to the list
 
                     self.stocks.remove(stock)
-                self.stockvalues.append([stockobj for stockobj in stocklist if stockobj.name == stock[0]][0].pricepoints[-1][1])
+                self.stockvalues.append([stockobj for stockobj in stocklist if stockobj.name == stock[0]][0].pricepoints[-1][0])
             if bankruptamounts:
                 self.messagedict[bankruptamounts[0]] = (time.time(),(200,0,0))#add the bankrupt message to the message dict
                 bankruptamounts.remove(bankruptamounts[0])#remove the bankrupt message from bankruptamounts
                 self.messagedict[f'Lost {round(sum(bankruptamounts),2)} from bankrupt stocks'] = (time.time(),(200,0,0))#add the total amount of money lost from bankrupt stocks to the message dict
             #Make for multiple stocks not just one---------------------------------------------------------------------  probably need a dict instead of banruptamounts list
             
-            self.pricepoints.append([self.startingpos[0]-5,sum(self.stockvalues)+self.cash])
+            self.pricepoints.append([self.cash,currenttime])
         else:
-            self.pricepoints.append([self.startingpos[0]-5,self.cash])
+            self.pricepoints.append([self.cash,currenttime])
         
