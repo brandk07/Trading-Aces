@@ -1,0 +1,12 @@
+Learn how to use zip
+Learn how to use Pandas
+
+----------------------------------------
+don't round
+t = 1.23345
+print(f"Finished in {t:.2f}s")
+----------------------------------------
+Always convert to numpy right away and continue to use numpy functions like np.min and np.max
+----------------------------------------
+Use super(f).function() more
+ 
