@@ -65,7 +65,7 @@ class Stockbook:
         for i,stock in enumerate(stocklist):
             if pygame.Rect.collidepoint(pygame.Rect(215+(i*8),120+(i*65),175,35),mousex,mousey) and Mousebuttons == 1:
                 self.selectedstock = i
-            if len(stock.pricepoints) > (numrange:=stock.graphrangeoptions[stock.graphrange][1]):# 
+            if len(stock.pricepoints) > (numrange:=stock.graphrangeoptions[stock.graphrange]):# 
                 if stock.pricepoints[-1][0] > stock.pricepoints[-numrange][0]:
                     color = (0,150,0) if self.selectedstock == i else (0,80,0)
                 else:

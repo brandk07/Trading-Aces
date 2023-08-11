@@ -67,7 +67,6 @@ while True:
     stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons,stockbook.menudrawn,stockbook,gametime)
     end_time = timeit.default_timer()
     # print(f"Execution times stock graph: {end_time - start_time} seconds")
-
     if ui_controls.logic(Tick):
         gametime = Gametime(gametime,ui_controls.playing,screen,clock.get_fps())
         for stock in stocklist:

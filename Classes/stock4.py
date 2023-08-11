@@ -21,14 +21,14 @@ class Stock():
         self.stocknames = stocknames
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
-        self.graphrangeoptions = {'recent':500,'hour':10800,'day':70200,'week':351000,'month':1_404_000,'year':16_884_000}
+        self.graphrangeoptions = {'recent':466,'hour':10800,'day':70200,'week':351000,'month':1_404_000,'year':16_884_000}
         # self.graphrangeoptions = (('recent',466),('hour',10800),('day',70200),('week',351000),('month',1_404_000),('year',16_884_000),('all',None))
         self.graphrange = 'hour' #
         self.graphrangelists = {key:[] for key in self.graphrangeoptions.keys()}#the lists for each graph range
         
         #yvaluefinder is a function that takes a value and returns the y value of the point - look in assets for pic of equation
-        # x,graphheight,medianpoint,graphsize,startingpos
-        self.yvaluefinder = lambda vars: int(vars[1]+(((vars[2]-vars[0])/vars[3])*vars[1])+vars[4][1])
+        # x,graphheight,medianpoint,graphsize
+        self.yvaluefinder = lambda vars: int(vars[1]+(((vars[2]-vars[0])/vars[3])*vars[1])+self.startingpos[1])
         #variables for the stock price
         self.volatility = volatility
         self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
@@ -47,13 +47,11 @@ class Stock():
         #     medianpoint = statistics.median([point[0] for point in self.pricepoints[-numrange:]])
         # else:
         #     medianpoint = statistics.median([point[0] for point in self.pricepoints])
-        currentrange = -len(self.graphrangelists[self.graphrange])
-        medianpoint = np.median([point[0] for point in self.pricepoints[currentrange:]])
+        medianpoint = np.median([point[0] for point in self.pricepoints[-len(self.graphrangelists[self.graphrange]):]])
         #below we are checking if the max or min is further away from the median point, and then returning the distance from the median point
         # print(min(self.pricepoints, key=lambda x: x[0]),(self.pricepoints))
-
-        minvalue = abs(np.min(self.pricepoints[currentrange:, 0])-medianpoint)
-        maxvalue = abs(np.max(self.pricepoints[currentrange:, 0])-medianpoint)
+        minvalue = abs(np.min(self.pricepoints[:, 0])-medianpoint)
+        maxvalue = abs(np.max(self.pricepoints[:, 0])-medianpoint)
         # minvalue = abs(np.min(self.pricepoints, key=lambda x: x[0])[0]-medianpoint)
         # maxvalue = abs(np.max(self.pricepoints, key=lambda x: x[0])[0]-medianpoint)
         
@@ -131,6 +129,16 @@ class Stock():
             self.update_range_graphs()#updates the range graphs
 
 
+            # newprice = self.addpoint(self.pricepoints[-1][0])
+            
+            # self.pricepoints = np.vstack([self.pricepoints, newpoint])
+            # self.stock_split(player)
+            # self.update_range_graphs()
+            # newpoint = np.array([newprice, gametime])
+            # self.pricepoints = np.vstack([self.pricepoints, newpoint])
+            # self.stock_split(player)
+            # self.update_range_graphs()
+
     def rangecontrols(self,screen:pygame.Surface,player:object,stocklist):
         #draw 4 25/25 filled polygons
         for i in range(4):
@@ -139,10 +147,10 @@ class Stock():
     def update_range_graphs(self):
         graphxsize = self.startingpos[0]-self.endingpos[0]
         for key,value in self.graphrangeoptions.items():
-            # print(value,'is the value')
-            # print(graphxsize,'is the graphxsize')
+            print(value,'is the value')
+            print(graphxsize,'is the graphxsize')
             condensefactor = value/graphxsize
-            # print(condensefactor,'is the condensefactor')
+            print(condensefactor,'is the condensefactor')
 
             if int(len(self.pricepoints)/condensefactor) > len(self.graphrangelists[key]):#if the amount of points that should be in the list is greater than the amount of points in the list
                 self.graphrangelists[key].append(self.pricepoints[-1][0])#add the last point to the list
@@ -152,8 +160,8 @@ class Stock():
     def draw(self,screen:pygame.Surface,player:object,startingpos,endingpos,stocklist):
         
         if startingpos != self.startingpos or endingpos != self.endingpos:#if the starting or ending positions have changed
-            # xdif = self.startingpos[0]-startingpos[0]
-            # self.pricepoints = np.array([[point[0]-xdif,point[1]] for point in self.pricepoints[-len(self.graphrangelists[self.graphrange]):]],dtype=object)#move the points to the left
+            xdif = self.startingpos[0]-startingpos[0]
+            self.pricepoints = np.array([[point[0]-xdif,point[1]] for point in self.pricepoints[-len(self.graphrangelists[self.graphrange]):]],dtype=object)#move the points to the left
             #setting the starting and ending positions - where the graphs are located is constantly changing
             self.startingpos = (startingpos[0] - self.winset[0], startingpos[1] - self.winset[1])
             self.endingpos = (endingpos[0] - self.winset[0], endingpos[1] - self.winset[1])
@@ -173,7 +181,7 @@ class Stock():
         # print(f"Execution times 1.4: {end_time - start_time} seconds")
         start_time = timeit.default_timer()
         graphsize,medianpoint = self.resize_graph()# gets the size of the graph
-        # if graphsize <= 0: graphsize = 1#graphsize is the distance from the median point to the max or min point
+        if graphsize <= 0: graphsize = 1#graphsize is the distance from the median point to the max or min point
         end_time = timeit.default_timer()
         # print(f"Execution times 1.5: {end_time - start_time} seconds")
         start_time = timeit.default_timer()
@@ -189,13 +197,19 @@ class Stock():
         start_time = timeit.default_timer()
         #first need to find the x values that we want to graph (the points that are in the range of the graph and then reduce it to fit on the graph)
         pointlen = len(self.pricepoints)
-    
-        
-        graphingpoints = self.graphrangelists[self.graphrange]
-        graphingpoints = list(map(self.yvaluefinder,[[point,graphheight,medianpoint,graphsize,startingpos] for point in graphingpoints]))
+        if pointlen > graphwidth:#if we need to reduce the amount of points
+            graphingpoints = self.graphrangelists[self.graphrange]
+            graphingpoints = list(map(self.yvaluefinder,[[point,graphheight,medianpoint,graphsize] for point in graphingpoints]))
+            spacing = 1
 
+        else:#if we don't have enough points to fil the graph
+            #figure out how much space needs to be between each point
 
-        
+            spacing = (graphwidth)/pointlen
+            # graphingpoints = np.arange(0, pointlen, 1, dtype=object)
+            graphingpoints = self.graphrangelists[self.graphrange]
+            graphingpoints = list(map(self.yvaluefinder,[[point,graphheight,medianpoint,graphsize] for point in graphingpoints]))
+            # print('else',len(graphingpoints))
         end_time = timeit.default_timer()
         # print(f"Execution times 3: {end_time - start_time} seconds")
         
@@ -222,14 +236,15 @@ class Stock():
 
                 # nextvalue = int(graphingpoints[i+1])
                 # value = int(value)
-                xpos = self.endingpos[0]
-                # xpos = self.startingpos[0]
+                # xpos = self.endingpos[0]
+                myinterated+=1
+                xpos = self.startingpos[0]
                 # soemthign to do with y new_y_values[value] running out of indexing
                 # gfxdraw.line(screen,xpos+int(i*spacing),(new_y_values[value]),xpos+int((i+1)*spacing),new_y_values[nextvalue],(255,255,255))
 
-                gfxdraw.line(screen,xpos+int(i),(value),xpos+int((i+1)),nextvalue,(255,255,255))
+                gfxdraw.line(screen,xpos-int(i*spacing),(value),xpos-int((i+1)*spacing),nextvalue,(255,255,255))
 
-
+        # print(myinterated)
         
 
         
