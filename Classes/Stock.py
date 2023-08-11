@@ -49,9 +49,11 @@ class Stock():
         #     medianpoint = statistics.median([point[0] for point in self.pricepoints])
         medianpoint = np.median([point[0] for point in self.pricepoints[-len(self.graphrangelists[self.graphrange]):]])
         #below we are checking if the max or min is further away from the median point, and then returning the distance from the median point
-        print(min(self.pricepoints, key=lambda x: x[0]),(self.pricepoints))
-        minvalue = abs(np.min(self.pricepoints, key=lambda x: x[0])[0]-medianpoint)
-        maxvalue = abs(np.max(self.pricepoints, key=lambda x: x[0])[0]-medianpoint)
+        # print(min(self.pricepoints, key=lambda x: x[0]),(self.pricepoints))
+        minvalue = abs(np.min(self.pricepoints[:, 0])-medianpoint)
+        maxvalue = abs(np.max(self.pricepoints[:, 0])-medianpoint)
+        # minvalue = abs(np.min(self.pricepoints, key=lambda x: x[0])[0]-medianpoint)
+        # maxvalue = abs(np.max(self.pricepoints, key=lambda x: x[0])[0]-medianpoint)
         
         if minvalue > maxvalue:
             return (minvalue+30),medianpoint#can add a multiplier to make the graph more towards the middle (*1.5)
@@ -117,11 +119,25 @@ class Stock():
         
         if type(self) == Stock:#making sure that it is a Stock object and that update is true
             newprice = self.addpoint(self.pricepoints[-1][0])
+            newpoint = np.array([newprice, gametime],dtype=object)
             # self.pricepoints.append([newprice,gametime])#if update is true then add a new point to the graph
-            self.pricepoints = np.append(self.pricepoints,[newprice,gametime])#if update is true then add a new point to the graph
+            self.pricepoints = np.vstack([self.pricepoints, newpoint])
+            # self.pricepoints = np.append(self.pricepoints,np.array([newprice,np.array(gametime)]),dtype=object)#if update is true then add a new point to the graph
+            # self.pricepoints = np.vstack([self.pricepoints, [newprice, gametime]]) # vfertically stack the new price and gametime values as a new row in the self.pricepoints array
             # print(self.pricepoints)
             self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             self.update_range_graphs()#updates the range graphs
+
+
+            # newprice = self.addpoint(self.pricepoints[-1][0])
+            
+            # self.pricepoints = np.vstack([self.pricepoints, newpoint])
+            # self.stock_split(player)
+            # self.update_range_graphs()
+            # newpoint = np.array([newprice, gametime])
+            # self.pricepoints = np.vstack([self.pricepoints, newpoint])
+            # self.stock_split(player)
+            # self.update_range_graphs()
 
     def rangecontrols(self,screen:pygame.Surface,player:object,stocklist):
         #draw 4 25/25 filled polygons
@@ -155,16 +171,16 @@ class Stock():
         if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
             gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(60,60,60))#draws the background of the graph
         end_time = timeit.default_timer()
-        print(f"Execution times 1: {end_time - start_time} seconds")
+        # print(f"Execution times 1: {end_time - start_time} seconds")
         start_time = timeit.default_timer()
         self.rangecontrols(screen,player,stocklist)#draws the range controls
         end_time = timeit.default_timer()
-        print(f"Execution times 1.4: {end_time - start_time} seconds")
+        # print(f"Execution times 1.4: {end_time - start_time} seconds")
         start_time = timeit.default_timer()
         graphsize,medianpoint = self.resize_graph()# gets the size of the graph
         if graphsize <= 0: graphsize = 1#graphsize is the distance from the median point to the max or min point
         end_time = timeit.default_timer()
-        print(f"Execution times 1.5: {end_time - start_time} seconds")
+        # print(f"Execution times 1.5: {end_time - start_time} seconds")
         start_time = timeit.default_timer()
         # if len(self.pricepoints) > (numrange:=self.graphrangeoptions[self.graphrange]):#if the amount of points we already have is greater than the amount needed
 
@@ -174,7 +190,7 @@ class Stock():
 
         
         end_time = timeit.default_timer()
-        print(f"Execution times 2: {end_time - start_time} seconds")
+        # print(f"Execution times 2: {end_time - start_time} seconds")
         start_time = timeit.default_timer()
         #first need to find the x values that we want to graph (the points that are in the range of the graph and then reduce it to fit on the graph)
         pointlen = len(self.pricepoints)
@@ -190,7 +206,7 @@ class Stock():
             graphingpoints = np.arange(0, pointlen, 1, dtype=object)
             # print('else',len(graphingpoints))
         end_time = timeit.default_timer()
-        print(f"Execution times 3: {end_time - start_time} seconds")
+        # print(f"Execution times 3: {end_time - start_time} seconds")
         
                 
         
@@ -206,7 +222,7 @@ class Stock():
         myinterated = 0
         for i,value in enumerate(graphingpoints):
             if i >= len(graphingpoints)-1:
-                print(i)
+                # print(i)
                 pass#if last one in list or i is too great then don't draw line
             else:
 
@@ -223,7 +239,7 @@ class Stock():
 
                 gfxdraw.line(screen,xpos-int(i*spacing),(value),xpos-int((i+1)*spacing),nextvalue,(255,255,255))
 
-        print(myinterated)
+        # print(myinterated)
         
 
         

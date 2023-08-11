@@ -9,17 +9,36 @@
 
 # print(count_words("Kyronix Solutions Inc. (ticker symbol: KSTON) is a dynamic company specializing in urban mobility solutions. With a visionary team of engineers and transportation experts, Kyronix is at the forefront of revolutionizing urban transportation through innovative technologies like electric vehicles, smart traffic management systems, and autonomous driving solutions. Their commitment to sustainable and efficient mobility drives progress for cities worldwide. "))
 
-import timeit
-import statistics
+# import timeit
+# import statistics
+# import numpy as np
+
+# mylist = [i for i in range(1_000_000)]
+# myarray = np.array([i for i in range(1_000_000)])
+# myarray2 = np.array([i for i in range(5)])
+# myarray2 = np.append(myarray2,2)
+# print(myarray2)
+
+# import numpy as np
 import numpy as np
 
-mylist = [i for i in range(1_000_000)]
-myarray = np.array([i for i in range(1_000_000)])
-myarray2 = np.array([i for i in range(5)])
-myarray2 = np.append(myarray2,2)
-print(myarray2)
+myarray = np.array([1, 2, 3, 4, 5, 6, 7, [8, 9, 10]], dtype=object)
+# initialize the array with the correct data type for the second column
+pricepoints = np.array([[3, np.array([1, 2, 3])]], dtype=object)
 
-import numpy as np
+# add a new row to the array
+newprice = 1
+gametime = np.array([4, 5, 6])
+value = np.array([newprice, gametime], dtype=object)
+# pricepoints = np.append([myarray, (np.array([newprice, gametime], dtype=object))])
+# pricepoints = np.append(pricepoints, np.array([[1, [4, 5, 6]]], dtype=object))
+# pricepoints = np.append(pricepoints, np.array([[newprice, gametime]], dtype=object))
+pricepoints = np.append(pricepoints, [np.array([newprice, gametime], dtype=object)], axis=0)
+# pricepoints = np.vstack(pricepoints, (np.array([[1, [4, 5, 6]]], dtype=object)))
+# pricepoints = np.vstack(pricepoints, (np.array([[1, [4, 5, 6]]], dtype=object)))
+
+
+print(pricepoints)  # output: [[3 [1, 2, 3]], [1, [4, v5, 6]]]
 
 # medianpoint = np.median(mylist)
 # newlist = mylist[-50000:]
