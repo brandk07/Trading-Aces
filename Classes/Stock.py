@@ -28,7 +28,12 @@ class Stock():
         
         #yvaluefinder is a function that takes a value and returns the y value of the point - look in assets for pic of equation
         # x,graphheight,medianpoint,graphsize,startingpos
-        self.yvaluefinder = lambda vars: int(vars[1]+(((vars[2]-vars[0])/vars[3])*vars[1])+vars[4][1])
+        # self.yvaluefinder = lambda vars: int(vars[1]+(((vars[2]-vars[0])/vars[3])*vars[1])+vars[4][1])
+        #  vars = [point,minpoint,maxpoint,graphheight]
+        # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int(vars[0]*((vars[1]-vars[2])/vars[3]))
+        self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int((point-minpoint)*graphheight/(maxpoint-minpoint))
+        
+        # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int(point*((maxpoint-minpoint)/(graphheight)))
         #variables for the stock price
         self.volatility = volatility
         self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
@@ -183,17 +188,23 @@ class Stock():
         graphheight = (self.endingpos[1]-self.startingpos[1])/2# graphheight is the height of the graph
         graphwidth = (self.startingpos[0]-self.endingpos[0])
 
-        
-        end_time = timeit.default_timer()
-        # print(f"Execution times 2: {end_time - start_time} seconds")
-        start_time = timeit.default_timer()
         #first need to find the x values that we want to graph (the points that are in the range of the graph and then reduce it to fit on the graph)
         pointlen = len(self.pricepoints)
     
         
         graphingpoints = self.graphrangelists[self.graphrange]
-        graphingpoints = list(map(self.yvaluefinder,[[point,graphheight,medianpoint,graphsize,startingpos] for point in graphingpoints]))
-
+        if pointlen > 1:
+        # finding the min and max values of the graphingpoints
+            currentrange = -len(self.graphrangelists[self.graphrange])
+            minvalue = int(np.min(self.pricepoints[currentrange:, 0]))
+            maxvalue = int(np.max(self.pricepoints[currentrange:, 0]))
+            if minvalue != maxvalue:
+                # [point,minpoint,maxpoint,graphheight]
+                print(minvalue,maxvalue)
+                print(graphheight/(maxvalue-minvalue),'is the maxvalue-minvalue/graphheight')
+                print(int((maxvalue-minvalue)*graphheight/(maxvalue-minvalue)))
+                graphingpoints = list(int(self.yvaluefinder(point,minvalue,maxvalue,graphheight)) for point in graphingpoints)#not gonna use map cause it dumb
+        # graphingpoints = list(map(self.yvaluefinder,[[point,graphheight,medianpoint,graphsize,startingpos] for point in graphingpoints]))
 
         
         end_time = timeit.default_timer()
