@@ -22,7 +22,7 @@ class Stock():
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
         self.graphrangeoptions = {'recent':500,'hour':10800,'day':70200,'week':351000,'month':1_404_000,'year':16_884_000}
-        # self.graphrangeoptions = (('recent',466),('hour',10800),('day',70200),('week',351000),('month',1_404_000),('year',16_884_000),('all',None))
+        # self.gra phrangeoptions = (('recent',466),('hour',10800),('day',70200),('week',351000),('month',1_404_000),('year',16_884_000),('all',None))
         self.graphrange = 'hour' #
         self.graphrangelists = {key:[] for key in self.graphrangeoptions.keys()}#the lists for each graph range
         
@@ -31,10 +31,14 @@ class Stock():
         # self.yvaluefinder = lambda vars: int(vars[1]+(((vars[2]-vars[0])/vars[3])*vars[1])+vars[4][1])
         #  vars = [point,minpoint,maxpoint,graphheight]
         # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int(vars[0]*((vars[1]-vars[2])/vars[3]))
-        self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int((point-minpoint)*graphheight/(maxpoint-minpoint))
+        # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int((point-minpoint)*graphheight/(maxpoint-minpoint))
+        # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int((graphheight)*point/(maxpoint-minpoint))
+        # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight,startingpos: int((point-minpoint)*((graphheight/(maxpoint-minpoint)))+startingpos[1])
+        # self.yvaluefinder = lambda point,minpoint,newgraph,startingpos: int(((point-minpoint)*newgraph)+startingpos[1])
+        self.yvaluefinder = lambda point,minpoint,newgraph,graphheight,startingpos: int(((point-minpoint)*newgraph)+startingpos[1]+graphheight-30)
         
         # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int(point*((maxpoint-minpoint)/(graphheight)))
-        #variables for the stock price
+        #variables for the stock price+
         self.volatility = volatility
         self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
         self.daybonus = [randint(-5,5)/1000,randint(59400,81000)]# [%added to each movement, time low as 5.5 hours high as 7.5 (remember 6.5 hours is 1 day)]
@@ -196,14 +200,29 @@ class Stock():
         if pointlen > 1:
         # finding the min and max values of the graphingpoints
             currentrange = -len(self.graphrangelists[self.graphrange])
-            minvalue = int(np.min(self.pricepoints[currentrange:, 0]))
-            maxvalue = int(np.max(self.pricepoints[currentrange:, 0]))
-            if minvalue != maxvalue:
-                # [point,minpoint,maxpoint,graphheight]
-                print(minvalue,maxvalue)
-                print(graphheight/(maxvalue-minvalue),'is the maxvalue-minvalue/graphheight')
-                print(int((maxvalue-minvalue)*graphheight/(maxvalue-minvalue)))
-                graphingpoints = list(int(self.yvaluefinder(point,minvalue,maxvalue,graphheight)) for point in graphingpoints)#not gonna use map cause it dumb
+            minpoint = (np.min(self.pricepoints[currentrange:, 0]))
+            maxpoint = (np.max(self.pricepoints[currentrange:, 0]))
+            if minpoint != maxpoint:#prevents divide by zero error
+                # [point,minpoint,maxpoint,graphheight,startingpos]
+                # print(minpoint,maxpoint,graphheight,'vars')
+                if int(num:=graphheight/(maxpoint-minpoint)) > graphheight:
+                    newgraph = graphheight/2
+                    # print(num,'is bad num',int(num) > graphheight,'graphheight',graphheight)
+                else:
+                    # print(num,'is num')
+                    newgraph = num
+                # point,minpoint,newgraph,startingpos
+                # print(self.yvaluefinder(1550,1500,4.66,(400,400)),'teset')
+
+                # for point in graphingpoints:
+                    # print('/'*20)
+                    # print(point,'point')
+                    # print(graphheight,'graphheight')
+                    # print(self.startingpos[1],'startingpos')
+                    # print(minpoint,'minpoint',maxpoint,'maxpoint')
+                    # print(self.yvaluefinder(point,minpoint,newgraph,graphheight,self.startingpos),'yvaluefinder')
+                graphingpoints = list(int(self.yvaluefinder(point,minpoint,newgraph,graphheight,self.startingpos)) for point in graphingpoints)#not gonna use map cause it dumb
+                # print(graphingpoints)        
         # graphingpoints = list(map(self.yvaluefinder,[[point,graphheight,medianpoint,graphsize,startingpos] for point in graphingpoints]))
 
         
@@ -237,8 +256,7 @@ class Stock():
                 # xpos = self.startingpos[0]
                 # soemthign to do with y new_y_values[value] running out of indexing
                 # gfxdraw.line(screen,xpos+int(i*spacing),(new_y_values[value]),xpos+int((i+1)*spacing),new_y_values[nextvalue],(255,255,255))
-
-                gfxdraw.line(screen,xpos+int(i),(value),xpos+int((i+1)),nextvalue,(255,255,255))
+                gfxdraw.line(screen,xpos+int(i),int(value),xpos+int((i+1)),int(nextvalue),(255,255,255))
 
 
         
