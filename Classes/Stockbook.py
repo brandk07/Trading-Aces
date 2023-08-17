@@ -89,14 +89,14 @@ class Stockbook:
             #     print(pygame.mouse.get_pos())
         
     
-    def draw_info(self,screen:pygame.Surface,stocklist:list,play_pause,player):
+    def draw_info(self,screen:pygame.Surface,stocklist:list,play_pause,player,Mousebuttons):
         gfxdraw.filled_polygon(screen,((290,700),(320,955),(1570,955),(1535,700)),(60,60,60))
 
         screen.blit(fontlist[90].render(f'{stocklist[self.selectedstock].name}',(255,255,255))[0],(300,710))
         screen.blit(self.renderedstocknames[stocklist[self.selectedstock].name],(300,710))
 
         # stocklist[self.selectedstock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
-        stocklist[self.selectedstock].draw(screen,player,(1100,130),(500,680),stocklist)
+        stocklist[self.selectedstock].draw(screen,player,(1100,130),(500,680),stocklist,Mousebuttons)
         for i,line in enumerate(self.stocktext[stocklist[self.selectedstock].name]):
             x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))
@@ -218,7 +218,7 @@ class Stockbook:
 
     def selected_stock(self,screen,stocklist:list,play_pause,player,Mousebuttons:int):
         """This function is called for the selected stock in the stockbook menu"""
-        self.draw_info(screen,stocklist,play_pause,player)
+        self.draw_info(screen,stocklist,play_pause,player,Mousebuttons)
         self.quantity_controls(screen,Mousebuttons,player,stocklist)
         self.buysell_controls(screen,Mousebuttons,player,stocklist)
     

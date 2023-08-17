@@ -64,14 +64,18 @@
 # print("Elapsed time:", end_time - start_time, "seconds")
 
 
-import numpy as np
+# import numpy as np
 
-my_array = np.array([[1, 2, 3], [4, 5, 6]])
+# my_array = np.array([[1, 2, 3], [4, 5, 6]])
 
-# Sum the rows (along axis 0)
-row_sums = np.sum(my_array, axis=0)
+# # Sum the rows (along axis 0)
+# row_sums = np.sum(my_array, axis=0)
 
-# Sum the columns (along axis 1)
-column_sums = np.sum(my_array, axis=1)
-print(row_sums)
-print(column_sums)
+# # Sum the columns (along axis 1)
+# column_sums = np.sum(my_array, axis=1)
+# print(row_sums)
+# print(column_sums)
+from random import randint
+lst = [[[randint(5,10),[1,2]]] for _ in range(20)]
+
+print(lst)
