@@ -4,6 +4,7 @@ import time
 from Classes.Stock import Stock
 from Defs import *
 from pygame import gfxdraw
+import numpy as np
 
 
 class Player(Stock):
@@ -13,7 +14,7 @@ class Player(Stock):
         self.name = name
         self.cash = 2500
         self.stocks = []
-        self.pricepoints = [[self.cash,currenttime]]
+        self.pricepoints = np.array([[self.cash,currenttime]],dtype=object)
         self.stockvalues = []
         self.messagedict = {}
         # self.recent_movementvar = (None,None,(180,180,180))

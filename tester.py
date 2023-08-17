@@ -75,7 +75,92 @@
 # column_sums = np.sum(my_array, axis=1)
 # print(row_sums)
 # print(column_sums)
-from random import randint
-lst = [[[randint(5,10),[1,2]]] for _ in range(20)]
+# from random import randint
+# lst = [[[randint(5,10),[1,2]]] for _ in range(20)]
 
-print(lst)
+# print(lst)
+# create 9 files using these names in the directory r/Assests/Stockdata/--name--.txt ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
+directory = r"Assets\Stockdata"
+# I want to delete all the files in that directory now so I can create new ones that are .json files
+import json
+import numpy as np
+import timeit
+
+# data = [[100, [0,0,0,0,0,0,0]]]*10
+data = []
+stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth']
+stockdict = {name:np.array(data,dtype=object) for name in stocknames}
+
+start_time = timeit.default_timer()
+
+for name in ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth']:
+    file_path = f"{directory}/{name}.json"
+    print(f"{name}")
+    # Writing and loading from the same file
+    with open(file_path, "w+") as f:
+        # for d in data:
+        #     json.dump(d, f)
+        json.dump((stockdict[name].tolist()), f)
+
+
+elapsed_time = timeit.default_timer() - start_time
+print(f"Total time: {elapsed_time} seconds")
+
+
+# import numpy as np
+# import threading
+# import timeit
+# import os
+# import json
+
+# def write_data(name, data, directory):
+#     json.dump(data.tolist(), open(os.path.join(directory, f"{name}.json"), "w+"))
+#     print(f'Written {name}.json')
+
+# def write_data_parallel(data, stocknames, directory):
+#     start_time = timeit.default_timer()
+    
+#     threads = []
+#     for name in stocknames:
+#         start_time = timeit.default_timer()
+#         thread = threading.Thread(target=write_data, args=(name, data, directory))
+#         threads.append(thread)
+#         thread.start()
+#         elapsed_time = timeit.default_timer() - start_time
+#         print(f"{name} time: {elapsed_time} seconds")
+
+#     # Wait for all threads to complete
+#     for thread in threads:
+#         print(f"Waiting for {thread.name} to complete...")
+#         thread.join()
+    
+#     elapsed_time = timeit.default_timer() - start_time
+#     print(f"Total time: {elapsed_time} seconds")
+
+# if __name__ == "__main__":
+#     data = np.random.randint(0, 100, size=(100000, 2))
+#     stocknames = ['SNTOK', 'KSTON', 'STKCO', 'XKSTO', 'VIXEL', 'QWIRE', 'QUBEX', 'FLYBY', 'MAGLO', 'Net Worth']
+#     directory = "Assets/Stockdata"  # Relative path without leading slash
+    
+#     write_data_parallel(data, stocknames, directory)
+
+
+
+
+
+# import os
+# import dask.dataframe as dd
+
+# # List of stocknames
+# stocknames = ['SNTOK', 'KSTON', 'STKCO', 'XKSTO', 'VIXEL', 'QWIRE', 'QUBEX', 'FLYBY', 'MAGLO', 'Net Worth']
+# directory = os.path.join("Assets", "Stockdata")
+
+# # Create a list of file paths
+# file_paths = [os.path.join(directory, f"{name}.parquet") for name in stocknames]
+
+# # Read Parquet files into Dask DataFrames
+# dataframes = [dd.read_parquet(file_path) for file_path in file_paths]
+
+
+# # Now you have a list of Dask DataFrames, one for each stockname
+# # You can work with these DataFrames for further analysis

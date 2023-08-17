@@ -53,107 +53,64 @@ ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]))
 Mousebuttons = 0
 Tick = 0
 stocklist = [stockdict[name] for name in stocknames]
-
-while True:
-    mousex,mousey = pygame.mouse.get_pos()
-    screen.fill((20,20,20))
-    
-    if Tick < 6: Tick += 1#used for ui_controls.update
-    else: Tick = 1
-    # print(time.time())
-    # print(time.asctime())
-    
-    # start_time = timeit.default_timer()
-    stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons,stockbook.menudrawn,stockbook,gametime)
-    # end_time = timeit.default_timer()
-    # print(f"Execution times stock graph: {end_time - start_time} seconds")
-    if ui_controls.logic(Tick):
-        gametime = Gametime(gametime,ui_controls.playing,screen,clock.get_fps())
-        for stock in stocklist:
-            stock.update_price(player,gametime)
-    drawgametime(gametime,screen)
-    ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
-
-
-    stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player)
-
-    screen.blit(update_fps(clock),(1570,0))
-    # 0.010824900004081428 seconds
-    # 0.019969200002378784 seconds
-
-    # 0.0014727000088896602 seconds
-    # 0.0018108000076608732 seconds
-
-    Mousebuttons = 0
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            quit()
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            pygame.quit()
-            quit()
-
-        elif event.type == pygame.MOUSEBUTTONDOWN and Mousebuttons == 0:
-            # print(event.button)
-            Mousebuttons = event.button
-            # if Mousebuttons == 1:
-                # print(stock1.pricepoints)
-        # elif event.type == pygame.MOUSEBUTTONUP:
-        #     Mousebuttons = 0
-        #     print('mouse up')
-
-    
-    pygame.display.update()
-
-    clock.tick(60)
-
-    # Execution times 2: 0.0003656000044429675 seconds
-    # Execution times 3: 0.0006503000040538609 seconds
-    # Execution times 1: 0.0003372000064700842 seconds
-
-    # Execution times 2: 0.0003484999906504527 seconds
-    # Execution times 3: 0.0006101000035414472 seconds
-    # Execution times 1: 0.0007960999937495217 seconds
-
-    # Execution times 2: 0.000338099998771213 seconds
-    # Execution times 3: 0.0005828000139445066 seconds
-    # Execution times 1: 0.0010402000043541193 seconds
-# ------------------------------------------------------------
-    # Execution times 1: 0.00011629999789875001 seconds
-    # Execution times 2: 5.399997462518513e-06 seconds 0.000005399997462518513
-    # Execution times 3: 5.099995178170502e-06 seconds
-
-    # Execution times 1: 0.00011639999866019934 seconds
-    # Execution times 2: 8.199989679269493e-06 seconds
-    # Execution times 3: 4.0000013541430235e-06 seconds 
-
-    # Execution times 1: 0.0006111000111559406 seconds
-    # Execution times 2: 3.7300007534213364e-05 seconds
-    # Execution times 3: 7.350000669248402e-05 seconds 
-
-    # Execution times 1: 0.0008095000084722415 seconds
-    # Execution times 2: 0.0001795999996829778 seconds
-    # Execution times 3: 9.249999129679054e-05 seconds
+if __name__ == "__main__":
+    while True:
+        mousex,mousey = pygame.mouse.get_pos()
+        screen.fill((20,20,20))
+        
+        if Tick < 6: Tick += 1#used for ui_controls.update
+        else: Tick = 1
+        # print(time.time())
+        # print(time.asctime())
+        
+        # start_time = timeit.default_timer()
+        stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons,stockbook.menudrawn,stockbook,gametime)
+        # end_time = timeit.default_timer()
+        # print(f"Execution times stock graph: {end_time - start_time} seconds")
+        if ui_controls.logic(Tick):
+            gametime = Gametime(gametime,ui_controls.playing,screen,clock.get_fps())
+            for stock in stocklist:
+                stock.update_price(player,gametime)
+        drawgametime(gametime,screen)
+        ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
 
 
-    # Execution times 1: 0.00258840000606142 seconds
-    # Execution times 2: 0.000994000001810491 seconds
-    # Execution times 3: 6.92999892635271e-05 seconds
+        stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player)
+
+        screen.blit(update_fps(clock),(1570,0))
+        # 0.010824900004081428 seconds
+        # 0.019969200002378784 seconds
+
+        # 0.0014727000088896602 seconds
+        # 0.0018108000076608732 seconds
+
+        Mousebuttons = 0
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                for stock in stocklist:
+                    stock.save_data()
+                player.save_data()
+                pygame.quit()
+                quit()
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                for stock in stocklist:
+                    stock.save_data()
+                player.save_data()
+                pygame.quit()
+                quit()
+
+            elif event.type == pygame.MOUSEBUTTONDOWN and Mousebuttons == 0:
+                # print(event.button)
+                Mousebuttons = event.button
+                # if Mousebuttons == 1:
+                    # print(stock1.pricepoints)
+            # elif event.type == pygame.MOUSEBUTTONUP:
+            #     Mousebuttons = 0
+            #     print('mouse up')
+
+        
+        pygame.display.update()
+
+        clock.tick(60)
 
 
-    # Execution times 1: 0.0010986999986926094 seconds
-    # Execution times 2: 6.949999078642577e-05 seconds 0.00006949999078642577
-    # Execution times 3: 9.299999510403723e-05 seconds
-
-
-    # Execution times 1: 3.9999940781854093e-07 seconds 0.0000003999999407818541
-    # Execution times 1.5: 0.0006681999984721188 seconds 
-    # Execution times 2: 6.310000026132911e-05 seconds
-    # Execution times 3: 4.7199999244185165e-05 seconds
-
-
-    # Execution times 1: 6.219999704626389e-05 seconds
-    # Execution times 1.4: 4.940000144415535e-05 seconds
-    # Execution times 1.5: 0.0017169000020658132 seconds
-    # Execution times 2: 8.049999814829789e-05 seconds
-    # Execution times 3: 0.00020140000196988694 seconds

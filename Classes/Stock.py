@@ -5,19 +5,22 @@ from pygame import gfxdraw
 import time
 from Defs import *
 import numpy as np
+import os
 import timeit
+import json
 POINTSPERGRAPH = 100
 
 class Stock():
     def __init__(self,name,startingvalue_range,volatility,Playerclass,window_offset,stocknames,currenttime) -> None:
         
         self.winset = window_offset
-        self.pricepoints = [[randint(*startingvalue_range),currenttime] for _ in range(500000)]
-        self.pricepoints = np.array(self.pricepoints,dtype=object)
+        # self.pricepoints = [[randint(*startingvalue_range),currenttime] for _ in range(100000)]
+        # self.pricepoints = np.array(self.pricepoints,dtype=object)
         self.startingpos,self.endingpos = (0,0),(0,0)
         self.Playerclass = Playerclass
         self.starting_value_range = startingvalue_range
         self.name = name
+        self.datafromfile()
         self.pricereset_time = None
         self.stocknames = stocknames
         #variables for graphing the stock 
@@ -26,7 +29,7 @@ class Stock():
         # self.gra phrangeoptions = (('recent',466),('hour',10800),('day',70200),('week',351000),('month',1_404_000),('year',16_884_000),('all',None))
         self.graphtext = [fontlist[30].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']]
         self.graphrange = 'hour' #
-        self.graphrangelists = {key:np.array([self.pricepoints[-1][0]],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+        self.graphrangelists = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         
         #yvaluefinder is a function that takes a value and returns the y value of the point - look in assets for pic of equation
         # x,graphheight,medianpoint,graphsize,startingpos
@@ -50,11 +53,66 @@ class Stock():
         self.minutetrend = [randint(-10,10),randint(150,3600)]# added to the volitility each movement, time low as 50 seconds, high as 20 minutes 
         self.bonustrends = [self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend]#this is used to make seeing if the time is out easier
         self.bonustrendranges = [(140_400,421_200),(59400,81000),(8100,21600),(150,3600)]#the ranges for the time for each bonus trend
+        self.fill_graphs()
+        
 
+    def fill_graphs(self):
+        """fills the graphrangelists with the points needed for each graph, this is only called once at the start of the program"""
+        #Basically, we find how many points are needed for each graph and add them to pointrange then iterate through pointrange and 
+        #add the points that are needed to the graphrangelists that fit the condensefactor (amount of pricepoints for 1 graphpoint)
+        for key in self.graphrangelists.keys():
+            if len(self.pricepoints) > self.graphrangeoptions[key]:#if there are more points in the list then any of the graphs require
+                pointrange = [point[0] for point in self.pricepoints[-self.graphrangeoptions[key]:]]#get the last _ amount of points needed
+            else:#less than a year of points
+                pointrange = [point[0] for point in self.pricepoints]#get all the points
+
+            for i,point in enumerate(pointrange):
+                condensefactor = self.graphrangeoptions[key]/POINTSPERGRAPH
+                if i % int(condensefactor) == 0:#if the amount of points that should be in the list is greater than the amount of points in the list
+                    #add the last point to the list
+                    self.graphrangelists[key] = np.append(self.graphrangelists[key],point)
             
+                if len(self.graphrangelists[key]) > POINTSPERGRAPH:
+                    # print('deleting',key,len(self.graphrangelists[key]))
+                    self.graphrangelists[key] = np.delete(self.graphrangelists[key],0)
+    
     def __str__(self) -> str:
         return f'{self.name}'
-    
+    def datafromfile(self):
+        with open(f'Assets/Stockdata/{self.name}.json','r') as file:
+            file.seek(0)
+            contents = json.load(file)
+            if contents:#making sure it isn't empty
+                print(contents)
+                for content in contents:
+                    print(content[0])
+                self.pricepoints = np.array([[content[0],content[1]] for content in contents],dtype=object)
+                # self.pricepoints = np.array([[float(point.split(',')[0]),ast.literal_eval(point.split(',')[1])] for point in contents],dtype=object)
+            else:
+                self.pricepoints = np.array([[randint(*self.starting_value_range),time.time()]],dtype=object)
+            # add our stuff and write
+            print(self.pricepoints[-1][1])
+
+    def save_data(self):
+        with open(f'Assets/Stockdata/{self.name}.json','r') as file:
+            file.seek(0)
+            contents = json.load(file)
+        with open(f'Assets/Stockdata/{self.name}.json','rb+') as file:
+            print(type(self.pricepoints))
+            
+
+            if contents:
+                file.seek(-1, os.SEEK_END)
+                file.write(",".encode())
+                file.write(json.dumps(((self.pricepoints).tolist())[-len(contents):][0],indent=2).encode())
+                file.write("]".encode())
+            else:
+                file.write(json.dumps(((self.pricepoints).tolist())[-len(contents):]).encode())
+            # last_bracket_position = contents.rfind(])
+            # file.truncate(last_bracket_position)
+            # json.dump(((self.pricepoints).tolist())[-len(contents):],file)
+            # add our stuff and write
+
     def bankrupcy(self,drawn,screen:pygame.Surface=None):
         """returns False if stock is not bankrupt,don't need screen if drawn is False"""	
         if self.pricepoints[-1][0] < 0 and self.pricereset_time == None:#if stock goes bankrupt, and no time has been set
@@ -145,18 +203,7 @@ class Stock():
     def update_range_graphs(self):
 
         for key,value in self.graphrangeoptions.items():
-            # print(value,'is the value')
-            # print(graphxsize,'is the graphxsize')
             condensefactor = value/POINTSPERGRAPH
-            # print(condensefactor,'is the condensefactor')
-            # print(len(self.pricepoints),'is the len of pricepoints')
-            # print(len(self.graphrangelists[key]),'is the len of graphrangelists')
-            # print(condensefactor,'is the condensefactor')
-            # print((len(self.pricepoints)/condensefactor),len(self.graphrangelists[key]), (len(self.pricepoints)/condensefactor) > len(self.graphrangelists[key]))
-            # if (len(self.pricepoints)/condensefactor) > len(self.graphrangelists[key]):#if the amount of points that should be in the list is greater than the amount of points in the list
-            # print(int(condensefactor),'is the condensefactor')
-            # print(len(self.pricepoints) % int(condensefactor))
-            # print(len(self.graphrangelists[key]),key)
             if len(self.pricepoints) % int(condensefactor) == 0:#if the amount of points that should be in the list is greater than the amount of points in the list
                 #add the last point to the list
                 self.graphrangelists[key] = np.append(self.graphrangelists[key],self.pricepoints[-1][0])
