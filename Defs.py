@@ -42,15 +42,15 @@ def Gametime(currentime,playing,screen:pygame.Surface,fps):
         if currentime[3] >= 12:#if hours is 12, reset hours to 1 and change am/pm
             currentime[3] = 1
             currentime[6] = 'pm' if currentime[6] == 'am' else 'am'
-    numtime_text,rect = fontlist[50].render(f'{currentime[3]}:{"0" if currentime[4] < 10 else ""}{currentime[4]}{currentime[6]}',(255,255,255))
+    # numtime_text,rect = fontlist[50].render(f'{currentime[3]}:{"0" if currentime[4] < 10 else ""}{currentime[4]}{currentime[6]}',(255,255,255))
 
-    numtime_rect = numtime_text.get_rect(center=(100, 950))
+    # numtime_rect = numtime_text.get_rect(center=(100, 950))
 
-    polygon_points = [(25, 925), (175, 925), (175, 975), (25, 975)]
-    pygame.draw.polygon(screen, (80, 80, 80), polygon_points)
-    pygame.draw.polygon(screen, (255, 255, 255), polygon_points, 5)
-    pygame.draw.polygon(screen, (0, 0, 0), polygon_points, 1)
-    screen.blit(numtime_text, numtime_rect)
+    # polygon_points = [(25, 925), (175, 925), (175, 975), (25, 975)]
+    # pygame.draw.polygon(screen, (80, 80, 80), polygon_points)
+    # pygame.draw.polygon(screen, (255, 255, 255), polygon_points, 5)
+    # pygame.draw.polygon(screen, (0, 0, 0), polygon_points, 1)
+    # screen.blit(numtime_text, numtime_rect)
 
     return currentime
     
@@ -63,7 +63,14 @@ bold40 = fontsbold(45)
 fontlist = [fonts(num) for num in range(0,100)]#list of fonts from 0-100
 font45 = fonts(45)
 
-
+def drawgametime(currenttime,screen:pygame.Surface):
+    numtime_text,rect = fontlist[50].render(f'{currenttime[3]}:{"0" if currenttime[4] < 10 else ""}{currenttime[4]}{currenttime[6]}',(255,255,255))
+    numtime_rect = numtime_text.get_rect(center=(100, 950))
+    polygon_points = [(25, 925), (175, 925), (175, 975), (25, 975)]
+    pygame.draw.polygon(screen, (80, 80, 80), polygon_points)
+    pygame.draw.polygon(screen, (255, 255, 255), polygon_points, 5)
+    pygame.draw.polygon(screen, (0, 0, 0), polygon_points, 1)
+    screen.blit(numtime_text, numtime_rect)
 #for time testing
 # start_time = time.time()
 

@@ -20,25 +20,25 @@
 # print(myarray2)
 
 # import numpy as np
-import numpy as np
+# import numpy as np
 
-myarray = np.array([1, 2, 3, 4, 5, 6, 7, [8, 9, 10]], dtype=object)
-# initialize the array with the correct data type for the second column
-pricepoints = np.array([[3, np.array([1, 2, 3])]], dtype=object)
+# myarray = np.array([1, 2, 3, 4, 5, 6, 7, [8, 9, 10]], dtype=object)
+# # initialize the array with the correct data type for the second column
+# pricepoints = np.array([[3, np.array([1, 2, 3])]], dtype=object)
 
-# add a new row to the array
-newprice = 1
-gametime = np.array([4, 5, 6])
-value = np.array([newprice, gametime], dtype=object)
-# pricepoints = np.append([myarray, (np.array([newprice, gametime], dtype=object))])
-# pricepoints = np.append(pricepoints, np.array([[1, [4, 5, 6]]], dtype=object))
-# pricepoints = np.append(pricepoints, np.array([[newprice, gametime]], dtype=object))
-pricepoints = np.append(pricepoints, [np.array([newprice, gametime], dtype=object)], axis=0)
-# pricepoints = np.vstack(pricepoints, (np.array([[1, [4, 5, 6]]], dtype=object)))
-# pricepoints = np.vstack(pricepoints, (np.array([[1, [4, 5, 6]]], dtype=object)))
+# # add a new row to the array
+# newprice = 1
+# gametime = np.array([4, 5, 6])
+# value = np.array([newprice, gametime], dtype=object)
+# # pricepoints = np.append([myarray, (np.array([newprice, gametime], dtype=object))])
+# # pricepoints = np.append(pricepoints, np.array([[1, [4, 5, 6]]], dtype=object))
+# # pricepoints = np.append(pricepoints, np.array([[newprice, gametime]], dtype=object))
+# pricepoints = np.append(pricepoints, [np.array([newprice, gametime], dtype=object)], axis=0)
+# # pricepoints = np.vstack(pricepoints, (np.array([[1, [4, 5, 6]]], dtype=object)))
+# # pricepoints = np.vstack(pricepoints, (np.array([[1, [4, 5, 6]]], dtype=object)))
 
 
-print(pricepoints)  # output: [[3 [1, 2, 3]], [1, [4, v5, 6]]]
+# print(pricepoints)  # output: [[3 [1, 2, 3]], [1, [4, v5, 6]]]
 
 # medianpoint = np.median(mylist)
 # newlist = mylist[-50000:]
@@ -64,3 +64,14 @@ print(pricepoints)  # output: [[3 [1, 2, 3]], [1, [4, v5, 6]]]
 # print("Elapsed time:", end_time - start_time, "seconds")
 
 
+import numpy as np
+
+my_array = np.array([[1, 2, 3], [4, 5, 6]])
+
+# Sum the rows (along axis 0)
+row_sums = np.sum(my_array, axis=0)
+
+# Sum the columns (along axis 1)
+column_sums = np.sum(my_array, axis=1)
+print(row_sums)
+print(column_sums)

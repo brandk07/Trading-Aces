@@ -6,7 +6,7 @@ import time
 from Defs import *
 import numpy as np
 import timeit
-POINTSPERGRAPH = 500
+POINTSPERGRAPH = 100
 
 class Stock():
     def __init__(self,name,startingvalue_range,volatility,Playerclass,window_offset,stocknames,currenttime) -> None:
@@ -22,8 +22,9 @@ class Stock():
         self.stocknames = stocknames
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
-        self.graphrangeoptions = {'recent':500,'hour':10800,'day':70200,'week':351000,'month':1_404_000,'year':16_884_000}
+        self.graphrangeoptions = {'recent':POINTSPERGRAPH,'hour':10800,'day':70200,'week':351000,'month':1_404_000,'year':16_884_000}
         # self.gra phrangeoptions = (('recent',466),('hour',10800),('day',70200),('week',351000),('month',1_404_000),('year',16_884_000),('all',None))
+        self.graphtext = [fontlist[30].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']]
         self.graphrange = 'hour' #
         self.graphrangelists = {key:np.array([self.pricepoints[-1][0]],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         
@@ -36,7 +37,9 @@ class Stock():
         # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int((graphheight)*point/(maxpoint-minpoint))
         # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight,startingpos: int((point-minpoint)*((graphheight/(maxpoint-minpoint)))+startingpos[1])
         # self.yvaluefinder = lambda point,minpoint,newgraph,startingpos: int(((point-minpoint)*newgraph)+startingpos[1])
-        self.yvaluefinder = lambda point,minpoint,newgraph,graphheight,startingpos: int(((point-minpoint)*newgraph)+startingpos[1]+graphheight-30)
+        # self.yvaluefinder = lambda point,minpoint,newgraph,graphheight,startingpos: int(((point-minpoint)*newgraph)+startingpos[1]+graphheight-30)
+        # self.yvaluefinder = lambda point,minpoint,newgraph,graphheight,startingpos: int(((graphheight*2)-((point-minpoint)*newgraph))+startingpos[1]+graphheight-30)
+        self.yvaluefinder = lambda point,minpoint,newgraph,graphheight,startingpos: int(self.endingpos[1]+((point-minpoint)*newgraph)-graphheight+30)
         
         # self.yvaluefinder = lambda point,minpoint,maxpoint,graphheight: int(point*((maxpoint-minpoint)/(graphheight)))
         #variables for the stock price+
@@ -122,10 +125,22 @@ class Stock():
             self.update_range_graphs()#updates the range graphs
 
 
-    def rangecontrols(self,screen:pygame.Surface,player:object,stocklist):
-        #draw 4 25/25 filled polygons
-        for i in range(4):
-            gfxdraw.filled_polygon(screen,[(self.startingpos[0]+i*25,self.startingpos[1]),(self.startingpos[0]+i*25,self.endingpos[1]),(self.startingpos[0]+i*25+25,self.endingpos[1]),(self.startingpos[0]+i*25+25,self.startingpos[1])],(0,0,0))
+    def rangecontrols(self,screen:pygame.Surface,player:object,stocklist, Mousebuttons):
+        #draw 4 25/25 filled polygons in the top left corner of the graph with the last one's x pos being startingpos[0]-5
+       for i in range(4):
+    # add a small gap in between each button
+            y1 = self.startingpos[1] + (i * 30)
+            y2 = self.startingpos[1] + 25 + (i * 30)
+            gfxdraw.filled_polygon(screen, [(self.startingpos[0], y1), self.startingpos, (self.startingpos[0], y2), (self.startingpos[0] - 25, y2), (self.startingpos[0] - 25, y1)], (0, 0, 0))
+            # check for collisions on each using mousebuttons
+            text = self.graphtext[i]
+            text_rect = text.get_rect(center=((self.startingpos[0]+self.startingpos[0] - 25) // 2, (y1 + y2) // 2))
+            screen.blit(text, text_rect)
+            mousex,mousey = pygame.mouse.get_pos()
+            if mousex > (self.startingpos[0]-5)-25 and mousex < (self.startingpos[0]-5) and mousey > (self.startingpos[1]+(i*25)) and mousey < (self.startingpos[1]+25+(i*25)):
+                if Mousebuttons == 1:
+                    self.graphrange = list(self.graphrangeoptions.keys())[i]
+                    print('clicked',i)
     
     def update_range_graphs(self):
 
@@ -140,13 +155,19 @@ class Stock():
             # print((len(self.pricepoints)/condensefactor),len(self.graphrangelists[key]), (len(self.pricepoints)/condensefactor) > len(self.graphrangelists[key]))
             if (len(self.pricepoints)/condensefactor) > len(self.graphrangelists[key]):#if the amount of points that should be in the list is greater than the amount of points in the list
                 # self.graphrangelists[key].append(self.pricepoints[-1][0])#add the last point to the list
-                self.graphrangelists[key] = np.vstack([self.graphrangelists[key], self.pricepoints[-1][0]])
-            if len(self.graphrangelists[key]) > POINTSPERGRAPH:
-                # print('deleting',key,len(self.graphrangelists[key]))
-                self.graphrangelists[key] = np.delete(self.graphrangelists[key],0)
+                # if len(self.graphrangelists[key]) == 500:
+                #     print('appending',key,len(self.graphrangelists[key]))
+                #     print(self.graphrangelists[key],'is the list')
+                #     print(self.pricepoints[-1][0],'is the point')
+                # addedpoint = np.array(self.pricepoints[-1][0],dtype=object)
+                # self.graphrangelists[key] = np.vstack([self.graphrangelists[key], addedpoint])
+                self.graphrangelists[key] = np.append(self.graphrangelists[key],self.pricepoints[-1][0])
+                if len(self.graphrangelists[key]) > POINTSPERGRAPH:
+                    # print('deleting',key,len(self.graphrangelists[key]))
+                    self.graphrangelists[key] = np.delete(self.graphrangelists[key],0)
                 # self.graphrangelists[key].pop(0)
 
-    def draw(self,screen:pygame.Surface,player:object,startingpos,endingpos,stocklist):
+    def draw(self,screen:pygame.Surface,player:object,startingpos,endingpos,stocklist,Mousebuttons):
         start_time = timeit.default_timer()
         if startingpos != self.startingpos or endingpos != self.endingpos:#if the starting or ending positions have changed
             #setting the starting and ending positions - where the graphs are located is constantly changing
@@ -161,7 +182,7 @@ class Stock():
         if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
             gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(60,60,60))#draws the background of the graph
 
-        # self.rangecontrols(screen,player,stocklist)#draws the range controls
+        self.rangecontrols(screen,player,stocklist,Mousebuttons)#draws the range controls
 
         graphheight = (self.endingpos[1]-self.startingpos[1])/2# graphheight is the height of the graph
         graphwidth = (self.startingpos[0]-self.endingpos[0])
@@ -172,7 +193,7 @@ class Stock():
         graphingpoints = self.graphrangelists[self.graphrange]
         end_time = timeit.default_timer()
         # print(f"Execution times first one: {end_time - start_time} seconds")
-        print(len(graphingpoints))
+        # print(len(graphingpoints))
         start_time = timeit.default_timer()
         # finding the min and max values of the graphingpoints
         minpoint = (np.amin(self.graphrangelists[self.graphrange]))
@@ -195,7 +216,7 @@ class Stock():
             # graphingpoints = [int(((point-minpoint)*newgraph)+addedvalue) for point in graphingpoints]
 
             graphingpoints = np.array(graphingpoints)
-            graphingpoints = ((graphingpoints - minpoint) * newgraph) + addedvalue
+            graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * newgraph)) + addedvalue
             # graphingpoints = graphingpoints.astype(int)
             # Execution times 2ed section: 0.0034706999999940535 seconds
             end_time = timeit.default_timer()
@@ -213,6 +234,7 @@ class Stock():
         # 
         if len(self.pricepoints) % 100 == 0:
             print(len(self.pricepoints))
+            print(len(graphingpoints))
         graphpointlen = len(graphingpoints)
         for i,value in enumerate(graphingpoints):
             if i >= graphpointlen-1:

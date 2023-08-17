@@ -71,7 +71,7 @@ while True:
         gametime = Gametime(gametime,ui_controls.playing,screen,clock.get_fps())
         for stock in stocklist:
             stock.update_price(player,gametime)
-
+    drawgametime(gametime,screen)
     ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
 
 

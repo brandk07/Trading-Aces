@@ -124,7 +124,7 @@ class StockGraphManager:
                 # if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
                 #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
                 if not menudrawn:
-                    stock.draw(screen,player,startpos,endpos,stocklist)
+                    stock.draw(screen,player,startpos,endpos,stocklist,Mousebuttons)
                     
                 if self.current_config != 'nona' and not menudrawn:
                     self.changestockbutton(screen,startpos,endpos,Mousebuttons,stockname,stocklist)
