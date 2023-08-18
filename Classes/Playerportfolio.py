@@ -8,30 +8,31 @@ import numpy as np
 
 
 class Player(Stock):
-    def __init__(self,window_offset,stocknames,currenttime) -> None:
+    def __init__(self,window_offset,stocknames) -> None:
         name = 'Net Worth'
-        super().__init__(name,(2500,2500),0,Player,window_offset,stocknames,currenttime)
+        super().__init__(name,(2500,2500),0,Player,window_offset,stocknames)
         self.name = name
-        self.cash = 2500
+        self.price = 2500
         self.stocks = []
-        self.pricepoints = np.array([[self.cash,currenttime]],dtype=object)
+        # self.pricepoints = np.array([[self.price]],dtype=object)
+
         self.stockvalues = []
         self.messagedict = {}
         # self.recent_movementvar = (None,None,(180,180,180))
         
-    def buy(self,name:str,price:int,quantity:int=1):
+    def buy(self,name:str,price:int,obj,quantity:int=1):
         for _ in range(quantity+1):
-            if self.cash >= price:
-                self.cash -= price
-                self.stocks.append([name,price])
+            if self.price >= price:
+                self.price -= price
+                self.stocks.append([name,price,obj])
 
         self.messagedict[f'Purchased {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
         print(f'buying {name} for {price}')
-        print('cash is',self.cash)
+        print('cash is',self.price)
         print('stocks are',self.stocks)
         print('/'*20)
-    def sell(self,name:str,price:int,quantity:int=1):
-        self.cash += price*quantity
+    def sell(self,name:str,price:int,obj,quantity:int=1):
+        self.price += price*quantity
         print(self.stocks)
         self.messagedict[f'Sold {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
         if price*quantity < sum([stock[1] for stock in self.stocks if stock[0] == name]):
@@ -42,7 +43,7 @@ class Player(Stock):
             # originalprice = [stock[1] for stock in self.stocks if stock[0] == name][0]
             print([stock[0] for stock in self.stocks],'stocks')
             originalprice = self.stocks[[stock[0] for stock in self.stocks].index(name)][1]
-            self.stocks.remove([name,originalprice])
+            self.stocks.remove([name,originalprice,obj])
             # if price < originalprice:
             #     self.messagedict[f'Lost {round(price-originalprice,2)} from {name}'] = (time.time(),(200,0,0))
             # else:
@@ -51,7 +52,7 @@ class Player(Stock):
         
         print(f'selling {name} for {price}')
         print('profited ',price-originalprice)
-        print('cash is',self.cash)
+        print('cash is',self.price)
         print('stocks are',self.stocks)
         print('/'*20)
 
@@ -70,9 +71,8 @@ class Player(Stock):
         for key in keys_to_delete:
             del self.messagedict[key]
 
-    def graph(self,stocklist:list,currenttime):
-        # print(self.cash,'cash')
-        print(self.pricepoints)
+    def graph(self,stocklist:list):
+        # print(self.price,'cash')
         self.stockvalues.clear()
         if self.stocks:#if there are stocks
             bankruptamounts = []#list containing the amount of money lost from each bankrupt stocks - all in 1 message so it doesn't spam the message box
@@ -83,14 +83,11 @@ class Player(Stock):
                     bankruptamounts += [stock[1]]#add the amount of money lost from the bankrupt stock to the list
 
                     self.stocks.remove(stock)
-                self.stockvalues.append([stockobj for stockobj in stocklist if stockobj.name == stock[0]][0].pricepoints[-1][0])
+                self.stockvalues.append([stockobj for stockobj in stocklist if stockobj.name == stock[0]][0].price)
             if bankruptamounts:
                 self.messagedict[bankruptamounts[0]] = (time.time(),(200,0,0))#add the bankrupt message to the message dict
                 bankruptamounts.remove(bankruptamounts[0])#remove the bankrupt message from bankruptamounts
                 self.messagedict[f'Lost {round(sum(bankruptamounts),2)} from bankrupt stocks'] = (time.time(),(200,0,0))#add the total amount of money lost from bankrupt stocks to the message dict
             #Make for multiple stocks not just one---------------------------------------------------------------------  probably need a dict instead of banruptamounts list
             
-            self.pricepoints.append([self.cash,currenttime])
-        else:
-            self.pricepoints.append([self.cash,currenttime])
         

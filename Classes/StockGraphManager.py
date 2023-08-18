@@ -91,8 +91,6 @@ class StockGraphManager:
                             Mousebuttons = 0
                             # oldstockobj = [stockobj for stockobj in stocklist if stockobj.name == stockname][0]#finds the stock object of the stock that is being replaced
                             # stockobj = [stockobj for stockobj in stocklist if stockobj.name == stock][0]#finds the stock object of the stock that is replacing the old stock
-                            #resets the pricepoints except for the last one, which keeps the y (current price) and uses the x from the old stock object
-                            # stockobj.pricepoints = [[oldstockobj.startingpos[0],stockobj.pricepoints[-1][1]]] 
                             self.picked_stocks[self.picked_stocks.index(stockname)] = stock#replaces the old stock with the new stock in the picked_stocks list
                             self.pickedstockconfig[self.current_config][self.pickedstockconfig[self.current_config].index(stockname)] = stock#replaces the old stock with the new stock in the pickedstockconfig dict
                             self.mousehovering = None

@@ -85,7 +85,7 @@ directory = r"Assets\Stockdata"
 import json
 import numpy as np
 import timeit
-
+import os
 # data = [[100, [0,0,0,0,0,0,0]]]*10
 data = []
 stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth']
@@ -93,15 +93,13 @@ stockdict = {name:np.array(data,dtype=object) for name in stocknames}
 
 start_time = timeit.default_timer()
 
-for name in ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth']:
-    file_path = f"{directory}/{name}.json"
-    print(f"{name}")
-    # Writing and loading from the same file
-    with open(file_path, "w+") as f:
-        # for d in data:
-        #     json.dump(d, f)
-        json.dump((stockdict[name].tolist()), f)
 
+for name in stocknames:
+    for i in ['recent','hour','day','week','month','year']:
+        file_path = f"{directory}/{name}/{i}.json"
+        with open(file_path, "w+") as f:
+            # f.write("[]")
+            json.dump([], f)
 
 elapsed_time = timeit.default_timer() - start_time
 print(f"Total time: {elapsed_time} seconds")

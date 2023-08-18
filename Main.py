@@ -38,9 +38,9 @@ stockbook = Stockbook(stocknames)
 
 
 gametime = [0,0,0,9,30,0,'am']#months,weeks,days,hours,minutes,update interval ,am/pm
-player = Player(window_offset,stocknames,gametime)
+player = Player(window_offset,stocknames)
 #name, startingvalue_range, volatility, Playerclass, window_offset,stocknames,time
-stockdict = {name:Stock(name,(500,2500),100,Player,window_offset,stocknames,gametime) for name in stocknames}
+stockdict = {name:Stock(name,(500,2500),100,Player,window_offset,stocknames) for name in stocknames}
 
 
 # stock1 = Stock('SNTOK',(1600,0),(800,400),(500,2500),75,Player,window_offset)
@@ -62,7 +62,6 @@ if __name__ == "__main__":
         else: Tick = 1
         # print(time.time())
         # print(time.asctime())
-        
         # start_time = timeit.default_timer()
         stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons,stockbook.menudrawn,stockbook,gametime)
         # end_time = timeit.default_timer()
@@ -70,7 +69,9 @@ if __name__ == "__main__":
         if ui_controls.logic(Tick):
             gametime = Gametime(gametime,ui_controls.playing,screen,clock.get_fps())
             for stock in stocklist:
-                stock.update_price(player,gametime)
+                stock.update_price(player)
+            player.update_price(player)
+        player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
         drawgametime(gametime,screen)
         ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
 
@@ -78,11 +79,7 @@ if __name__ == "__main__":
         stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player)
 
         screen.blit(update_fps(clock),(1570,0))
-        # 0.010824900004081428 seconds
-        # 0.019969200002378784 seconds
 
-        # 0.0014727000088896602 seconds
-        # 0.0018108000076608732 seconds
 
         Mousebuttons = 0
         for event in pygame.event.get():
