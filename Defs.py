@@ -3,6 +3,7 @@ import time
 from pygame import gfxdraw
 from pygame import freetype
 import math
+import json
 pygame.font.init()
 def update_fps(clock):
     fps = str(int(clock.get_fps()))
@@ -28,7 +29,28 @@ def time_loop(loop):
         return result
     return wrapper
 pygame.init()
-
+def Getfromfile(stocklist,player):
+    with open('Assets/Stockdata/extradata.json','r') as file:
+        data = json.load(file)
+        if data:
+            player.stocks = data[1]
+            player.messagedict = data[2]
+            player.graphrange = data[3]
+            for i,stockobj in enumerate(stocklist):
+                stockobj.graphrange = data[i+4]
+            return data[0]#gametime
+        else:
+            return [0,0,0,9,30,0,'am']#starting time
+def Writetofile(stocklist,player,data):
+    for stock in stocklist:
+        stock.save_data()
+    player.save_data()
+    with open('Assets/Stockdata/extradata.json','w') as file:
+        file.seek(0)# go to the start of the file
+        file.truncate()# clear the file
+        json.dump(data,file)
+    pygame.quit()
+    quit()
 # currentime = months,weeks,days,hours,minutes,update interval ,am/pm
 def Gametime(currentime,playing,screen:pygame.Surface,fps):
     if playing:

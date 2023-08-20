@@ -20,7 +20,7 @@ class UI_controls():
             self.images[key] = surface.convert_alpha()
 
         self.gameplay_speed = 3
-        self.playing = True
+        self.playing = False
 
         self.pauseplayxy = (805+self.winset[0],980+self.winset[1])
         self.fastwardxy = (805+self.winset[0]+70,980+self.winset[1])

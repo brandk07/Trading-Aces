@@ -36,16 +36,18 @@ class Stock():
         
         #variables for the stock price+
         self.volatility = volatility
-        self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
-        self.daybonus = [randint(-5,5)/1000,randint(59400,81000)]# [%added to each movement, time low as 5.5 hours high as 7.5 (remember 6.5 hours is 1 day)]
-        self.hourlytrend = [randint(-20,20),randint(8100,21600)]# added to the volitility each movement,time low as 45 minutes, high as 2 hours
-        self.minutetrend = [randint(-10,10),randint(150,3600)]# added to the volitility each movement, time low as 50 seconds, high as 20 minutes 
-        self.bonustrends = [self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend]#this is used to make seeing if the time is out easier
         self.bonustrendranges = [(140_400,421_200),(59400,81000),(8100,21600),(150,3600)]#the ranges for the time for each bonus trend
         # self.fill_graphs()
     
     def __str__(self) -> str:
         return f'{self.name}'
+    def reset_trends(self):
+        """Sets/resets the trends for the stock"""
+        self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
+        self.daybonus = [randint(-5,5)/1000,randint(59400,81000)]# [%added to each movement, time low as 5.5 hours high as 7.5 (remember 6.5 hours is 1 day)]
+        self.hourlytrend = [randint(-20,20),randint(8100,21600)]# added to the volitility each movement,time low as 45 minutes, high as 2 hours
+        self.minutetrend = [randint(-10,10),randint(150,3600)]# added to the volitility each movement, time low as 50 seconds, high as 20 minutes 
+        self.bonustrends = [self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend]#this is used to make seeing if the time is out easier
     def datafromfile(self):
         """gets the data from each file and puts it into the graphlist"""
         for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year]
@@ -56,13 +58,25 @@ class Stock():
                     self.graphrangelists[grange] = np.array(contents)# add the contents to the graphrangelists
                 else:
                     self.graphrangelists[grange] = np.array([self.price])# if the file is empty then make the only data the current price
-
+        with open(f'Assets/Stockdata/{self.name}/trends.json','r') as file:#get the trends from the trend file
+            file.seek(0)
+            contents = json.load(file)
+            if contents:
+                self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend = contents
+            else:
+                self.reset_trends()
     def save_data(self):
         for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year]
             with open(f'Assets/Stockdata/{self.name}/{grange}.json','w') as file:
                 file.seek(0)# go to the start of the file
                 file.truncate()# clear the file
                 json.dump(self.graphrangelists[grange].tolist(),file)# write the new data to the file
+        
+        with open(f'Assets/Stockdata/{self.name}/trends.json','w') as file:
+            file.seek(0)
+            file.truncate()
+            json.dump([self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend],file)
+
 
 
     def bankrupcy(self,drawn,screen:pygame.Surface=None):
@@ -72,8 +86,7 @@ class Stock():
             return False
         elif self.pricereset_time != None and time.time() > self.pricereset_time+5:#if stock goes bankrupt and 5 seconds have passed
             self.price = randint(*self.starting_value_range)
-            self.temporary_movement = randint(-1*(self.volatility-1),self.volatility)
-            self.movement_length = randint(60,360); self.pricereset_time = None
+            self.reset_trends(); self.pricereset_time = None#reset the trends and the pricereset_time
             if drawn:
                 gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(200,0,0))#draws the background of the graph red
             return False
@@ -84,7 +97,7 @@ class Stock():
             return False
         return True
     
-    def stock_split(self,player:object):
+    def stock_split(self,player):
         if self.price >= 2500:
             player.messagedict[f'{self.name} has split'] = (time.time(),(0,0,200))
             for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year]

@@ -8,6 +8,7 @@ from Classes.UI_controls import *
 from Classes.Playerportfolio import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
+from Classes.portfolio import Portfolio
 import timeit
 
 pygame.init()
@@ -37,22 +38,18 @@ stockgraphmanager = StockGraphManager()
 stockbook = Stockbook(stocknames)
 
 
-gametime = [0,0,0,9,30,0,'am']#months,weeks,days,hours,minutes,update interval ,am/pm
+
 player = Player(window_offset,stocknames)
 #name, startingvalue_range, volatility, Playerclass, window_offset,stocknames,time
 stockdict = {name:Stock(name,(500,2500),100,Player,window_offset,stocknames) for name in stocknames}
 
-
-# stock1 = Stock('SNTOK',(1600,0),(800,400),(500,2500),75,Player,window_offset)
-# # stock1 = Stock('SNTOK',(1600,0),(0,800),randint(500,2500),5)
-# stock2 = Stock('KSTON',(800,0),(0,400),(500,2500),110,Player,window_offset)
-# stock3 = Stock('STKCO',(800,400),(0,1080),(500,2500),140,Player,window_offset)
-# stock4 = Stock('XKSTO',(1600,400),(800,1080),(2300,2310),180,Player,window_offset)
-
+portfolio = Portfolio()
 ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]))
 Mousebuttons = 0
 Tick = 0
 stocklist = [stockdict[name] for name in stocknames]
+#gametime is #months,weeks,days,hours,minutes,update interval,am/pm
+gametime = Getfromfile(stocklist,player)
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
@@ -77,22 +74,25 @@ if __name__ == "__main__":
 
 
         stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player)
-
+        portfolio.draw_icon(screen)
         screen.blit(update_fps(clock),(1570,0))
 
 
         Mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                for stock in stocklist:
-                    stock.save_data()
-                player.save_data()
+                data = [gametime,player.stocks,player.messagedict,player.graphrange]
+                data.extend([stockobj.graphrange for stockobj in stocklist])
+                print(data)
+                Writetofile(stocklist,player,data)
                 pygame.quit()
                 quit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                for stock in stocklist:
-                    stock.save_data()
-                player.save_data()
+                data = [gametime,player.stocks,player.messagedict,player.graphrange]
+                data.extend([stockobj.graphrange for stockobj in stocklist])
+                print(data)
+                Writetofile(stocklist,player,data)
+                
                 pygame.quit()
                 quit()
 
