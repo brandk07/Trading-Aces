@@ -1,4 +1,2 @@
-mynum = 0
-if mynum:
-    print('sdf')
-print(mynum)
+from random import randint
+print(randint(500,500))

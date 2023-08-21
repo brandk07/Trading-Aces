@@ -13,21 +13,26 @@ class Portfolio(Menu):
         self.icon.set_colorkey((255,255,255))
         self.portfoliotext = fontlist[36].render('Portfolio',(255,255,255))[0]
 
-    # def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,play_pause,player):
-    #     mousex,mousey = pygame.mouse.get_pos()
-    #     for i,stock in enumerate(stocklist):
-    #         if pygame.Rect.collidepoint(pygame.Rect(215+(i*8),120+(i*65),175,35),mousex,mousey) and Mousebuttons == 1:#if the mouse is hovering over the stock
-    #             self.selectedstock = i
-    #         if stock.price > stock.graphrangelists[stock.graphrange][0]:# if the price is greater than the first point in the current graph
-    #             color = (0,120,0) if self.selectedstock == i else (0,80,0)
-    #         else:
-    #             color = (120,0,0) if self.selectedstock == i else (80,0,0)
-    #         # the polygons and text for each of the stocks with the names and prices on the left side of the screen
-    #         gfxdraw.filled_polygon(screen,((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),color)
-    #         screen.blit(fontlist[36].render(f'{stock.name} ${round(stock.price,2)}',(255,255,255))[0],(225+(i*8),125+(i*65)))
-    #         if self.selectedstock == i:
-    #             pygame.draw.polygon(screen, (0,0,0), ((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),5)
-    #             self.selected_stock(screen,stocklist,play_pause,player,Mousebuttons)
+    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,play_pause,player):
+        mousex,mousey = pygame.mouse.get_pos()
+        for i,stock in enumerate(player.stocks):
+            # [name, price, obj, Stock object]
+
+            # if pygame.Rect.collidepoint(pygame.Rect(215+(i*8),120+(i*65),175,35),mousex,mousey) and Mousebuttons == 1:#if the mouse is hovering over the stock
+            #     self.selectedstock = i
+            # if stock.price > stock.graphrangelists[stock.graphrange][0]:# if the price is greater than the first point in the current graph
+            #     color = (0,120,0) if self.selectedstock == i else (0,80,0)
+            # else:
+            #     color = (120,0,0) if self.selectedstock == i else (80,0,0)
+            # the polygons and text for each of the stocks with the names and prices on the left side of the screen
+            polytext = fontlist[36].render(f'{stock[0]} ${round(stock[3].price,2)}',(255,255,255))[0]
+            # make the polygon's x pos fit the polytext length
+            x = polytext.get_width()
+            gfxdraw.filled_polygon(screen,((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),((x+20)+(i*8),155+(i*65)),((x+10)+(i*8),120+(i*65))),(0,80,0))
+            screen.blit(polytext,(225+(i*8),125+(i*65)))
+            # if self.selectedstock == i:
+            #     pygame.draw.polygon(screen, (0,0,0), ((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),5)
+            #     self.selected_stock(screen,stocklist,play_pause,player,Mousebuttons)
         
     # def draw(self,screen):
     #     pass

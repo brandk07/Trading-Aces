@@ -12,7 +12,7 @@ class Player(Stock):
         name = 'Net Worth'
         super().__init__(name,(2500,2500),0,Player,window_offset,stocknames)
         self.name = name
-
+        self.window_offset = window_offset
         self.cash = 2500
         self.stocks = []
         # self.pricepoints = np.array([[self.cash]],dtype=object)
@@ -25,7 +25,8 @@ class Player(Stock):
         for _ in range(quantity+1):
             if self.cash >= price:
                 self.cash -= price
-                self.stocks.append([name,price,obj])
+        # below the name of the stock, the price of the stock, the object of the stock being bought, and the new object that will be used for graphing in portfolio
+        self.stocks.append([name,price,obj,Stock(name,(price*quantity,price*quantity),100,Player,self.window_offset,self.stocknames)])
 
         self.messagedict[f'Purchased {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
         print(f'buying {name} for {price}')
