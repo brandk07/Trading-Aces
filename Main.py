@@ -49,7 +49,8 @@ Mousebuttons = 0
 Tick = 0
 stocklist = [stockdict[name] for name in stocknames]
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
-gametime = Getfromfile(stocklist,player)
+gametime = Getfromfile(stockdict,player)
+menulist = [stockbook,portfolio]
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
@@ -60,7 +61,7 @@ if __name__ == "__main__":
         # print(time.time())
         # print(time.asctime())
         # start_time = timeit.default_timer()
-        stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons,stockbook.menudrawn,stockbook,gametime)
+        stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons,menulist,stockbook,gametime)
         # end_time = timeit.default_timer()
         # print(f"Execution times stock graph: {end_time - start_time} seconds")
         if ui_controls.logic(Tick):
@@ -73,22 +74,22 @@ if __name__ == "__main__":
         ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
 
 
-        stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player)
-        portfolio.draw_icon(screen)
+        stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player,menulist)
+        portfolio.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player,menulist)
         screen.blit(update_fps(clock),(1570,0))
 
 
         Mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                data = [gametime,player.stocks,player.messagedict,player.graphrange]
+                data = [gametime,[[stock[0],stock[1]] for stock in player.stocks],player.messagedict,player.graphrange,player.cash]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)
                 pygame.quit()
                 quit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                data = [gametime,player.stocks,player.messagedict,player.graphrange]
+                data = [gametime,[[stock[0],stock[1]] for stock in player.stocks],player.messagedict,player.graphrange,player.cash]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)

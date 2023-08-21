@@ -29,15 +29,16 @@ def time_loop(loop):
         return result
     return wrapper
 pygame.init()
-def Getfromfile(stocklist,player):
+def Getfromfile(stockdict:dict,player):
     with open('Assets/Stockdata/extradata.json','r') as file:
         data = json.load(file)
         if data:
-            player.stocks = data[1]
+            player.stocks = [[stock[0],stock[1],stockdict[stock[0]]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
             player.messagedict = data[2]
             player.graphrange = data[3]
-            for i,stockobj in enumerate(stocklist):
-                stockobj.graphrange = data[i+4]
+            player.cash = data[4] if data[4] != 0 else 2500
+            for i,stockobj in enumerate(stockdict.values()):
+                stockobj.graphrange = data[i+5]
             return data[0]#gametime
         else:
             return [0,0,0,9,30,0,'am']#starting time

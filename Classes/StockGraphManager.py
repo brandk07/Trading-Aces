@@ -104,7 +104,7 @@ class StockGraphManager:
             self.mousehovering = None
 
 
-    def draw_graphs(self, screen, stocklist:list, player, play_pause, Mousebuttons, menudrawn:bool, stockbook,currentime):
+    def draw_graphs(self, screen, stocklist:list, player, play_pause, Mousebuttons, menulist:list, stockbook,currentime):
         self.draw_ui(screen,Mousebuttons,stocklist)
         
         for i in range(self.graph_config[self.current_config][1]):
@@ -121,10 +121,10 @@ class StockGraphManager:
                 stock = [stock for stock in stocklist if stock.name == stockname][0]
                 # if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
                 #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
-                if not menudrawn:
+                if not any([menu.menudrawn for menu in menulist]):#if no menus are drawn
                     stock.draw(screen,player,startpos,endpos,stocklist,Mousebuttons)
                     
-                if self.current_config != 'nona' and not menudrawn:
+                if self.current_config != 'nona' and not any([menu.menudrawn for menu in menulist]):#if no menus are drawn and the current config is not nona
                     self.changestockbutton(screen,startpos,endpos,Mousebuttons,stockname,stocklist)
                 # stock.buy_sell(player,screen,Mousebuttons)
                 

@@ -248,7 +248,7 @@ class Stock():
             screen.blit(fontlist[40].render(f' ${round(self.price,2)}',(255,255,255))[0],(self.endingpos[0]+10,self.endingpos[1]-40))    
             text = bold40.render(f' {self.name}',(255,255,255))[0]
         else:
-            screen.blit(fontlist[40].render(f' Net Worth ${round(self.price+sum([stock[2].price for stock in player.stocks]),2)}',(255,255,255))[0],(self.endingpos[0]+10,self.endingpos[1]-40)) 
+            screen.blit(fontlist[40].render(f' Net Worth ${round(self.cash+sum([stock[2].price for stock in player.stocks]),2)}',(255,255,255))[0],(self.endingpos[0]+10,self.endingpos[1]-40)) 
             text = bold40.render(f'Portfolio',(255,255,255))[0]
 
         screen.blit(text,(self.endingpos[0]+15,self.startingpos[1]+15))#draws the text that displays the name of the stock or the player
@@ -264,6 +264,6 @@ class Stock():
             screen.blit(fontlist[40].render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",color)[0],(self.endingpos[0]+15,self.startingpos[1]+80))
 
         if type(self) == self.Playerclass:#text displaying the price
-            screen.blit(fontlist[40].render(f'Cash ${round(self.price,2)}',(255,255,255))[0],(self.endingpos[0]+15,self.startingpos[1]+50))
+            screen.blit(fontlist[40].render(f'Cash ${round(self.cash,2)}',(255,255,255))[0],(self.endingpos[0]+15,self.startingpos[1]+50))
     
         

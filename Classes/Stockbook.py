@@ -1,25 +1,18 @@
 import pygame
 from Defs import *
 from pygame import gfxdraw
+from Classes.menu import Menu
 
-class Stockbook:
+class Stockbook(Menu):
     def __init__(self,stocknames:list) -> None:
-        surface = pygame.Surface((140,115))
-        self.icon = pygame.image.load(r'Assets\stockbook\book.png').convert_alpha()
-        self.icon = pygame.transform.scale(self.icon,(140,100))
-        surface.fill((60,60,60))
-        surface.blit(self.icon,(0,5))
-        pygame.draw.rect(surface,(0,0,0),pygame.Rect(0,0,140,115),5)
-        self.icon = surface.copy()
-        self.buyselltext = fontlist[36].render('BUY & SELL',(255,255,255))[0]
-        self.menudrawn = False
-        self.selectedstock = 0
+        super().__init__(r'Assets\stockbook\book.png',(30,100))
         self.quantity = 0
         self.stocktext = {name:[] for name in stocknames}
         self.uparrow = pygame.image.load(r'Assets\stockbook\uparrow.png').convert_alpha()
         self.uparrow = pygame.transform.scale(self.uparrow,(33,18))
         self.downarrow = pygame.transform.flip(self.uparrow,False,True)
         self.buying = True#if false then selling
+        self.selectedstock = 0
         
         with open(r'Assets\stockdescriptions.txt','r') as descriptions:
 
@@ -37,30 +30,8 @@ class Stockbook:
                     self.stocktext[key][i] = fontlist[40].render(line,(120, 120, 120))[0]
                 else:#else render it with a smaller font and orange color
                     self.stocktext[key][i] = fontlist[30].render(line,(225, 90, 15))[0]
-
-    def draw_icon(self,screen:pygame.Surface,Mousebuttons:int,stocklist:list,play_pause,player):
-        if self.icon_sensing(screen,Mousebuttons,stocklist,play_pause,player):
-            width1 = self.icon.get_width(); height1 = self.icon.get_height();height2 = self.buyselltext.get_height()
-            gfxdraw.filled_polygon(screen,[(25,95),(width1+35,95),(width1+35,110+height1+height2),(25,110+height1+height2)],(110,110,110))
-        screen.blit(self.icon,(30,100))
-        screen.blit(self.buyselltext,(50,self.icon.get_height()+105))
-    
-    def icon_sensing(self,screen,mousebuttons:int,stocklist,play_pause,player):
-        # print(pygame.mouse.get_pos())
-        mousex,mousey = pygame.mouse.get_pos()
-        collide = pygame.Rect.collidepoint(pygame.Rect(30,100,self.icon.get_width(),self.icon.get_height()+self.buyselltext.get_height()),mousex,mousey)
-        if self.menudrawn:
-            self.draw_menu(screen,stocklist,mousebuttons,play_pause,player)
-
-        if collide:
-            if mousebuttons == 1:
-                self.menudrawn = not self.menudrawn
-            else:
-                return True
-
-    def draw_menu(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,play_pause,player):
-        gfxdraw.filled_polygon(screen, ((200,100),(1500,100),(1600,980),(300,980)),(40,40,40))
-        pygame.draw.polygon(screen, (0,0,0), ((200,100),(1500,100),(1600,980),(300,980)),10)
+        
+    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,play_pause,player):
         mousex,mousey = pygame.mouse.get_pos()
         for i,stock in enumerate(stocklist):
             if pygame.Rect.collidepoint(pygame.Rect(215+(i*8),120+(i*65),175,35),mousex,mousey) and Mousebuttons == 1:#if the mouse is hovering over the stock
@@ -76,10 +47,6 @@ class Stockbook:
                 pygame.draw.polygon(screen, (0,0,0), ((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),5)
                 self.selected_stock(screen,stocklist,play_pause,player,Mousebuttons)
 
-            # if Mousebuttons == 1:#CAN REMOVE LATER ------------------------------------------------------------
-            #     print(pygame.mouse.get_pos())
-        
-    
     def draw_info(self,screen:pygame.Surface,stocklist:list,play_pause,player,Mousebuttons):
         gfxdraw.filled_polygon(screen,((290,700),(320,955),(1570,955),(1535,700)),(60,60,60))
 
@@ -124,7 +91,7 @@ class Stockbook:
                     if i == 0: self.quantity += 2
                     elif i == 1: self.quantity += 5
                     elif i == 2: 
-                        if self.buying:self.quantity = int(player.price/stocklist[self.selectedstock].price)
+                        if self.buying:self.quantity = int(player.cash/stocklist[self.selectedstock].price)
                         else: self.quantity = [stock[0] for stock in player.stocks].count(stocklist[self.selectedstock].name)
         if not self.buying:# if selling
             
@@ -170,17 +137,17 @@ class Stockbook:
         
         confirmcolor = (30,30,30)
         if pygame.Rect.collidepoint(pygame.Rect(1125,320,340,80),mousex,mousey) and self.quantity > 0:
-            if self.buying and self.quantity*stocklist[self.selectedstock].price <= player.price:
+            if self.buying and self.quantity*stocklist[self.selectedstock].price <= player.cash:
                  confirmcolor = (0,150,0) 
             elif not self.buying and self.quantity <= [stock[0] for stock in player.stocks].count(stocklist[self.selectedstock].name):
                 confirmcolor = (0,150,0)
             else:
                 confirmcolor = (150,0,0)
             if Mousebuttons == 1:
-                if self.buying and self.quantity*stocklist[self.selectedstock].price <= player.price:
+                if self.buying and self.quantity*stocklist[self.selectedstock].price <= player.cash:
                     player.buy(stocklist[self.selectedstock].name,stocklist[self.selectedstock].price,stocklist[self.selectedstock],self.quantity)
-                elif self.buying and self.quantity*stocklist[self.selectedstock].price > player.price:
-                    self.quantity = int(player.price/stocklist[self.selectedstock].price)
+                elif self.buying and self.quantity*stocklist[self.selectedstock].price > player.cash:
+                    self.quantity = int(player.cash/stocklist[self.selectedstock].price)
                     player.messagedict[f"Not Enough Funds"] = (time.time(),(200,0,0))
                 else:
                     player.sell(stocklist[self.selectedstock].name,stocklist[self.selectedstock].price,stocklist[self.selectedstock],self.quantity)

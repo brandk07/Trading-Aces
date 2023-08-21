@@ -12,9 +12,10 @@ class Player(Stock):
         name = 'Net Worth'
         super().__init__(name,(2500,2500),0,Player,window_offset,stocknames)
         self.name = name
-        self.price = 2500
+
+        self.cash = 2500
         self.stocks = []
-        # self.pricepoints = np.array([[self.price]],dtype=object)
+        # self.pricepoints = np.array([[self.cash]],dtype=object)
 
         self.stockvalues = []
         self.messagedict = {}
@@ -22,17 +23,17 @@ class Player(Stock):
         
     def buy(self,name:str,price:int,obj,quantity:int=1):
         for _ in range(quantity+1):
-            if self.price >= price:
-                self.price -= price
+            if self.cash >= price:
+                self.cash -= price
                 self.stocks.append([name,price,obj])
 
         self.messagedict[f'Purchased {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
         print(f'buying {name} for {price}')
-        print('cash is',self.price)
+        print('cash is',self.cash)
         print('stocks are',self.stocks)
         print('/'*20)
     def sell(self,name:str,price:int,obj,quantity:int=1):
-        self.price += price*quantity
+        self.cash += price*quantity
         print(self.stocks)
         self.messagedict[f'Sold {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
         if price*quantity < sum([stock[1] for stock in self.stocks if stock[0] == name]):
@@ -52,7 +53,7 @@ class Player(Stock):
         
         print(f'selling {name} for {price}')
         print('profited ',price-originalprice)
-        print('cash is',self.price)
+        print('cash is',self.cash)
         print('stocks are',self.stocks)
         print('/'*20)
 
@@ -72,7 +73,7 @@ class Player(Stock):
             del self.messagedict[key]
 
     def graph(self,stocklist:list):
-        # print(self.price,'cash')
+        # print(self.cash,'cash')
         self.stockvalues.clear()
         if self.stocks:#if there are stocks
             bankruptamounts = []#list containing the amount of money lost from each bankrupt stocks - all in 1 message so it doesn't spam the message box

@@ -103,6 +103,8 @@ for name in stocknames:
 # for name in stocknames:
 #     file_path = f"{directory}/{name}/trend.json"
 #     os.remove(file_path)
+with open(f"{directory}/extradata.json", "w+") as f:
+    json.dump([], f)
 
 
 elapsed_time = timeit.default_timer() - start_time
