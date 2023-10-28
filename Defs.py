@@ -34,11 +34,10 @@ def Getfromfile(stockdict:dict,player):
         data = json.load(file)
         if data:
             player.stocks = [[stock[0],stock[1],stockdict[stock[0]]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
-            player.messagedict = data[2]
-            player.graphrange = data[3]
-            player.cash = data[4] if data[4] != 0 else 2500
+            player.graphrange = data[2]
+            player.cash = data[3] if data[3] != 0 else 2500
             for i,stockobj in enumerate(stockdict.values()):
-                stockobj.graphrange = data[i+5]
+                stockobj.graphrange = data[i+4]
             return data[0]#gametime
         else:
             return [0,0,0,9,30,0,'am']#starting time

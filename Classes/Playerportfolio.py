@@ -26,7 +26,8 @@ class Player(Stock):
             if self.cash >= price:
                 self.cash -= price
         # below the name of the stock, the price of the stock, the object of the stock being bought, and the new object that will be used for graphing in portfolio
-        self.stocks.append([name,price,obj,Stock(name,(price*quantity,price*quantity),100,Player,self.window_offset,self.stocknames)])
+        print(price*quantity)
+        self.stocks.append([name,price,obj,Stock(name,(int(price*quantity),int(price*quantity)),100,Player,self.window_offset,self.stocknames)])
 
         self.messagedict[f'Purchased {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
         print(f'buying {name} for {price}')
@@ -45,6 +46,8 @@ class Player(Stock):
             # originalprice = [stock[1] for stock in self.stocks if stock[0] == name][0]
             print([stock[0] for stock in self.stocks],'stocks')
             originalprice = self.stocks[[stock[0] for stock in self.stocks].index(name)][1]
+            print(self.stocks)
+            print(originalprice)
             self.stocks.remove([name,originalprice,obj])
             # if price < originalprice:
             #     self.messagedict[f'Lost {round(price-originalprice,2)} from {name}'] = (time.time(),(200,0,0))

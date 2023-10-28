@@ -82,14 +82,14 @@ if __name__ == "__main__":
         Mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                data = [gametime,[[stock[0],stock[1]] for stock in player.stocks],player.messagedict,player.graphrange,player.cash]
+                data = [gametime,[[stock[0],stock[1]] for stock in player.stocks],player.graphrange,player.cash]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)
                 pygame.quit()
                 quit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                data = [gametime,[[stock[0],stock[1]] for stock in player.stocks],player.messagedict,player.graphrange,player.cash]
+                data = [gametime,[[stock[0],stock[1]] for stock in player.stocks],player.graphrange,player.cash]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)
