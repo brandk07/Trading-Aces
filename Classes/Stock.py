@@ -14,7 +14,7 @@ class Stock():
     def __init__(self,name,startingvalue_range,volatility,Playerclass,window_offset,stocknames) -> None:
         
         self.winset = window_offset
-        self.startingpos,self.endingpos = (0,0),(0,0)
+        self.startpos,self.endpos = (0,0),(0,0)
         self.Playerclass = Playerclass
         self.starting_value_range = startingvalue_range
         self.name = name
@@ -29,25 +29,42 @@ class Stock():
         self.graphrange = 'hour' #
         self.graphrangelists = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
+        self.bonustrendranges = [[((-3,3)),((140_400,421_200))],[((-5,5)),((59400,81000))],[((-7,7)),((8100,21600))],[((-12,12)),((150,3600))]]
+        self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]
         self.datafromfile()
         self.price = self.graphrangelists['recent'][-1]
-        #yvaluefinder is a function that takes a value and returns the y value of the point - look in assets for pic of equation
-        self.yvaluefinder = lambda point,minpoint,newgraph,graphheight,startingpos: int(self.endingpos[1]+((point-minpoint)*newgraph)-graphheight+30)
         
         #variables for the stock price+
         self.volatility = volatility
-        self.bonustrendranges = [(140_400,421_200),(59400,81000),(8100,21600),(150,3600)]#the ranges for the time for each bonus trend
+        #rewrite the line below but include the range for each, the first number is the range for the % added to each movement, the second is the range for the time for each bonus trend
+       
+        # self.bonustrendranges = [[((-5,5)),((140_400,421_200))],[((-5,5)),((59400,81000))],[((-20,20)),((8100,21600))],[((-10,10)),((150,3600))]]
+        # self.bonustrendranges = [(140_400,421_200),(59400,81000),(8100,21600),(150,3600)]#the ranges for the time for each bonus trend
         # self.fill_graphs()
+        self.reset_trends()
     
     def __str__(self) -> str:
         return f'{self.name}'
+
     def reset_trends(self):
         """Sets/resets the trends for the stock"""
-        self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
-        self.daybonus = [randint(-5,5)/1000,randint(59400,81000)]# [%added to each movement, time low as 5.5 hours high as 7.5 (remember 6.5 hours is 1 day)]
-        self.hourlytrend = [randint(-20,20),randint(8100,21600)]# added to the volitility each movement,time low as 45 minutes, high as 2 hours
-        self.minutetrend = [randint(-10,10),randint(150,3600)]# added to the volitility each movement, time low as 50 seconds, high as 20 minutes 
-        self.bonustrends = [self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend]#this is used to make seeing if the time is out easier
+        self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]#resets the trends for each bonus trend
+
+        # self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
+        # self.daybonus = [randint(-5,5)/1000,randint(59400,81000)]# [%added to each movement, time low as 5.5 hours high as 7.5 (remember 6.5 hours is 1 day)]
+        # self.hourlytrend = [randint(-20,20),randint(8100,21600)]# added to the volitility each movement,time low as 45 minutes, high as 2 hours
+        # self.minutetrend = [randint(-10,10),randint(150,3600)]# added to the volitility each movement, time low as 50 seconds, high as 20 minutes 
+        # self.bonustrends = [self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend]#this is used to make seeing if the time is out easier
+    
+    def reset_graphs(self):
+        """resets the graphs to be empty"""
+        for i in ['recent','hour','day','week','month','year','trends']:
+            file_path = f"Assets/Stockdata/{self}/{i}.json"
+            with open(file_path, "w+") as f:
+                json.dump([], f)
+        newprice = randint(*self.starting_value_range)
+        for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year], assign the new price to each graph
+            self.graphrangelists[grange] = np.array([newprice])
     def datafromfile(self):
         """gets the data from each file and puts it into the graphlist"""
         for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year]
@@ -62,7 +79,7 @@ class Stock():
             file.seek(0)
             contents = json.load(file)
             if contents:
-                self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend = contents
+                self.bonustrends = contents
             else:
                 self.reset_trends()
     def save_data(self):
@@ -75,7 +92,7 @@ class Stock():
         with open(f'Assets/Stockdata/{self.name}/trends.json','w') as file:
             file.seek(0)
             file.truncate()
-            json.dump([self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend],file)
+            json.dump(self.bonustrends,file)
 
 
 
@@ -87,13 +104,14 @@ class Stock():
         elif self.pricereset_time != None and time.time() > self.pricereset_time+5:#if stock goes bankrupt and 5 seconds have passed
             self.price = randint(*self.starting_value_range)
             self.reset_trends(); self.pricereset_time = None#reset the trends and the pricereset_time
+            self.reset_graphs()
             if drawn:
-                gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(200,0,0))#draws the background of the graph red
+                gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),self.endpos,(self.startpos[0],self.endpos[1]),self.startpos],(200,0,0))#draws the background of the graph red
             return False
         elif self.pricereset_time != None and time.time() < self.pricereset_time+5:#if stock goes bankrupt and less then 5 seconds have passed
             if drawn:
-                gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(200,0,0))#draws the background of the graph red
-                screen.blit(fontlist[40].render(f'BANKRUPT',(255,255,255))[0],(self.endingpos[0]+15,self.startingpos[1]+15))
+                gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),self.endpos,(self.startpos[0],self.endpos[1]),self.startpos],(200,0,0))#draws the background of the graph red
+                screen.blit(fontlist[40].render(f'BANKRUPT',(255,255,255))[0],(self.endpos[0]+15,self.startpos[1]+15))
             return False
         return True
     
@@ -117,22 +135,25 @@ class Stock():
     def addpoint(self,lastprice):
         """returns the new price of the stock"""
         #Realize that 3 seconds of real time is 1 minute of game time (at x1 speed)
-        self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
-        self.daybonus = [randint(-5,5)/1000,randint(59400,81000)]# [%added to each movement, time low as 5.5 hours high as 7.5 (remember 6.5 hours is 1 day)]
-        self.hourlytrend = [randint(-20,20),randint(8100,21600)]# added to the volitility each movement,time low as 45 minutes, high as 2 hours
-        self.minutetrend = [randint(-10,10),randint(150,3600)]# added to the volitility each movement, time low as 50 seconds, high as 20 minutes 
-        self.bonustrends = [self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend]#this is used to make seeing if the time is out easier
+        # self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
+        # self.daybonus = [randint(-5,5)/1000,randint(59400,81000)]# [%added to each movement, time low as 5.5 hours high as 7.5 (remember 6.5 hours is 1 day)]
+        # self.hourlytrend = [randint(-20,20),randint(8100,21600)]# added to the volitility each movement,time low as 45 minutes, high as 2 hours
+        # self.minutetrend = [randint(-10,10),randint(150,3600)]# added to the volitility each movement, time low as 50 seconds, high as 20 minutes 
+        # self.bonustrends = [self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend]#this is used to make seeing if the time is out easier
 
         for i,bonustrend in enumerate(self.bonustrends):
-            if bonustrend[1] <= 0:
-                bonustrend[1] = randint(*self.bonustrendranges[i])
+            if bonustrend[1] <= 0:#if the time is out
+                bonustrend = [randint(*self.bonustrendranges[i][0]),randint(*self.bonustrendranges[i][1])]
+
             else:
                 bonustrend[1] -= 1
-        toltal_bonus = self.periodbonus[0]+self.daybonus[0]
-        total_trend = self.hourlytrend[0]+self.minutetrend[0]
+        total_trend = int(sum([trend[0] for trend in self.bonustrends]))
         highvolitity = self.volatility+(total_trend if total_trend >= 0 else 0)
         lowvolitity = -self.volatility+(total_trend if total_trend < 0 else 0)
-        return lastprice * 1+(randint(lowvolitity,highvolitity)/100) + toltal_bonus#returns the new price of the stock
+        # print(self.bonustrends,self)
+        # print(1+(randint(lowvolitity,highvolitity)/100),self)
+        
+        return lastprice * 1+(randint(lowvolitity,highvolitity)/100)#returns the new price of the stock
     
     def update_price(self,player:object):
         if self.bankrupcy(False):#if stock is not bankrupt
@@ -148,21 +169,31 @@ class Stock():
 
 
     def rangecontrols(self,screen:pygame.Surface,player:object,stocklist, Mousebuttons):
-        #draw 4 25/25 filled polygons in the top left corner of the graph with the last one's x pos being startingpos[0]-5
-       for i in range(4):
-    # add a small gap in between each button
-            y1 = self.startingpos[1] + (i * 30)
-            y2 = self.startingpos[1] + 25 + (i * 30)
-            gfxdraw.filled_polygon(screen, [(self.startingpos[0], y1), self.startingpos, (self.startingpos[0], y2), (self.startingpos[0] - 25, y2), (self.startingpos[0] - 25, y1)], (0, 0, 0))
+        """draws the range controls and checks for clicks"""
+        
+        #draw 4 25/25 filled polygons in the top left corner of the graph with the last one's x pos being startpos[0]-5
+        for i in range(6):
+            x1 = self.startpos[0] - 5 - (i * 30)
+            x2 = self.startpos[0] - 30 - (i * 30)
+            y1 = self.startpos[1] + 5
+            y2 = self.startpos[1] + 30
+            gfxdraw.filled_polygon(screen, [(x1, y1), (x2, y1), (x2, y2), (x1, y2)], (200, 200, 200))
             # check for collisions on each using mousebuttons
             text = self.graphtext[i]
-            text_rect = text.get_rect(center=((self.startingpos[0]+self.startingpos[0] - 25) // 2, (y1 + y2) // 2))
+            # remake the line below with x1,y1,x2,y2
+            text_rect = text.get_rect(center=((x1+x2)//2,(y1+y2)//2))
+            # text_rect = text.get_rect(center=((self.startpos[0]+self.startpos[0] - 25) // 2, (y1 + y2) // 2))
             screen.blit(text, text_rect)
             mousex,mousey = pygame.mouse.get_pos()
-            if mousex > (self.startingpos[0]-5)-25 and mousex < (self.startingpos[0]-5) and mousey > (self.startingpos[1]+(i*25)) and mousey < (self.startingpos[1]+25+(i*25)):
+            # add collision detection for each, use the x1 and x2 values for the x values and the y1 and y2 values for the y values
+            if pygame.Rect(x1-25,y1,25,25).collidepoint(mousex,mousey):
                 if Mousebuttons == 1:
                     self.graphrange = list(self.graphrangeoptions.keys())[i]
                     print('clicked',i)
+            # if mousex > (self.startpos[0]-5)-25 and mousex < (self.startpos[0]-5) and mousey > (self.startpos[1]+(i*30)) and mousey < (self.startpos[1]+25+(i*30)):
+            #     if Mousebuttons == 1:
+            #         self.graphrange = list(self.graphrangeoptions.keys())[i]
+            #         print('clicked',i)
     
     def update_range_graphs(self,stockvalues=0):
 
@@ -178,25 +209,26 @@ class Stock():
                 # print('deleting',key,len(self.graphrangelists[key]))
                 self.graphrangelists[key] = np.delete(self.graphrangelists[key],0)
 
-    def draw(self,screen:pygame.Surface,player:object,startingpos,endingpos,stocklist,Mousebuttons):
+    def draw(self,screen:pygame.Surface,player:object,startpos,endpos,stocklist,Mousebuttons):
 
-        if startingpos != self.startingpos or endingpos != self.endingpos:#if the starting or ending positions have changed
+        if startpos != self.startpos or endpos != self.endpos:#if the starting or ending positions have changed
             #setting the starting and ending positions - where the graphs are located is constantly changing
-            self.startingpos = (startingpos[0] - self.winset[0], startingpos[1] - self.winset[1])
-            self.endingpos = (endingpos[0] - self.winset[0], endingpos[1] - self.winset[1])
+            self.startpos = (startpos[0] - self.winset[0], startpos[1] - self.winset[1])
+            self.endpos = (endpos[0] - self.winset[0], endpos[1] - self.winset[1])
         
         if type(self) == self.Playerclass:#if it is a Player object
             self.graph(stocklist)#graph the player networth
             self.message(screen)#display the messages
         
-
+        blnkspacex = int((self.startpos[0]-self.endpos[0])/10)#the amount of blank space to be left on the right side of the graph for x
+        blnkspacey = int((self.endpos[1]-self.startpos[1])/10)#the amount of blank space to be left on the right side of the graph for y
         if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
-            gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.startingpos[1]),self.endingpos,(self.startingpos[0],self.endingpos[1]),self.startingpos],(60,60,60))#draws the background of the graph
+            gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),(self.endpos[0],self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.startpos[1])],(60,60,60))#draws the background of the graph
 
         self.rangecontrols(screen,player,stocklist,Mousebuttons)#draws the range controls
 
-        graphheight = (self.endingpos[1]-self.startingpos[1])/2# graphheight is the height of the graph
-        graphwidth = (self.startingpos[0]-self.endingpos[0])
+        graphheight = (self.endpos[1]-self.startpos[1])/2# graphheight is the height of the graph
+        graphwidth = (self.startpos[0]-self.endpos[0])
 
         #first need to find the x values that we want to graph (the points that are in the range of the graph and then reduce it to fit on the graph)
     
@@ -214,7 +246,7 @@ class Stock():
             else:
                 newgraph = num
 
-            addedvalue = (self.startingpos[1]+graphheight-30)# the value that is added to the y value of the point to make it fit on the graph
+            addedvalue = (self.startpos[1]+graphheight-30)# the value that is added to the y value of the point to make it fit on the graph
             # graphingpoints = np.array(graphingpoints)# makes the graphingpoints a numpy array - MIGHT BE ABLE TO REMOVE ------------------------------------------------------
             graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * newgraph)) + addedvalue# Doing the math to make the points fit on the graph 
 
@@ -232,26 +264,44 @@ class Stock():
             else:
 
                 nextvalue = graphingpoints[i+1]
-                xpos = self.endingpos[0]
+                xpos = self.endpos[0]
 
                 gfxdraw.line(screen,xpos+int(i*spacing),int(value),xpos+int((i+1)*spacing),int(nextvalue),(255,255,255))
 
 
                 
         #Everything below is after the graph is drawn
-        gfxdraw.rectangle(screen,pygame.Rect(self.endingpos[0],self.startingpos[1],(self.startingpos[0]-self.endingpos[0]),(self.endingpos[1]-self.startingpos[1])),(0,0,0))#draws the perimeter around graphed values
+        gfxdraw.rectangle(screen,pygame.Rect(self.endpos[0],self.startpos[1],(self.startpos[0]-self.endpos[0]),(self.endpos[1]-self.startpos[1])),(0,0,0))#draws the perimeter around graphed values
+
+        sortedlist = self.graphrangelists[self.graphrange].copy()#makes a copy of the graphrangelists
+        sortedlist.sort()#sorts the list
+        for i in range(4):
+            # y = self.startpos[1] +  + (i * (graphheight/2))
+            lenpos = int((len(self.graphrangelists[self.graphrange])-1)*(i/3))#Position based purely on the length of the current graph size
+            point = sortedlist[lenpos]#using the sorted list so there is an even amount of points between each line
+            
+            #gets the position of the point in the graphingpoints (the y values) - the sorted list moves the points around so the index of the point is different
+            yvalpos = np.where(self.graphrangelists[self.graphrange] == point)[0][0]
+            
+            # round the point to 2 decimal places in the f string
+            text = fontlist[30].render(f'{point:.2f}',(255,255,255))[0]
+
+            gfxdraw.line(screen,self.endpos[0],int(graphingpoints[yvalpos]),self.startpos[0],int(graphingpoints[yvalpos]),(150,150,150))
+            # change the line below to be above the line above rather then centered on the point
+            text_rect = text.get_rect(center=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
+            screen.blit(text,text_rect)
+
+           
 
         #draws the text that displays the price of the stock
-        
-        
         if type(self) == Stock:#text displaying the price, and the net worth
-            screen.blit(fontlist[40].render(f' ${round(self.price,2)}',(255,255,255))[0],(self.endingpos[0]+10,self.endingpos[1]-40))    
+            screen.blit(fontlist[40].render(f' ${round(self.price,2)}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40))    
             text = bold40.render(f' {self.name}',(255,255,255))[0]
         else:
-            screen.blit(fontlist[40].render(f' Net Worth ${round(self.cash+sum([stock[2].price for stock in player.stocks]),2)}',(255,255,255))[0],(self.endingpos[0]+10,self.endingpos[1]-40)) 
+            screen.blit(fontlist[40].render(f' Net Worth ${round(self.cash+sum([stock[2].price for stock in player.stocks]),2)}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
             text = bold40.render(f'Portfolio',(255,255,255))[0]
 
-        screen.blit(text,(self.endingpos[0]+15,self.startingpos[1]+15))#draws the text that displays the name of the stock or the player
+        screen.blit(text,(self.endpos[0]+15,self.startpos[1]+15))#draws the text that displays the name of the stock or the player
 
         #Below is the price change text
         # percentchange = round(((self.price - self.graphrangelists[self.graphrange][-2])/self.graphrangelists[self.graphrange][-2])*100,2)
@@ -259,11 +309,11 @@ class Stock():
        
         color = (0,200,0) if percentchange >= 1 else (200,0,0)
         if type(self) == Stock:
-            screen.blit(fontlist[40].render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",color)[0],(self.endingpos[0]+15,self.startingpos[1]+45))
+            screen.blit(fontlist[40].render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",color)[0],(self.endpos[0]+15,self.startpos[1]+45))
         elif type(self) == self.Playerclass:
-            screen.blit(fontlist[40].render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",color)[0],(self.endingpos[0]+15,self.startingpos[1]+80))
+            screen.blit(fontlist[40].render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",color)[0],(self.endpos[0]+15,self.startpos[1]+80))
 
         if type(self) == self.Playerclass:#text displaying the price
-            screen.blit(fontlist[40].render(f'Cash ${round(self.cash,2)}',(255,255,255))[0],(self.endingpos[0]+15,self.startingpos[1]+50))
+            screen.blit(fontlist[40].render(f'Cash ${round(self.cash,2)}',(255,255,255))[0],(self.endpos[0]+15,self.startpos[1]+50))
     
         

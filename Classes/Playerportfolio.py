@@ -67,8 +67,8 @@ class Player(Stock):
         for i,(text,(starttime,color)) in enumerate(self.messagedict.items()):
             if i < 8 and time.time() < starttime+15:
                 #draw a box around the text using gfxdraw filled polygon
-                gfxdraw.filled_polygon(screen,[(self.endingpos[0],self.endingpos[1]+35+(i*40)),(self.startingpos[0],self.endingpos[1]+35+(i*40)),(self.startingpos[0]+10,self.endingpos[1]+65+(i*40)),(self.endingpos[0]+10,self.endingpos[1]+65+(i*40))],color)
-                screen.blit(fontlist[25].render(text,(255,255,255))[0],(self.endingpos[0]+10,self.endingpos[1]+40+(i*40)))
+                gfxdraw.filled_polygon(screen,[(self.endpos[0],self.endpos[1]+35+(i*40)),(self.startpos[0],self.endpos[1]+35+(i*40)),(self.startpos[0]+10,self.endpos[1]+65+(i*40)),(self.endpos[0]+10,self.endpos[1]+65+(i*40))],color)
+                screen.blit(fontlist[25].render(text,(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]+40+(i*40)))
             else:
                 if list(self.messagedict.keys())[0] not in keys_to_delete:
                     keys_to_delete.append(list(self.messagedict.keys())[0])

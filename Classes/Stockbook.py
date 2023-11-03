@@ -118,10 +118,6 @@ class Stockbook(Menu):
         screen.blit(fontlist[45].render('BUY',buycolor)[0],(1175,210))
         screen.blit(fontlist[45].render('SELL',sellcolor)[0],(1335,210))
 
-        # gfxdraw.filled_polygon(screen,((1125,260),(1110,310),(1450,310),(1465,260)),(30,30,30))#polygon for the buy and sell button
-        # # add text inside the polygon above for the total cost
-        # pygame.draw.polygon(screen, (0,0,0), ((1125,260),(1110,310),(1450,310),(1465,260)),5)#outline for the buy and sell button
-        # screen.blit(fontlist[45].render(f'Total : ${round(self.quantity*stocklist[self.selectedstock].price,2)}',(255,255,255))[0],(1130,270))
         text_surface, _ = fontlist[45].render(f'Total : ${round(self.quantity*stocklist[self.selectedstock].price,2)}', (255, 255, 255))
         text_width = text_surface.get_width()
         #the x coords on the left of the polygon need to be switched

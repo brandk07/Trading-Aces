@@ -125,7 +125,8 @@ class StockGraphManager:
                     stock.draw(screen,player,startpos,endpos,stocklist,Mousebuttons)
                     
                 if self.current_config != 'nona' and not any([menu.menudrawn for menu in menulist]):#if no menus are drawn and the current config is not nona
-                    self.changestockbutton(screen,startpos,endpos,Mousebuttons,stockname,stocklist)
+                    # self.changestockbutton(screen,startpos,endpos,Mousebuttons,stockname,stocklist)  ------------------------Used for changing stocks, don't want right now
+                    pass
                 # stock.buy_sell(player,screen,Mousebuttons)
                 
 
