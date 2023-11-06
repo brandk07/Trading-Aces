@@ -3,7 +3,7 @@ from datetime import datetime
 # Define the target date and time
 
 target_date = datetime(2007, 4, 19, 10, 43)
-target_date = datetime(2023, 10, 27, 11, 15)
+# target_date = datetime(2024, 10, 27, 11, 15)
 
 current_date = datetime(2023, 10, 24, 14, 50)
 # Get the current date and time

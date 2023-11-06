@@ -41,7 +41,7 @@ stockbook = Stockbook(stocknames)
 
 player = Player(window_offset,stocknames)
 #name, startingvalue_range, volatility, Playerclass, window_offset,stocknames,time
-stockdict = {name:Stock(name,(500,2500),100,Player,window_offset,stocknames) for name in stocknames}
+stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames) for name in stocknames}
 
 portfolio = Portfolio()
 ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]))
@@ -54,7 +54,7 @@ menulist = [stockbook,portfolio]
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
-        screen.fill((20,20,20))
+        screen.fill((50,50,50))
         
         if Tick < 6: Tick += 1#used for ui_controls.update
         else: Tick = 1

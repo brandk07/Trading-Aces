@@ -25,7 +25,8 @@ class Stock():
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
         self.graphrangeoptions = {'recent':POINTSPERGRAPH*5,'hour':10800,'day':70200,'week':351000,'month':1_404_000,'year':16_884_000}
         # self.gra phrangeoptions = (('recent',466),('hour',10800),('day',70200),('week',351000),('month',1_404_000),('year',16_884_000),('all',None))
-        self.graphtext = [fontlist[30].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']]
+        self.graphtext = [[fontlist[30].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']],[fontlist[55].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']]]
+        
         self.graphrange = 'hour' #
         self.graphrangelists = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
@@ -148,12 +149,12 @@ class Stock():
             else:
                 bonustrend[1] -= 1
         total_trend = int(sum([trend[0] for trend in self.bonustrends]))
-        highvolitity = self.volatility+(total_trend if total_trend >= 0 else 0)
-        lowvolitity = -self.volatility+(total_trend if total_trend < 0 else 0)
+        highvolitity = self.volatility+(total_trend if total_trend >= 0 else -1*(total_trend//2))
+        lowvolitity = -self.volatility+(total_trend if total_trend < 0 else -1*(total_trend//2))
         # print(self.bonustrends,self)
         # print(1+(randint(lowvolitity,highvolitity)/100),self)
-        
-        return lastprice * 1+(randint(lowvolitity,highvolitity)/100)#returns the new price of the stock
+        # print(1+(randint(lowvolitity,highvolitity)/100),lastprice,lastprice * 1+(randint(lowvolitity,highvolitity)/100),lastprice/(lastprice*(1+(randint(lowvolitity,highvolitity)/100))),self)
+        return lastprice * (1+(randint(lowvolitity,highvolitity)/100000))#returns the new price of the stock
     
     def update_price(self,player:object):
         if self.bankrupcy(False):#if stock is not bankrupt
@@ -161,7 +162,7 @@ class Stock():
         
         if type(self) == Stock:#making sure that it is a Stock object and that update is true
             self.price = self.addpoint(self.price)
-            self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
+            # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             self.update_range_graphs()
         else:
             stockvalues = sum([stock[2].price for stock in self.stocks])
@@ -172,28 +173,33 @@ class Stock():
         """draws the range controls and checks for clicks"""
         
         #draw 4 25/25 filled polygons in the top left corner of the graph with the last one's x pos being startpos[0]-5
+        # self.startpos[0]
+        box_xy = (self.startpos[0]-self.endpos[0])//22.3#the x and y value of the box (dimensions of the box)
+        leftshift = (self.startpos[0]-self.endpos[0])//10#the amount of blank space to be left on the left side of the graph
         for i in range(6):
-            x1 = self.startpos[0] - 5 - (i * 30)
-            x2 = self.startpos[0] - 30 - (i * 30)
-            y1 = self.startpos[1] + 5
-            y2 = self.startpos[1] + 30
-            gfxdraw.filled_polygon(screen, [(x1, y1), (x2, y1), (x2, y2), (x1, y2)], (200, 200, 200))
+
+            x1 = self.startpos[0] - leftshift-box_xy - 5 - (i * (box_xy+(box_xy//6)))#the x value of the top left corner of the box
+            x2 = self.startpos[0] - leftshift - 5 - (i * (box_xy+(box_xy//6)))#the x value of the top right corner of the box
+            y1 = self.startpos[1] + 10#the y value of the top left corner of the box
+            y2 = self.startpos[1] + 10+box_xy#the y value of the bottom left corner of the box
+            if self.graphrange == list(self.graphrangeoptions.keys())[i]:
+                gfxdraw.filled_polygon(screen, [(x1, y1), (x2, y1), (x2, y2), (x1, y2)], (200, 200, 200))
+            else:
+                gfxdraw.filled_polygon(screen, [(x1, y1), (x2, y1), (x2, y2), (x1, y2)], (60, 60, 60))
             # check for collisions on each using mousebuttons
-            text = self.graphtext[i]
-            # remake the line below with x1,y1,x2,y2
-            text_rect = text.get_rect(center=((x1+x2)//2,(y1+y2)//2))
-            # text_rect = text.get_rect(center=((self.startpos[0]+self.startpos[0] - 25) // 2, (y1 + y2) // 2))
+            if box_xy > 35:#if the box is big enough to fit the larger text
+                text = self.graphtext[1][i]#use the larger text
+            else:
+                text = self.graphtext[0][i]#use the smaller text
+
+            text_rect = text.get_rect(center=((x1+x2)//2,(y1+y2)//2))#the center of the text is the center of the box
             screen.blit(text, text_rect)
             mousex,mousey = pygame.mouse.get_pos()
-            # add collision detection for each, use the x1 and x2 values for the x values and the y1 and y2 values for the y values
-            if pygame.Rect(x1-25,y1,25,25).collidepoint(mousex,mousey):
+            if pygame.Rect(x1,y1,box_xy,box_xy).collidepoint(mousex,mousey):#if the mouse is over the box
                 if Mousebuttons == 1:
                     self.graphrange = list(self.graphrangeoptions.keys())[i]
                     print('clicked',i)
-            # if mousex > (self.startpos[0]-5)-25 and mousex < (self.startpos[0]-5) and mousey > (self.startpos[1]+(i*30)) and mousey < (self.startpos[1]+25+(i*30)):
-            #     if Mousebuttons == 1:
-            #         self.graphrange = list(self.graphrangeoptions.keys())[i]
-            #         print('clicked',i)
+
     
     def update_range_graphs(self,stockvalues=0):
 
@@ -220,15 +226,17 @@ class Stock():
             self.graph(stocklist)#graph the player networth
             self.message(screen)#display the messages
         
-        blnkspacex = int((self.startpos[0]-self.endpos[0])/10)#the amount of blank space to be left on the right side of the graph for x
-        blnkspacey = int((self.endpos[1]-self.startpos[1])/10)#the amount of blank space to be left on the right side of the graph for y
-        if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
-            gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),(self.endpos[0],self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.startpos[1])],(60,60,60))#draws the background of the graph
+        blnkspacex = (self.startpos[0]-self.endpos[0])//10#the amount of blank space to be left on the right side of the graph for x
+        blnkspacey = (self.endpos[1]-self.startpos[1])//10#the amount of blank space to be left on the right side of the graph for y
 
+        if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
+            gfxdraw.filled_polygon(screen, [(self.endpos[0], self.startpos[1]), self.endpos, (self.startpos[0], self.endpos[1]), self.startpos],(0, 55, 0))  # draws the perimeter around graphed values
+            gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),(self.endpos[0],self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.startpos[1])],(15,15,15))#draws the background of the graph
+            
         self.rangecontrols(screen,player,stocklist,Mousebuttons)#draws the range controls
 
-        graphheight = (self.endpos[1]-self.startpos[1])/2# graphheight is the height of the graph
-        graphwidth = (self.startpos[0]-self.endpos[0])
+        graphheight = (self.endpos[1]-self.startpos[1])/2-blnkspacex# graphheight is the height of the graph
+        graphwidth = (self.startpos[0]-self.endpos[0])-blnkspacex
 
         #first need to find the x values that we want to graph (the points that are in the range of the graph and then reduce it to fit on the graph)
     
@@ -246,7 +254,7 @@ class Stock():
             else:
                 newgraph = num
 
-            addedvalue = (self.startpos[1]+graphheight-30)# the value that is added to the y value of the point to make it fit on the graph
+            addedvalue = (self.startpos[1]+graphheight-30)+blnkspacey# the value that is added to the y value of the point to make it fit on the graph
             # graphingpoints = np.array(graphingpoints)# makes the graphingpoints a numpy array - MIGHT BE ABLE TO REMOVE ------------------------------------------------------
             graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * newgraph)) + addedvalue# Doing the math to make the points fit on the graph 
 
@@ -271,13 +279,23 @@ class Stock():
 
                 
         #Everything below is after the graph is drawn
-        gfxdraw.rectangle(screen,pygame.Rect(self.endpos[0],self.startpos[1],(self.startpos[0]-self.endpos[0]),(self.endpos[1]-self.startpos[1])),(0,0,0))#draws the perimeter around graphed values
+        # gfxdraw.rectangle(screen,pygame.Rect(self.endpos[0],self.startpos[1],(self.startpos[0]-self.endpos[0]),(self.endpos[1]-self.startpos[1])),(0,0,0))#draws the perimeter around graphed values
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(self.endpos[0], self.startpos[1], (self.startpos[0] - self.endpos[0]),(self.endpos[1] - self.startpos[1])), 5)
 
         sortedlist = self.graphrangelists[self.graphrange].copy()#makes a copy of the graphrangelists
         sortedlist.sort()#sorts the list
-        for i in range(4):
+        # only have all 4 lines if the graph has a differnce of .1 % or more
+        if abs(1-(sortedlist[0]/sortedlist[-1]))*100 >= 2.5:
+            linecount = 4
+        elif abs(1-(sortedlist[0]/sortedlist[-1]))*100 >= 1.25:
+            linecount = 3
+        elif abs(1-(sortedlist[0]/sortedlist[-1]))*100 >= .75:
+            linecount = 2
+        else:
+            linecount = 1
+        for i in range(linecount):
             # y = self.startpos[1] +  + (i * (graphheight/2))
-            lenpos = int((len(self.graphrangelists[self.graphrange])-1)*(i/3))#Position based purely on the length of the current graph size
+            lenpos = int((len(self.graphrangelists[self.graphrange])-1)*(i/linecount))#Position based purely on the length of the current graph size
             point = sortedlist[lenpos]#using the sorted list so there is an even amount of points between each line
             
             #gets the position of the point in the graphingpoints (the y values) - the sorted list moves the points around so the index of the point is different
@@ -286,7 +304,7 @@ class Stock():
             # round the point to 2 decimal places in the f string
             text = fontlist[30].render(f'{point:.2f}',(255,255,255))[0]
 
-            gfxdraw.line(screen,self.endpos[0],int(graphingpoints[yvalpos]),self.startpos[0],int(graphingpoints[yvalpos]),(150,150,150))
+            gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
             # change the line below to be above the line above rather then centered on the point
             text_rect = text.get_rect(center=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
             screen.blit(text,text_rect)
@@ -295,8 +313,15 @@ class Stock():
 
         #draws the text that displays the price of the stock
         if type(self) == Stock:#text displaying the price, and the net worth
-            screen.blit(fontlist[40].render(f' ${round(self.price,2)}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40))    
-            text = bold40.render(f' {self.name}',(255,255,255))[0]
+            pricetext = fontlist[40].render(f'Price ${round(self.price,2)}',(255,255,255))[0]
+            textwidth = pricetext.get_width()+20; textheight = pricetext.get_height()
+            textx = self.endpos[0]+20; texty = self.endpos[1]-55
+            # use textx, and texty to draw the polygon
+            gfxdraw.filled_polygon(screen,[(textx-15,texty-5),(textx+textwidth,texty-5),(textx+textwidth+10,texty+textheight+5),(textx,texty+textheight+5)],(60,60,60))
+            screen.blit(pricetext,(textx,texty))
+            text = bold40.render(f' {self.name}',(255,255,255))[0]            
+            
+        
         else:
             screen.blit(fontlist[40].render(f' Net Worth ${round(self.cash+sum([stock[2].price for stock in player.stocks]),2)}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
             text = bold40.render(f'Portfolio',(255,255,255))[0]
@@ -305,9 +330,9 @@ class Stock():
 
         #Below is the price change text
         # percentchange = round(((self.price - self.graphrangelists[self.graphrange][-2])/self.graphrangelists[self.graphrange][-2])*100,2)
-        percentchange = round((1-(self.graphrangelists[self.graphrange][0]/self.graphrangelists[self.graphrange][-1]))*100,2)
+        percentchange = round(((self.graphrangelists[self.graphrange][-1]/self.graphrangelists[self.graphrange][0])-1)*100,2)
        
-        color = (0,200,0) if percentchange >= 1 else (200,0,0)
+        color = (0,200,0) if percentchange >= 0 else (200,0,0)
         if type(self) == Stock:
             screen.blit(fontlist[40].render(f"{'+' if percentchange >= 0 else '-'}{percentchange}%",color)[0],(self.endpos[0]+15,self.startpos[1]+45))
         elif type(self) == self.Playerclass:
