@@ -230,73 +230,57 @@ class Stock():
         blnkspacey = (self.endpos[1]-self.startpos[1])//10#the amount of blank space to be left on the right side of the graph for y
 
         if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
+            percentchange = round(((self.graphrangelists[self.graphrange][-1]/self.graphrangelists[self.graphrange][0])-1)*100,2)
+            color = (0,200,0) if percentchange >= 0 else (200,0,0)
+
             gfxdraw.filled_polygon(screen, [(self.endpos[0], self.startpos[1]), self.endpos, (self.startpos[0], self.endpos[1]), self.startpos],(0, 55, 0))  # draws the perimeter around graphed values
             gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),(self.endpos[0],self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.startpos[1])],(15,15,15))#draws the background of the graph
             
         self.rangecontrols(screen,player,stocklist,Mousebuttons)#draws the range controls
 
-        graphheight = (self.endpos[1]-self.startpos[1])/2-blnkspacex# graphheight is the height of the graph
+        # Kind of deceptive with the name, but graphheight is not acually the full height of the graph - it is divided by 1.5 and then the blank space is subtracted
+        graphheight = ((self.endpos[1]-self.startpos[1])//1.5)-blnkspacex
         graphwidth = (self.startpos[0]-self.endpos[0])-blnkspacex
 
-        #first need to find the x values that we want to graph (the points that are in the range of the graph and then reduce it to fit on the graph)
-    
-        
-        graphingpoints = self.graphrangelists[self.graphrange]# putting the points for the current graph we are using in the graphingpoints
+        # putting the points for the current graph we are using in the graphingpoints
+        graphingpoints = self.graphrangelists[self.graphrange]
 
         # finding the min and max values of the graphingpoints
         minpoint = (np.amin(self.graphrangelists[self.graphrange]))
-        maxpoint = (np.amax(self.graphrangelists[self.graphrange]))
-
+        maxpoint = (np.amax(self.graphrangelists[self.graphrange]))        
 
         if minpoint != maxpoint:#prevents divide by zero error
-            if int(num:=graphheight/(maxpoint-minpoint)) > graphheight:#if the newgraph is greater than the graphheight then set it to half the graphheight
-                newgraph = graphheight/2
-            else:
-                newgraph = num
+            yScale = graphheight/(maxpoint-minpoint)#the amount of pixels per point with the y axis
 
-            addedvalue = (self.startpos[1]+graphheight-30)+blnkspacey# the value that is added to the y value of the point to make it fit on the graph
-            # graphingpoints = np.array(graphingpoints)# makes the graphingpoints a numpy array - MIGHT BE ABLE TO REMOVE ------------------------------------------------------
-            graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * newgraph)) + addedvalue# Doing the math to make the points fit on the graph 
+            yOffset = (self.startpos[1]+graphheight-(blnkspacey*3.5))+blnkspacey# slides the graph up on the screen to fit
+
+            graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * yScale)) + yOffset# Doing the math to make the points fit on the graph 
 
         # creating the spacing for the graph
-        if len(self.graphrangelists[self.graphrange]) > 0 and len(self.graphrangelists[self.graphrange]) < graphwidth:
-            spacing = graphwidth/len(self.graphrangelists[self.graphrange])
+        if len(self.graphrangelists[self.graphrange]) > 0 and len(self.graphrangelists[self.graphrange]) < graphwidth:#if there are points in the graph and the graph is not too small
+            spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
         else:
             spacing = 1
+        
 
         graphpointlen = len(graphingpoints)# doing this before the iteration to save time
         for i,value in enumerate(graphingpoints):
             if i >= graphpointlen-1:
-                # print(i)
                 pass#if last one in list or i is too great then don't draw line
             else:
-
                 nextvalue = graphingpoints[i+1]
                 xpos = self.endpos[0]
-
                 gfxdraw.line(screen,xpos+int(i*spacing),int(value),xpos+int((i+1)*spacing),int(nextvalue),(255,255,255))
 
 
-                
-        #Everything below is after the graph is drawn
-        # gfxdraw.rectangle(screen,pygame.Rect(self.endpos[0],self.startpos[1],(self.startpos[0]-self.endpos[0]),(self.endpos[1]-self.startpos[1])),(0,0,0))#draws the perimeter around graphed values
+        # black outline of the graph
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(self.endpos[0], self.startpos[1], (self.startpos[0] - self.endpos[0]),(self.endpos[1] - self.startpos[1])), 5)
-
-        sortedlist = self.graphrangelists[self.graphrange].copy()#makes a copy of the graphrangelists
-        sortedlist.sort()#sorts the list
-        # only have all 4 lines if the graph has a differnce of .1 % or more
-        if abs(1-(sortedlist[0]/sortedlist[-1]))*100 >= 2.5:
-            linecount = 4
-        elif abs(1-(sortedlist[0]/sortedlist[-1]))*100 >= 1.25:
-            linecount = 3
-        elif abs(1-(sortedlist[0]/sortedlist[-1]))*100 >= .75:
-            linecount = 2
-        else:
-            linecount = 1
-        for i in range(linecount):
-            # y = self.startpos[1] +  + (i * (graphheight/2))
-            lenpos = int((len(self.graphrangelists[self.graphrange])-1)*(i/linecount))#Position based purely on the length of the current graph size
-            point = sortedlist[lenpos]#using the sorted list so there is an even amount of points between each line
+        
+        #Below is the text that displays the price of the stock and the lines that go across the graph
+        sortedlist = self.graphrangelists[self.graphrange].copy();sortedlist.sort()# first makes a copy of the list, then sorts the list
+        for i in range(4):
+            lenpos = int((len(self.graphrangelists[self.graphrange])-1)*(i/3))#Position based purely on the length of the current graph size
+            point = sortedlist[lenpos]#using the sorted list so an even amount of price values are displayed
             
             #gets the position of the point in the graphingpoints (the y values) - the sorted list moves the points around so the index of the point is different
             yvalpos = np.where(self.graphrangelists[self.graphrange] == point)[0][0]
@@ -305,7 +289,6 @@ class Stock():
             text = fontlist[30].render(f'{point:.2f}',(255,255,255))[0]
 
             gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
-            # change the line below to be above the line above rather then centered on the point
             text_rect = text.get_rect(center=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
             screen.blit(text,text_rect)
 
