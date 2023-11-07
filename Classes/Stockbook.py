@@ -31,7 +31,7 @@ class Stockbook(Menu):
                 else:#else render it with a smaller font and orange color
                     self.stocktext[key][i] = fontlist[30].render(line,(225, 90, 15))[0]
         
-    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,play_pause,player):
+    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,player):
         mousex,mousey = pygame.mouse.get_pos()
         for i,stock in enumerate(stocklist):
             if pygame.Rect.collidepoint(pygame.Rect(215+(i*8),120+(i*65),175,35),mousex,mousey) and Mousebuttons == 1:#if the mouse is hovering over the stock
@@ -45,9 +45,9 @@ class Stockbook(Menu):
             screen.blit(fontlist[36].render(f'{stock.name} ${round(stock.price,2)}',(255,255,255))[0],(225+(i*8),125+(i*65)))
             if self.selectedstock == i:
                 pygame.draw.polygon(screen, (0,0,0), ((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),5)
-                self.selected_stock(screen,stocklist,play_pause,player,Mousebuttons)
+                self.selected_stock(screen,stocklist,player,Mousebuttons)
 
-    def draw_info(self,screen:pygame.Surface,stocklist:list,play_pause,player,Mousebuttons):
+    def draw_info(self,screen:pygame.Surface,stocklist:list,player,Mousebuttons):
         gfxdraw.filled_polygon(screen,((290,700),(320,955),(1570,955),(1535,700)),(60,60,60))
 
         screen.blit(fontlist[90].render(f'{stocklist[self.selectedstock].name}',(255,255,255))[0],(300,710))
@@ -158,9 +158,9 @@ class Stockbook(Menu):
         
 
 
-    def selected_stock(self,screen,stocklist:list,play_pause,player,Mousebuttons:int):
+    def selected_stock(self,screen,stocklist:list,player,Mousebuttons:int):
         """This function is called for the selected stock in the stockbook menu"""
-        self.draw_info(screen,stocklist,play_pause,player,Mousebuttons)
+        self.draw_info(screen,stocklist,player,Mousebuttons)
         self.quantity_controls(screen,Mousebuttons,player,stocklist)
         self.buysell_controls(screen,Mousebuttons,player,stocklist)
     

@@ -18,12 +18,14 @@ aspect_ratio = 16 / 9
 
 # Get the size of the user's monitor
 monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
+print(monitor_width, monitor_height)
 # Calculate the appropriate size for your window based on the aspect ratio and the monitor size
 window_width, window_height = (int(monitor_height * aspect_ratio), monitor_height) if int(monitor_height * aspect_ratio) <= monitor_width else (monitor_width, int(monitor_width / aspect_ratio))
 
 # Calculate the position of the window to center it on the monitor
 window_x, window_y = int((monitor_width - window_width) / 2), int((monitor_height - window_height) / 2)
 print(window_x, window_y)
+
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
 screen = pygame.display.set_mode((window_width, window_height), pygame.NOFRAME)
 screen.fill((0, 0, 0))
@@ -69,6 +71,7 @@ if __name__ == "__main__":
             player.update_price(player)
         player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
         drawgametime(gametime,screen)
+        
         ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
 
 
