@@ -14,7 +14,7 @@ class Menu():
         self.menudrawn = False
         self.iconcoords = iconcoords
     
-    def draw_icon(self,screen,Mousebuttons:int,stocklist:list,play_pause:bool,player,menulist):
+    def draw_icon(self,screen,Mousebuttons:int,stocklist:list,player,menulist):
         
         mousex,mousey = pygame.mouse.get_pos()
         collide = pygame.Rect.collidepoint(pygame.Rect(self.iconcoords[0],self.iconcoords[1],self.icon.get_width(),self.icon.get_height()+self.icontext.get_height()),mousex,mousey)
@@ -36,11 +36,11 @@ class Menu():
         if self.menudrawn:
             self.draw_menu(screen,Mousebuttons,stocklist,play_pause,player)
 
-    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,play_pause,player):
+    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,player):
         """Mearly a placeholder for the child classes to override"""
         pass
 
-    def draw_menu(self,screen,Mousebuttons:int,stocklist:list,play_pause:bool,player):
+    def draw_menu(self,screen,Mousebuttons:int,stocklist:list,player):
         gfxdraw.filled_polygon(screen, ((200,100),(1500,100),(1600,980),(300,980)),(40,40,40))
         pygame.draw.polygon(screen, (0,0,0), ((200,100),(1500,100),(1600,980),(300,980)),10)
-        self.draw_menu_content(screen,stocklist,Mousebuttons,play_pause,player)#draws the content of the menu, defined in the child classes
+        self.draw_menu_content(screen,stocklist,Mousebuttons,player)#draws the content of the menu, defined in the child classes

@@ -44,7 +44,7 @@ player = Player(window_offset,stocknames)
 stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames) for name in stocknames}
 
 portfolio = Portfolio()
-ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]))
+ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]),100)
 Mousebuttons = 0
 Tick = 0
 stocklist = [stockdict[name] for name in stocknames]
@@ -56,16 +56,14 @@ if __name__ == "__main__":
         mousex,mousey = pygame.mouse.get_pos()
         screen.fill((50,50,50))
         
-        if Tick < 6: Tick += 1#used for ui_controls.update
-        else: Tick = 1
         # print(time.time())
         # print(time.asctime())
         # start_time = timeit.default_timer()
-        stockgraphmanager.draw_graphs(screen,stocklist,player,ui_controls.logic(Tick),Mousebuttons,menulist,stockbook,gametime)
+        stockgraphmanager.draw_graphs(screen,stocklist,player,Mousebuttons,menulist,stockbook,gametime)
         # end_time = timeit.default_timer()
         # print(f"Execution times stock graph: {end_time - start_time} seconds")
-        if ui_controls.logic(Tick):
-            gametime = Gametime(gametime,ui_controls.playing,screen,clock.get_fps())
+        for i in range(ui_controls.gameplay_speed):
+            # gametime = Gametime(gametime,,screen,clock.get_fps())
             for stock in stocklist:
                 stock.update_price(player)
             player.update_price(player)
@@ -74,8 +72,8 @@ if __name__ == "__main__":
         ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
 
 
-        stockbook.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player,menulist)
-        portfolio.draw_icon(screen,Mousebuttons,stocklist,ui_controls.logic(Tick),player,menulist)
+        stockbook.draw_icon(screen,Mousebuttons,stocklist,player,menulist)
+        portfolio.draw_icon(screen,Mousebuttons,stocklist,player,menulist)
         screen.blit(update_fps(clock),(1570,0))
 
 

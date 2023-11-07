@@ -1,74 +1,56 @@
 import pygame
 from Defs import *
+from pygame import gfxdraw
 
 class UI_controls():
-    def __init__(self,windowoffset) -> None:
-        path = 'Assets/UI controls/'
-        self.images = {
-            "pause":pygame.image.load(path+"/pausebutton.png").convert_alpha(),
-            "play":pygame.image.load(path+"playbutton.png").convert_alpha(),
-            "fastforward":pygame.image.load(path+"fastforwardbutton.png").convert_alpha(),
-            "blankbutton":pygame.image.load(path+"blankbutton.png").convert_alpha(),
-        }
-
+    def __init__(self,windowoffset,maxspeed) -> None:
         self.winset = windowoffset
-        for key,image in self.images.items():
-            image = pygame.transform.scale(image,(50,52))
-            surface = pygame.Surface((image.get_width()+10,image.get_height()+10))
-            surface.fill((110,110,110))
-            surface.blit(image,(5,5))
-            self.images[key] = surface.convert_alpha()
+        self.gameplay_speed = 0
+        self.maxspeed = maxspeed
+        self.gamespeedtexts = [fontlist[40].render(f'x{speed}',(0,0,0))[0] for speed in range(self.maxspeed+1)]
 
-        self.gameplay_speed = 3
-        self.playing = False
-
-        self.pauseplayxy = (805+self.winset[0],980+self.winset[1])
-        self.fastwardxy = (805+self.winset[0]+70,980+self.winset[1])
-
-        self.playrect = pygame.Rect(self.pauseplayxy[0],self.pauseplayxy[1],self.images['play'].get_width(),self.images['play'].get_height())
-        self.fastrect = pygame.Rect(self.fastwardxy[0],self.fastwardxy[1],self.images['fastforward'].get_width(),self.images['fastforward'].get_height())
-        self.blankrect = pygame.Rect(self.fastwardxy[0]+70,self.fastwardxy[1],self.images['blankbutton'].get_width(),self.images['blankbutton'].get_height())
-        self.gamespeedtexts = [fontlist[40].render(f'x{speed}',(0,0,0))[0] for speed in range(0,4)]
-    def logic(self,Tick:int):
-        if self.playing:#if not paused
-            if self.gameplay_speed == 1 and not Tick % 3:#if halfspeed, and on an odd tick
-                return True
-            if self.gameplay_speed == 2 and Tick % 2:#if not paused, not fastforward, and on an even tick
-                return True
-            elif self.gameplay_speed == 3:#if fastforward, and on any tick
-                return True
-        else:#if paused
-            return False
+        self.sliderxy = [702+self.winset[0],1003+self.winset[1]]
         
     def draw(self,screen,mousebuttons:int,menudrawn:bool):
-        
-        if self.playing:
-            screen.blit(self.images['pause'],self.pauseplayxy)
-        else:
-            screen.blit(self.images['play'],self.pauseplayxy)
+        # draw a polygon starting at pauseplayxy, then fastwardxy, then fastwardxy+70, then pauseplayxy+70
+        # use numbers rather than variables
+        pygame.draw.polygon(screen,(110,110,110),[(700+self.winset[0],1000+self.winset[1]),(1088+self.winset[0],1000+self.winset[1]),(1088+self.winset[0],1060+self.winset[1]),(700+self.winset[0],1060+self.winset[1])])
+        # make a gradient of color going from grey to red within the polygon
+        start_color = pygame.Color(110, 110, 110)
+        end_color = pygame.Color(255, 0, 0)
+
+        # Define the polygon points
+        points = [(700+self.winset[0],1000+self.winset[1]),(1088+self.winset[0],1000+self.winset[1]),(1088+self.winset[0],1060+self.winset[1]),(700+self.winset[0],1060+self.winset[1])]
+        # Calculate the number of lines in the gradient
+        num_lines = points[1][0] - points[0][0]
+
+        # Draw each line in the gradient
+        for i in range(num_lines):
+            color = (
+                start_color.r + (end_color.r - start_color.r) * i / num_lines,
+                start_color.g + (end_color.g - start_color.g) * i / num_lines,
+                start_color.b + (end_color.b - start_color.b) * i / num_lines
+            )
+            pygame.draw.line(screen, color, (points[0][0] + i, points[0][1]), (points[0][0] + i, points[3][1]))
+
+        # put a box around the polygon with a width of 5 colored black
+        gfxdraw.filled_polygon(screen,[self.sliderxy,(self.sliderxy[0]+15,self.sliderxy[1]),(self.sliderxy[0]+15,self.sliderxy[1]+55),(self.sliderxy[0],self.sliderxy[1]+55)],(60,60,60))
+        # the polygon is 388 pixels wide, so each pixel is worth 1/16 of the speed of the game
+        pygame.draw.polygon(screen,(0,0,0),[(700+self.winset[0],1000+self.winset[1]),(1088+self.winset[0],1000+self.winset[1]),(1088+self.winset[0],1060+self.winset[1]),(700+self.winset[0],1060+self.winset[1])],5)
+        mousex,mousey = pygame.mouse.get_pos()
+        if pygame.mouse.get_pressed()[0]:
+            rect = pygame.Rect(709+self.winset[0],1000+self.winset[1],373,60)#the rect that the slider can be moved in
+            
+            if rect.collidepoint(mousex,mousey):
+
+                self.sliderxy[0] = mousex-7
+                # (current slider - original slider) // (width of polygon // 16) = speed of game
+                self.gameplay_speed = ((self.sliderxy[0]-702+self.winset[0])//((1088-700)//(self.maxspeed+1)))#get the speed of the game from the slider position
+
+        # draws the text in the middle of the polygon that indicates the speed of the game
+        text_x = 700 + (1088 - 700) // 2 - self.gamespeedtexts[self.gameplay_speed].get_width() // 2
+        text_y = 1000 + (1060 - 1000) // 2 - self.gamespeedtexts[self.gameplay_speed].get_height() // 2
+        screen.blit(self.gamespeedtexts[self.gameplay_speed], (text_x, text_y))
 
         
-        screen.blit(self.images['fastforward'],self.fastwardxy )
         
-        screen.blit(self.images['blankbutton'],(self.fastwardxy[0]+70,self.fastwardxy[1]))
-        if self.playing:
-            screen.blit(self.gamespeedtexts[self.gameplay_speed],(self.fastwardxy[0]+88,self.fastwardxy[1]+17))
-        else:
-            screen.blit(self.gamespeedtexts[0],(self.fastwardxy[0]+88,self.fastwardxy[1]+17))
-        
-        self.clicksensing(mousebuttons)#740,750
-    def clicksensing(self,mousebuttons:int):
-        mousex,mousey = pygame.mouse.get_pos()
-        
-        if mousebuttons == 1:
-            if self.playrect.collidepoint(mousex,mousey):
-                self.playing = not self.playing
-            elif self.fastrect.collidepoint(mousex,mousey) or self.blankrect.collidepoint(mousex,mousey):
-                if not self.playing:#if paused, then play
-                    self.playing = True
-                    self.gameplay_speed = 1
-                else:#if playing, then change speed
-                    if self.gameplay_speed == 3:
-                        self.gameplay_speed = 1
-                    else:
-                        self.gameplay_speed += 1

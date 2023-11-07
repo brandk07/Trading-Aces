@@ -104,7 +104,7 @@ class StockGraphManager:
             self.mousehovering = None
 
 
-    def draw_graphs(self, screen, stocklist:list, player, play_pause, Mousebuttons, menulist:list, stockbook,currentime):
+    def draw_graphs(self, screen, stocklist:list, player, Mousebuttons, menulist:list, stockbook,currentime):
         self.draw_ui(screen,Mousebuttons,stocklist)
         
         for i in range(self.graph_config[self.current_config][1]):
