@@ -34,7 +34,7 @@ class Menu():
         screen.blit(self.icontext,(textx,self.icon.get_height()+self.iconcoords[1]+5))
         
         if self.menudrawn:
-            self.draw_menu(screen,Mousebuttons,stocklist,play_pause,player)
+            self.draw_menu(screen,Mousebuttons,stocklist,player)
 
     def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,player):
         """Mearly a placeholder for the child classes to override"""
