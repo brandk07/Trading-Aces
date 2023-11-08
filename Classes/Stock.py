@@ -231,9 +231,9 @@ class Stock():
 
         if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
             percentchange = round(((self.graphrangelists[self.graphrange][-1]/self.graphrangelists[self.graphrange][0])-1)*100,2)
-            color = (0,200,0) if percentchange >= 0 else (200,0,0)
+            color = (0,55,0) if percentchange >= 0 else (55,0,0)
 
-            gfxdraw.filled_polygon(screen, [(self.endpos[0], self.startpos[1]), self.endpos, (self.startpos[0], self.endpos[1]), self.startpos],(0, 55, 0))  # draws the perimeter around graphed values
+            gfxdraw.filled_polygon(screen, [(self.endpos[0], self.startpos[1]), self.endpos, (self.startpos[0], self.endpos[1]), self.startpos],color)  # draws the perimeter around graphed values
             gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),(self.endpos[0],self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.startpos[1])],(15,15,15))#draws the background of the graph
             
         self.rangecontrols(screen,player,stocklist,Mousebuttons)#draws the range controls

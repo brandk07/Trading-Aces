@@ -5,7 +5,7 @@ from Classes.menu import Menu
 
 class Stockbook(Menu):
     def __init__(self,stocknames:list) -> None:
-        super().__init__(r'Assets\stockbook\book.png',(30,100))
+        super().__init__(r'Assets\stockbook\book.png',(30,150))
         self.quantity = 0
         self.stocktext = {name:[] for name in stocknames}
         self.uparrow = pygame.image.load(r'Assets\stockbook\uparrow.png').convert_alpha()

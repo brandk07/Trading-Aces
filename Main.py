@@ -4,7 +4,8 @@ import time
 from Defs import *
 # from Classes.Stockprice import Stock
 from Classes.Stock import Stock
-from Classes.UI_controls import *
+from Classes.uninteresting_classes.UI_controls import UI_controls
+from Classes.uninteresting_classes.Gametime import GameTime
 from Classes.Playerportfolio import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
@@ -46,31 +47,30 @@ player = Player(window_offset,stocknames)
 stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames) for name in stocknames}
 
 portfolio = Portfolio()
-ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]),100)
+ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]),15)
 Mousebuttons = 0
 Tick = 0
 stocklist = [stockdict[name] for name in stocknames]
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
-gametime = Getfromfile(stockdict,player)
+gametime = GameTime(2023,11,7,9,30,0)
 menulist = [stockbook,portfolio]
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
         screen.fill((50,50,50))
         
-        # print(time.time())
-        # print(time.asctime())
-        # start_time = timeit.default_timer()
+        # print(mousex,mousey)
         stockgraphmanager.draw_graphs(screen,stocklist,player,Mousebuttons,menulist,stockbook,gametime)
-        # end_time = timeit.default_timer()
-        # print(f"Execution times stock graph: {end_time - start_time} seconds")
+
+        
         for i in range(ui_controls.gameplay_speed):
             # gametime = Gametime(gametime,,screen,clock.get_fps())
+            gametime.increase_time(1)
             for stock in stocklist:
                 stock.update_price(player)
             player.update_price(player)
         player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
-        drawgametime(gametime,screen)
+        gametime.drawgametime(screen,True)
         
         ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
 
