@@ -30,11 +30,12 @@ class Stock():
         self.graphrange = 'hour' #
         self.graphrangelists = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
-        self.bonustrendranges = [[((-3,3)),((140_400,421_200))],[((-5,5)),((59400,81000))],[((-7,7)),((8100,21600))],[((-12,12)),((150,3600))]]
+        self.bonustrendranges = [[((-1,1)),((140_400,421_200))],[((-3,3)),((59400,81000))],[((-8,8)),((8100,21600))],[((-12,13)),((150,3600))]]
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]
         self.datafromfile()
         self.price = self.graphrangelists['recent'][-1]
         
+        self.nametext = bold40.render(f' {self.name}',(255,255,255))[0] if type(self) == Stock else bold40.render(f' Portfolio',(0,0,0))[0]
         #variables for the stock price+
         self.volatility = volatility
         #rewrite the line below but include the range for each, the first number is the range for the % added to each movement, the second is the range for the time for each bonus trend
@@ -44,6 +45,7 @@ class Stock():
         # self.fill_graphs()
         self.reset_trends()
     
+
     def __str__(self) -> str:
         return f'{self.name}'
 
@@ -302,14 +304,14 @@ class Stock():
             # use textx, and texty to draw the polygon
             gfxdraw.filled_polygon(screen,[(textx-15,texty-5),(textx+textwidth,texty-5),(textx+textwidth+10,texty+textheight+5),(textx,texty+textheight+5)],(60,60,60))
             screen.blit(pricetext,(textx,texty))
-            text = bold40.render(f' {self.name}',(255,255,255))[0]            
+                    
             
         
         else:
             screen.blit(fontlist[40].render(f' Net Worth ${round(self.cash+sum([stock[2].price for stock in player.stocks]),2)}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
-            text = bold40.render(f'Portfolio',(255,255,255))[0]
+            
 
-        screen.blit(text,(self.endpos[0]+15,self.startpos[1]+15))#draws the text that displays the name of the stock or the player
+        screen.blit(self.nametext,(self.endpos[0]+15,self.startpos[1]+15))#draws the text that displays the name of the stock or the player
 
         #Below is the price change text
         # percentchange = round(((self.price - self.graphrangelists[self.graphrange][-2])/self.graphrangelists[self.graphrange][-2])*100,2)

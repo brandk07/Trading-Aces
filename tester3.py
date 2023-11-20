@@ -1,1 +1,1 @@
-print(37%15)
+# create a python script that tests how long it takes to render a input string

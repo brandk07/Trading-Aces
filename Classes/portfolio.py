@@ -7,7 +7,7 @@ import pygame.gfxdraw
 class Portfolio(Menu):
     def __init__(self):
         super().__init__(r'Assets\Portfolio\portfolio.png',(30,325))
-        self.icon = pygame.image.load(r'Assets\Portfolio\portfolio.png').convert_alpha()
+        # self.icon = pygame.image.load(r'Assets\Portfolio\portfolio2.png').convert_alpha()
         self.icon = pygame.transform.scale(self.icon,(140,100))
         # remove all the white from the image
         self.icon.set_colorkey((255,255,255))

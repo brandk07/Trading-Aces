@@ -4,7 +4,7 @@ import time
 from Defs import *
 # from Classes.Stockprice import Stock
 from Classes.Stock import Stock
-from Classes.uninteresting_classes.UI_controls import UI_controls
+from Classes.UI_controls import UI_Controls
 from Classes.uninteresting_classes.Gametime import GameTime
 from Classes.Playerportfolio import Player
 from Classes.StockGraphManager import StockGraphManager
@@ -47,7 +47,8 @@ player = Player(window_offset,stocknames)
 stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames) for name in stocknames}
 
 portfolio = Portfolio()
-ui_controls = UI_controls((window_offset[0]*-1,window_offset[1]),15)
+ui_controls1 = UI_Controls((window_offset[0]*-1,window_offset[1]),30,[700,1000],[380,60],'horizontal')
+ui_controls2 = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
 Mousebuttons = 0
 Tick = 0
 stocklist = [stockdict[name] for name in stocknames]
@@ -63,7 +64,7 @@ if __name__ == "__main__":
         stockgraphmanager.draw_graphs(screen,stocklist,player,Mousebuttons,menulist,stockbook,gametime)
 
         
-        for i in range(ui_controls.gameplay_speed):
+        for i in range(ui_controls1.gameplay_speed):
             # gametime = Gametime(gametime,,screen,clock.get_fps())
             gametime.increase_time(1)
             for stock in stocklist:
@@ -72,7 +73,8 @@ if __name__ == "__main__":
         player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
         gametime.drawgametime(screen,True)
         
-        ui_controls.draw(screen,Mousebuttons,stockbook.menudrawn)#draws the ui controls to the screen, and senses for clicks
+        ui_controls1.draw(screen)#draws the ui controls to the screen, and senses for clicks
+        ui_controls2.draw(screen)#draws the ui controls to the screen, and senses for clicks
 
 
         stockbook.draw_icon(screen,Mousebuttons,stocklist,player,menulist)
