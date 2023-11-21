@@ -8,7 +8,6 @@ def barpos(rect:pygame.Rect,wh:int,xy:int,maxspeed:int,gamespeed:int,horizontal=
     if rect.collidepoint(mousex,mousey):
         seclength = (wh-20)/maxspeed# minus 10 for bar width / 2
         
-
         if horizontal:
             mouselength = int((mousex-xy)/seclength)# finding how many sections the mouse is away from the slider [0,0]
         else:
@@ -98,6 +97,3 @@ class Bar():
         textx = (self.sliderwh[0]//2 if self.orientation == 'horizontal' else self.sliderwh[0]//1.5) - self.gamespeedtexts[self.gameplay_speed].get_width()
         texty = self.gamespeedtexts[self.gameplay_speed].get_height()
         screen.blit(self.gamespeedtexts[self.gameplay_speed], (self.sliderxy[0]+textx, self.sliderxy[1]+self.sliderwh[1]//2-texty//2))
-
-# [20,60] [60,20]
-# [700,1000] [1000,650]

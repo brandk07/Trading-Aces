@@ -22,7 +22,7 @@ def test_rendering_time(input_string):
 
 # Test cases
 print(test_rendering_time("Price 1925"))
-print(test_rendering_time("Price 1925.15"))
+print(test_rendering_time("Price $1925.15"))
 print(test_rendering_time("Price 1925")+test_rendering_time(".15"))
 print(test_rendering_time(".15"))
 print(test_rendering_time("1925.15"))
