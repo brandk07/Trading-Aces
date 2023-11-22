@@ -10,3 +10,7 @@ Always convert to numpy right away and continue to use numpy functions like np.m
 ----------------------------------------
 Use super(f).function() more
  
+use :=
+
+dictionary.get(key,default value) - avoids errors
+dict.setdefault(key,default value) - will set a value if not found

@@ -47,7 +47,7 @@ player = Player(window_offset,stocknames)
 stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames) for name in stocknames}
 
 portfolio = Portfolio()
-ui_controls1 = UI_Controls((window_offset[0]*-1,window_offset[1]),30,[700,1000],[380,60],'horizontal')
+ui_controls1 = UI_Controls((window_offset[0]*-1,window_offset[1]),1500,[700,1000],[380,60],'horizontal')
 ui_controls2 = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
 Mousebuttons = 0
 Tick = 0
