@@ -5,7 +5,7 @@ from Defs import *
 # from Classes.Stockprice import Stock
 from Classes.Stock import Stock
 from Classes.UI_controls import UI_Controls
-from Classes.uninteresting_classes.Gametime import GameTime
+from Classes.Gametime import GameTime
 from Classes.Playerportfolio import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
@@ -50,9 +50,9 @@ portfolio = Portfolio()
 ui_controls1 = UI_Controls((window_offset[0]*-1,window_offset[1]),1500,[700,1000],[380,60],'horizontal')
 ui_controls2 = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
 Mousebuttons = 0
-Tick = 0
 stocklist = [stockdict[name] for name in stocknames]
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
+
 gametime = GameTime(2023,11,7,9,30,0)
 menulist = [stockbook,portfolio]
 if __name__ == "__main__":
@@ -85,14 +85,14 @@ if __name__ == "__main__":
         Mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                data = [gametime,[[stock[0],stock[1]] for stock in player.stocks],player.graphrange,player.cash]
+                data = [str(gametime),[[stock[0],stock[1]] for stock in player.stocks],player.graphrange,player.cash]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)
                 pygame.quit()
                 quit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                data = [gametime,[[stock[0],stock[1]] for stock in player.stocks],player.graphrange,player.cash]
+                data = [str(gametime),[[stock[0],stock[1]] for stock in player.stocks],player.graphrange,player.cash]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)

@@ -32,6 +32,7 @@ pygame.init()
 def Getfromfile(stockdict:dict,player):
     with open('Assets/Stockdata/extradata.json','r') as file:
         data = json.load(file)
+        print(data)
         if data:
             player.stocks = [[stock[0],stock[1],stockdict[stock[0]]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
             player.graphrange = data[2]

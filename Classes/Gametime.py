@@ -20,7 +20,8 @@ class GameTime:
         self.hour = hour
         self.minute = minute
         self.second = second
-
+    def __str__(self) -> str:
+        return f'{self.year}-{self.month}-{self.day} {self.hour}:{self.minute}:{self.second}'
     def increase_time(self, seconds):
         self.second += seconds
         while self.second >= self.SECONDS_PER_MINUTE:
