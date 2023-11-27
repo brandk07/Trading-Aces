@@ -104,7 +104,7 @@ class StockGraphManager:
             self.mousehovering = None
 
 
-    def draw_graphs(self, screen, stocklist:list, player, Mousebuttons, menulist:list, stockbook,currentime):
+    def draw_graphs(self, screen, stocklist:list, player, Mousebuttons):
         self.draw_ui(screen,Mousebuttons,stocklist)
         
         for i in range(self.graph_config[self.current_config][1]):
@@ -121,19 +121,11 @@ class StockGraphManager:
                 stock = [stock for stock in stocklist if stock.name == stockname][0]
                 # if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
                 #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
-                if not any([menu.menudrawn for menu in menulist]):#if no menus are drawn
-                    stock.draw(screen,player,startpos,endpos,stocklist,Mousebuttons)
+
+                stock.draw(screen,player,startpos,endpos,stocklist,Mousebuttons)
                     
-                if self.current_config != 'nona' and not any([menu.menudrawn for menu in menulist]):#if no menus are drawn and the current config is not nona
+                if self.current_config != 'nona':#if no menus are drawn and the current config is not nona
                     # self.changestockbutton(screen,startpos,endpos,Mousebuttons,stockname,stocklist)  ------------------------Used for changing stocks, don't want right now
                     pass
-                # stock.buy_sell(player,screen,Mousebuttons)
+
                 
-
-        # for stock in stocklist:
-        #     if not [obj.name for obj in stocklist][stockbook.selectedstock] == stock.name or not stockbook.menudrawn:
-        #         if stock.name not in self.picked_stocks:
-        #             stock.update(screen,play_pause,player,startpos,endpos,drawn=False)
-
-        # player.update(screen,play_pause,player,(1920,0),(1600,400),stocklist=stocklist)
-        # player.draw(screen,player,(1920,0),(1600,400),stocklist,currentime)

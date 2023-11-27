@@ -46,11 +46,12 @@ player = Player(window_offset,stocknames)
 #name, startingvalue_range, volatility, Playerclass, window_offset,stocknames,time
 stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames) for name in stocknames}
 
-portfolio = Portfolio()
-ui_controls1 = UI_Controls((window_offset[0]*-1,window_offset[1]),1500,[700,1000],[380,60],'horizontal')
-ui_controls2 = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
-Mousebuttons = 0
 stocklist = [stockdict[name] for name in stocknames]
+portfolio = Portfolio()
+ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),stocklist)
+# ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
+Mousebuttons = 0
+
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
 
 gametime = GameTime(2023,11,7,9,30,0)
@@ -61,20 +62,22 @@ if __name__ == "__main__":
         screen.fill((50,50,50))
         
         # print(mousex,mousey)
-        stockgraphmanager.draw_graphs(screen,stocklist,player,Mousebuttons,menulist,stockbook,gametime)
+        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,Mousebuttons)#draws the ui controls to the screen, and senses for clicks
 
         
-        for i in range(ui_controls1.gameplay_speed):
+        for i in range(ui_controls.gameplay_speed):
             # gametime = Gametime(gametime,,screen,clock.get_fps())
-            gametime.increase_time(1)
+            gametime.increase_time(100)
             for stock in stocklist:
                 stock.update_price(player)
             player.update_price(player)
-        player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
-        gametime.drawgametime(screen,True)
+        # player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
+
+        # gametime.drawgametime(screen,True)
         
-        ui_controls1.draw(screen)#draws the ui controls to the screen, and senses for clicks
-        ui_controls2.draw(screen)#draws the ui controls to the screen, and senses for clicks
+
+        
+
 
 
         stockbook.draw_icon(screen,Mousebuttons,stocklist,player,menulist)

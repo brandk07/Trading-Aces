@@ -15,6 +15,8 @@ def barpos(rect:pygame.Rect,wh:int,xy:int,maxspeed:int,gamespeed:int,horizontal=
         
         mouselength = maxspeed if mouselength > maxspeed else mouselength
         mouselength = 0 if mouselength < 0 else mouselength
+        # mouselength = mouselength if horizontal else maxspeed-mouselength
+
         return [int(mouselength*seclength)+xy,mouselength]
     
     seclength = (wh-20)/maxspeed# minus 10 for bar width / 2
@@ -32,7 +34,7 @@ class Bar():
         self.barwh = [wh[0]//19,wh[1]] if orientation == 'horizontal' else [wh[0],wh[1]//19]
         self.sliderwh = wh
         self.sliderxy = [pos[0]+self.winset[0],pos[1]+self.winset[1]]
-        self.barxy = self.sliderxy.copy()
+        self.barxy = self.sliderxy.copy() if orientation == 'horizontal' else [self.sliderxy[0],self.sliderxy[1]+self.sliderwh[1]-self.barwh[1]]
 
         # below is the slider offset, gives a bit more space for the mouse to get to 0 and max speed - conditional statement later for no errors
         soff = [-20,0,40,0] if orientation == 'horizontal' else [0,-20,0,40]
@@ -71,7 +73,7 @@ class Bar():
                 pygame.draw.line(self.sliderpoly, color, (i, 0),(i, self.sliderwh[1]))
 
 
-    def draw(self,screen:pygame.Surface):
+    def draw_bar(self,screen:pygame.Surface):
         # blit the sliderpoly surface to the screen first
         screen.blit(self.sliderpoly,self.sliderxy)
 
@@ -79,7 +81,7 @@ class Bar():
         if pygame.mouse.get_pressed()[0]:
             
             if self.orientation == 'vertical':
-                self.barxy[1],self.gameplay_speed = barpos(self.slider_rect,self.sliderwh[1],self.sliderxy[1],self.maxvalue,self.gameplay_speed,False)
+                self.barxy[1],self.gameplay_speed = barpos(self.slider_rect,-self.sliderwh[1]+40,self.sliderxy[1]+self.sliderwh[1]-20,self.maxvalue,self.gameplay_speed,False)
             elif self.orientation == 'horizontal':
                 self.barxy[0],self.gameplay_speed = barpos(self.slider_rect,self.sliderwh[0],self.sliderxy[0],self.maxvalue,self.gameplay_speed)
                 

@@ -40,6 +40,8 @@ class Stock():
         #variables for the stock price+
         self.volatility = volatility
         self.recentrenders = {}
+
+        self.rangetime = 600# the amount of time in seconds /100 before the range will be switched -  if the range controls aren't drawn
         # self.reset_trends()
     
 
@@ -168,7 +170,7 @@ class Stock():
             self.update_range_graphs(stockvalues)#updates the range graphs
 
 
-    def rangecontrols(self,screen:pygame.Surface,player:object,stocklist, Mousebuttons):
+    def rangecontrols(self,screen:pygame.Surface,Mousebuttons):
         """draws the range controls and checks for clicks"""
         
         #draw 4 25/25 filled polygons in the top left corner of the graph with the last one's x pos being startpos[0]-5
@@ -214,8 +216,47 @@ class Stock():
                 # print('deleting',key,len(self.graphrangelists[key]))
                 self.graphrangelists[key] = np.delete(self.graphrangelists[key],0)
 
-    def draw(self,screen:pygame.Surface,player:object,startpos,endpos,stocklist,Mousebuttons):
+    def baredraw(self,screen,startpos,endpos,graphrange):
+        """Draws only the graph of the stock - uses the graphrange parameter, not self.graphrange"""
+        if startpos != self.startpos or endpos != self.endpos:#if the starting or ending positions have changed
+            self.startpos = (startpos[0] - self.winset[0], startpos[1] - self.winset[1])
+            self.endpos = (endpos[0] - self.winset[0], endpos[1] - self.winset[1])
+        
+        if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
+            percentchange = round(((self.graphrangelists[graphrange][-1]/self.graphrangelists[graphrange][0])-1)*100,2)
+            color = (0,55,0) if percentchange >= 0 else (55,0,0)
+            gfxdraw.filled_polygon(screen, [(self.endpos[0], self.startpos[1]), self.endpos, (self.startpos[0], self.endpos[1]), self.startpos],color)  # draws the perimeter around graphed values
+            gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),(self.endpos[0],self.endpos[1]),(self.startpos[0],self.endpos[1]),(self.startpos[0],self.startpos[1])],(15,15,15))#draws the background of the graph
 
+        graphheight = ((self.endpos[1]-self.startpos[1])//2)
+        graphwidth = (self.startpos[0]-self.endpos[0])
+        graphingpoints = self.graphrangelists[graphrange]
+        minpoint = (np.amin(self.graphrangelists[graphrange]))
+        maxpoint = (np.amax(self.graphrangelists[graphrange]))        
+
+        if minpoint != maxpoint:#prevents divide by zero error
+            yScale = graphheight/(maxpoint-minpoint)#the amount of pixels per point with the y axis
+
+            yOffset = (self.startpos[1]+graphheight)-10# slides the graph up on the screen to fit
+
+            graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * yScale)) + yOffset# Doing the math to make the points fit on the graph 
+        if len(self.graphrangelists[graphrange]) > 0 and len(self.graphrangelists[graphrange]) < graphwidth:#if there are points in the graph and the graph is not too small
+            spacing = graphwidth/len(self.graphrangelists[graphrange])#the spacing between each point
+        else:
+            spacing = 1
+        
+        graphpointlen = len(graphingpoints)# doing this before the iteration to save time
+        for i,value in enumerate(graphingpoints):
+            if i >= graphpointlen-1:
+                pass#if last one in list or i is too great then don't draw line
+            else:
+                nextvalue = graphingpoints[i+1]
+                xpos = self.endpos[0]
+                gfxdraw.line(screen,xpos+int(i*spacing),int(value),xpos+int((i+1)*spacing),int(nextvalue),(255,255,255))
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(self.endpos[0], self.startpos[1], (self.startpos[0] - self.endpos[0]),(self.endpos[1] - self.startpos[1])), 5)
+
+    def draw(self,screen:pygame.Surface,player:object,startpos,endpos,stocklist,Mousebuttons,rangecontrols=True):
+        """Draws the graph of the stock along with the range controls, price lines, and the name"""
         if startpos != self.startpos or endpos != self.endpos:#if the starting or ending positions have changed
             #setting the starting and ending positions - where the graphs are located is constantly changing
             self.startpos = (startpos[0] - self.winset[0], startpos[1] - self.winset[1])
@@ -234,9 +275,16 @@ class Stock():
 
             gfxdraw.filled_polygon(screen, [(self.endpos[0], self.startpos[1]), self.endpos, (self.startpos[0], self.endpos[1]), self.startpos],color)  # draws the perimeter around graphed values
             gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),(self.endpos[0],self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.endpos[1]-blnkspacey),(self.startpos[0]-blnkspacex,self.startpos[1])],(15,15,15))#draws the background of the graph
-            
-        self.rangecontrols(screen,player,stocklist,Mousebuttons)#draws the range controls
-
+        
+        if rangecontrols:# if the range controls are drawn
+            self.rangecontrols(screen,Mousebuttons)#draws the range controls
+        else:
+            if self.rangetime <= 0:#if the range controls aren't drawn and the time is out
+                self.rangetime = 60#reset the time
+                graphrangeindex = list(self.graphrangeoptions).index(self.graphrange)+1 if list(self.graphrangeoptions).index(self.graphrange)+1 < len(self.graphrangeoptions) else 0#the index of the next graph range
+                self.graphrange = list(self.graphrangeoptions)[graphrangeindex]#change the graph range to the next in the index
+            else:
+                self.rangetime -= 1#subtract 1 from the time
         # Kind of deceptive with the name, but graphheight is not acually the full height of the graph - it is divided by 1.5 and then the blank space is subtracted
         graphheight = ((self.endpos[1]-self.startpos[1])//1.5)-blnkspacex
         graphwidth = (self.startpos[0]-self.endpos[0])-blnkspacex
