@@ -14,3 +14,5 @@ use :=
 
 dictionary.get(key,default value) - avoids errors
 dict.setdefault(key,default value) - will set a value if not found
+
+create function to fill points in each stock. Would fill a whole year of points.
