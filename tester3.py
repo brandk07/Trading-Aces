@@ -1,6 +1,4 @@
-import time
-
-# create a python script that tests how long it takes to render an input string
-mydict = {'a': 1, 'b': 2, 'c': 3}
-
-print(list(mydict)[1])
+word = "SynthoTek Corporation (SNTOK) stands as a pioneer in the realm of regenerative medicine and synthetic biology. Founded by a team of forward-thinking scientists and entrepreneurs, SynthoTek is dedicated to advancing our understanding of biological systems. Their commitment is translated into groundbreaking solutions that have the potential to benefit humanity at large."
+word = "SynthoTek Corporation (SNTOK) is a cutting-edge biotechnology company revolutionizing the field of regenerative medicine and synthetic biology. Founded by a team of visionary scientists and entrepreneurs, SynthoTek is committed to advancing humanity'sunderstanding of biological systems and using that knowledge to develop groundbreaking solutions for the benefit of all.KSTON"
+num_characters = len(word)
+print(num_characters)

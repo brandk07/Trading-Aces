@@ -2,6 +2,7 @@ import pygame
 from Defs import *
 from pygame import gfxdraw
 from Classes.imports.Bar import Bar
+from Classes.imports.stockeventspos import StockEvents
 
 # [20,60] [60,20]
 # [700,1000] [1000,650]
@@ -16,6 +17,9 @@ class UI_Controls(Bar):
         pos = [1500,650]
         wh = [120,380]
         orientation = 'vertical'
+        self.stockevent = StockEvents()
+        for i in range(9):
+            self.stockevent.addEvent('SNTOK Purchased',160000,(110,110,110),'random evnt'+str(i))
 
         super().__init__(windowoffset,maxgamespeed,pos,wh,orientation)
         # self.view = "stock"# homeview or stockview
@@ -24,11 +28,43 @@ class UI_Controls(Bar):
         self.namerenders = [[fontlist[30].render(stock.name,(200,0,0))[0],fontlist[30].render(stock.name,(0,200,0))[0]] for stock in stocklist]# [red,green]
 
         # get 
-        get_percent = lambda stock : round(((stock.graphrangelists[stock.graphrange][-1]/stock.graphrangelists[stock.graphrange][0])-1)*100,2)
-        self.get_listpercents = lambda xlist : [get_percent(stock) for stock in xlist]
+        self.get_percent = lambda stock : round(((stock.graphrangelists[stock.graphrange][-1]/stock.graphrangelists[stock.graphrange][0])-1)*100,2)
+        self.get_listpercents = lambda xlist : [self.get_percent(stock) for stock in xlist]
         self.percentchanges = self.get_listpercents(stocklist)
-        self.totalperecent = lambda xlist : sum([get_percent(stock) for stock in xlist])
-    
+        self.totalperecent = lambda xlist : sum([self.get_percent(stock) for stock in xlist])
+        
+    def drawIcon(self, screen: pygame.Surface):
+        # Draw the triangles to form a square in the top left corner
+        triangle1 = pygame.Rect(10, 10, 150, 150)
+        triangle2 = pygame.Rect(160, 10, 150, 150)
+
+        # Check if the mouse is clicked and hovering over the triangles
+        mouse_pos = pygame.mouse.get_pos()
+        triangle1_color = (10, 80, 10) if self.view == "home" else (30, 100, 30)
+        triangle2_color = (80, 10, 10) if self.view == "stock" else (100, 30, 30)
+        if triangle1.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]:
+            self.view = "home"
+        if triangle2.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]:
+            self.view = "stock"
+
+        # Check if the mouse is hovering over the triangles
+        if triangle1.collidepoint(mouse_pos):
+            triangle1_color = (50, 150, 50)
+        if triangle2.collidepoint(mouse_pos):
+            triangle2_color = (150, 50, 50)
+
+        # Draw the triangles
+        pygame.draw.polygon(screen, triangle1_color, [(10, 10), (10, 160), (160, 10)])
+        pygame.draw.polygon(screen, triangle2_color, [(160, 10), (160, 160), (10, 160)])
+
+        # Draw the "Home" and "Stocks" text in the triangles
+        home = fontlist[50].render('Home', (255, 255, 255))[0]
+        screen.blit(home, (50 - home.get_width() / 2, 50 - home.get_height() / 2))
+        stocks = fontlist[50].render('Stocks', (255, 255, 255))[0]
+        screen.blit(stocks, (90 - stocks.get_width() / 2, 85 + stocks.get_height() / 2))
+
+
+
     def draw_stockbar(self,screen:pygame.Surface,stocklist:list):
         self.graphscroll += 1*(self.gameplay_speed/self.maxvalue)+1# the speed of the stock graph 
         self.percentchanges = self.get_listpercents(stocklist)
@@ -70,7 +106,15 @@ class UI_Controls(Bar):
                 screen.blit(text,(275+(width),73))
                 width += text.get_width()+renders[i].get_width()/2
         
+    def drawStockEvents(self,screen:pygame.Surface,stocklist:list):
+        minmove = min([stock for stock in stocklist],key=self.get_percent)
+        maxmove = max([stock for stock in stocklist],key=self.get_percent)
 
+        self.stockevent.addStockEvent(minmove.name,1600,abs(self.get_percent(minmove)),False)
+        self.stockevent.addStockEvent(maxmove.name,1600,abs(self.get_percent(maxmove)))
+        # self.stockevent.addStockEvent('KSTON',100)
+        
+        self.stockevent.draw(screen)
         
     def draw_home(self,screen:pygame.Surface,stocklist:list,gametime):
         gfxdraw.filled_polygon(screen,[(200,10),(250,150),(1450,150),(1400,10)],(10,10,10))# time etc
@@ -81,10 +125,15 @@ class UI_Controls(Bar):
         
         gfxdraw.filled_polygon(screen,[(930,160),(930,700),(1450,700),(1450,160)],(75,75,75))# Announcements bar (right of the portfolio)
         self.draw_stockbar(screen,stocklist)
+
+
+        self.drawStockEvents(screen,stocklist)
+        
         
     
 
     def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,Mousebuttons):
+        self.drawIcon(screen)
         if self.view == "home":
             mousex,mousey = pygame.mouse.get_pos()
             if Mousebuttons == 1:
