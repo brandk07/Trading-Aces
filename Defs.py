@@ -57,6 +57,7 @@ def Writetofile(stocklist,player,data):
 # fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Bold.ttf',font_size)
 
 fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size*.75)
+crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)
 fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.ttf', font_size*.75)
 
 
@@ -68,7 +69,7 @@ fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.
 bold40 = fontsbold(45)
 
 fontlist = [fonts(num) for num in range(0,100)]#list of fonts from 0-100
-
+fontlistcry = [crystalfonts(num) for num in range(0,100)]#list of fonts from 0-100
     
 font45 = fonts(45)
 

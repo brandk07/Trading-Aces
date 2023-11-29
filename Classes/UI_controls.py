@@ -3,6 +3,7 @@ from Defs import *
 from pygame import gfxdraw
 from Classes.imports.Bar import Bar
 from Classes.imports.stockeventspos import StockEvents
+from Classes.imports.Newsbar import News
 
 # [20,60] [60,20]
 # [700,1000] [1000,650]
@@ -18,8 +19,8 @@ class UI_Controls(Bar):
         wh = [120,380]
         orientation = 'vertical'
         self.stockevent = StockEvents()
-        for i in range(9):
-            self.stockevent.addEvent('SNTOK Purchased',160000,(110,110,110),'random evnt'+str(i))
+        self.newsobj = News()
+        self.newsobj.addStockNews('MAGLO')
 
         super().__init__(windowoffset,maxgamespeed,pos,wh,orientation)
         # self.view = "stock"# homeview or stockview
@@ -35,33 +36,53 @@ class UI_Controls(Bar):
         
     def drawIcon(self, screen: pygame.Surface):
         # Draw the triangles to form a square in the top left corner
-        triangle1 = pygame.Rect(10, 10, 150, 150)
-        triangle2 = pygame.Rect(160, 10, 150, 150)
+        
+        def point_in_triangle(point, triangle):
+            x, y = point
+            x1, y1 = triangle[0]
+            x2, y2 = triangle[1]
+            x3, y3 = triangle[2]
+            denominator = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
+            a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / denominator
+            b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denominator
+            c = 1 - a - b
+            return 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
+        
+        hometri = [(40, 10), (40, 160), (190, 10)]
+        stockstri = [(190, 10), (190, 160), (40, 160)]
 
         # Check if the mouse is clicked and hovering over the triangles
         mouse_pos = pygame.mouse.get_pos()
-        triangle1_color = (10, 80, 10) if self.view == "home" else (30, 100, 30)
-        triangle2_color = (80, 10, 10) if self.view == "stock" else (100, 30, 30)
-        if triangle1.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]:
-            self.view = "home"
-        if triangle2.collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0]:
-            self.view = "stock"
+        home_color = (0, 120, 0) if self.view == "home" else (20,20,20)
+        stocks_color = (120, 0, 0) if self.view == "stock" else (20,20,20)
 
         # Check if the mouse is hovering over the triangles
-        if triangle1.collidepoint(mouse_pos):
-            triangle1_color = (50, 150, 50)
-        if triangle2.collidepoint(mouse_pos):
-            triangle2_color = (150, 50, 50)
+        if point_in_triangle(mouse_pos, hometri):
+            home_color = (0, 170, 0)
+            stocks_color = (80, 0, 0) if stocks_color == (120, 0, 0) else (20,20,20)
+            if pygame.mouse.get_pressed()[0]:
+                self.view = "home"
+
+        if point_in_triangle(mouse_pos, stockstri):
+            stocks_color = (170, 0, 0)
+            home_color = (0, 120, 0) if home_color == (0, 170, 0) else (20,20,20)
+            
+            if pygame.mouse.get_pressed()[0]:
+                self.view = "stock"
 
         # Draw the triangles
-        pygame.draw.polygon(screen, triangle1_color, [(10, 10), (10, 160), (160, 10)])
-        pygame.draw.polygon(screen, triangle2_color, [(160, 10), (160, 160), (10, 160)])
+        pygame.draw.polygon(screen, home_color, [(x-15, y) for x, y in hometri])
+        pygame.draw.polygon(screen, stocks_color, [(x-15, y) for x, y in stockstri])
+
+        # Draw the outline for the triangles
+        pygame.draw.polygon(screen, (0, 0, 0), [(x-15, y) for x, y in hometri], 4)
+        pygame.draw.polygon(screen, (0, 0, 0), [(x-15, y) for x, y in stockstri], 4)
 
         # Draw the "Home" and "Stocks" text in the triangles
         home = fontlist[50].render('Home', (255, 255, 255))[0]
-        screen.blit(home, (50 - home.get_width() / 2, 50 - home.get_height() / 2))
+        screen.blit(home, (90 - home.get_width() / 2 - 15, 45 - home.get_height() / 2))
         stocks = fontlist[50].render('Stocks', (255, 255, 255))[0]
-        screen.blit(stocks, (90 - stocks.get_width() / 2, 85 + stocks.get_height() / 2))
+        screen.blit(stocks, (140 - stocks.get_width() / 2 - 15, 95 + stocks.get_height() / 2))
 
 
 
@@ -125,10 +146,8 @@ class UI_Controls(Bar):
         
         gfxdraw.filled_polygon(screen,[(930,160),(930,700),(1450,700),(1450,160)],(75,75,75))# Announcements bar (right of the portfolio)
         self.draw_stockbar(screen,stocklist)
-
-
         self.drawStockEvents(screen,stocklist)
-        
+        self.newsobj.draw(screen)
         
     
 
