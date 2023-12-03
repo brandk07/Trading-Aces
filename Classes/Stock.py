@@ -23,7 +23,7 @@ class Stock():
         self.stocknames = stocknames
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
-        self.graphrangeoptions = {'recent':POINTSPERGRAPH*5,'hour':10800,'day':70200,'week':351000,'month':1_404_000,'year':16_884_000}
+        self.graphrangeoptions = {'recent':POINTSPERGRAPH*5,'hour':10800,'day':70200,'week':351000,'month':1_404_000,'year':16_848_000}
         # self.gra phrangeoptions = (('recent',466),('hour',10800),('day',70200),('week',351000),('month',1_404_000),('year',16_884_000),('all',None))
         self.graphtext = [[fontlist[30].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']],[fontlist[55].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']]]
         
@@ -123,12 +123,12 @@ class Stock():
             for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year]
                 self.graphrangelists[grange] = np.array([point*0.5 for point in self.graphrangelists[grange]])
             self.price = self.price*0.5
-            stock_quantity = len([stock for stock in player.stocks if stock[0] == self.name])
+            stock_quantity = len([stock for stock in player.stocks if stock[0] == self])
             if stock_quantity > 0:
                 player.messagedict[f'You now have {stock_quantity*2} shares of {self.name}'] = (time.time(),(0,0,200))
                 for stock in player.stocks.copy():
                     print(stock)
-                    if stock[0] == self.name:
+                    if stock[0] == self:
                         player.stocks.remove(stock)
                         player.stocks.append([stock[0],stock[1]*0.5,stock[2]])
                         player.stocks.append([stock[0],stock[1]*0.5,stock[2]])
@@ -166,7 +166,7 @@ class Stock():
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             self.update_range_graphs()
         else:
-            stockvalues = sum([stock[2].price for stock in self.stocks])
+            stockvalues = sum([stock[0].price for stock in self.stocks])
             self.update_range_graphs(stockvalues)#updates the range graphs
 
 
@@ -365,7 +365,7 @@ class Stock():
             screen.blit(pricetext,(textx+self.pricetext.get_width(),texty))# draws the price
                     
         else:
-            screen.blit(fontlist[40].render(f' Net Worth ${round(self.cash+sum([stock[2].price for stock in player.stocks]),2)}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
+            screen.blit(fontlist[40].render(f' Net Worth ${self.cash+sum([stock[0].price*stock[2] for stock in player.stocks]):.2f}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
             
 
         screen.blit(self.nametext,(self.endpos[0]+15,self.startpos[1]+15))#draws the text that displays the name of the stock or the player

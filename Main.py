@@ -9,7 +9,7 @@ from Classes.Gametime import GameTime
 from Classes.Playerportfolio import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
-from Classes.portfolio import Portfolio
+from Classes.Portfolio import Portfolio
 import timeit
 
 pygame.init()
@@ -51,7 +51,8 @@ portfolio = Portfolio()
 ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),stocklist)
 # ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
 Mousebuttons = 0
-
+polybackground = pygame.image.load('Assets/polybackground2.png')
+polybackground = pygame.transform.scale(polybackground,(window_width,window_height))
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
 
 gametime = GameTime(2023,11,7,9,30,0)
@@ -60,6 +61,8 @@ if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
         screen.fill((50,50,50))
+        # screen.blit(polybackground,(0,0))# the background is 1152x896, tile it to fill the screen
+        
         
         # print(mousex,mousey)
         ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,Mousebuttons)#draws the ui controls to the screen, and senses for clicks
@@ -67,17 +70,13 @@ if __name__ == "__main__":
         
         for i in range(ui_controls.gameplay_speed):
             # gametime = Gametime(gametime,,screen,clock.get_fps())
-            gametime.increase_time(100)
+            gametime.increase_time(1)
             for stock in stocklist:
                 stock.update_price(player)
             player.update_price(player)
         # player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
 
         # gametime.drawgametime(screen,True)
-        
-
-        
-
 
 
         stockbook.draw_icon(screen,Mousebuttons,stocklist,player,menulist)

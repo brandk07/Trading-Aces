@@ -7,10 +7,32 @@ import pygame
 from pygame import gfxdraw
 from Defs import fontlist,fontlistcry
 from random import randint
-
+def separate_strings(textlist:list,lines:int) -> list:
+    """Returnes separated list of strings from textlist into (int lines) equal parts"""
+    separated_strings = {}
+    totallength = lambda stringlist: sum([len(string) for string in stringlist])
+    for stock, events in textlist.items(): # stock is the stock name, events is a list of events
+        separated_strings[stock] = []
+        for event in events: # each event is a string
+            separated_events = []
+            sub_length = len(event) // lines# approximate length of each string
+            words = event.split(' ')
+            for i in range(lines):
+                removedwords = []
+                if i >= lines-1:# last string
+                    separated_events.append(' '.join(words))
+                else:# not last strings
+                    while totallength(removedwords) < sub_length*.9:# add words until the length of the string is greater than the sub_length
+                        if not words:
+                            break
+                        removedwords.append(words.pop(0))
+                    separated_events.append(' '.join(removedwords))
+            separated_strings[stock].append(separated_events)
+    return separated_strings
 class News():
     def __init__(self):
         self.eventlist = []
+        self.prerendertext = fontlistcry[50].render('News', (255, 255, 255))[0]
         self.newstext = {
             'SNTOK': [
                 '(SNTOK) Unforeseen fluctuations in the regulatory landscape surrounding drug approvals may introduce uncertainty.',
@@ -77,55 +99,46 @@ class News():
             ]
         }
 
-        # Separate strings into two roughly equal-length strings stored in a list
-        separated_strings = {}
-        addlengths = lambda stringlist: sum([len(string) for string in stringlist])
-        for stock, events in self.newstext.items(): # stock is the stock name, events is a list of events
-            
-            separated_strings[stock] = []
-            for event in events: # each event is a string
-                separated_events = []
-                sub_length = len(event) // 3
-                words = event.split(' ')
-                # print(words, '1')
-                
-                for i in range(3):
-                    removedwords = []  # Initialize removedwords list
-                    # print(words, '2')
-                    if i == 2:
-                        separated_events.append(' '.join(words))
-                    else:
-                        while addlengths(removedwords) < sub_length:
-                            # print(words, '3')
-                            removedwords.append(words.pop(0))
-                        separated_events.append(' '.join(removedwords))
-                # print(separated_events)
-                separated_strings[stock].append(separated_events)
-            
-        self.newstext = separated_strings
-        print(separated_strings)
+        # Everything below is the code that separates the strings into three equal parts
+        # I wanted to separate the strings by their len, but not split words in half
+        # This makes it much more challenging to code, but only took 35 minutes of work - Ai wans't very helpful
+        
+        self.newstext = separate_strings(self.newstext, 3)
        
 
     def addNews(self,event:str,duration,color,eventname):
-            self.newstext[eventname] = ([fontlist[25].render(event,(255,255,255))[0],color,duration])
+            self.newstext[eventname] = ([fontlist[25].render(event,(90,90,90))[0],color,duration])
     
-    def addStockNews(self,stockname:str,duration=6000):
+    def addStockNews(self,stockname:str,duration=600):
         # print(stockname)
-        testlist = self.newstext[stockname][randint(0,4)]
-        rendered1 = fontlistcry[55].render(testlist[0],(255,255,255))[0]
-        rendered2 = fontlistcry[55].render(testlist[1],(255,255,255))[0]
-        rendered3 = fontlistcry[55].render(testlist[2],(255,255,255))[0]
-        self.eventlist.append([rendered1,rendered2,rendered3,duration])
+        color = (150,150,150)
+        # testlist = self.newstext[stockname][randint(0,4)]
+        texts = self.newstext[stockname][randint(0,4)]
+        rendered = []
+        for text in texts:
+            rendered.append(fontlistcry[55].render(text,color)[0])
 
-    def draw(self,screen:pygame.Surface):
+        self.eventlist.append([*rendered,duration])
+
+
+    def draw(self, screen: pygame.Surface):
+        gfxdraw.filled_polygon(screen, [(275, 815), (280, 855), (405, 855), (400, 815)], (40, 40, 40))  # gap between the top, left, and right
+        screen.blit(self.prerendertext, (300, 820))
         if self.eventlist:
-            if self.eventlist[0][3] > 0:
-                self.eventlist[0][3] -= 1# decreases the duration of the event
-                text1,text2,text3,duration = self.eventlist[0]
+            if self.eventlist[0][-1] > 0:
+                self.eventlist[0][-1] -= 1  # decreases the duration of the event
+                *texts, duration = self.eventlist[0]
+                # pygame.draw.line(screen, (120, 120, 120), (270, 860), (1340, 860), 2)  # line above the first line of text
+                for i, text in enumerate(texts):
+                    x = 300 + (i * 10)
+                    y = 870 + (i * 50)
+                    screen.blit(text, (x, y))
+                    pygame.draw.line(screen, (120, 120, 120), (x-20, y+5+text.get_height()), (x+text.get_width()+10, y+5+text.get_height()), 2)
+            else:
+                self.eventlist.pop(0)
+                    
 
-                screen.blit(text1,(305,880))
-                screen.blit(text2,(315,930))
-                screen.blit(text3,(325,980))
+
         
         
 

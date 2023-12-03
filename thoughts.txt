@@ -15,4 +15,22 @@ use :=
 dictionary.get(key,default value) - avoids errors
 dict.setdefault(key,default value) - will set a value if not found
 
+-----------------Things to do-------------------
 create function to fill points in each stock. Would fill a whole year of points.
+
+Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23)
+
+Add a dianglonal scroll feature for the bar class (12/2/23)
+    have to convert all the rects to polygons
+    new parameter for the amount of shift
+    use the point_in_polygon for collisions
+
+figure out what that error came from
+    TypeError: Object of type Stock is not JSON serializable
+    File "c:\Users\brand\Downloads\Trading-Aces-5\Defs.py", line 52, in Writetofile
+
+    File "c:\Users\brand\Downloads\Trading-Aces-5\Main.py", line 100, in <module>
+    Writetofile(stocklist,player,data)
+
+    ['2023-11-7 11:56:52', [[<Classes.Stock.Stock object at 0x000002EA329F93F0>, 170.8862358206489]], 'hour', 487.34129253805344, 'hour', 'hour', 'hour', 'hour', 'week', 'hour', 'hour', 'hour', 'hour']
+

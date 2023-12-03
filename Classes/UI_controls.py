@@ -12,17 +12,16 @@ def limit_digits(num, max_digits):
         return "{:.2e}".format(num)
     else:
         return "{:.2f}".format(num)
-class UI_Controls(Bar):
+class UI_Controls():
     def __init__(self,windowoffset:list,stocklist) -> None:
-        maxgamespeed = 50
-        pos = [1500,650]
-        wh = [120,380]
-        orientation = 'vertical'
-        self.stockevent = StockEvents()
+        self.gameplay_speed = 0
+        self.stockevent = StockEvents()# the stock events
+        self.bar = Bar(windowoffset,50)# the bar for the gameplay speed
         self.newsobj = News()
-        self.newsobj.addStockNews('MAGLO')
+        for i in range(10):
+            for stock in stocklist:
+                self.newsobj.addStockNews(stock.name)
 
-        super().__init__(windowoffset,maxgamespeed,pos,wh,orientation)
         # self.view = "stock"# homeview or stockview
         self.view = "home"# homeview or stockview
         self.graphscroll = 0
@@ -87,7 +86,7 @@ class UI_Controls(Bar):
 
 
     def draw_stockbar(self,screen:pygame.Surface,stocklist:list):
-        self.graphscroll += 1*(self.gameplay_speed/self.maxvalue)+1# the speed of the stock graph 
+        self.graphscroll += 1*(self.gameplay_speed/self.bar.maxvalue)+1# the speed of the stock graph 
         self.percentchanges = self.get_listpercents(stocklist)
         if self.graphscroll > len(stocklist)*190: self.graphscroll = 0
         for i,stock in enumerate(stocklist):# draws the stock graph bar
@@ -126,6 +125,7 @@ class UI_Controls(Bar):
                 text = fontlist[55].render(':',(255,255,255))[0]
                 screen.blit(text,(275+(width),73))
                 width += text.get_width()+renders[i].get_width()/2
+
         
     def drawStockEvents(self,screen:pygame.Surface,stocklist:list):
         minmove = min([stock for stock in stocklist],key=self.get_percent)
@@ -162,11 +162,11 @@ class UI_Controls(Bar):
             self.draw_home(screen,stocklist,gametime)            
 
             player.draw(screen,player,(900,160),(250,700),stocklist,Mousebuttons)
-            self.draw_bar(screen)
+            self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
 
 
         elif self.view == "stock":
             stockgraphmanager.draw_graphs(screen,stocklist,player,Mousebuttons)
             player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
-            self.draw_bar(screen)
+            self.gameplay_speed = self.bar.draw_bar(screen,[1620,650],[120,380],'vertical')
 

@@ -52,12 +52,28 @@ def Writetofile(stocklist,player,data):
         json.dump(data,file)
     pygame.quit()
     quit()
+
+def point_in_polygon(point, polygon) -> bool:
+    """Checks if a point is inside a polygon."""
+    n = len(polygon)
+    inside = False
+    p1x, p1y = polygon[0]
+    for i in range(n + 1):
+        p2x, p2y = polygon[i % n]
+        if (point[1] > min(p1y, p2y)) and (point[1] <= max(p1y, p2y)) and (point[0] <= max(p1x, p2x)):
+            if p1y != p2y:
+                xinters = (point[1] - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                if (p1x == p2x) or (point[0] <= xinters):
+                    inside = not inside
+        p1x, p1y = p2x, p2y
+    return inside
     
 # fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Regular.ttf',font_size)
 # fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Bold.ttf',font_size)
 
 fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size*.75)
 crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)
+pixfonts = lambda font_size: freetype.Font(r'Assets\fonts\Silkscreen\Silkscreen-Regular.ttf', font_size*.75)
 fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.ttf', font_size*.75)
 
 
@@ -70,6 +86,7 @@ bold40 = fontsbold(45)
 
 fontlist = [fonts(num) for num in range(0,100)]#list of fonts from 0-100
 fontlistcry = [crystalfonts(num) for num in range(0,100)]#list of fonts from 0-100
+fontlistpix = [pixfonts(num) for num in range(0,100)]#list of fonts from 0-100
     
 font45 = fonts(45)
 

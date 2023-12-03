@@ -23,32 +23,30 @@ def barpos(rect:pygame.Rect,wh:int,xy:int,maxspeed:int,gamespeed:int,horizontal=
     return [int(gamespeed*seclength)+xy,gamespeed]
 
 class Bar():
-    def __init__(self,windowoffset:list,maxvalue:int,pos:list,wh:list,orientation='horizontal') -> None:
+    def __init__(self,windowoffset:list,maxvalue:int) -> None:
         """Max value must be less than the slider width-20, or height-20 if vertical"""
         self.winset = windowoffset
         self.gameplay_speed = 0
         self.maxvalue = maxvalue
         self.gamespeedtexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue+1)]
         
-        self.orientation = orientation
-        self.barwh = [wh[0]//19,wh[1]] if orientation == 'horizontal' else [wh[0],wh[1]//19]
-        self.sliderwh = wh
-        self.sliderxy = [pos[0]+self.winset[0],pos[1]+self.winset[1]]
-        self.barxy = self.sliderxy.copy() if orientation == 'horizontal' else [self.sliderxy[0],self.sliderxy[1]+self.sliderwh[1]-self.barwh[1]]
+        self.orientation = 'horizontal'
+        self.sliderwh = [0,0]
+        self.sliderxy = [0,0]
+        self.barwh = [0,0]
+        self.barxy = [0,0]
+
+        # self.barwh = [wh[0]//19,wh[1]] if orientation == 'horizontal' else [wh[0],wh[1]//19]
+        # self.sliderwh = wh
+        # self.sliderxy = [pos[0]+self.winset[0],pos[1]+self.winset[1]]
+        # self.barxy = self.sliderxy.copy() if orientation == 'horizontal' else [self.sliderxy[0],self.sliderxy[1]+self.sliderwh[1]-self.barwh[1]]
 
         # below is the slider offset, gives a bit more space for the mouse to get to 0 and max speed - conditional statement later for no errors
-        soff = [-20,0,40,0] if orientation == 'horizontal' else [0,-20,0,40]
-        self.slider_rect = pygame.Rect(self.sliderxy[0]+soff[0],self.sliderxy[1]+soff[1],self.sliderwh[0]+soff[2],self.sliderwh[1]+soff[3])
+        self.slider_rect = pygame.Rect(0,0,0,0)
         # move more stuff to the init function, like the barxy and sliderxy and all the orientation stuff
 
         # the points for the slider polygon
-        self.slider_points = [
-            (self.sliderxy[0], self.sliderxy[1]),
-            (self.sliderxy[0]+self.sliderwh[0], self.sliderxy[1]),
-            (self.sliderxy[0]+self.sliderwh[0], self.sliderxy[1]+self.sliderwh[1]),
-            (self.sliderxy[0], self.sliderxy[1]+self.sliderwh[1])
-        ]
-        self.creategradient()
+        self.slider_points = []
 
     def creategradient(self):
         """creates the gradient for the slider, then blits it to the sliderpoly surface"""""
@@ -72,8 +70,29 @@ class Bar():
             elif self.orientation == 'horizontal':
                 pygame.draw.line(self.sliderpoly, color, (i, 0),(i, self.sliderwh[1]))
 
+    def setpoints(self,sliderxy,sliderwh,orientation):
+        self.orientation = orientation
+        self.barwh = [sliderwh[0]//19,sliderwh[1]] if orientation == 'horizontal' else [sliderwh[0],sliderwh[1]//19]
+        self.sliderwh = sliderwh
+        self.sliderxy = [sliderxy[0]+self.winset[0],sliderxy[1]+self.winset[1]]
+        self.barxy = self.sliderxy.copy() if orientation == 'horizontal' else [self.sliderxy[0],self.sliderxy[1]+self.sliderwh[1]-self.barwh[1]]
 
-    def draw_bar(self,screen:pygame.Surface):
+        soff = [-20,0,40,0] if orientation == 'horizontal' else [0,-20,0,40]
+        self.slider_rect = pygame.Rect(self.sliderxy[0]+soff[0],self.sliderxy[1]+soff[1],self.sliderwh[0]+soff[2],self.sliderwh[1]+soff[3])
+        # self.slider_rect = pygame.Rect(self.sliderxy[0],self.sliderxy[1],self.sliderwh[0],self.sliderwh[1])
+        self.slider_points = [
+            (self.sliderxy[0], self.sliderxy[1]),
+            (self.sliderxy[0]+self.sliderwh[0], self.sliderxy[1]),
+            (self.sliderxy[0]+self.sliderwh[0], self.sliderxy[1]+self.sliderwh[1]),
+            (self.sliderxy[0], self.sliderxy[1]+self.sliderwh[1])
+        ]
+        self.creategradient()
+
+    def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation):
+    
+        if self.sliderxy != sliderxy or self.sliderwh != sliderwh:# if the slider has moved, then recreate the gradient and the slider_rect
+            self.setpoints(sliderxy,sliderwh,orientation)
+
         # blit the sliderpoly surface to the screen first
         screen.blit(self.sliderpoly,self.sliderxy)
 
@@ -99,3 +118,4 @@ class Bar():
         textx = (self.sliderwh[0]//2 if self.orientation == 'horizontal' else self.sliderwh[0]//1.5) - self.gamespeedtexts[self.gameplay_speed].get_width()
         texty = self.gamespeedtexts[self.gameplay_speed].get_height()
         screen.blit(self.gamespeedtexts[self.gameplay_speed], (self.sliderxy[0]+textx, self.sliderxy[1]+self.sliderwh[1]//2-texty//2))
+        return self.gameplay_speed
