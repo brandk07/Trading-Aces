@@ -1,7 +1,7 @@
 import pygame
-from Defs import *
+from Defs import fontlist,point_in_triangle
 from pygame import gfxdraw
-from Classes.imports.Bar import Bar
+from Classes.imports.Bar import SliderBar
 from Classes.imports.stockeventspos import StockEvents
 from Classes.imports.Newsbar import News
 
@@ -16,7 +16,7 @@ class UI_Controls():
     def __init__(self,windowoffset:list,stocklist) -> None:
         self.gameplay_speed = 0
         self.stockevent = StockEvents()# the stock events
-        self.bar = Bar(windowoffset,50)# the bar for the gameplay speed
+        self.bar = SliderBar(windowoffset,50,[(255,0,0),(110,110,110)])# the bar for the gameplay speed
         self.newsobj = News()
         for i in range(10):
             for stock in stocklist:
@@ -34,19 +34,8 @@ class UI_Controls():
         self.totalperecent = lambda xlist : sum([self.get_percent(stock) for stock in xlist])
         
     def drawIcon(self, screen: pygame.Surface):
+        """Draws the home/stock icon in the top left corner."""
         # Draw the triangles to form a square in the top left corner
-        
-        def point_in_triangle(point, triangle):
-            x, y = point
-            x1, y1 = triangle[0]
-            x2, y2 = triangle[1]
-            x3, y3 = triangle[2]
-            denominator = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
-            a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / denominator
-            b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denominator
-            c = 1 - a - b
-            return 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
-        
         hometri = [(40, 10), (40, 160), (190, 10)]
         stockstri = [(190, 10), (190, 160), (40, 160)]
 

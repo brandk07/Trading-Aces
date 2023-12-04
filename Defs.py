@@ -34,14 +34,12 @@ def Getfromfile(stockdict:dict,player):
         data = json.load(file)
         print(data)
         if data:
-            player.stocks = [[stock[0],stock[1],stockdict[stock[0]]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
+            player.stocks = [[stockdict[stock[0]],stock[1],stock[2],] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
             player.graphrange = data[2]
             player.cash = data[3] if data[3] != 0 else 2500
             for i,stockobj in enumerate(stockdict.values()):
                 stockobj.graphrange = data[i+4]
-            return data[0]#gametime
-        else:
-            return [0,0,0,9,30,0,'am']#starting time
+
 def Writetofile(stocklist,player,data):
     for stock in stocklist:
         stock.save_data()
@@ -50,8 +48,6 @@ def Writetofile(stocklist,player,data):
         file.seek(0)# go to the start of the file
         file.truncate()# clear the file
         json.dump(data,file)
-    pygame.quit()
-    quit()
 
 def point_in_polygon(point, polygon) -> bool:
     """Checks if a point is inside a polygon."""
@@ -67,6 +63,17 @@ def point_in_polygon(point, polygon) -> bool:
                     inside = not inside
         p1x, p1y = p2x, p2y
     return inside
+def point_in_triangle(point, triangle):
+    """Checks if a point is inside a triangle."""
+    x, y = point
+    x1, y1 = triangle[0]
+    x2, y2 = triangle[1]
+    x3, y3 = triangle[2]
+    denominator = (y2 - y3) * (x1 - x3) + (x3 - x2) * (y1 - y3)
+    a = ((y2 - y3) * (x - x3) + (x3 - x2) * (y - y3)) / denominator
+    b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denominator
+    c = 1 - a - b
+    return 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
     
 # fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Regular.ttf',font_size)
 # fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Bold.ttf',font_size)

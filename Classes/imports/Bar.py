@@ -1,30 +1,33 @@
 import pygame
-from Defs import fontlist
+from Defs import fontlist,point_in_polygon
 from pygame import gfxdraw
 
-def barpos(rect:pygame.Rect,wh:int,xy:int,maxspeed:int,gamespeed:int,horizontal=True):
+def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizontal=True):
     """wh is width or height of the bar, xy is the x or y position of the bar"""
     mousex,mousey = pygame.mouse.get_pos()
-    if rect.collidepoint(mousex,mousey):
-        seclength = (wh-20)/maxspeed# minus 10 for bar width / 2
-        
+    if point_in_polygon((mousex,mousey),points):
+        seclength = (wh-(barwh/2))/maxspeed# minus 10 for bar width / 2
+         
         if horizontal:
             mouselength = int((mousex-xy)/seclength)# finding how many sections the mouse is away from the slider [0,0]
         else:
             mouselength = int((mousey-xy)/seclength)
-        
+        print(mouselength,'mouselength')
         mouselength = maxspeed if mouselength > maxspeed else mouselength
         mouselength = 0 if mouselength < 0 else mouselength
         # mouselength = mouselength if horizontal else maxspeed-mouselength
-
+        print(mouselength,'mouselength')
         return [int(mouselength*seclength)+xy,mouselength]
     
-    seclength = (wh-20)/maxspeed# minus 10 for bar width / 2
+    seclength = (wh-(barwh))/maxspeed# minus 10 for bar width / 2
+    print(seclength,'seclength')
+    print(gamespeed,'gamespeed')
+    print(int(gamespeed*seclength)+xy,'int(gamespeed*seclength)+xy')
     return [int(gamespeed*seclength)+xy,gamespeed]
 
-class Bar():
-    def __init__(self,windowoffset:list,maxvalue:int) -> None:
-        """Max value must be less than the slider width-20, or height-20 if vertical"""
+class SliderBar():
+    def __init__(self,windowoffset:list,maxvalue:int,color:list) -> None:
+        """Max value must be less than the slider width-20, or height-20 if vertical, color = [(colorstart),(colorend)]"""
         self.winset = windowoffset
         self.gameplay_speed = 0
         self.maxvalue = maxvalue
@@ -35,24 +38,20 @@ class Bar():
         self.sliderxy = [0,0]
         self.barwh = [0,0]
         self.barxy = [0,0]
-
-        # self.barwh = [wh[0]//19,wh[1]] if orientation == 'horizontal' else [wh[0],wh[1]//19]
-        # self.sliderwh = wh
-        # self.sliderxy = [pos[0]+self.winset[0],pos[1]+self.winset[1]]
-        # self.barxy = self.sliderxy.copy() if orientation == 'horizontal' else [self.sliderxy[0],self.sliderxy[1]+self.sliderwh[1]-self.barwh[1]]
-
+        self.shift = [0,0]
+        self.color = color
         # below is the slider offset, gives a bit more space for the mouse to get to 0 and max speed - conditional statement later for no errors
-        self.slider_rect = pygame.Rect(0,0,0,0)
-        # move more stuff to the init function, like the barxy and sliderxy and all the orientation stuff
-
+        # self.slider_rect = pygame.Rect(0,0,0,0)
         # the points for the slider polygon
         self.slider_points = []
 
     def creategradient(self):
         """creates the gradient for the slider, then blits it to the sliderpoly surface"""""
-        gradient_start = pygame.Color(255, 0, 0) if self.orientation == 'vertical' else pygame.Color(110, 110, 110)
-        gradient_end = pygame.Color(110, 110, 110) if self.orientation == 'vertical' else pygame.Color(255, 0, 0)
-        self.sliderpoly = pygame.Surface(self.sliderwh)
+        gradient_start = pygame.Color(self.color[0]) if self.orientation == 'vertical' else pygame.Color(self.color[1])
+        gradient_end = pygame.Color(self.color[1]) if self.orientation == 'vertical' else pygame.Color(self.color[0])
+        
+        self.sliderpoly = pygame.Surface((self.sliderwh[0]+self.shift[0],self.sliderwh[1]+self.shift[1]))
+
         self.sliderpoly.fill((0,0,0))
         self.sliderpoly.set_colorkey((0,0,0))
         # Calculate the number of lines in the gradient
@@ -66,32 +65,48 @@ class Bar():
                 gradient_start.b + (gradient_end.b - gradient_start.b) * i / num_lines
             )
             if self.orientation == 'vertical':
-                pygame.draw.line(self.sliderpoly, color, (0, i), (self.sliderwh[0], i))
+                offset = ((self.shift[0]/self.sliderwh[1])*i)
+                pygame.draw.line(self.sliderpoly, color, (0+offset, i), (self.sliderwh[0]+offset, i))
             elif self.orientation == 'horizontal':
-                pygame.draw.line(self.sliderpoly, color, (i, 0),(i, self.sliderwh[1]))
+                offset = ((self.shift[1]/self.sliderwh[0]))*i
+                pygame.draw.line(self.sliderpoly, color, (i, 0+offset),(i, self.sliderwh[1]+offset))
 
-    def setpoints(self,sliderxy,sliderwh,orientation):
+    def setpoints(self,sliderxy,sliderwh,orientation,barwh):
         self.orientation = orientation
-        self.barwh = [sliderwh[0]//19,sliderwh[1]] if orientation == 'horizontal' else [sliderwh[0],sliderwh[1]//19]
+        if barwh != None:
+            self.barwh = barwh
+        else:
+            self.barwh = [sliderwh[0]//19,sliderwh[1]] if orientation == 'horizontal' else [sliderwh[0],sliderwh[1]//19]
         self.sliderwh = sliderwh
         self.sliderxy = [sliderxy[0]+self.winset[0],sliderxy[1]+self.winset[1]]
         self.barxy = self.sliderxy.copy() if orientation == 'horizontal' else [self.sliderxy[0],self.sliderxy[1]+self.sliderwh[1]-self.barwh[1]]
 
-        soff = [-20,0,40,0] if orientation == 'horizontal' else [0,-20,0,40]
-        self.slider_rect = pygame.Rect(self.sliderxy[0]+soff[0],self.sliderxy[1]+soff[1],self.sliderwh[0]+soff[2],self.sliderwh[1]+soff[3])
+        # soff = [-20,0,40,0] if orientation == 'horizontal' else [0,-20,0,40]
+        # self.slider_rect = pygame.Rect(self.sliderxy[0]+soff[0],self.sliderxy[1]+soff[1],self.sliderwh[0]+soff[2],self.sliderwh[1]+soff[3])
         # self.slider_rect = pygame.Rect(self.sliderxy[0],self.sliderxy[1],self.sliderwh[0],self.sliderwh[1])
+
+
         self.slider_points = [
             (self.sliderxy[0], self.sliderxy[1]),
-            (self.sliderxy[0]+self.sliderwh[0], self.sliderxy[1]),
-            (self.sliderxy[0]+self.sliderwh[0], self.sliderxy[1]+self.sliderwh[1]),
-            (self.sliderxy[0], self.sliderxy[1]+self.sliderwh[1])
-        ]
+            (self.sliderxy[0]+self.sliderwh[0], self.sliderxy[1]+self.shift[1]),
+            (self.sliderxy[0]+self.sliderwh[0]+self.shift[0], self.sliderxy[1]+self.sliderwh[1]+self.shift[1]),
+            (self.sliderxy[0]+self.shift[0], self.sliderxy[1]+self.sliderwh[1])
+        ]# top left, top right, bottom right, bottom left
         self.creategradient()
 
-    def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation):
-    
-        if self.sliderxy != sliderxy or self.sliderwh != sliderwh:# if the slider has moved, then recreate the gradient and the slider_rect
-            self.setpoints(sliderxy,sliderwh,orientation)
+    def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation,barwh=None,shift=0):
+        """sliderxy [startx,starty], 
+        sliderwh [width,height], 
+        orientation ['horizontal','vertical'], 
+        shift is the offset for the bottom two points to make a trapezoid"""
+
+        if self.sliderxy != sliderxy or self.sliderwh != sliderwh or shift != max(self.shift):# if the slider has moved, then recreate the gradient and the slider_rect
+            
+            self.shift = [0,0]
+            self.shift[0] = shift if orientation == 'vertical' else 0
+            self.shift[1] = shift if orientation == 'horizontal' else 0
+
+            self.setpoints(sliderxy,sliderwh,orientation,barwh)
 
         # blit the sliderpoly surface to the screen first
         screen.blit(self.sliderpoly,self.sliderxy)
@@ -100,15 +115,26 @@ class Bar():
         if pygame.mouse.get_pressed()[0]:
             
             if self.orientation == 'vertical':
-                self.barxy[1],self.gameplay_speed = barpos(self.slider_rect,-self.sliderwh[1]+40,self.sliderxy[1]+self.sliderwh[1]-20,self.maxvalue,self.gameplay_speed,False)
+                self.barxy[1],self.gameplay_speed = barpos(self.slider_points,-self.sliderwh[1]+(self.barwh[1]*2),self.sliderxy[1]+self.sliderwh[1]-self.barwh[1],self.maxvalue,self.gameplay_speed,self.barwh[1],False)
             elif self.orientation == 'horizontal':
-                self.barxy[0],self.gameplay_speed = barpos(self.slider_rect,self.sliderwh[0],self.sliderxy[0],self.maxvalue,self.gameplay_speed)
-                
+                self.barxy[0],self.gameplay_speed = barpos(self.slider_points,self.sliderwh[0],self.sliderxy[0],self.maxvalue,self.gameplay_speed,self.barwh[0])
+        
+        xoffset = self.shift[0]*(((self.barxy[1]-(self.barwh[1]*(5/2)))/(((self.sliderwh[1]**2)+((self.shift[0]))**2))**.5)) if self.orientation == 'vertical' else 0
+        # xoffset = self.shift[0]*(1-(self.gameplay_speed/self.maxvalue)) if self.orientation == 'vertical' else 0
+        yoffset = self.shift[1]*(self.gameplay_speed/self.maxvalue) if self.orientation == 'horizontal' else 0
+        ratio = self.sliderwh[0]/self.barwh[0] if self.orientation == 'horizontal' else self.sliderwh[1]/self.barwh[1]# ratio of the slider to the bar
         # The bar that the mouse drags across the slider
-        gfxdraw.filled_polygon(screen, [self.barxy,
-                      (self.barxy[0] + self.barwh[0], self.barxy[1]),
-                      (self.barxy[0] + self.barwh[0], self.barxy[1] + self.barwh[1]),
-                      (self.barxy[0], self.barxy[1] + self.barwh[1])], (225, 225, 225))
+        
+        gfxdraw.filled_polygon(screen, [
+                    (self.barxy[0] + xoffset+ self.barwh[0], self.barxy[1] + self.shift[1]),
+                    (self.barxy[0]  + xoffset , self.barxy[1] + self.shift[1]),
+                    
+                    
+                    (self.barxy[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1] + self.shift[1]),
+                    (self.barxy[0] + self.barwh[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1]+self.shift[1]),
+                    
+                    
+                    ], (225, 225, 225))
         
         # Box around the slider
         pygame.draw.polygon(screen,(0,0,0),self.slider_points,5)

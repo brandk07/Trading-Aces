@@ -10,7 +10,7 @@ class Stockbook(Menu):
         self.quantity = 0
         self.stocktext = {name:[] for name in stocknames}
         self.selectedstock = 0
-        self.menudrawn = True
+        self.menudrawn = False
         with open(r'Assets\stockdescriptions.txt','r') as descriptions:
 
             filecontents = descriptions.readlines()

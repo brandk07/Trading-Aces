@@ -365,6 +365,7 @@ class Stock():
             screen.blit(pricetext,(textx+self.pricetext.get_width(),texty))# draws the price
                     
         else:
+            # goes off the current price of the stock, not the original value stored in the stock object
             screen.blit(fontlist[40].render(f' Net Worth ${self.cash+sum([stock[0].price*stock[2] for stock in player.stocks]):.2f}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
             
 
