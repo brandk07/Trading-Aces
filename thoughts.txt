@@ -26,3 +26,9 @@ Add a dianglonal scroll feature for the bar class (12/2/23)
     use the point_in_polygon for collisions
 
 improve performance in stockbook - likely due to making lots of rects each frame
+
+
+
+is for the reversed, when gameplay speed starts at 0 it starts at the bottom, not sure why
+
+
