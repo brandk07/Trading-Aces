@@ -340,7 +340,7 @@ class Stock():
                 self.recentrenders[round(point,2)] = text# add the text back to the recentrenders - so it is at the end of the dict (doesn't get deleted)
 
             else:# if the text is not in the recentrenders or recent renders doesn't have enough texts
-                text = fontlist[30].render(f'{point:.2f}',(255,255,255))[0]# render the text
+                text = fontlist[30].render(f'{point:,.2f}',(255,255,255))[0]# render the text
                 self.recentrenders[round(point,2)] = text# add the text to the recentrenders
             
             for i in range(len(self.recentrenders)-4):# if recentrenders has more then 4 texts
@@ -356,7 +356,7 @@ class Stock():
         #draws the text that displays the price of the stock
         if type(self) == Stock:#text displaying the price, and the net worth
             
-            pricetext = fontlist[40].render(f'{round(self.price,2)}',(255,255,255))[0]
+            pricetext = fontlist[40].render(f'{self.price:,.2f}',(255,255,255))[0]
             textwidth = pricetext.get_width()+20+self.pricetext.get_width(); textheight = pricetext.get_height()
             textx = self.endpos[0]+20; texty = self.endpos[1]-55
             # use textx, and texty to draw the polygon
@@ -366,7 +366,7 @@ class Stock():
                     
         else:
             # goes off the current price of the stock, not the original value stored in the stock object
-            screen.blit(fontlist[40].render(f' Net Worth ${self.cash+sum([stock[0].price*stock[2] for stock in player.stocks]):.2f}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
+            screen.blit(fontlist[40].render(f' Net Worth ${self.cash+sum([stock[0].price*stock[2] for stock in player.stocks]):,.2f}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
             
 
         screen.blit(self.nametext,(self.endpos[0]+15,self.startpos[1]+15))#draws the text that displays the name of the stock or the player
@@ -387,6 +387,6 @@ class Stock():
             screen.blit(change_text_rendered, (self.endpos[0]+15, self.startpos[1]+80))
 
         if type(self) == self.Playerclass:
-            cash_text = fontlist[40].render(f'Cash ${round(self.cash,2)}', (255,255,255))[0]
+            cash_text = fontlist[40].render(f'Cash ${self.cash:,.2f}', (255,255,255))[0]
             screen.blit(cash_text, (self.endpos[0]+15, self.startpos[1]+50))
         

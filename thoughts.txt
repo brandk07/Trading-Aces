@@ -20,15 +20,12 @@ create function to fill points in each stock. Would fill a whole year of points.
 
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23)
 
-Add a dianglonal scroll feature for the bar class (12/2/23)
-    have to convert all the rects to polygons
-    new parameter for the amount of shift
-    use the point_in_polygon for collisions
-
 improve performance in stockbook - likely due to making lots of rects each frame
+    and in portfolio, need a similar thing to the stock class with caching renders for text
 
+the selector in stockbook fails when the stock price moves, it is stored as a quantity not as the index
+    when the quantity changes then it doesn't highlight it (12/10/23)
 
-
-is for the reversed, when gameplay speed starts at 0 it starts at the bottom, not sure why
+the words in portfolio for the stock name should have a variable lenght for the polygon.
 
 

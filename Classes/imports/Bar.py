@@ -11,7 +11,7 @@ def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizo
         if horizontal:
             mouselength = int((mousex-xy)/seclength)# finding how many sections the mouse is away from the slider [0,0]
         else:
-            mouselength = int((mousey-xy)/seclength)
+            mouselength = int(((mousey-(barwh/2))-xy)/seclength)
         mouselength = maxspeed if mouselength > maxspeed else mouselength
         mouselength = 0 if mouselength < 0 else mouselength
         # mouselength = mouselength if horizontal else maxspeed-mouselength
@@ -25,9 +25,9 @@ class SliderBar():
     def __init__(self,windowoffset:list,maxvalue:int,color:list) -> None:
         """Max value must be less than the slider width-20, or height-20 if vertical, color = [(colorstart),(colorend)]"""
         self.winset = windowoffset
-        self.gameplay_speed = 0
+        self.value = 0
         self.maxvalue = maxvalue
-        self.gamespeedtexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue+1)]
+        self.gamevaluetexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue+1)]
         
         self.orientation = 'horizontal'
         self.sliderwh = [0,0]
@@ -44,11 +44,11 @@ class SliderBar():
     def changemaxvalue(self,maxvalue):
         if maxvalue != self.maxvalue:
             self.maxvalue = maxvalue
-            if self.maxvalue > len(self.gamespeedtexts)-1:
-                for i in range(self.maxvalue-len(self.gamespeedtexts)+1):
-                    self.gamespeedtexts.append(fontlist[40].render(f'x{len(self.gamespeedtexts)+i}',(0,0,0))[0])
+            if self.maxvalue > len(self.gamevaluetexts)-1:
+                for i in range(self.maxvalue-len(self.gamevaluetexts)+1):
+                    self.gamevaluetexts.append(fontlist[40].render(f'x{len(self.gamevaluetexts)+i}',(0,0,0))[0])
 
-            self.gameplay_speed = self.gameplay_speed if self.gameplay_speed < self.maxvalue else self.maxvalue
+            self.value = self.value if self.value < self.maxvalue else self.maxvalue
 
     def creategradient(self):
         """creates the gradient for the slider, then blits it to the sliderpoly surface"""""
@@ -98,8 +98,21 @@ class SliderBar():
             (self.sliderxy[0]+self.shift[0], self.sliderxy[1]+self.sliderwh[1])
         ]# top left, top right, bottom right, bottom left
         self.creategradient()
-    
-    def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation,barwh=None,shift=0,reversedscroll=False):
+    def updatebarxy(self,reversedscroll):
+        """updates the barxy based on the gameplay speed"""
+        if self.orientation == 'vertical':
+            if self.barwh[1] < self.sliderwh[1]:
+                if reversedscroll:
+                        self.barxy[1],self.value = barpos(self.slider_points,self.sliderwh[1]-(self.barwh[1]/2),self.sliderxy[1],self.maxvalue,self.value,self.barwh[1],horizontal=False,reverse=True)
+                else:
+                    self.barxy[1],self.value = barpos(self.slider_points,-self.sliderwh[1]+(self.barwh[1]*2),self.sliderxy[1]+self.sliderwh[1]-self.barwh[1],self.maxvalue,self.value,self.barwh[1],False)
+        elif self.orientation == 'horizontal':
+            if self.barwh[0] < self.sliderwh[0]:
+                if reversedscroll:
+                    self.barxy[0],self.value = barpos(self.slider_points,self.sliderwh[0]-(self.barwh[0]/2),self.sliderxy[0],self.maxvalue,self.value,self.barwh[0],horizontal=True,reverse=True)
+                else:
+                    self.barxy[0],self.value = barpos(self.slider_points,self.sliderwh[0],self.sliderxy[0],self.maxvalue,self.value,self.barwh[0])
+    def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation,barwh=None,shift=0,reversedscroll=False,text=True):
         """sliderxy [startx,starty], 
         sliderwh [width,height], 
         orientation ['horizontal','vertical'], 
@@ -112,20 +125,15 @@ class SliderBar():
             self.shift[1] = shift if orientation == 'horizontal' else 0
 
             self.setpoints(sliderxy,sliderwh,orientation,barwh)
+            self.updatebarxy(reversedscroll)
 
         # blit the sliderpoly surface to the screen first
         screen.blit(self.sliderpoly,self.sliderxy)
 
         # Calculates the bar position and the gameplay speed based on the mouse coords
         if pygame.mouse.get_pressed()[0]:
-            
-            if self.orientation == 'vertical':
-                if reversedscroll:
-                    self.barxy[1],self.gameplay_speed = barpos(self.slider_points,self.sliderwh[1]-(self.barwh[1]/2),self.sliderxy[1],self.maxvalue,self.gameplay_speed,self.barwh[1],horizontal=False,reverse=True)
-                else:
-                    self.barxy[1],self.gameplay_speed = barpos(self.slider_points,-self.sliderwh[1]+(self.barwh[1]*2),self.sliderxy[1]+self.sliderwh[1]-self.barwh[1],self.maxvalue,self.gameplay_speed,self.barwh[1],False)
-            elif self.orientation == 'horizontal':
-                self.barxy[0],self.gameplay_speed = barpos(self.slider_points,self.sliderwh[0],self.sliderxy[0],self.maxvalue,self.gameplay_speed,self.barwh[0])
+            self.updatebarxy(reversedscroll)
+
         if max(self.shift) != 0:
             # the height of the barxy to the top of the slider
             subheight = self.sliderwh[1]-self.barxy[1]+self.sliderxy[1]
@@ -147,14 +155,14 @@ class SliderBar():
                     (self.barxy[0]  + xoffset , self.barxy[1] + (self.shift[1])),
                     (self.barxy[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1] + (self.shift[1])),
                     (self.barxy[0] + self.barwh[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1]+self.shift[1]),
-                    ], (225, 225, 225))
+                    ], (200, 200, 200))
         
         # Box around the slider
         pygame.draw.polygon(screen,(0,0,0),self.slider_points,5)
         
-
-        # Draw the text that displays the gameplay speed
-        textx = (self.sliderwh[0]//2 if self.orientation == 'horizontal' else self.sliderwh[0]//1.5) - self.gamespeedtexts[self.gameplay_speed].get_width()
-        texty = self.gamespeedtexts[self.gameplay_speed].get_height()
-        screen.blit(self.gamespeedtexts[self.gameplay_speed], (self.sliderxy[0]+textx, self.sliderxy[1]+self.sliderwh[1]//2-texty//2))
-        return self.gameplay_speed
+        if text:
+            # Draw the text that displays the gameplay speed
+            textx = (self.sliderwh[0]//2 if self.orientation == 'horizontal' else self.sliderwh[0]//1.5) - self.gamevaluetexts[self.value].get_width()
+            texty = self.gamevaluetexts[self.value].get_height()
+            screen.blit(self.gamevaluetexts[self.value], (self.sliderxy[0]+textx, self.sliderxy[1]+self.sliderwh[1]//2-texty//2))
+        return self.value

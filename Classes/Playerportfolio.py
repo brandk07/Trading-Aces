@@ -30,7 +30,15 @@ class Player(Stock):
                     self.cash -= price
                     quant += 1
             quantity = quant# the quantity of stocks that were bought
-            self.stocks.append([obj,price,quantity])
+
+            # check if the stock is already in the list
+            if [obj,price] in [[stock[0],stock[1]] for stock in self.stocks]:
+                for stock in self.stocks:
+                    if stock[0] == obj and stock[1] == price:
+                        stock[2] += quantity
+                        break
+            else:     
+                self.stocks.append([obj,price,quantity])
 
             # self.messagedict[f'Purchased {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
             print(f'buying {obj} for {price}')

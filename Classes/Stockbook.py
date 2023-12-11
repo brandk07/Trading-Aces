@@ -64,7 +64,7 @@ class Stockbook(Menu):
         mousex,mousey = pygame.mouse.get_pos()
         # quantity controls
         maxpurchase = int(player.cash/stocklist[self.selectedstock].price)
-        quantitytext = fontlist[40].render(f'Quanity : {self.quantity}',(255,255,255))[0]
+        # quantitytext = fontlist[40].render(f'Quanity : {self.quantity}',(255,255,255))[0]
         tempquantity = self.quantity
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(1120,155,334,10))# line with circle on it for the quantity
             

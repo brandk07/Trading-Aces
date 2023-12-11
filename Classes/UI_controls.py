@@ -8,10 +8,10 @@ from Classes.imports.Newsbar import News
 # [20,60] [60,20]
 # [700,1000] [1000,650]
 def limit_digits(num, max_digits):
-    if len("{:.2f}".format(num)) > max_digits:
-        return "{:.2e}".format(num)
+    if len("{:,.2f}".format(num)) > max_digits:
+        return "{:,.2e}".format(num)
     else:
-        return "{:.2f}".format(num)
+        return "{:,.2f}".format(num)
 class UI_Controls():
     def __init__(self,windowoffset:list,stocklist) -> None:
         self.gameplay_speed = 0
@@ -88,8 +88,8 @@ class UI_Controls():
 
                 stocklist[i].baredraw(screen,(x+100,710),(x,710+80),'hour')# draws the graph
                 screen.blit(self.namerenders[i][0 if self.percentchanges[i] <= 0 else 1],(x-70,710+10))# draws the name of the stock
-                ptext = fontlist[30].render(limit_digits(stock.price,8),color)[0]# renders the price of the stock
-                screen.blit(ptext,(x-40-(ptext.get_width()/2),710+50))# draws the price of the stock
+                ptext = fontlist[28].render(limit_digits(stock.price,9),color)[0]# renders the price of the stock
+                screen.blit(ptext,(x-42-(ptext.get_width()/2),710+50))# draws the price of the stock
 
         gfxdraw.filled_polygon(screen,[(50,710),(50,790),(250,790),(250,710)],(50,50,50))# cover up the left side of the stock graph bar
         gfxdraw.filled_polygon(screen,[(1650,710),(1650,790),(1450,790),(1450,710)],(50,50,50)) # cover up the right side of the stock graph bar
@@ -146,11 +146,11 @@ class UI_Controls():
             mousex,mousey = pygame.mouse.get_pos()
             if Mousebuttons == 1:
                 print(mousex,mousey)
-                Mousebuttons = 0
+                # Mousebuttons = 0
             
             self.draw_home(screen,stocklist,gametime)            
 
-            player.draw(screen,player,(900,160),(250,700),stocklist,Mousebuttons)
+            player.draw(screen,player,(900,160),(250,700),stocklist,Mousebuttons,True)
             self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
 
 
