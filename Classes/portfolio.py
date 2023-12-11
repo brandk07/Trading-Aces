@@ -32,12 +32,21 @@ class Portfolio(Menu):
 
         return [p1, p2, p3, total]
 
-    def draw_pie_chart(self, screen: pygame.Surface, stocklist: list, player):
+    def draw_pie_chart(self, screen: pygame.Surface, values:list, radius):
         """Draws the pie chart for the portfolio menu."""
         # get the total value of the stocks
-        totalvalue = sum([stock[0].price * stock[2] for stock in player.stocks])
+        
         # get the percentage of each stock
         percentages = [round((stock[0].price * stock[2]) / totalvalue, 2) for stock in player.stocks]
+
+        percentindex = 0
+        angles[]
+        for i,percent in enumerate(percentages):
+            angles[i] = [percentindex]
+            percentindex += (percent/100)*360
+            angles[i].append(percentindex)
+        points = [[(radius*math.acos(a1),radius*math.asin(a1)),(radius*math.acos(a2),radius*math.asin(a2))] a1,a2 for angle in angles]
+        
         
 
     def draw_menu_content(self, screen: pygame.Surface, Mousebuttons: int, stocklist: list, player):
