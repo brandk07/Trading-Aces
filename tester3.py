@@ -1,6 +1,2 @@
-string = "sdfsfdsf"
-print(string.replace("s", "",4))
-mydict = {
-}
-print(mydict.get)
-
+from Defs import *
+print(closest_point((2,4),[(0,2),(4,6)]))

@@ -49,6 +49,10 @@ def Writetofile(stocklist,player,data):
         file.truncate()# clear the file
         json.dump(data,file)
 
+def closest_point(master_point, points):
+    return min(points, key=lambda point: math.sqrt((point[0] - master_point[0])**2 + (point[1] - master_point[1])**2))
+
+
 def point_in_polygon(point, polygon) -> bool:
     """Checks if a point is inside a polygon."""
     n = len(polygon)

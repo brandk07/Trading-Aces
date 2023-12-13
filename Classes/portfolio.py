@@ -1,6 +1,6 @@
 import pygame
 import timeit
-from Defs import fontlist,point_in_polygon
+from Defs import fontlist,point_in_polygon,closest_point
 from Classes.imports.Menu import Menu
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
@@ -32,12 +32,75 @@ class Portfolio(Menu):
 
         return [p1, p2, p3, total]
 
-    def draw_pie_chart(self, screen: pygame.Surface, stocklist: list, player):
-        """Draws the pie chart for the portfolio menu."""
+    def draw_pie_chart(self, screen: pygame.Surface, values:list, radius, coords):
+        """Draws the pie chart for the portfolio menu. value is (value, name)"""
+
         # get the total value of the stocks
-        totalvalue = sum([stock[0].price * stock[2] for stock in player.stocks])
+        # totalvalue = sum([stock[0].price * stock[2] for stock in player.stocks])
         # get the percentage of each stock
-        percentages = [round((stock[0].price * stock[2]) / totalvalue, 2) for stock in player.stocks]
+        # print(values)
+        total = sum([v[0] for v in values])
+        percentages = [round((value[0]) / total,4)*100 for value in values]
+        
+
+        other = [0,'Other']
+        # print(percentages,'percentages1')
+        for i,percent in enumerate(percentages):
+            if percent < 5:
+                other[0] += percent
+                percentages.remove(percent)
+                values.remove(values[i])
+
+        if other[0] > 0:
+            percentages.append(other[0])
+            values.append(other)
+        percentages.sort(reverse=True)
+
+        percentindex = math.radians(0)
+        # print(percentages,'percentages2')
+        angles = []
+        for i,percent in enumerate(percentages):
+            angles.append([math.radians(percentindex)])
+            percentindex += (percent/100)*360
+            angles[i].append(math.radians(percentindex))
+        # print(angles,'angles')
+        # points = [[(radius * math.acos(a1), radius * math.asin(a1)), (radius * math.acos(a2), radius * math.asin(a2))] for a1, a2 in angles]
+        corners = [coords, (coords[0] + radius*2, coords[1]), (coords[0] + radius*2, coords[1] + radius*2), (coords[0], coords[1] + radius*2)]
+        
+        # points = [[(coords[0] + radius * math.cos(a1), coords[1] + radius * math.sin(a1)), 
+        #            (coords[0] + radius * math.cos(a2), coords[1] + radius * math.sin(a2)), 
+        #            corners[closest_point()]] for a1, a2 in angles]
+        points = []
+        for a1,a2 in angles:
+            p0 = (coords[0] + radius, coords[1]+radius)
+            p1 = (coords[0] + radius + radius * math.cos(a1), radius + coords[1] + radius * math.sin(a1))
+            p4 = (coords[0] + radius + radius * math.cos(a2), radius + coords[1] + radius * math.sin(a2))
+            # print((a2//math.radians(90))*4)
+            # index = int((a1//math.radians(90)))-1
+            # p2 = corners[index]
+            # p3 = corners[index+1 if index < 3 else 0]
+            points.append([p0, p1, p4, p0])
+            in1 = corners.index(closest_point(p1, corners))
+            in2 = corners.index(closest_point(p4, corners))
+            # print(in1,in2)
+            for i in range(abs(in1-in2)):
+
+                points[-1].insert(i+2,corners[in1-i if in1+i > 0 else 3])
+
+            # p3 = corners[corners.index(closest_point(p4, corners))]
+            # p3 = corners[corners.index(closest_point(p1, corners)) - 1 if corners.index(closest_point(p1, corners)) > 0 else 3]
+
+        # [[(850, 500), (950.0, 500.0), (950, 400), (750, 400), (759.4105706274706, 542.3503870815782), (850, 500)],
+        #  [(850, 500), (759.4105706274706, 542.3503870815782), (750, 600), (950, 600), (950, 400), (846.9845282379142, 400.04547568993155), (850, 500)],
+        #  [(850, 500), (846.9845282379142, 400.04547568993155), (750, 600), (950.0, 500.0), (850, 500)]] points
+        # print(points,'points')
+        gfxdraw.filled_polygon(screen, corners, (0, 0, 0))
+        for i,pointrange in enumerate(points):
+            pygame.draw.polygon(screen, (100+(i*50), 100+(i*50), 100+(i*50)), pointrange)
+
+        # [(850, 500), (846.9845282379142, 400.04547568993155), (750, 400), (750, 600), (950.0, 500.0), (850, 500)]
+
+        
         
 
     def draw_menu_content(self, screen: pygame.Surface, Mousebuttons: int, stocklist: list, player):
@@ -51,7 +114,7 @@ class Portfolio(Menu):
 
         self.bar.draw_bar(screen, [225, DY], [45, DY + (yshift*4) - 80], 'vertical', barwh=[42, barheight], shift=80, reversedscroll=True, text=True)
         
-        self.draw_pie_chart(screen, stocklist, player)
+        
 
         for i,stock in enumerate([(stock) for i,stock in enumerate(player.stocks) if i >= self.bar.value and i < self.bar.value+5]):# draws the stock graph bar
             
@@ -126,3 +189,9 @@ class Portfolio(Menu):
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)  # draw the outline of the polygon
             pygame.draw.polygon(screen, (0, 0, 0), points2, 5)  # draw the outline of the second polygon
             pygame.draw.polygon(screen, (0, 0, 0), points3, 5)  # draw the outline of the third polygon
+
+        values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
+        names = set([stock[0].name for stock in player.stocks])
+        values = [[sum([v[0] for v in values if v[1] == name]), name] for name in names]
+        # print(values)
+        self.draw_pie_chart(screen, values, 100,(750, 400))
