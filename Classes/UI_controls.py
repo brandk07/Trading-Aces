@@ -1,5 +1,5 @@
 import pygame
-from Defs import fontlist,point_in_triangle
+from Defs import fontlist,point_in_triangle,limit_digits
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 from Classes.imports.stockeventspos import StockEvents
@@ -7,11 +7,7 @@ from Classes.imports.Newsbar import News
 
 # [20,60] [60,20]
 # [700,1000] [1000,650]
-def limit_digits(num, max_digits):
-    if len("{:,.2f}".format(num)) > max_digits:
-        return "{:,.2e}".format(num)
-    else:
-        return "{:,.2f}".format(num)
+
 class UI_Controls():
     def __init__(self,windowoffset:list,stocklist) -> None:
         self.gameplay_speed = 0

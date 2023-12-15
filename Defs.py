@@ -18,7 +18,11 @@ def time_it(func):
         print(f"{func.__name__} took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-
+def limit_digits(num, max_digits):
+    if len("{:,.2f}".format(num)) > max_digits:
+        return "{:,.2e}".format(num)
+    else:
+        return "{:,.2f}".format(num)
 def time_loop(loop):
     def wrapper(*args, **kwargs):
         start_time = time.time()

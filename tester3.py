@@ -1,2 +1,3 @@
-from Defs import *
-print(closest_point((2,4),[(0,2),(4,6)]))
+for i in range(0,10):
+    print(i)
+    

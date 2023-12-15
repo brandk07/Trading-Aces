@@ -1,5 +1,5 @@
 import pygame
-from Defs import fontlist,point_in_polygon
+from Defs import fontlist,point_in_polygon,limit_digits
 from pygame import gfxdraw
 from Classes.imports.Menu import Menu
 import numpy as np
@@ -41,7 +41,8 @@ class Stockbook(Menu):
                 color = (120,0,0) if self.selectedstock == i else (80,0,0)
             # the polygons and text for each of the stocks with the names and prices on the left side of the screen
             gfxdraw.filled_polygon(screen,((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),color)
-            screen.blit(fontlist[36].render(f'{stock.name} ${round(stock.price,2)}',(255,255,255))[0],(225+(i*8),125+(i*65)))
+            
+            screen.blit(fontlist[36].render(f'{stock.name} ${limit_digits(stock.price,9)}',(255,255,255))[0],(225+(i*8),125+(i*65)))
             if self.selectedstock == i:
                 pygame.draw.polygon(screen, (0,0,0), ((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),5)
                 self.selected_stock(screen,stocklist,player,Mousebuttons)

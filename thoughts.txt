@@ -26,6 +26,12 @@ improve performance in stockbook - likely due to making lots of rects each frame
 the selector in stockbook fails when the stock price moves, it is stored as a quantity not as the index
     when the quantity changes then it doesn't highlight it (12/10/23)
 
-the words in portfolio for the stock name should have a variable lenght for the polygon.
+improve performance in portfolio, none of the texts are cached (including the pie chart) 
 
+add the option to sell in the portfolio (12/14/23)
+    click on the stock and it expands the polygon wiht a sell button below
+    -Also add some sort of number next to each stock so it makes more sense when it is scrolling
 
+move the ui controls on the top of the stock view to the bottom and replace the top with the time (12/14/23)
+
+Make the polygons look better and longer in stockbook on the left side (12/14/23)

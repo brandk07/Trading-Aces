@@ -162,12 +162,12 @@ class Stock():
             pass
         
         if type(self) == Stock:#making sure that it is a Stock object and that update is true
-            self.price = self.addpoint(self.price)
+            self.price = self.addpoint(self.price)#updates the price of the stock
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             self.update_range_graphs()
         else:
-            stockvalues = sum([stock[0].price for stock in self.stocks])
-            self.update_range_graphs(stockvalues)#updates the range graphs
+            stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
+            self.update_range_graphs(self.cash+stockvalues)#updates the range graphs
 
 
     def rangecontrols(self,screen:pygame.Surface,Mousebuttons):
