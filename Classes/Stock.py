@@ -8,7 +8,7 @@ import numpy as np
 import os
 import timeit
 import json
-POINTSPERGRAPH = 100
+POINTSPERGRAPH = 200
 
 class Stock():
     def __init__(self,name,startingvalue_range,volatility,Playerclass,window_offset,stocknames) -> None:
@@ -51,12 +51,6 @@ class Stock():
     def reset_trends(self):
         """Sets/resets the trends for the stock"""
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]#resets the trends for each bonus trend
-
-        # self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
-        # self.daybonus = [randint(-5,5)/1000,randint(59400,81000)]# [%added to each movement, time low as 5.5 hours high as 7.5 (remember 6.5 hours is 1 day)]
-        # self.hourlytrend = [randint(-20,20),randint(8100,21600)]# added to the volitility each movement,time low as 45 minutes, high as 2 hours
-        # self.minutetrend = [randint(-10,10),randint(150,3600)]# added to the volitility each movement, time low as 50 seconds, high as 20 minutes 
-        # self.bonustrends = [self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend]#this is used to make seeing if the time is out easier
     
     def reset_graphs(self):
         """resets the graphs to be empty"""
@@ -136,13 +130,7 @@ class Stock():
 
     def addpoint(self,lastprice):
         """returns the new price of the stock"""
-        #Realize that 3 seconds of real time is 1 minute of game time (at x1 speed)
-        # self.periodbonus = [randint(-5,5)/1000,randint(140_400,421_200)]# [%added to each movement, time up to 6 days for the period bonus (low as 2 days)]
-        # self.daybonus = [randint(-5,5)/1000,randint(59400,81000)]# [%added to each movement, time low as 5.5 hours high as 7.5 (remember 6.5 hours is 1 day)]
-        # self.hourlytrend = [randint(-20,20),randint(8100,21600)]# added to the volitility each movement,time low as 45 minutes, high as 2 hours
-        # self.minutetrend = [randint(-10,10),randint(150,3600)]# added to the volitility each movement, time low as 50 seconds, high as 20 minutes 
-        # self.bonustrends = [self.periodbonus,self.daybonus,self.hourlytrend,self.minutetrend]#this is used to make seeing if the time is out easier
-
+ 
         for i,bonustrend in enumerate(self.bonustrends):
             if bonustrend[1] <= 0:#if the time is out
                 self.bonustrends[i] = [randint(*self.bonustrendranges[i][0]),randint(*self.bonustrendranges[i][1])]
@@ -152,9 +140,7 @@ class Stock():
         total_trend = int(sum([trend[0] for trend in self.bonustrends]))
         highvolitity = self.volatility+(total_trend if total_trend >= 0 else -1*(total_trend//2))
         lowvolitity = -self.volatility+(total_trend if total_trend < 0 else -1*(total_trend//2))
-        # print(self.bonustrends,self)
-        # print(1+(randint(lowvolitity,highvolitity)/100),self)
-        # print(1+(randint(lowvolitity,highvolitity)/100),lastprice,lastprice * 1+(randint(lowvolitity,highvolitity)/100),lastprice/(lastprice*(1+(randint(lowvolitity,highvolitity)/100))),self)
+        
         return lastprice * (1+(randint(lowvolitity,highvolitity)/100000))#returns the new price of the stock
     
     def update_price(self,player:object):
@@ -200,8 +186,21 @@ class Stock():
                 if Mousebuttons == 1:
                     self.graphrange = list(self.graphrangeoptions.keys())[i]
                     print('clicked',i)
+    def mouseover(self,screen:pygame.Surface,graphpoints,spacing,blnkspacey):
+        """displays the price of the stock when the mouse is over the graph"""
+        mousex,mousey = pygame.mouse.get_pos()
+        if pygame.Rect(self.endpos[0],self.startpos[1],(self.startpos[0]-self.endpos[0]),(self.endpos[1]-self.startpos[1])).collidepoint(mousex,mousey):
+            pos = (mousex-self.endpos[0])//spacing
+            if pos < len(graphpoints):
+                text1 = fontlist[30].render(f'${self.graphrangelists[self.graphrange][int(pos)]:,.2f}',(255,255,255))[0]
+                screen.blit(text1,(mousex,graphpoints[int(pos)]))
+                percentchange = round(((self.graphrangelists[self.graphrange][int(pos)]/self.graphrangelists[self.graphrange][0])-1)*100,2)
+                color = (0,205,0) if percentchange >= 0 else (205,0,0)
+                if percentchange == 0: color = (205,205,205)
+                screen.blit(fontlist[30].render(f'{percentchange:,.2f}%',color)[0], (mousex,graphpoints[int(pos)]+text1.get_height()+5))
+                gfxdraw.line(screen,mousex,self.endpos[1]-blnkspacey,mousex,self.startpos[1],(255,255,255))
 
-    
+
     def update_range_graphs(self,stockvalues=0):
 
         for key,value in self.graphrangeoptions.items():
@@ -210,14 +209,17 @@ class Stock():
             if self.graphfillvar[key] == int(condensefactor):#if enough points have passed to add a point to the graph (condensefactor is how many points must go by to add 1 point to the graph)
                 #add the last point to the list
                 self.graphfillvar[key] = 0
-                self.graphrangelists[key] = np.append(self.graphrangelists[key],self.price+stockvalues)
+                if type(self) == Stock:
+                    self.graphrangelists[key] = np.append(self.graphrangelists[key],self.price)
+                else:
+                    self.graphrangelists[key] = np.append(self.graphrangelists[key],stockvalues)
             
             if len(self.graphrangelists[key]) > POINTSPERGRAPH:
                 # print('deleting',key,len(self.graphrangelists[key]))
                 self.graphrangelists[key] = np.delete(self.graphrangelists[key],0)
 
     def baredraw(self,screen,startpos,endpos,graphrange):
-        """Draws only the graph of the stock - uses the graphrange parameter, not self.graphrange"""
+        """Draws only the graph of the stock - uses the graphrange,startpos, and endpos parameter, not self.graphrange,self.startpos, and self.endpos"""
         if startpos != self.startpos or endpos != self.endpos:#if the starting or ending positions have changed
             self.startpos = (startpos[0] - self.winset[0], startpos[1] - self.winset[1])
             self.endpos = (endpos[0] - self.winset[0], endpos[1] - self.winset[1])
@@ -240,11 +242,12 @@ class Stock():
             yOffset = (self.startpos[1]+graphheight)-10# slides the graph up on the screen to fit
 
             graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * yScale)) + yOffset# Doing the math to make the points fit on the graph 
-        if len(self.graphrangelists[graphrange]) > 0 and len(self.graphrangelists[graphrange]) < graphwidth:#if there are points in the graph and the graph is not too small
-            spacing = graphwidth/len(self.graphrangelists[graphrange])#the spacing between each point
-        else:
-            spacing = 1
-        
+        # if len(self.graphrangelists[graphrange]) > 0 and len(self.graphrangelists[graphrange]) < graphwidth:#if there are points in the graph and the graph is not too small
+        #     spacing = graphwidth/len(self.graphrangelists[graphrange])#the spacing between each point
+        # else:
+        #     spacing = 1
+        spacing = graphwidth/len(self.graphrangelists[graphrange])#the spacing between each point
+
         graphpointlen = len(graphingpoints)# doing this before the iteration to save time
         for i,value in enumerate(graphingpoints):
             if i >= graphpointlen-1:
@@ -303,12 +306,12 @@ class Stock():
 
             graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * yScale)) + yOffset# Doing the math to make the points fit on the graph 
 
-        # creating the spacing for the graph
-        if len(self.graphrangelists[self.graphrange]) > 0 and len(self.graphrangelists[self.graphrange]) < graphwidth:#if there are points in the graph and the graph is not too small
-            spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
-        else:
-            spacing = 1
-        
+        # # creating the spacing for the graph
+        # if len(self.graphrangelists[self.graphrange]) > 0 and len(self.graphrangelists[self.graphrange]) < graphwidth:#if there are points in the graph and the graph is not too small
+        #     spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
+        # else:
+        #     spacing = 1
+        spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
 
         graphpointlen = len(graphingpoints)# doing this before the iteration to save time
         for i,value in enumerate(graphingpoints):
@@ -319,6 +322,7 @@ class Stock():
                 xpos = self.endpos[0]
                 gfxdraw.line(screen,xpos+int(i*spacing),int(value),xpos+int((i+1)*spacing),int(nextvalue),(255,255,255))
 
+        
 
         # black outline of the graph
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(self.endpos[0], self.startpos[1], (self.startpos[0] - self.endpos[0]),(self.endpos[1] - self.startpos[1])), 5)
@@ -389,4 +393,6 @@ class Stock():
         if type(self) == self.Playerclass:
             cash_text = fontlist[40].render(f'Cash ${self.cash:,.2f}', (255,255,255))[0]
             screen.blit(cash_text, (self.endpos[0]+15, self.startpos[1]+50))
+        
+        self.mouseover(screen,graphingpoints,spacing,blnkspacey)#displays the price of the stock when the mouse is over the graph
         

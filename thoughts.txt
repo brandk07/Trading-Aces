@@ -15,10 +15,13 @@ use :=
 dictionary.get(key,default value) - avoids errors
 dict.setdefault(key,default value) - will set a value if not found
 
+
+------------------Eventually ----------------------
+ablility to change the amount of points per stock - effects performance
+
 -----------------Things to do-------------------
 create function to fill points in each stock. Would fill a whole year of points.
 
-Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23)
 
 improve performance in stockbook - likely due to making lots of rects each frame
     and in portfolio, need a similar thing to the stock class with caching renders for text
@@ -26,7 +29,6 @@ improve performance in stockbook - likely due to making lots of rects each frame
 the selector in stockbook fails when the stock price moves, it is stored as a quantity not as the index
     when the quantity changes then it doesn't highlight it (12/10/23)
 
-improve performance in portfolio, none of the texts are cached (including the pie chart) 
 
 add the option to sell in the portfolio (12/14/23)
     click on the stock and it expands the polygon wiht a sell button below
@@ -35,3 +37,20 @@ add the option to sell in the portfolio (12/14/23)
 move the ui controls on the top of the stock view to the bottom and replace the top with the time (12/14/23)
 
 Make the polygons look better and longer in stockbook on the left side (12/14/23)
+
+
+add more variables with the stockprice change (12/17/23)
+
+
+
+
+Done ------------------------------
+Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
+improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am
+baredraw has problem when increasing the amount of points per graph (12/16/23)
+problem with the cached text - the paid price ins't changing colors and it still doesn't have good performance while active (12/16/23)
+add a perimeter to pie chart and better colors (12/17/23)
+make the color of the scroller in bar change when you are over it and clicking (12/17/23)
+add a percent change text with the stock hover over (12/16/23)
+ablility to scoll on the bar graphs especially in portfolio (12/16/23)
+

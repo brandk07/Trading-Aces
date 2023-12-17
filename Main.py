@@ -50,7 +50,7 @@ stocklist = [stockdict[name] for name in stocknames]
 portfolio = Portfolio()
 ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),stocklist)
 # ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
-Mousebuttons = 0
+mousebuttons = 0
 polybackground = pygame.image.load('Assets/polybackground2.png')
 polybackground = pygame.transform.scale(polybackground,(window_width,window_height))
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
@@ -66,7 +66,7 @@ if __name__ == "__main__":
         
         
         # print(mousex,mousey)
-        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,Mousebuttons)#draws the ui controls to the screen, and senses for clicks
+        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons)#draws the ui controls to the screen, and senses for clicks
 
         
         for i in range(ui_controls.gameplay_speed):
@@ -75,17 +75,17 @@ if __name__ == "__main__":
             for stock in stocklist:
                 stock.update_price(player)
             player.update_price(player)
-        # player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
+        # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
 
         # gametime.drawgametime(screen,True)
 
 
-        stockbook.draw_icon(screen,Mousebuttons,stocklist,player,menulist)
-        portfolio.draw_icon(screen,Mousebuttons,stocklist,player,menulist)
+        stockbook.draw_icon(screen,mousebuttons,stocklist,player,menulist)
+        portfolio.draw_icon(screen,mousebuttons,stocklist,player,menulist)
         screen.blit(update_fps(clock),(1570,0))
 
 
-        Mousebuttons = 0
+        mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 data = [str(gametime),[[stock[0].name,stock[1],stock[2]] for stock in player.stocks],player.graphrange,player.cash]
@@ -103,13 +103,17 @@ if __name__ == "__main__":
                 pygame.quit()
                 quit()
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and Mousebuttons == 0:
+            elif event.type == pygame.MOUSEBUTTONDOWN and mousebuttons == 0:
                 # print(event.button)
-                Mousebuttons = event.button
-                # if Mousebuttons == 1:
+                mousebuttons = event.button
+                # if event.button == 4:
+                #     print('Scroll wheel scrolled up')
+                # elif event.button == 5:
+                #     print('Scroll wheel scrolled down')
+                # if mousebuttons == 1:
                     # print(stock1.pricepoints)
             # elif event.type == pygame.MOUSEBUTTONUP:
-            #     Mousebuttons = 0
+            #     mousebuttons = 0
             #     print('mouse up')
 
         

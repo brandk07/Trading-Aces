@@ -15,11 +15,11 @@ def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizo
         mouselength = maxspeed if mouselength > maxspeed else mouselength
         mouselength = 0 if mouselength < 0 else mouselength
         # mouselength = mouselength if horizontal else maxspeed-mouselength
-        return [int(mouselength*seclength)+xy,mouselength]
+        return [int(mouselength*seclength)+xy,mouselength,True]
    
     seclength = (wh-(barwh * (0.5 if reverse else 1)))/maxspeed# minus 10 for bar width / 2
 
-    return [int(gamespeed*seclength)+xy,gamespeed]
+    return [int(gamespeed*seclength)+xy,gamespeed,False]
 
 class SliderBar():
     def __init__(self,windowoffset:list,maxvalue:int,color:list) -> None:
@@ -36,6 +36,7 @@ class SliderBar():
         self.barxy = [0,0]
         self.shift = [0,0]
         self.color = color
+        self.reversedscroll = False
         # below is the slider offset, gives a bit more space for the mouse to get to 0 and max speed - conditional statement later for no errors
         # self.slider_rect = pygame.Rect(0,0,0,0)
         # the points for the slider polygon
@@ -49,6 +50,20 @@ class SliderBar():
                     self.gamevaluetexts.append(fontlist[40].render(f'x{len(self.gamevaluetexts)+i}',(0,0,0))[0])
 
             self.value = self.value if self.value < self.maxvalue else self.maxvalue
+
+    def changecurrentvalue(self,offset):
+        """changes the current value by the offset"""
+        self.value += offset
+        self.value = self.maxvalue if self.value > self.maxvalue else self.value
+        self.value = 0 if self.value < 0 else self.value
+        self.updatebarxy(self.reversedscroll)
+
+    def scroll(self,mousebuttons):
+        """changes the current value by the offset"""
+        if mousebuttons == 4:
+            self.changecurrentvalue(-1)
+        elif mousebuttons == 5:
+            self.changecurrentvalue(1)
 
     def creategradient(self):
         """creates the gradient for the slider, then blits it to the sliderpoly surface"""""
@@ -103,23 +118,24 @@ class SliderBar():
         if self.orientation == 'vertical':
             if self.barwh[1] < self.sliderwh[1]:
                 if reversedscroll:
-                        self.barxy[1],self.value = barpos(self.slider_points,self.sliderwh[1]-(self.barwh[1]/2),self.sliderxy[1],self.maxvalue,self.value,self.barwh[1],horizontal=False,reverse=True)
+                        self.barxy[1],self.value,mouseover = barpos(self.slider_points,self.sliderwh[1]-(self.barwh[1]/2),self.sliderxy[1],self.maxvalue,self.value,self.barwh[1],horizontal=False,reverse=True)
                 else:
-                    self.barxy[1],self.value = barpos(self.slider_points,-self.sliderwh[1]+(self.barwh[1]*2),self.sliderxy[1]+self.sliderwh[1]-self.barwh[1],self.maxvalue,self.value,self.barwh[1],False)
+                    self.barxy[1],self.value,mouseover = barpos(self.slider_points,-self.sliderwh[1]+(self.barwh[1]*2),self.sliderxy[1]+self.sliderwh[1]-self.barwh[1],self.maxvalue,self.value,self.barwh[1],False)
         elif self.orientation == 'horizontal':
             if self.barwh[0] < self.sliderwh[0]:
                 if reversedscroll:
-                    self.barxy[0],self.value = barpos(self.slider_points,self.sliderwh[0]-(self.barwh[0]/2),self.sliderxy[0],self.maxvalue,self.value,self.barwh[0],horizontal=True,reverse=True)
+                    self.barxy[0],self.value,mouseover = barpos(self.slider_points,self.sliderwh[0]-(self.barwh[0]/2),self.sliderxy[0],self.maxvalue,self.value,self.barwh[0],horizontal=True,reverse=True)
                 else:
-                    self.barxy[0],self.value = barpos(self.slider_points,self.sliderwh[0],self.sliderxy[0],self.maxvalue,self.value,self.barwh[0])
+                    self.barxy[0],self.value,mouseover = barpos(self.slider_points,self.sliderwh[0],self.sliderxy[0],self.maxvalue,self.value,self.barwh[0])
+        return mouseover
     def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation,barwh=None,shift=0,reversedscroll=False,text=True):
         """sliderxy [startx,starty], 
         sliderwh [width,height], 
         orientation ['horizontal','vertical'], 
         shift is the offset for the bottom two points to make a trapezoid (Only works for vertical right now)"""
 
-        if self.sliderxy != sliderxy or self.sliderwh != sliderwh or shift != max(self.shift):# if the slider has moved, then recreate the gradient and the slider_rect
-            
+        if self.sliderxy != sliderxy or self.sliderwh != sliderwh or shift != max(self.shift) or self.reversedscroll != reversedscroll:# if the slider has moved, then recreate the gradient and the slider_rect
+            self.reveresed = reversedscroll
             self.shift = [0,0]
             self.shift[0] = shift if orientation == 'vertical' else 0
             self.shift[1] = shift if orientation == 'horizontal' else 0
@@ -130,9 +146,13 @@ class SliderBar():
         # blit the sliderpoly surface to the screen first
         screen.blit(self.sliderpoly,self.sliderxy)
 
+        color = (150,150,150)
         # Calculates the bar position and the gameplay speed based on the mouse coords
         if pygame.mouse.get_pressed()[0]:
-            self.updatebarxy(reversedscroll)
+            if self.updatebarxy(reversedscroll):
+                color = (200,200,200)
+
+            
 
         if max(self.shift) != 0:
             # the height of the barxy to the top of the slider
@@ -155,8 +175,8 @@ class SliderBar():
                     (self.barxy[0]  + xoffset , self.barxy[1] + (self.shift[1])),
                     (self.barxy[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1] + (self.shift[1])),
                     (self.barxy[0] + self.barwh[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1]+self.shift[1]),
-                    ], (200, 200, 200))
-        
+                    ], color)
+            
         # Box around the slider
         pygame.draw.polygon(screen,(0,0,0),self.slider_points,5)
         
