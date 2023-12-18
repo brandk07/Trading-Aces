@@ -1,6 +1,6 @@
 import pygame
 import timeit
-from Defs import fontlist,point_in_polygon,closest_point,draw_pie_chart
+from Defs import fontlist,point_in_polygon,closest_point,draw_pie_chart,limit_digits
 from Classes.imports.Menu import Menu
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
@@ -49,12 +49,12 @@ class Portfolio(Menu):
 
         barheight = 520//len(player.stocks) if len(player.stocks) > 0 else 1
 
-        self.bar.draw_bar(screen, [225, DY], [45, DY + (yshift*4) - 80], 'vertical', barwh=[43, barheight], shift=85, reversedscroll=True, text=True)
+        self.bar.draw_bar(screen, [225, DY], [45, DY + (yshift*4) - 80], 'vertical', barwh=[43, barheight], shift=85, reversedscroll=True, text=False)
         
         screen.blit(self.portfoliotext,(220,120))
 
         for i,stock in enumerate([(stock) for i,stock in enumerate(player.stocks) if i >= self.bar.value and i < self.bar.value+5]):# draws the stock graph bar
-            
+            ioffset = i+self.bar.value
             percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100
             
             if percentchange > 0:
@@ -67,11 +67,11 @@ class Portfolio(Menu):
 
             textinfo = [[(190, 190, 190), 45],[(190, 190, 190), 35],[grcolor, 35],[grcolor, 35],[grcolor, 35]]
 
-            texts = [f'{stock[0]} X {stock[2]}',
-                     f'Paid Price: ${stock[1]*stock[2]:,.2f}',
-                     f'Price: ${stock[0].price*stock[2]:,.2f}',
-                     f'{profittext}: ${(stock[0].price - stock[1])*stock[2]:,.2f}',
-                     f'Change %: {percentchange:,.2f}%'
+            texts = [f'{stock[0]} X {limit_digits(stock[2],10,False)}',
+                     f'Paid Price: ${limit_digits(stock[1]*stock[2],15)}',
+                     f'Price: ${limit_digits(stock[0].price*stock[2],15)}',
+                     f'{profittext}: ${limit_digits((stock[0].price - stock[1])*stock[2],15)}',
+                     f'Change %: {limit_digits(percentchange,15)}%'
                     ]
             for x, text in enumerate(texts):
                 if text in self.allrenders[i]:
@@ -96,8 +96,12 @@ class Portfolio(Menu):
             hover = False
             if point_in_polygon((mousex, mousey), totalpolyon):  # check if mouse is inside the polygon
                 hover = True
+                if mousebuttons == 1:
+                    self.selected_stock = ioffset
 
-            polycolor = (30, 30, 30) if not hover else (60, 60, 60)
+            polycolor = (30, 30, 30) if not hover else (80, 80, 80)
+            # polycolor = (60, 60, 60) if self.selected_stock == ioffset else polycolor
+
 
             # ----------draw the polygons----------
             gfxdraw.filled_polygon(screen, points, polycolor)  # draws the first polygon with the name of the stock
@@ -120,26 +124,20 @@ class Portfolio(Menu):
                                 [totalpolyon[3][0]-15, totalpolyon[3][1]],
                                 [totalpolyon[3][0]-3, totalpolyon[3][1] + DH - 15],
                               ]
-            if hover:
-                if percentchange > 0:
-                    bottomcolor = (0, 200, 0)
-                elif percentchange == 0:
-                    bottomcolor = (200, 200, 200)
-                else:
-                    bottomcolor = (200, 0, 0)
+            if hover or self.selected_stock == ioffset:
+                if percentchange > 0:bottomcolor = (0, 200, 0)
+                elif percentchange == 0:bottomcolor = (200, 200, 200)
+                else:bottomcolor = (200, 0, 0)
             else:
-                if percentchange > 0:
-                    bottomcolor = (0, 80, 0)
-                elif percentchange == 0:
-                    bottomcolor = (110, 110, 110)
-                else:
-                    bottomcolor = (80, 0, 0)
+                if percentchange > 0: bottomcolor = (0, 80, 0)
+                elif percentchange == 0: bottomcolor = (110, 110, 110)
+                else: bottomcolor = (80, 0, 0)
 
             pygame.draw.polygon(screen, bottomcolor, bottom_polygon)
-
-            pygame.draw.polygon(screen, (0, 0, 0), points, 5)  # draw the outline of the polygon
-            pygame.draw.polygon(screen, (0, 0, 0), points2, 5)  # draw the outline of the second polygon
-            pygame.draw.polygon(screen, (0, 0, 0), points3, 5)  # draw the outline of the third polygon
+            outlinecolor = (0, 0, 0) if self.selected_stock != ioffset else (200, 200, 200)
+            pygame.draw.polygon(screen, outlinecolor, points, 5)  # draw the outline of the polygon
+            pygame.draw.polygon(screen, outlinecolor, points2, 5)  # draw the outline of the second polygon
+            pygame.draw.polygon(screen, outlinecolor, points3, 5)  # draw the outline of the third polygon
 
         values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
         names = set([stock[0].name for stock in player.stocks])

@@ -135,7 +135,7 @@ class SliderBar():
         shift is the offset for the bottom two points to make a trapezoid (Only works for vertical right now)"""
 
         if self.sliderxy != sliderxy or self.sliderwh != sliderwh or shift != max(self.shift) or self.reversedscroll != reversedscroll:# if the slider has moved, then recreate the gradient and the slider_rect
-            self.reveresed = reversedscroll
+            self.reversedscroll = reversedscroll
             self.shift = [0,0]
             self.shift[0] = shift if orientation == 'vertical' else 0
             self.shift[1] = shift if orientation == 'horizontal' else 0

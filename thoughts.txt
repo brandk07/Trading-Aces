@@ -41,6 +41,8 @@ Make the polygons look better and longer in stockbook on the left side (12/14/23
 
 add more variables with the stockprice change (12/17/23)
 
+add the variablitly thing and other details to the stock book (12/17/23)
+    -same for portfolio
 
 
 
