@@ -4,6 +4,7 @@ from Defs import fontlist,point_in_polygon,closest_point,draw_pie_chart,limit_di
 from Classes.imports.Menu import Menu
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
+from Classes.Stockbook import quantityControls
 import math
 
 DX = 300
@@ -22,7 +23,7 @@ class Portfolio(Menu):
         self.menudrawn = True
         self.renderedpietexts = None; self.renderedback = None
         self.allrenders = []
-        self.selected_stock = None
+        self.selected_stock = None; self.quantity = 0
 
         
     def getpoints(self, w1, w2, w3, x, y):
@@ -34,9 +35,48 @@ class Portfolio(Menu):
         total = [(DX + x, DY + y), (DX + 15 + x, DY + DH + y), (DX + 25 + w1 + w2 + w3 + x, DY + DH + y), (DX + 10 + w1 + w2 + w3 + x, DY + y)]
 
         return [p1, p2, p3, total]
-
-        
     
+    def drawSelectedStock(self, screen, stockindex, mousebuttons, player):
+        if stockindex != None:
+            stock = player.stocks[stockindex]
+            mousex, mousey = pygame.mouse.get_pos()
+           
+            # draw a trapozid using gfxdraw.filled_polygon from 1050,565 to 1529,925
+            gfxdraw.filled_polygon(screen, [(1050, 565), (1530, 565), (1565, 925), (1085, 925)], (30, 30, 30))
+            pygame.draw.polygon(screen, (0, 0, 0), [(1050, 565), (1530, 565), (1565, 925), (1085, 925)], 5)
+            self.quantity = quantityControls(screen,mousebuttons,player.stocks[stockindex][2],self.quantity,(1100,610))
+            # draw the stock name
+            if len(self.allrenders[stockindex]) < 1:
+                text = fontlist[45].render(f'{stock[0]} X {limit_digits(stock[2],10,False)}', (190, 190, 190))[0]
+            else:   
+                text = self.allrenders[stockindex][f'{stock[0]} X {limit_digits(stock[2],10,False)}']
+                
+            screen.blit(text, (1060, 575))
+            # use the same system found in the stockbook class to draw the sell button and the selector for the amount of stocks to sell
+            if point_in_polygon((mousex,mousey),[(1110,705),(1125,775),(1465,775),(1450,705)]):
+                sellcolor = (150,0,0)
+                if mousebuttons == 1:
+                    if self.quantity >= player.stocks[stockindex][2]:
+                        player.sell(player.stocks[stockindex][0],player.stocks[stockindex][1],int(self.quantity))
+                        self.selected_stock = None
+                    else:
+                        player.sell(player.stocks[stockindex][0],player.stocks[stockindex][1],int(self.quantity))
+                    self.quantity = 0
+            else:
+                sellcolor = (225,225,225)
+            gfxdraw.filled_polygon(screen,((1110,705),(1125,775),(1465,775),(1450,705)),(15,15,15))#polygon for the sell button
+            pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline sell button polygon
+            sell_text, _ = fontlist[65].render(f'SELL', sellcolor)
+            sell_text_rect = sell_text.get_rect(center=(1280, 740))
+            screen.blit(sell_text, sell_text_rect)
+            # add a total value of the stocks under the sell button
+            value = stock[0].price * self.quantity
+            text = fontlist[45].render(f'Total Value: ${limit_digits(value,15)}', (190, 190, 190))[0]
+            screen.blit(text, (1125, 810))
+
+
+            
+
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player):
         mousex, mousey = pygame.mouse.get_pos()
         xshift = 14
@@ -53,8 +93,11 @@ class Portfolio(Menu):
         
         screen.blit(self.portfoliotext,(220,120))
 
+        self.drawSelectedStock(screen, self.selected_stock, mousebuttons, player)
+
         for i,stock in enumerate([(stock) for i,stock in enumerate(player.stocks) if i >= self.bar.value and i < self.bar.value+5]):# draws the stock graph bar
             ioffset = i+self.bar.value
+
             percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100
             
             if percentchange > 0:

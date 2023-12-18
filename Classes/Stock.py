@@ -191,7 +191,7 @@ class Stock():
         mousex,mousey = pygame.mouse.get_pos()
         if pygame.Rect(self.endpos[0],self.startpos[1],(self.startpos[0]-self.endpos[0]),(self.endpos[1]-self.startpos[1])).collidepoint(mousex,mousey):
             pos = (mousex-self.endpos[0])//spacing
-            if pos < len(graphpoints):
+            if pos < len(self.graphrangelists[self.graphrange]):
                 text1 = fontlist[30].render(f'${self.graphrangelists[self.graphrange][int(pos)]:,.2f}',(255,255,255))[0]
                 screen.blit(text1,(mousex,graphpoints[int(pos)]))
                 percentchange = round(((self.graphrangelists[self.graphrange][int(pos)]/self.graphrangelists[self.graphrange][0])-1)*100,2)
@@ -299,63 +299,59 @@ class Stock():
         minpoint = (np.amin(self.graphrangelists[self.graphrange]))
         maxpoint = (np.amax(self.graphrangelists[self.graphrange]))        
 
-        if minpoint != maxpoint:#prevents divide by zero error
+        if abs(minpoint-maxpoint) > 0.1:#prevents divide by zero error
             yScale = graphheight/(maxpoint-minpoint)#the amount of pixels per point with the y axis
 
             yOffset = (self.startpos[1]+graphheight-(blnkspacey*3.5))+blnkspacey# slides the graph up on the screen to fit
 
             graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * yScale)) + yOffset# Doing the math to make the points fit on the graph 
 
-        # # creating the spacing for the graph
-        # if len(self.graphrangelists[self.graphrange]) > 0 and len(self.graphrangelists[self.graphrange]) < graphwidth:#if there are points in the graph and the graph is not too small
-        #     spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
-        # else:
-        #     spacing = 1
-        spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
+            spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
 
-        graphpointlen = len(graphingpoints)# doing this before the iteration to save time
-        for i,value in enumerate(graphingpoints):
-            if i >= graphpointlen-1:
-                pass#if last one in list or i is too great then don't draw line
-            else:
-                nextvalue = graphingpoints[i+1]
-                xpos = self.endpos[0]
-                gfxdraw.line(screen,xpos+int(i*spacing),int(value),xpos+int((i+1)*spacing),int(nextvalue),(255,255,255))
+            graphpointlen = len(graphingpoints)# doing this before the iteration to save time
+            for i,value in enumerate(graphingpoints):
+                if i >= graphpointlen-1:
+                    pass#if last one in list or i is too great then don't draw line
+                else:
+                    nextvalue = graphingpoints[i+1]
+                    xpos = self.endpos[0]
+                    gfxdraw.line(screen,xpos+int(i*spacing),int(value),xpos+int((i+1)*spacing),int(nextvalue),(255,255,255))
 
-        
+            """text that displays the price of the stock and the lines that go across the graph"""
+            sortedlist = self.graphrangelists[self.graphrange].copy();sortedlist.sort()# first makes a copy of the list, then sorts the list
+            for i in range(4):
+                lenpos = int((len(self.graphrangelists[self.graphrange])-1)*(i/3))#Position based purely on the length of the current graph size
+                point = sortedlist[lenpos]#using the sorted list so an even amount of price values are displayed
+                
+                #gets the position of the point in the graphingpoints (the y values) - the sorted list moves the points around so the index of the point is different
+                yvalpos = np.where(self.graphrangelists[self.graphrange] == point)[0][0]
+                
+                # -------render the text for the graph----------
+                if len(self.recentrenders) > i and round(point,2) in self.recentrenders:
+                    text = self.recentrenders[round(point,2)]# reuse old renders if possible
+                    self.recentrenders.pop(round(point,2))# remove the text from the recentrenders
+                    self.recentrenders[round(point,2)] = text# add the text back to the recentrenders - so it is at the end of the dict (doesn't get deleted)
 
+                else:# if the text is not in the recentrenders or recent renders doesn't have enough texts
+                    text = fontlist[30].render(f'{point:,.2f}',(255,255,255))[0]# render the text
+                    self.recentrenders[round(point,2)] = text# add the text to the recentrenders
+                
+                for i in range(len(self.recentrenders)-4):# if recentrenders has more then 4 texts
+                    self.recentrenders.pop(list(self.recentrenders)[0])# remove the first text from recentrenders
+                        
+                # draw the text and the lines
+                gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
+                text_rect = text.get_rect(center=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
+                screen.blit(text,text_rect)
+                
+        else:#if the minpoint and maxpoint are the same
+            gfxdraw.line(screen,self.endpos[0],int(self.startpos[1]+graphheight),self.startpos[0]-blnkspacex,int(self.startpos[1]+graphheight),(255,255,255))#draws a line across the graph
+            spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
+            graphingpoints = [self.startpos[1]+graphheight]*(graphwidth)#makes the graphingpoints a list of the same y value
+            
         # black outline of the graph
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(self.endpos[0], self.startpos[1], (self.startpos[0] - self.endpos[0]),(self.endpos[1] - self.startpos[1])), 5)
         
-
-        """text that displays the price of the stock and the lines that go across the graph"""
-        sortedlist = self.graphrangelists[self.graphrange].copy();sortedlist.sort()# first makes a copy of the list, then sorts the list
-        for i in range(4):
-            lenpos = int((len(self.graphrangelists[self.graphrange])-1)*(i/3))#Position based purely on the length of the current graph size
-            point = sortedlist[lenpos]#using the sorted list so an even amount of price values are displayed
-            
-            #gets the position of the point in the graphingpoints (the y values) - the sorted list moves the points around so the index of the point is different
-            yvalpos = np.where(self.graphrangelists[self.graphrange] == point)[0][0]
-            
-            # -------render the text for the graph----------
-            if len(self.recentrenders) > i and round(point,2) in self.recentrenders:
-                text = self.recentrenders[round(point,2)]# reuse old renders if possible
-                self.recentrenders.pop(round(point,2))# remove the text from the recentrenders
-                self.recentrenders[round(point,2)] = text# add the text back to the recentrenders - so it is at the end of the dict (doesn't get deleted)
-
-            else:# if the text is not in the recentrenders or recent renders doesn't have enough texts
-                text = fontlist[30].render(f'{point:,.2f}',(255,255,255))[0]# render the text
-                self.recentrenders[round(point,2)] = text# add the text to the recentrenders
-            
-            for i in range(len(self.recentrenders)-4):# if recentrenders has more then 4 texts
-                self.recentrenders.pop(list(self.recentrenders)[0])# remove the first text from recentrenders
-                    
-            # draw the text and the lines
-            gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
-            text_rect = text.get_rect(center=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
-            screen.blit(text,text_rect)
-
-           
 
         #draws the text that displays the price of the stock
         if type(self) == Stock:#text displaying the price, and the net worth
@@ -395,4 +391,5 @@ class Stock():
             screen.blit(cash_text, (self.endpos[0]+15, self.startpos[1]+50))
         
         self.mouseover(screen,graphingpoints,spacing,blnkspacey)#displays the price of the stock when the mouse is over the graph
+                
         

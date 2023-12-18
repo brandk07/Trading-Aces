@@ -46,33 +46,23 @@ class Player(Stock):
             print('stocks are',self.stocks)
             print('/'*20)
 
-    def sell(self,obj,newprice:int,quantity:int=1):
-        stockquant = sum([stock[2] for stock in self.stocks if stock[0] == obj])
-        print(stockquant,'stockquant')
-        if quantity > stockquant:
-            quantity = stockquant
+    def sell(self,obj,ogprice,quantity:int=1):
+
+        stockindex = [(stock[0],stock[1]) for stock in self.stocks].index((obj,ogprice))
+        if quantity > (quant:=self.stocks[stockindex][2]):
+            quantity = quant
         
-        self.cash += newprice*quantity
-        ogprices = []# list of the original prices of the stocks being sold
-        while quantity >= 0:
-            for stock in self.stocks:
-                if stock[0] == obj:# if the stock is the same as the one being sold
-                    if stock[2] > quantity:# if the stock has more than the quantity
-                        ogprices.append(stock[1] for _ in range(quantity))
-                        stock[2] -= quantity# remove the quantity from the stock
-                        break
-                    elif stock[2] == quantity:# if the stock has the same amount as the quantity
-                        ogprices.append(stock[1] for _ in range(quantity))
-                        self.stocks.remove(stock)
-                        break
-                    else:
-                        ogprices.append(stock[1] for _ in range(stock[2]))
-                        quantity -= stock[2]
-                        self.stocks.remove(stock)
+        self.cash += obj.price*quantity
+        if quantity == self.stocks[stockindex][2]:
+            self.stocks.remove(self.stocks[stockindex])
+        else:
+            self.stocks[stockindex][2] -= quantity
+
+
                         
-        print(f'selling {obj} for {newprice}')
-        print(f"Profited ${(sum(ogprices)/len(ogprices))-newprice:.2f} per share")
-        print(f"Total profit: ${sum(ogprices)-newprice*len(ogprices):.2f}")
+        print(f'selling {obj} for {obj.price}')
+        print(f"Profited ${(ogprice)-obj.price:.2f} per share")
+        print(f"Total profit: ${(ogprice-obj.price)*quantity:.2f}")
         print('cash is',self.cash)
         print('stocks are',self.stocks)
         print('/'*20)
