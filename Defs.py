@@ -115,7 +115,7 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
         
         points = []
 
-        colors = [(0, 102, 204),  (255, 0, 0),    (0, 128, 0),    (255, 165, 0),  (255, 215, 0),  (218, 112, 214),(46, 139, 87),  (255, 69, 0),   (0, 191, 255)]
+        colors = [(0, 102, 204),  (255, 0, 0),   (0, 128, 0),    (255, 165, 0),  (255, 215, 0),  (218, 112, 214),(46, 139, 87),  (255, 69, 0),   (0, 191, 255), (128, 0, 128)]
 
         for colornum, (a1, a2,name) in enumerate(angles):# loop through the angles
             p0 = (coords[0] + radius, coords[1]+radius)

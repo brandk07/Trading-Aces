@@ -46,10 +46,7 @@ class Portfolio(Menu):
             pygame.draw.polygon(screen, (0, 0, 0), [(1050, 565), (1530, 565), (1565, 925), (1085, 925)], 5)
             self.quantity = quantityControls(screen,mousebuttons,player.stocks[stockindex][2],self.quantity,(1100,610))
             # draw the stock name
-            if len(self.allrenders[stockindex]) < 1:
-                text = fontlist[45].render(f'{stock[0]} X {limit_digits(stock[2],10,False)}', (190, 190, 190))[0]
-            else:   
-                text = self.allrenders[stockindex][f'{stock[0]} X {limit_digits(stock[2],10,False)}']
+            text = fontlist[45].render(f'{stock[0]} X {limit_digits(stock[2],10,False)}', (190, 190, 190))[0]
                 
             screen.blit(text, (1060, 575))
             # use the same system found in the stockbook class to draw the sell button and the selector for the amount of stocks to sell

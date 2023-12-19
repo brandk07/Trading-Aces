@@ -18,7 +18,8 @@ class Stock():
         self.Playerclass = Playerclass
         self.starting_value_range = startingvalue_range
         self.name = name
-        self.price = randint(*self.starting_value_range)#not used if there are points in any graph
+        # self.price = randint(*self.starting_value_range)#not used if there are points in any graph
+        self.price = 100#not used if there are points in any graph
         self.pricereset_time = None
         self.stocknames = stocknames
         #variables for graphing the stock 
@@ -260,6 +261,7 @@ class Stock():
         """Draws the graph of the stock along with the range controls, price lines, and the name"""
         if startpos != self.startpos or endpos != self.endpos:#if the starting or ending positions have changed
             #setting the starting and ending positions - where the graphs are located is constantly changing
+            # startingpos is the top left corner of the graph, endingpos is the bottom right corner of the graph
             self.startpos = (startpos[0] - self.winset[0], startpos[1] - self.winset[1])
             self.endpos = (endpos[0] - self.winset[0], endpos[1] - self.winset[1])
         
@@ -347,7 +349,7 @@ class Stock():
 
         #draws the text that displays the price of the stock
         if type(self) == Stock:#text displaying the price, and the net worth
-            
+            pass
             pricetext = fontlist[40].render(f'{self.price:,.2f}',(255,255,255))[0]
             textwidth = pricetext.get_width()+20+self.pricetext.get_width(); textheight = pricetext.get_height()
             textx = self.endpos[0]+20; texty = self.endpos[1]-55

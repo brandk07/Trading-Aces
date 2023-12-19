@@ -103,7 +103,19 @@ class StockGraphManager:
 
         if stockname == self.mousehovering and not pygame.Rect(startpos[0]-140,startpos[1]+5,135,250).collidepoint(mousex,mousey):
             self.mousehovering = None
+    
     def stockBar(self, screen: pygame.Surface, stocklist: list):
+
+        def stockOver(stock, mousex, mousey, picked_stocks, draggedstock):
+            stocknames = [stock.name for stock in stocklist]
+            for i, selected in enumerate(picked_stocks):
+                stock = stocklist[stocknames.index(selected)]
+                if mousex >= stock.endpos[0] and mousex <= stock.startpos[0]:
+                    if mousey >= stock.startpos[1] and mousey <= stock.endpos[1]:
+                        picked_stocks.remove(selected)
+                        picked_stocks.insert(i, draggedstock.name)
+            return picked_stocks
+                            
         if len(self.picked_stocks) < len(stocklist):
             newlist = [stock for stock in stocklist if stock.name not in self.picked_stocks]
             mousex, mousey = pygame.mouse.get_pos()
@@ -114,17 +126,14 @@ class StockGraphManager:
                     for i, stock in enumerate(newlist):
                         x = int(200 + (i * width))
                         y = 10
-                        if pygame.Rect(x + 5, y + 10, 1400 / len(newlist), 80).collidepoint(mousex, mousey):
-                            self.dragstock = [stock, mousex - x, mousey - y]
-            else:
-                print(self.dragstock)
-                for i, selected in enumerate(self.picked_stocks):
-                    if pygame.Rect(200 + (i * width) + 5, 10 + 10, 1400 / len(self.picked_stocks), 80).collidepoint(mousex, mousey):
-                        self.picked_stocks.remove(selected)
-                        self.picked_stocks.insert(i, self.dragstock[0].name)
-                        self.dragstock = [None, None, None]
-                        print(self.picked_stocks)
+                        # if pygame.Rect(x + 5, y + 10, 1400 / len(newlist), 80).collidepoint(mousex, mousey):
+                        #     self.dragstock = [stock, mousex - x, mousey - y]
+                        if mousex >= x and x+width >= mousex:
+                            if mousey > y and mousey <= y+80:
+                                self.dragstock = [stock, mousex - x, mousey - y]
+            else:                
                 if not pygame.mouse.get_pressed()[0]:
+                    self.picked_stocks = stockOver(self.dragstock[0], mousex, mousey, self.picked_stocks, self.dragstock[0])
                     self.dragstock = [None, None, None]
 
             for i, stock in enumerate(newlist):
