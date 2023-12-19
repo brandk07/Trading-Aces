@@ -82,20 +82,20 @@ if __name__ == "__main__":
 
         stockbook.draw_icon(screen,mousebuttons,stocklist,player,menulist)
         portfolio.draw_icon(screen,mousebuttons,stocklist,player,menulist)
-        screen.blit(update_fps(clock),(1570,0))
+        screen.blit(update_fps(clock),(1900,0))
 
 
         mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                data = [str(gametime),[[stock[0].name,stock[1],stock[2]] for stock in player.stocks],player.graphrange,player.cash]
+                data = [str(gametime),[[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks],player.graphrange,int(player.cash)]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)
                 pygame.quit()
                 quit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                data = [str(gametime),[[stock[0].name,stock[1],stock[2]] for stock in player.stocks],player.graphrange,player.cash]
+                data = [str(gametime),[[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks],player.graphrange,int(player.cash)]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)

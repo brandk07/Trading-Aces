@@ -20,7 +20,7 @@ class Portfolio(Menu):
         self.bar.value = 0
         self.icon.set_colorkey((255,255,255))
         self.portfoliotext = fontlist[65].render('Portfolio',(220,220,220))[0]
-        self.menudrawn = True
+        self.menudrawn = False
         self.renderedpietexts = None; self.renderedback = None
         self.allrenders = []
         self.selected_stock = None; self.quantity = 0

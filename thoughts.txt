@@ -22,6 +22,7 @@ ablility to change the amount of points per stock - effects performance
 Look into hosting online with using a (12/18/23)
     Virtual Private Server (VPS) or cloud-based server 
     AWS, Google Cloud, and Azure provide this kind of service.
+
 -----------------Things to do-------------------
 create function to fill points in each stock. Would fill a whole year of points.
 
@@ -33,6 +34,7 @@ the selector in stockbook fails when the stock price moves, it is stored as a qu
 
 add more to the top of the home screen ie. day/night photo (12/18/23)
     - better looking time
+    - total market outlook
 
 move the ui controls on the top of the stock view to the bottom and replace the top with the time (12/14/23)
 
@@ -48,6 +50,13 @@ Add a master graph switcher on the stock view side (12/18/23)
 
 change teh bar class so that is snaps better (12/18/23)
     - when you are over halfway to the next interval, switch to it
+
+Add the ablility to switch stocks back in (12/18/23)
+
+new system for when you open up the one of the menus (portfolio or stockbook) (12/18/23)
+    -performance is bad and it looks bad currently with the background
+
+Need to fix the coords on line 122 of StockGraphManager (12/18/23)
 
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am

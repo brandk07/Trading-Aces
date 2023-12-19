@@ -135,7 +135,7 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
                         addedcorners.add(degree)
                 # Next case is for when neither a1 or a2 are in the same quadrant as the degree, but the angle is still between the two angles
                 if a1 <= degree:
-                    if i != 3 and a2 >= modifieddegrees[i+1 if i <= 2 else 0]:
+                    if i != 3 and a2 >= degree+90:
                         addedcorners.add(degree)
                 # Next case is for when a2 is in the same quadrant as the degree, but a1 is not
                 if a2 >= degree:

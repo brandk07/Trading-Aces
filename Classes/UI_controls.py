@@ -1,5 +1,5 @@
 import pygame
-from Defs import fontlist,point_in_triangle,limit_digits
+from Defs import fontlist,point_in_triangle,limit_digits,draw_pie_chart
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 from Classes.imports.stockeventspos import StockEvents
@@ -19,7 +19,7 @@ class UI_Controls():
                 self.newsobj.addStockNews(stock.name)
 
         # self.view = "stock"# homeview or stockview
-        self.view = "home"# homeview or stockview
+        self.view = "stock"# homeview or stock
         self.graphscroll = 0
         self.namerenders = [[fontlist[30].render(stock.name,(200,0,0))[0],fontlist[30].render(stock.name,(0,200,0))[0]] for stock in stocklist]# [red,green]
 
@@ -28,12 +28,17 @@ class UI_Controls():
         self.get_listpercents = lambda xlist : [self.get_percent(stock) for stock in xlist]
         self.percentchanges = self.get_listpercents(stocklist)
         self.totalperecent = lambda xlist : sum([self.get_percent(stock) for stock in xlist])
+        # for pie chart
+        radius = 175; backsurface = pygame.Surface((radius * 2 + 10, radius * 2 + 10))
+        backsurface.fill((50, 50, 50)); pygame.draw.circle(backsurface, (255, 255, 255), (radius, radius), radius)
+        backsurface.set_colorkey((255, 255, 255))
+        self.renderedpietexts = None;  self.renderedback = backsurface
         
     def drawIcon(self, screen: pygame.Surface):
         """Draws the home/stock icon in the top left corner."""
         # Draw the triangles to form a square in the top left corner
-        hometri = [(40, 10), (40, 160), (190, 10)]
-        stockstri = [(190, 10), (190, 160), (40, 160)]
+        hometri = [(25, 10), (25, 160), (175, 10)]
+        stockstri = [(175, 10), (175, 160), (25, 160)]
 
         # Check if the mouse is clicked and hovering over the triangles
         mouse_pos = pygame.mouse.get_pos()
@@ -55,12 +60,12 @@ class UI_Controls():
                 self.view = "stock"
 
         # Draw the triangles
-        pygame.draw.polygon(screen, home_color, [(x-15, y) for x, y in hometri])
-        pygame.draw.polygon(screen, stocks_color, [(x-15, y) for x, y in stockstri])
+        pygame.draw.polygon(screen, home_color, [(x, y) for x, y in hometri])
+        pygame.draw.polygon(screen, stocks_color, [(x, y) for x, y in stockstri])
 
         # Draw the outline for the triangles
-        pygame.draw.polygon(screen, (0, 0, 0), [(x-15, y) for x, y in hometri], 4)
-        pygame.draw.polygon(screen, (0, 0, 0), [(x-15, y) for x, y in stockstri], 4)
+        pygame.draw.polygon(screen, (0, 0, 0), [(x, y) for x, y in hometri], 4)
+        pygame.draw.polygon(screen, (0, 0, 0), [(x, y) for x, y in stockstri], 4)
 
         # Draw the "Home" and "Stocks" text in the triangles
         home = fontlist[50].render('Home', (255, 255, 255))[0]
@@ -122,7 +127,7 @@ class UI_Controls():
         
         self.stockevent.draw(screen)
         
-    def draw_home(self,screen:pygame.Surface,stocklist:list,gametime):
+    def draw_home(self,screen:pygame.Surface,stocklist:list,gametime,player):
         gfxdraw.filled_polygon(screen,[(200,10),(250,150),(1450,150),(1400,10)],(10,10,10))# time etc
         self.draw_time(screen,gametime)
         gfxdraw.filled_polygon(screen,[(250,800),(275,1050),(1475,1050),(1450,800)],(10,10,10))# the News bar at the bottom
@@ -133,25 +138,28 @@ class UI_Controls():
         self.draw_stockbar(screen,stocklist)
         self.drawStockEvents(screen,stocklist)
         self.newsobj.draw(screen)
-        
-    
 
-    def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,Mousebuttons):
+        values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
+        names = set([stock[0].name for stock in player.stocks])
+        values = [[sum([v[0] for v in values if v[1] == name]), name] for name in names]
+        values.append([player.cash, "Cash"])
+        _,self.renderedpietexts = draw_pie_chart(screen, values, 175, (1460, 160),self.renderedback,self.renderedpietexts)
+
+        
+
+    def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons):
         self.drawIcon(screen)
         if self.view == "home":
             mousex,mousey = pygame.mouse.get_pos()
-            if Mousebuttons == 1:
-                print(mousex,mousey)
-                # Mousebuttons = 0
             
-            self.draw_home(screen,stocklist,gametime)            
+            self.draw_home(screen,stocklist,gametime,player)            
 
-            player.draw(screen,player,(900,160),(250,700),stocklist,Mousebuttons,True)
+            player.draw(screen,player,(900,160),(250,700),stocklist,mousebuttons,True)
             self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
 
 
         elif self.view == "stock":
-            stockgraphmanager.draw_graphs(screen,stocklist,player,Mousebuttons)
-            player.draw(screen,player,(1920,0),(1600,400),stocklist,Mousebuttons)
+            stockgraphmanager.draw_graphs(screen,stocklist,player,mousebuttons)
+            # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
             self.gameplay_speed = self.bar.draw_bar(screen,[1620,650],[120,380],'vertical')
 

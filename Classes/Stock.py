@@ -39,9 +39,7 @@ class Stock():
         self.pricetext = fontlist[40].render(f'Price $',(255,255,255))[0]
         #variables for the stock price+
         self.volatility = volatility
-        self.recentrenders = {}
-
-        self.rangetime = 600# the amount of time in seconds /100 before the range will be switched -  if the range controls aren't drawn
+        self.recentrenders = {}# a dict of the renders of the recent prices
         # self.reset_trends()
     
 
@@ -281,13 +279,7 @@ class Stock():
         
         if rangecontrols:# if the range controls are drawn
             self.rangecontrols(screen,Mousebuttons)#draws the range controls
-        else:
-            if self.rangetime <= 0:#if the range controls aren't drawn and the time is out
-                self.rangetime = 60#reset the time
-                graphrangeindex = list(self.graphrangeoptions).index(self.graphrange)+1 if list(self.graphrangeoptions).index(self.graphrange)+1 < len(self.graphrangeoptions) else 0#the index of the next graph range
-                self.graphrange = list(self.graphrangeoptions)[graphrangeindex]#change the graph range to the next in the index
-            else:
-                self.rangetime -= 1#subtract 1 from the time
+
         # Kind of deceptive with the name, but graphheight is not acually the full height of the graph - it is divided by 1.5 and then the blank space is subtracted
         graphheight = ((self.endpos[1]-self.startpos[1])//1.5)-blnkspacex
         graphwidth = (self.startpos[0]-self.endpos[0])-blnkspacex

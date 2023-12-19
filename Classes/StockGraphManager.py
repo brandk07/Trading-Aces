@@ -19,7 +19,7 @@ class StockGraphManager:
         }
         
         self.hoverimages = {name:image for name,image in self.images.items()}
-        for key,image in self.images.items():
+        for key,image in self.images.items():# makes the hover images for the ui controls (the images that appear brighter when you hover over them)
             image = pygame.transform.scale(image,(50,50))
             surface = pygame.Surface((image.get_width()+6,image.get_height()+6))
             surface.fill((110,110,110))
@@ -29,7 +29,7 @@ class StockGraphManager:
             surface.blit(image,(3,3))
             self.hoverimages[key] = surface
 
-        self.ui_rects = [pygame.Rect(745+(i*66),25,56,56) for i in range(len(self.images))]
+        self.ui_rects = [pygame.Rect(745+(i*66),990,56,56) for i in range(len(self.images))]
 
         self.current_config = 'nona'
         self.allstocks = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
@@ -41,19 +41,20 @@ class StockGraphManager:
             'quad': [self.allstocks[i] for i in range(4)],
             'nona': [self.allstocks[i] for i in range(9)],
         }
-    
-    def draw_ui(self,screen,Mousebuttons:int,stocklist:list):
+        self.mcontrolstext = [[fontlist[45].render(text,(220,220,220))[0],text.lower()] for text in ['Recent','Hour','Day','Week','Month','Year','Custom']]
+        self.masterrange = 'hour'
+        self.dragstock = [None,None,None]# [stock object, xoffset, yoffset]
+    def draw_ui(self,screen,mousebuttons:int,stocklist:list):
         gfxdraw.filled_polygon(screen,[(710,90),(740,10),(1050,10),(1015,90)],(50,50,50))#polygon at top of screen behind ui controls
         mousex,mousey = pygame.mouse.get_pos()
         collide = None
         for i,rect in enumerate(self.ui_rects):#draws the ui controls to the screen, and senses for clicks
             if rect.collidepoint(mousex,mousey):
                 collide = i
-                if Mousebuttons == 1:
+                if mousebuttons == 1:
                     self.current_config = list(self.images.keys())[i]
                     self.picked_stocks.clear()#reset stock list and repopulate it with the correct amount of stocks (using math.prod which is a little unnecessary) in allstocks list
                     self.picked_stocks = self.pickedstockconfig[self.current_config].copy()#uses the pickedstockconfig dict to see which stocks it needs to use
-
 
         if collide == None:
             if pygame.Rect(710,10,340,80).collidepoint(mousex,mousey):
@@ -61,11 +62,11 @@ class StockGraphManager:
         for i,(name,image) in enumerate(self.images.items()):
             #bit complex if statement but the first part is for the current config, and the second part is for the other configs
             if ((name == self.current_config and collide != None) and collide != list(self.images.keys()).index(self.current_config)) or (collide != i and name != self.current_config):
-                screen.blit(image,(745+(i*66),25))
+                screen.blit(image,(745+(i*66),990))
             elif name == self.current_config or collide == i:
-                screen.blit(self.hoverimages[name],(745+(i*66),25))
+                screen.blit(self.hoverimages[name],(745+(i*66),990))
     
-    def changestockbutton(self,screen:pygame.Surface,startpos,endpos,Mousebuttons:int,stockname:str,stocklist:list):
+    def changestockbutton(self,screen:pygame.Surface,startpos,endpos,mousebuttons:int,stockname:str,stocklist:list):
         mousex,mousey = pygame.mouse.get_pos()
         #polygon at the top of each stock graph
         gfxdraw.filled_polygon(screen,[(startpos[0]-140,startpos[1]+30),(startpos[0]-130,startpos[1]+5),(startpos[0]-5,startpos[1]+5),(startpos[0]-15,startpos[1]+30)],(180,180,180))
@@ -87,8 +88,8 @@ class StockGraphManager:
                     color = (0,0,180)#default color
                     if pygame.Rect(startpos[0]-140,startpos[1]+5+yadj,135,25).collidepoint(mousex,mousey):#if the mouse is hovering over the stock button
                         color = (0,180,180)
-                        if Mousebuttons == 1:
-                            Mousebuttons = 0
+                        if mousebuttons == 1:
+                            mousebuttons = 0
                             # oldstockobj = [stockobj for stockobj in stocklist if stockobj.name == stockname][0]#finds the stock object of the stock that is being replaced
                             # stockobj = [stockobj for stockobj in stocklist if stockobj.name == stock][0]#finds the stock object of the stock that is replacing the old stock
                             self.picked_stocks[self.picked_stocks.index(stockname)] = stock#replaces the old stock with the new stock in the picked_stocks list
@@ -102,10 +103,72 @@ class StockGraphManager:
 
         if stockname == self.mousehovering and not pygame.Rect(startpos[0]-140,startpos[1]+5,135,250).collidepoint(mousex,mousey):
             self.mousehovering = None
+    def stockBar(self, screen: pygame.Surface, stocklist: list):
+        if len(self.picked_stocks) < len(stocklist):
+            newlist = [stock for stock in stocklist if stock.name not in self.picked_stocks]
+            mousex, mousey = pygame.mouse.get_pos()
+            width = 1400 / len(newlist)
+
+            if self.dragstock[0] == None:
+                if pygame.mouse.get_pressed()[0]:
+                    for i, stock in enumerate(newlist):
+                        x = int(200 + (i * width))
+                        y = 10
+                        if pygame.Rect(x + 5, y + 10, 1400 / len(newlist), 80).collidepoint(mousex, mousey):
+                            self.dragstock = [stock, mousex - x, mousey - y]
+            else:
+                print(self.dragstock)
+                for i, selected in enumerate(self.picked_stocks):
+                    if pygame.Rect(200 + (i * width) + 5, 10 + 10, 1400 / len(self.picked_stocks), 80).collidepoint(mousex, mousey):
+                        self.picked_stocks.remove(selected)
+                        self.picked_stocks.insert(i, self.dragstock[0].name)
+                        self.dragstock = [None, None, None]
+                        print(self.picked_stocks)
+                if not pygame.mouse.get_pressed()[0]:
+                    self.dragstock = [None, None, None]
+
+            for i, stock in enumerate(newlist):
+                if self.dragstock[0] == stock:
+                    x = mousex - self.dragstock[1]
+                    y = mousey - self.dragstock[2]
+                else:
+                    x = int(200 + (i * width))
+                    y = 10
+                stock.baredraw(screen, (x + int(width) - 5, y), (x + 5, y + 80), self.masterrange if self.masterrange != 'custom' else 'hour')
+
+                pchange = round(((stock.graphrangelists[stock.graphrange][-1] / stock.graphrangelists[stock.graphrange][0]) - 1) * 100, 2)
+                color = (0, 200, 0) if pchange >= 0 else (200, 0, 0)
+                if pchange == 0:
+                    color = (180, 180, 180)
+                nametext = fontlist[25].render(stock.name, color)[0]
+                screen.blit(nametext, (x + int(width / 2) - nametext.get_width() / 2, y + 10))
+
+    def masterControls(self,screen,mousebuttons:int,stocklist:list):
+        mousex,mousey = pygame.mouse.get_pos()
+
+        for i,(text,grange) in enumerate(self.mcontrolstext): 
+            width = 150    
+            height = 60
+            x = 1620
+            y = 100+(i*height)
+                    
+            color = (30,30,30) if grange != self.masterrange else (140,0,0)
+            gfxdraw.filled_polygon(screen,[(x-10,y+55),(x-10,y+5),(x+width,y+5),(x+width,y+55)],color)# polygon behind the text (the graph range)
+            pygame.draw.polygon(screen,(0,0,0),[(x-10,y+55),(x-10,y+5),(x+width,y+5),(x+width,y+55)],4)# outline
+            screen.blit(text,(x+((width-text.get_width())//2),(y+text.get_height()//2)))
+
+            if pygame.Rect(x-10,y+10,width,height).collidepoint(mousex,mousey):
+                if mousebuttons == 1:
+                    mousebuttons = 0
+                    self.masterrange = grange
+                    if self.masterrange != 'custom':
+                        for stock in stocklist:
+                            stock.graphrange = self.masterrange
 
 
-    def draw_graphs(self, screen, stocklist:list, player, Mousebuttons):
-        self.draw_ui(screen,Mousebuttons,stocklist)
+    def draw_graphs(self, screen, stocklist:list, player, mousebuttons):
+        self.draw_ui(screen,mousebuttons,stocklist)
+        
         
         for i in range(self.graph_config[self.current_config][1]):
             for ii in range(self.graph_config[self.current_config][0]):
@@ -122,10 +185,10 @@ class StockGraphManager:
                 # if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
                 #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
 
-                stock.draw(screen,player,startpos,endpos,stocklist,Mousebuttons)
+                stock.draw(screen,player,startpos,endpos,stocklist,mousebuttons,True if self.masterrange == 'custom' else False)
                     
-                if self.current_config != 'nona':#if no menus are drawn and the current config is not nona
-                    # self.changestockbutton(screen,startpos,endpos,Mousebuttons,stockname,stocklist)  ------------------------Used for changing stocks, don't want right now
-                    pass
-
+                # if self.current_config != 'nona':#if no menus are drawn and the current config is not nona
+                #     self.changestockbutton(screen,startpos,endpos,mousebuttons,stockname,stocklist)#  ------------------------Used for changing stocks, don't want right now
+        self.stockBar(screen,stocklist)
+        self.masterControls(screen,mousebuttons,stocklist)
                 
