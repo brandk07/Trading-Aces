@@ -18,7 +18,10 @@ dict.setdefault(key,default value) - will set a value if not found
 
 ------------------Eventually ----------------------
 ablility to change the amount of points per stock - effects performance
-
+ 
+Look into hosting online with using a (12/18/23)
+    Virtual Private Server (VPS) or cloud-based server 
+    AWS, Google Cloud, and Azure provide this kind of service.
 -----------------Things to do-------------------
 create function to fill points in each stock. Would fill a whole year of points.
 

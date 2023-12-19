@@ -30,7 +30,7 @@ print(window_x, window_y)
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
 screen = pygame.display.set_mode((window_width, window_height), pygame.NOFRAME)
 screen.fill((0, 0, 0))
-pygame.display.set_caption("Investrix")
+pygame.display.set_caption("Trading Aces")
 pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
 clock = pygame.time.Clock()
@@ -106,6 +106,8 @@ if __name__ == "__main__":
             elif event.type == pygame.MOUSEBUTTONDOWN and mousebuttons == 0:
                 # print(event.button)
                 mousebuttons = event.button
+                if mousebuttons == 1:
+                    print(mousex,mousey)
                 # if event.button == 4:
                 #     print('Scroll wheel scrolled up')
                 # elif event.button == 5:

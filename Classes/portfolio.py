@@ -53,7 +53,7 @@ class Portfolio(Menu):
                 
             screen.blit(text, (1060, 575))
             # use the same system found in the stockbook class to draw the sell button and the selector for the amount of stocks to sell
-            if point_in_polygon((mousex,mousey),[(1110,705),(1125,775),(1465,775),(1450,705)]):
+            if point_in_polygon((mousex,mousey),[(1110,805),(1125,875),(1465,875),(1450,805)]):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
                     if self.quantity >= player.stocks[stockindex][2]:
@@ -64,15 +64,22 @@ class Portfolio(Menu):
                     self.quantity = 0
             else:
                 sellcolor = (225,225,225)
-            gfxdraw.filled_polygon(screen,((1110,705),(1125,775),(1465,775),(1450,705)),(15,15,15))#polygon for the sell button
-            pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline sell button polygon
-            sell_text, _ = fontlist[65].render(f'SELL', sellcolor)
-            sell_text_rect = sell_text.get_rect(center=(1280, 740))
-            screen.blit(sell_text, sell_text_rect)
-            # add a total value of the stocks under the sell button
+
+            # total value of the stocks above the sell button
             value = stock[0].price * self.quantity
-            text = fontlist[45].render(f'Total Value: ${limit_digits(value,15)}', (190, 190, 190))[0]
-            screen.blit(text, (1125, 810))
+            text = fontlist[45].render(f'Value: ${limit_digits(value,15)}', (190, 190, 190))[0]
+            gfxdraw.filled_polygon(screen,((1110,705),(1125,775),(1465,775),(1450,705)),(15,15,15))#polygon for the total value button
+            pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total value button polygon
+            
+            
+            screen.blit(text, (1130, 725))
+            # sell button
+            gfxdraw.filled_polygon(screen,((1110,805),(1125,875),(1465,875),(1450,805)),(15,15,15))#polygon for the sell button
+            pygame.draw.polygon(screen, (0,0,0), ((1110,805),(1125,875),(1465,875),(1450,805)),5)#outline sell button polygon
+            sell_text, _ = fontlist[65].render(f'SELL', sellcolor)
+            sell_text_rect = sell_text.get_rect(center=(1280, 840))
+            screen.blit(sell_text, sell_text_rect)
+            
 
 
             
@@ -181,7 +188,9 @@ class Portfolio(Menu):
             pygame.draw.polygon(screen, outlinecolor, points, 5)  # draw the outline of the polygon
             pygame.draw.polygon(screen, outlinecolor, points2, 5)  # draw the outline of the second polygon
             pygame.draw.polygon(screen, outlinecolor, points3, 5)  # draw the outline of the third polygon
-
+        if not player.stocks:# if the player has no stocks
+            text = fontlist[65].render('You have no stocks', (190, 190, 190))[0]
+            screen.blit(text, (320, 235))
         values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
         names = set([stock[0].name for stock in player.stocks])
         values = [[sum([v[0] for v in values if v[1] == name]), name] for name in names]
