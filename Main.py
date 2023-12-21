@@ -9,7 +9,7 @@ from Classes.Gametime import GameTime
 from Classes.Playerportfolio import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
-from Classes.Portfolio import Portfolio
+from Classes.portfolio import Portfolio
 import timeit
 
 pygame.init()

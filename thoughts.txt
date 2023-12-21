@@ -23,21 +23,17 @@ Look into hosting online with using a (12/18/23)
     Virtual Private Server (VPS) or cloud-based server 
     AWS, Google Cloud, and Azure provide this kind of service.
 
+-----------------Small things-------------------
+performance in quantityControls function can be improved line 25-30 prerender texts (12/20/23)
+
 -----------------Things to do-------------------
 create function to fill points in each stock. Would fill a whole year of points.
 
-improve performance in stockbook - likely due to making lots of rects each frame
-    and in portfolio, need a similar thing to the stock class with caching renders for text
-
-the selector in stockbook fails when the stock price moves, it is stored as a quantity not as the index
-    when the quantity changes then it doesn't highlight it (12/10/23)
-
+========================================
 add more to the top of the home screen ie. day/night photo (12/18/23)
     - better looking time
     - total market outlook (Add messages about it in the menu too)
-
-Make the polygons look better and longer in stockbook on the left side (12/14/23)
-    they are red when they should be neutral
+========================================
 
 add more variables with the stockprice change (12/17/23)
     Add an overall stock movement 
@@ -51,8 +47,6 @@ change teh bar class so that is snaps better (12/18/23)
 new system for when you open up the one of the menus (portfolio or stockbook) (12/18/23)
     -performance is bad and it looks bad currently with the background
 
-when a selected stock in the portfolio is scolled it causes an error
-    simple check to see if it is in a range so that doesn't happen
 
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
@@ -70,3 +64,11 @@ Add a master graph switcher on the stock view side (12/18/23) - (12/19/23)
 Need to fix the coords on line 122 of StockGraphManager (12/18/23) - (12/19/23)
 move the ui controls on the top of the stock view to the bottom and replace the top with the time (12/14/23) - (12/19/23)
 Add the ablility to switch stocks back in (12/18/23) - (12/19/23)
+when a selected stock in the portfolio is scolled it causes an error
+    simple check to see if it is in a range so that doesn't happen
+Make the polygons look better and longer in stockbook on the left side (12/14/23) - (12/20/23)
+    they are red when they should be neutral
+the selector in stockbook fails when the stock price moves, it is stored as a quantity not as the index
+    when the quantity changes then it doesn't highlight it (12/10/23) - (12/20/23)
+improve performance in stockbook - likely due to making lots of rects each frame
+    and in portfolio, need a similar thing to the stock class with caching renders for text - (12/20/23)

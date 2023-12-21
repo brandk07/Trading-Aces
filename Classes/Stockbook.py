@@ -8,52 +8,56 @@ def quantityControls(screen, mousebuttons:int, maxpurchase, quantity, coords):
     """This function is called for the buy and sell controls in the stockbook menu"""
     mousex, mousey = pygame.mouse.get_pos()
     x, y = coords[0],coords[1]+100
-
     tempquantity = quantity
     # quantity controls
-    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x + 15, y - 45, 334, 10))  # line with circle on it for the quantity
+    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x + 15, y - 45, 334, 10))  # line with circles on it for the quantity
 
-    if maxpurchase > 0:
+    if maxpurchase > 0:# if the player can afford to buy the stock
         if maxpurchase < 8:  # if there are less than 9 indicators on the line
             indictamt = maxpurchase
             multiplier = 1
             spotlist = [[], [1], [1, 2], [2], [], [3], [2, 5]]  # used to determine which spots should have text
+            quantity = int(maxpurchase) if quantity > maxpurchase else quantity# Never let the quantity be greater than the max purchase
 
             for i in range(indictamt + 1):  # the rectanges sticking out of the line that indicate the quantity
                 if i == quantity:
-                    pygame.draw.rect(screen, (120, 120, 120),
-                                     pygame.Rect(x + 15 + (i * (324 / (indictamt))), y - 60, 10, 40))
+                    pygame.draw.rect(screen, (120, 120, 120),pygame.Rect(x + 15 + (i * (324 / (indictamt))), y - 60, 10, 40))
                     text = fontlist[30].render(f'{i}', (0, 150, 0))[0]
                     screen.blit(text, (x + 20 + (i * (324 / (indictamt))) - (text.get_width() // 2), y - 85))
 
                 elif i == 0 or i == indictamt or i in spotlist[indictamt - 1]:
-                    pygame.draw.rect(screen, (0, 0, 0),
-                                     pygame.Rect(x + 15 + (i * (324 / (indictamt))), y - 60, 10, 40))
+                    pygame.draw.rect(screen, (0, 0, 0),pygame.Rect(x + 15 + (i * (324 / (indictamt))), y - 60, 10, 40))
                     text = fontlist[30].render(f'{i}', (255, 255, 255))[0]
                     screen.blit(text, (x + 20 + (i * (324 / (indictamt))) - (text.get_width() // 2), y - 85))
                 else:
-                    pygame.draw.rect(screen, (0, 0, 0),
-                                     pygame.Rect(x + 17 + (i * (324 / (indictamt))), y - 55, 5, 30))
+                    pygame.draw.rect(screen, (0, 0, 0),pygame.Rect(x + 17 + (i * (324 / (indictamt))), y - 55, 5, 30))
         else:
             indictamt = maxpurchase if maxpurchase < 8 else 8  # the amount of indicators on the line
-
             multiplier = maxpurchase / 8  # the multiplier for the quantity - there can only be 8 lines, but they can represent any number
 
+            if quantity % int(multiplier) != 0:  # if the quantity is not a multiple of the multiplier
+                
+                quantity = int((quantity/maxpurchase)*8*multiplier)#turning quanity into an valid index
+                if quantity < (maxpurchase*multiplier):
+                    quantity = int(round(quantity / multiplier)) * multiplier
+
+            quantity = int(maxpurchase) if quantity > maxpurchase else quantity# Never let the quantity be greater than the max purchase
+                # quantity = quantity if quantity <= maxpurchase else quantity - int(multiplier)  # if the quantity is less than the max purchase, add the multiplier, else subtract it
+            
             for i in range(indictamt + 1):  # the rectanges sticking out of the line that indicate the quantity
-                if i * multiplier == quantity:
-                    pygame.draw.rect(screen, (120, 120, 120),
-                                     pygame.Rect(x + 15 + (i * (324 / (indictamt))), y - 60, 10, 40))
+                if i == int(quantity / multiplier):
+                    pygame.draw.rect(screen, (120, 120, 120),pygame.Rect(x + 15 + (i * (324 / (indictamt))), y - 60, 10, 40))
                     text = fontlist[30].render(f'{int(i * multiplier)}', (0, 150, 0))[0]
                     screen.blit(text, (x + 20 + (i * (324 / (indictamt))) - (text.get_width() // 2), y - 85))
                 elif i == 0 or i == indictamt or i % 2 == 0:
-                    pygame.draw.rect(screen, (0, 0, 0),
-                                     pygame.Rect(x + 15 + (i * (324 / (indictamt))), y - 60, 10, 40))
+                    pygame.draw.rect(screen, (0, 0, 0),pygame.Rect(x + 15 + (i * (324 / (indictamt))), y - 60, 10, 40))
                     text = fontlist[30].render(f'{int(i * multiplier)}', (255, 255, 255))[0]
                     screen.blit(text, (x + 20 + (i * (324 / (indictamt))) - (text.get_width() // 2), y - 85))
                 else:
-                    pygame.draw.rect(screen, (0, 0, 0),
-                                     pygame.Rect(x + 17 + (i * (324 / (indictamt))), y - 55, 5, 30))
+                    pygame.draw.rect(screen, (0, 0, 0),pygame.Rect(x + 17 + (i * (324 / (indictamt))), y - 55, 5, 30))
+
         # -------------for both greater and less than 8 indicators -----------------
+
         # list of all the rect objects
         rectlist = [pygame.Rect(x + 5 + (i * (324 / (indictamt))), y - 60, 40, 40) for i in range(indictamt + 1)]
         # first check if we are still collided from last frame
@@ -63,18 +67,15 @@ def quantityControls(screen, mousebuttons:int, maxpurchase, quantity, coords):
                 quantity = tempquantity
 
         if tempquantity != quantity:  # if the quantity has changed
-            pygame.draw.circle(screen, (225, 225, 225),
-                               (x + 20 + int(tempquantity / multiplier) * (324 / (indictamt)), y - 35), 10)  # the circle that moves along the line
-            pygame.draw.circle(screen, (80, 80, 80),
-                               (x + 20 + int(quantity / multiplier) * (324 / (indictamt)), y - 35), 10)  # the circle that moves along the line
+            pygame.draw.circle(screen, (225, 225, 225),(x + 20 + int(tempquantity / multiplier) * (324 / (indictamt)), y - 35), 10)  # the circle that moves along the line
+            pygame.draw.circle(screen, (80, 80, 80),(x + 20 + int(quantity / multiplier) * (324 / (indictamt)), y - 35), 10)  # the circle that moves along the line
         else:
-            pygame.draw.circle(screen, (225, 225, 225),
-                               (x + 20 + int(quantity / multiplier) * (324 / (indictamt)), y - 35), 10)
+            pygame.draw.circle(screen, (225, 225, 225),(x + 20 + int(quantity / multiplier) * (324 / (indictamt)), y - 35), 10)
     else:
         text = fontlist[30].render(f'{0}', (255, 255, 255))[0]
-        screen.blit(text, (x + 72 - (text.get_width() // 2), y - 80))
-        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x + 67, y - 60, 10, 40))
-        pygame.draw.circle(screen, (0, 150, 0), (x + 72, y - 40), 10)
+        screen.blit(text, (x + 182 - (text.get_width() // 2), y - 80))
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x + 177, y - 60, 10, 40))
+        pygame.draw.circle(screen, (0, 150, 0), (x + 182, y - 40), 10)
     return quantity
 
 class Stockbook(Menu):
@@ -84,6 +85,7 @@ class Stockbook(Menu):
         self.stocktext = {name:[] for name in stocknames}
         self.selectedstock = 0
         self.menudrawn = False
+        self.purchasetext = [fontlist[65].render(f'PURCHASE', color)[0] for color in [(0,150,0),(225,225,225)]]
         with open(r'Assets\stockdescriptions.txt','r') as descriptions:
 
             filecontents = descriptions.readlines()
@@ -99,36 +101,41 @@ class Stockbook(Menu):
                 if i == 0:#if its the first line, render it with a larger font and grey color
                     self.stocktext[key][i] = fontlist[40].render(line,(120, 120, 120))[0]
                 else:#else render it with a smaller font and orange color
-                    self.stocktext[key][i] = fontlist[30].render(line,(225, 90, 15))[0]
+                    self.stocktext[key][i] = fontlist[30].render(line,(225, 130, 0))[0]
         
     def draw_menu_content(self,screen:pygame.Surface,stocklist:list,mousebuttons:int,player):
         """Draws all the main content for the stockbook menu (the stocks on the left side of the screen)"""
         mousex,mousey = pygame.mouse.get_pos()
         for i,stock in enumerate(stocklist):
-            if pygame.Rect.collidepoint(pygame.Rect(215+(i*8),120+(i*65),175,35),mousex,mousey) and mousebuttons == 1:#if the mouse is hovering over the stock
-                self.selectedstock = i
-                self.quantity = 0
-            if stock.price > stock.graphrangelists[stock.graphrange][0]:# if the price is greater than the first point in the current graph
-                color = (0,120,0) if self.selectedstock == i else (0,80,0)
+            points = [(215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(450+(i*8),155+(i*65)),(440+(i*8),120+(i*65))]
+            if (hover:=point_in_polygon((mousex,mousey),points)):#if the mouse is hovering over the stock name
+                if mousebuttons == 1:#if the mouse is hovering over the stock
+                    self.selectedstock = i
+                    self.quantity = 0
+
+            change = stock.price - stock.graphrangelists[stock.graphrange][0]
+            if hover or self.selectedstock == i:
+                color = (0, 160, 0) if change > 0 else (160, 0, 0)
+                color = (160, 160, 160) if change == 0 else color
             else:
-                color = (120,0,0) if self.selectedstock == i else (80,0,0)
-            # the polygons and text for each of the stocks with the names and prices on the left side of the screen
-            gfxdraw.filled_polygon(screen,((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),color)
-            
+                color = (0, 80, 0) if change > 0 else (80, 0, 0)
+                color = (80, 80, 80) if change == 0 else color
+
+            gfxdraw.filled_polygon(screen,points,color)# polygon for the stock name
+            outlinecolor = (0, 0, 0) if self.selectedstock != i else (180, 180, 180)#
+            pygame.draw.polygon(screen, outlinecolor, points,5)
+
             screen.blit(fontlist[36].render(f'{stock.name} ${limit_digits(stock.price,9)}',(255,255,255))[0],(225+(i*8),125+(i*65)))
             if self.selectedstock == i:
-                pygame.draw.polygon(screen, (0,0,0), ((215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(400+(i*8),155+(i*65)),(390+(i*8),120+(i*65))),5)
                 self.selected_stock(screen,stocklist,player,mousebuttons)
 
     def draw_descriptions(self,screen:pygame.Surface,stocklist:list,player,mousebuttons):
         """Draws the stock descriptions and the stock graph for the selected stock"""
-        gfxdraw.filled_polygon(screen,((290,700),(320,955),(1570,955),(1535,700)),(60,60,60))
-
-        screen.blit(fontlist[90].render(f'{stocklist[self.selectedstock].name}',(255,255,255))[0],(300,710))
-        screen.blit(self.renderedstocknames[stocklist[self.selectedstock].name],(300,710))
+        gfxdraw.filled_polygon(screen,((290,700),(320,955),(1570,955),(1535,700)),(60,60,60))#  polygon for the stock description
+        screen.blit(self.renderedstocknames[stocklist[self.selectedstock].name],(300,710))# blits the stock name to the screen
 
         # stocklist[self.selectedstock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
-        stocklist[self.selectedstock].draw(screen,player,(1100,130),(500,680),stocklist,mousebuttons)
+        stocklist[self.selectedstock].draw(screen,player,(1100,130),(550,680),stocklist,mousebuttons)
         for i,line in enumerate(self.stocktext[stocklist[self.selectedstock].name]):
             x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))
@@ -153,7 +160,7 @@ class Stockbook(Menu):
         gfxdraw.filled_polygon(screen,((1110,265),(1125,335),(1465,335),(1450,265)),(30,30,30))#polygon for the purchase button
         pygame.draw.polygon(screen, (0,0,0), ((1110,265),(1125,335),(1465,335),(1450,265)),5)#outline confirm button polygon
 
-        confirm_text, _ = fontlist[65].render(f'PURCHASE', purchasecolor)
+        confirm_text = self.purchasetext[[(0,150,0),(225,225,225)].index(purchasecolor)]
         confirm_text_rect = confirm_text.get_rect(center=(1280, 300))
         screen.blit(confirm_text, confirm_text_rect)
         
@@ -163,7 +170,8 @@ class Stockbook(Menu):
         """This function is called for the selected stock in the stockbook menu"""
         self.draw_descriptions(screen,stocklist,player,mousebuttons)
         # self.quantitycontrols(screen,mousebuttons,player,stocklist)
-        self.quantity = quantityControls(screen,mousebuttons,int(player.cash/stocklist[self.selectedstock].price),self.quantity,(1105,110))
+        stock = stocklist[self.selectedstock]
+        self.quantity = quantityControls(screen,mousebuttons,int(player.cash/stock.price),self.quantity,(1105,110))
         self.draw_costpurchase(screen,mousebuttons,player,stocklist)
 
     

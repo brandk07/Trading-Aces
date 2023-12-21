@@ -77,27 +77,24 @@ class Portfolio(Menu):
             sell_text_rect = sell_text.get_rect(center=(1280, 840))
             screen.blit(sell_text, sell_text_rect)
             
-
-
-            
-
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player):
+        """Draws all of the things in the portfolio menu"""
         mousex, mousey = pygame.mouse.get_pos()
         xshift = 14
         yshift = 150    
-        if len(self.allrenders) < len(player.stocks):
-            for i in range((len(player.stocks)-len(self.allrenders))+1):
+        if len(self.allrenders) < len(player.stocks):# if the player has more stocks than the renders
+            for i in range((len(player.stocks)-len(self.allrenders))+1):# add the amount of renders needed
                 self.allrenders.append({})
-        self.bar.scroll(mousebuttons)
-        self.bar.changemaxvalue(len(player.stocks) if len(player.stocks) > 0 else 1)
+        self.bar.scroll(mousebuttons)# check for the scroll of the bar
+        self.bar.changemaxvalue(len(player.stocks) if len(player.stocks) > 0 else 1)# change the max value of the bar based on the amount of stocks the player has
 
         barheight = 520//len(player.stocks) if len(player.stocks) > 0 else 1
 
         self.bar.draw_bar(screen, [225, DY], [45, DY + (yshift*4) - 80], 'vertical', barwh=[43, barheight], shift=85, reversedscroll=True, text=False)
         
-        screen.blit(self.portfoliotext,(220,120))
+        screen.blit(self.portfoliotext,(220,120))# display the portfolio text
 
-        self.drawSelectedStock(screen, self.selected_stock, mousebuttons, player)
+        self.drawSelectedStock(screen, self.selected_stock, mousebuttons, player)# draws the additional stock info
 
         for i,stock in enumerate([(stock) for i,stock in enumerate(player.stocks) if i >= self.bar.value and i < self.bar.value+5]):# draws the stock graph bar
             ioffset = i+self.bar.value
@@ -149,12 +146,10 @@ class Portfolio(Menu):
             polycolor = (30, 30, 30) if not hover else (80, 80, 80)
             # polycolor = (60, 60, 60) if self.selected_stock == ioffset else polycolor
 
-
             # ----------draw the polygons----------
             gfxdraw.filled_polygon(screen, points, polycolor)  # draws the first polygon with the name of the stock
             gfxdraw.filled_polygon(screen, points2, (polycolor))  # draws the second polygon with the price of the stock
             gfxdraw.filled_polygon(screen, points3, (polycolor))  # draws the third polygon with the profit of the stock
-
 
             # ----------Draw the text----------
             screen.blit(self.allrenders[i][texts[0]], (320 + (i * xshift), 235 + (i * yshift)))  # display name of stock
@@ -181,7 +176,7 @@ class Portfolio(Menu):
                 else: bottomcolor = (80, 0, 0)
 
             pygame.draw.polygon(screen, bottomcolor, bottom_polygon)
-            outlinecolor = (0, 0, 0) if self.selected_stock != ioffset else (200, 200, 200)
+            outlinecolor = (0, 0, 0) if self.selected_stock != ioffset else (180, 180, 180)
             pygame.draw.polygon(screen, outlinecolor, points, 5)  # draw the outline of the polygon
             pygame.draw.polygon(screen, outlinecolor, points2, 5)  # draw the outline of the second polygon
             pygame.draw.polygon(screen, outlinecolor, points3, 5)  # draw the outline of the third polygon
