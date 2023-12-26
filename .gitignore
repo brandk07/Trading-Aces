@@ -1,1 +1,2 @@
-.Assets/Stockdata/
+*.json
+!extradata.json
