@@ -80,7 +80,9 @@ def quantityControls(screen, mousebuttons:int, maxpurchase, quantity, coords):
 
 class Stockbook(Menu):
     def __init__(self,stocknames:list) -> None:
-        super().__init__(r'Assets\stockbook\book.png',(30,165))
+        self.icon = pygame.image.load(r'Assets\Menu_Icons\stockbook.png').convert_alpha()
+        self.icon = pygame.transform.scale(self.icon,(140,100))
+        super().__init__(self.icon)
         self.quantity = 0
         self.stocktext = {name:[] for name in stocknames}
         self.selectedstock = 0
@@ -107,7 +109,7 @@ class Stockbook(Menu):
         """Draws all the main content for the stockbook menu (the stocks on the left side of the screen)"""
         mousex,mousey = pygame.mouse.get_pos()
         for i,stock in enumerate(stocklist):
-            points = [(215+(i*8),120+(i*65)),(225+(i*8),155+(i*65)),(450+(i*8),155+(i*65)),(440+(i*8),120+(i*65))]
+            points = [(215+(i*8),120+(i*65)),(225+(i*8),160+(i*65)),(450+(i*8),160+(i*65)),(440+(i*8),120+(i*65))]
             if (hover:=point_in_polygon((mousex,mousey),points)):#if the mouse is hovering over the stock name
                 if mousebuttons == 1:#if the mouse is hovering over the stock
                     self.selectedstock = i
@@ -125,7 +127,7 @@ class Stockbook(Menu):
             outlinecolor = (0, 0, 0) if self.selectedstock != i else (180, 180, 180)#
             pygame.draw.polygon(screen, outlinecolor, points,5)
 
-            screen.blit(fontlist[36].render(f'{stock.name} ${limit_digits(stock.price,9)}',(255,255,255))[0],(225+(i*8),125+(i*65)))
+            screen.blit(fontlist[36].render(f'{stock.name} ${limit_digits(stock.price,12)}',(255,255,255))[0],(230+(i*8),130+(i*65)))
             if self.selectedstock == i:
                 self.selected_stock(screen,stocklist,player,mousebuttons)
 

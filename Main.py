@@ -10,6 +10,7 @@ from Classes.Playerportfolio import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
 from Classes.portfolio import Portfolio
+from Classes.Optiontrade import Optiontrade
 import timeit
 
 pygame.init()
@@ -28,9 +29,10 @@ window_x, window_y = int((monitor_width - window_width) / 2), int((monitor_heigh
 print(window_x, window_y)
 
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
-screen = pygame.display.set_mode((window_width, window_height), pygame.NOFRAME)
+screen = pygame.display.set_mode((window_width, window_height-100))
 screen.fill((0, 0, 0))
 pygame.display.set_caption("Trading Aces")
+pygame.display.set_mode((0, 0), pygame.WINDOWMOVED)
 pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
 clock = pygame.time.Clock()
@@ -48,6 +50,7 @@ stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames) for na
 
 stocklist = [stockdict[name] for name in stocknames]
 portfolio = Portfolio()
+optiontrade = Optiontrade()
 ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),stocklist)
 # ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
 mousebuttons = 0
@@ -56,7 +59,7 @@ polybackground = pygame.transform.scale(polybackground,(window_width,window_heig
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
 
 gametime = GameTime(2023,11,7,9,30,0)
-menulist = [stockbook,portfolio]
+menulist = [stockbook,portfolio,optiontrade]
 Getfromfile(stockdict,player)
 if __name__ == "__main__":
     while True:
@@ -78,10 +81,13 @@ if __name__ == "__main__":
         # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
 
         # gametime.drawgametime(screen,True)
+        for i,menu in enumerate(menulist):
+            menu.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,165+(i*175)))
 
 
-        stockbook.draw_icon(screen,mousebuttons,stocklist,player,menulist)
-        portfolio.draw_icon(screen,mousebuttons,stocklist,player,menulist)
+        # stockbook.draw_icon(screen,mousebuttons,stocklist,player,menulist)
+        # portfolio.draw_icon(screen,mousebuttons,stocklist,player,menulist)
+        # optiontrade.draw_icon(screen,mousebuttons,stocklist,player,menulist)
         screen.blit(update_fps(clock),(1900,0))
 
 

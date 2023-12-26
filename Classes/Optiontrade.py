@@ -10,17 +10,22 @@ import math
 DX = 300
 DY = 200
 DH = 120
-class Portfolio(Menu):
+class Optiontrade(Menu):
     def __init__(self):
         
-        self.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
-        self.icon = pygame.transform.scale(self.icon,(140,100))
-        self.icon.set_colorkey((255,255,255))
+        # self.icon = pygame.image.load(r'Assets\Portfolio\portfolio2.png').convert_alpha()
+
+        self.icon = pygame.image.load(r'Assets\Menu_Icons\bulloption2.png').convert_alpha()
+        diff = self.icon.get_width() / self.icon.get_height()
+        self.icon = pygame.transform.scale(self.icon,(140*diff,100*diff))
+        
+        
         super().__init__(self.icon)
-        # remove all the white from the image
+        
+        
         self.bar = SliderBar((0,0),50,[(0,120,0),(110,110,110)])
         self.bar.value = 0
-        
+        # self.icon.set_colorkey((255,255,255))
         self.portfoliotext = fontlist[65].render('Portfolio',(220,220,220))[0]
         self.menudrawn = False
         self.renderedpietexts = None; self.renderedback = None
@@ -87,8 +92,6 @@ class Portfolio(Menu):
         if len(self.allrenders) < len(player.stocks):# if the player has more stocks than the renders
             for i in range((len(player.stocks)-len(self.allrenders))+1):# add the amount of renders needed
                 self.allrenders.append({})
-        if self.selected_stock == None and len(player.stocks) > 0:
-            self.selected_stock = 0
         self.bar.scroll(mousebuttons)# check for the scroll of the bar
         self.bar.changemaxvalue(len(player.stocks) if len(player.stocks) > 0 else 1)# change the max value of the bar based on the amount of stocks the player has
 
