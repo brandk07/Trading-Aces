@@ -26,6 +26,7 @@ class Portfolio(Menu):
         self.renderedpietexts = None; self.renderedback = None
         self.allrenders = []
         self.selected_stock = None; self.quantity = 0
+        self.emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 
         
     def getpoints(self, w1, w2, w3, x, y):
@@ -82,7 +83,7 @@ class Portfolio(Menu):
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player):
         """Draws all of the things in the portfolio menu"""
         mousex, mousey = pygame.mouse.get_pos()
-        xshift = 14
+        xshift = 15
         yshift = 150    
         if len(self.allrenders) < len(player.stocks):# if the player has more stocks than the renders
             for i in range((len(player.stocks)-len(self.allrenders))+1):# add the amount of renders needed
@@ -184,9 +185,20 @@ class Portfolio(Menu):
             pygame.draw.polygon(screen, outlinecolor, points, 5)  # draw the outline of the polygon
             pygame.draw.polygon(screen, outlinecolor, points2, 5)  # draw the outline of the second polygon
             pygame.draw.polygon(screen, outlinecolor, points3, 5)  # draw the outline of the third polygon
-        if not player.stocks:# if the player has no stocks
-            text = fontlist[65].render('You have no stocks', (190, 190, 190))[0]
-            screen.blit(text, (320, 235))
+            
+        emptyboxnum = 5-len([(stock) for i,stock in enumerate(player.stocks) if i >= self.bar.value and i < self.bar.value+5])
+        for i in range(emptyboxnum):
+            ioffset = i+(5-emptyboxnum)
+            points,points2,points3,totalpolyon = self.getpoints(150,200,200,(ioffset*xshift),(ioffset*yshift))
+            
+            gfxdraw.filled_polygon(screen, points, (30,30,30))
+            gfxdraw.filled_polygon(screen, points2, (30,30,30))
+            gfxdraw.filled_polygon(screen, points3, (30,30,30))
+            pygame.draw.polygon(screen, (0,0,0), points, 5)
+            pygame.draw.polygon(screen, (0,0,0), points2, 5)
+            pygame.draw.polygon(screen, (0,0,0), points3, 5)
+            screen.blit(self.emptytext, (320 + (ioffset * xshift), 235 + (ioffset * yshift)))  # display name of stock
+
         values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
         names = set([stock[0].name for stock in player.stocks])
         values = [[sum([v[0] for v in values if v[1] == name]), name] for name in names]

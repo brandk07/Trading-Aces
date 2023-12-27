@@ -2,15 +2,19 @@ from optionprice import Option
 
 
 # Scale down the prices for numerical stability
-stock_price = 5_000_000
-strike_price = 4_750_000
+# stock_price = 4_750_000
+# strike_price = 5_000_000
+stock_price = 250
+strike_price = 600
 
-time_to_expiration = 10  # 10 days
-annual_volatility = 20000  # This should be estimated from historical data
+time_to_expiration = 8  # 10 days
+annual_volatility = 200  # This should be estimated from historical data
 risk_free_rate = 0.05  # You should use the actual risk-free rate
-volatility = .4
+volatility = .2
 option_type = "put"
 
+# stock_price = 4_050_000
+# time_to_expiration = 8
 # Calculate the option cost
 # option_cost = calculate_option_cost(stock_price, strike_price, time_to_expiration, annualized_volatility, risk_free_rate, option_type)
 
@@ -29,35 +33,37 @@ some_option = Option(european=True,
                     r=0.05)
 
 print(some_option.getPrice(method="BSM",iteration=50000))
-print(some_option.getPrice(method="BT"))
-print(some_option.getPrice(method="MC"))
-print()
+# print(some_option.getPrice(method="BT"))
+# print(some_option.getPrice(method="MC"))
+# print()
 
-option_type = "call"
-some_option = Option(european=True,
-                    kind=option_type,
-                    s0=stock_price,
-                    k=strike_price,
-                    t=time_to_expiration,
-                    sigma=volatility,
-                    r=0.05)
+# option_type = "call"
+# some_option = Option(european=True,
+#                     kind=option_type,
+#                     s0=stock_price,
+#                     k=strike_price,
+#                     t=time_to_expiration,
+#                     sigma=volatility,
+#                     r=0.05)
 
-print(some_option.getPrice(method="BSM",iteration=50000))
-print(some_option.getPrice(method="BT"))
-print(some_option.getPrice(method="MC"))
+# print(some_option.getPrice(method="BSM",iteration=50000))
+# print(some_option.getPrice(method="BT"))
+# print(some_option.getPrice(method="MC"))
 
-print("")
-some_option = Option(european=False,
-                    kind=option_type,
-                    s0=stock_price,
-                    k=strike_price,
-                    t=time_to_expiration,
-                    sigma=volatility,
-                    r=0.05)
+# print("")
+# some_option = Option(european=False,
+#                     kind=option_type,
+#                     s0=stock_price,
+#                     k=strike_price,
+#                     t=time_to_expiration,
+#                     sigma=volatility,
+#                     r=0.05)
 
-print(some_option.getPrice(method="BSM"))
-print(some_option.getPrice(method="BT"))
-print(some_option.getPrice(method="MC"))
+# print(some_option.getPrice(method="BSM"))
+# print(some_option.getPrice(method="BT"))
+# print(some_option.getPrice(method="MC"))
+
+
 
 # print(f'{some_option.getPrice():,.2f}')
 

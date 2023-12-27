@@ -1,5 +1,5 @@
 import pygame
-from Defs import fontlist,point_in_triangle,limit_digits,draw_pie_chart
+from Defs import *
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 from Classes.imports.stockeventspos import StockEvents
@@ -34,7 +34,7 @@ class UI_Controls():
         backsurface.set_colorkey((255, 255, 255))
         self.renderedpietexts = None;  self.renderedback = backsurface
         
-    def drawIcon(self, screen: pygame.Surface):
+    def drawIcon(self, screen: pygame.Surface,mousebuttons):
         """Draws the home/stock icon in the top left corner."""
         # Draw the triangles to form a square in the top left corner
         hometri = [(25, 10), (25, 160), (175, 10)]
@@ -49,15 +49,17 @@ class UI_Controls():
         if point_in_triangle(mouse_pos, hometri):
             home_color = (0, 170, 0)
             stocks_color = (80, 0, 0) if stocks_color == (120, 0, 0) else (20,20,20)
-            if pygame.mouse.get_pressed()[0]:
+            if mousebuttons == 1:
                 self.view = "home"
+                sounds['clickbutton2'].play()
 
         if point_in_triangle(mouse_pos, stockstri):
             stocks_color = (170, 0, 0)
             home_color = (0, 120, 0) if home_color == (0, 170, 0) else (20,20,20)
             
-            if pygame.mouse.get_pressed()[0]:
+            if mousebuttons == 1:
                 self.view = "stock"
+                sounds['clickbutton2'].play()
 
         # Draw the triangles
         pygame.draw.polygon(screen, home_color, [(x, y) for x, y in hometri])
@@ -148,7 +150,7 @@ class UI_Controls():
         
 
     def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons):
-        self.drawIcon(screen)
+        self.drawIcon(screen,mousebuttons)
         if self.view == "home":
             mousex,mousey = pygame.mouse.get_pos()
             

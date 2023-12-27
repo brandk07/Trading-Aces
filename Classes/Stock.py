@@ -31,7 +31,9 @@ class Stock():
         self.graphrange = 'hour' #
         self.graphrangelists = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
-        self.bonustrendranges = [[((-1,1)),((140_400,421_200))],[((-3,3)),((59400,81000))],[((-8,8)),((8100,21600))],[((-12,13)),((150,3600))]]
+        
+        # self.bonustrendranges = [[(-1*i,i),(100000-(i*8325),500000-(i*41400))] for i in range(12)]
+        self.bonustrendranges = [[(-1,1),(1,3600)] for i in range(12)]
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]
         self.datafromfile()
         self.price = self.graphrangelists['recent'][-1]

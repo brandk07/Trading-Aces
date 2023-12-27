@@ -10,11 +10,14 @@ from Classes.Playerportfolio import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
 from Classes.portfolio import Portfolio
-from Classes.Optiontrade import Optiontrade
+from Classes.OptionMenu import Optiontrade
+from Classes.imports.Option import Option
 import timeit
 
 pygame.init()
+pygame.mixer.init()
 
+# pygame.mixer.music.
 # Set the aspect ratio of your game
 aspect_ratio = 16 / 9
 
@@ -60,7 +63,14 @@ polybackground = pygame.transform.scale(polybackground,(window_width,window_heig
 
 gametime = GameTime(2023,11,7,9,30,0)
 menulist = [stockbook,portfolio,optiontrade]
-Getfromfile(stockdict,player)
+musicdata = Getfromfile(stockdict,player)
+
+pygame.mixer.music.load(r"Assets\Sounds\theme1.mp3")
+pygame.mixer.music.play()
+pygame.mixer.music.set_pos(musicdata[0])
+# pygame.mixer.music.set_volume(musicdata[1])
+pygame.mixer.music.set_volume(0)
+player.options.append(Option(stocklist[0],600,8,'put'))
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
@@ -93,19 +103,12 @@ if __name__ == "__main__":
 
         mousebuttons = 0
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                data = [str(gametime),[[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks],player.graphrange,int(player.cash)]
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+                musicdata = [pygame.mixer.music.get_pos()/1000+musicdata[0],pygame.mixer.music.get_volume()]
+                data = [str(gametime),[[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks],player.graphrange,int(player.cash),musicdata]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)
-                pygame.quit()
-                quit()
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                data = [str(gametime),[[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks],player.graphrange,int(player.cash)]
-                data.extend([stockobj.graphrange for stockobj in stocklist])
-                print(data)
-                Writetofile(stocklist,player,data)
-                
                 pygame.quit()
                 quit()
 

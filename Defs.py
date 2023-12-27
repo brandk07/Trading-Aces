@@ -6,6 +6,15 @@ import math
 import json
 import random
 pygame.font.init()
+pygame.mixer.init()
+# mainthemes = [pygame.mixer.Sound(r'Assets\Sounds\maintheme1.wav')]
+
+
+sounds = {
+    'clickbutton': pygame.mixer.Sound(r'Assets\Sounds\clickbutton.wav'),
+    'clickbutton2': pygame.mixer.Sound(r'Assets\Sounds\clickbutton2.wav'),
+}
+
 def update_fps(clock):
     fps = str(int(clock.get_fps()))
     fps_text = fontlist[25].render(fps, pygame.Color("coral"))[0]
@@ -42,8 +51,11 @@ def Getfromfile(stockdict:dict,player):
             player.stocks = [[stockdict[stock[0]],stock[1],stock[2],] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
             player.graphrange = data[2]
             player.cash = data[3] if data[3] != 0 else 2500
+            musicdata = (data[4])
             for i,stockobj in enumerate(stockdict.values()):
-                stockobj.graphrange = data[i+4]
+                stockobj.graphrange = data[i+5]
+            return musicdata
+        return [0,1]
 
 def Writetofile(stocklist,player,data):
     for stock in stocklist:

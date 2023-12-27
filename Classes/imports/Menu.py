@@ -1,5 +1,6 @@
 import pygame
 from Defs import *
+
 class Menu():
     def __init__(self,iconimage) -> None:
         surface = pygame.Surface((140,115))
@@ -15,7 +16,7 @@ class Menu():
         self.menudrawn = False
 
     
-    def draw_icon(self,screen,Mousebuttons:int,stocklist:list,player,menulist,iconcoords:tuple):
+    def draw_icon(self,screen,mousebuttons:int,stocklist:list,player,menulist,iconcoords:tuple):
         x,y = iconcoords
         mousex,mousey = pygame.mouse.get_pos()
         collide = pygame.Rect.collidepoint(pygame.Rect(x,y,self.icon.get_width(),self.icon.get_height()+self.icontext.get_height()),mousex,mousey)
@@ -23,8 +24,10 @@ class Menu():
             width1 = self.icon.get_width(); height1 = self.icon.get_height();height2 = self.icontext.get_height()
             ypos = y+10
             gfxdraw.filled_polygon(screen,[(25,ypos-15),(width1+35,ypos-15),(width1+35,ypos+height1+height2),(25,ypos+height1+height2)],(110,110,110))
-            if Mousebuttons == 1:
+            if mousebuttons == 1:
+                
                 self.menudrawn = not self.menudrawn
+                sounds['clickbutton'].play()
                 if self.menudrawn:#if the menu is drawn, then set all the other menus to not drawn
                     for menu in menulist:
                         if menu != self: menu.menudrawn = False
@@ -35,7 +38,7 @@ class Menu():
         screen.blit(self.icontext,(textx,self.icon.get_height()+y+5))
         
         if self.menudrawn:
-            self.draw_menu(screen,Mousebuttons,stocklist,player)
+            self.draw_menu(screen,mousebuttons,stocklist,player)
 
     def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,player):
         """Mearly a placeholder for the child classes to override"""

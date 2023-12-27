@@ -5,7 +5,7 @@ from Classes.Stock import Stock
 from Defs import *
 from pygame import gfxdraw
 import numpy as np
-
+from Classes.imports.Option import Option
 
 class Player(Stock):
     def __init__(self,window_offset,stocknames) -> None:
@@ -14,9 +14,9 @@ class Player(Stock):
         self.name = name
         self.window_offset = window_offset
         self.cash = 1000
-        self.stocks = []
+        self.stocks = []# list of lists containing the stock object, the price bought at, and the quantity
         # self.pricepoints = np.array([[self.cash]],dtype=object)
-
+        self.options = []#list of option objects
         self.stockvalues = []
         self.messagedict = {}
         # self.recent_movementvar = (None,None,(180,180,180))
@@ -57,8 +57,6 @@ class Player(Stock):
             self.stocks.remove(self.stocks[stockindex])
         else:
             self.stocks[stockindex][2] -= quantity
-
-
                         
         print(f'selling {obj} for {obj.price}')
         print(f"Profited ${(ogprice)-obj.price:.2f} per share")
@@ -66,29 +64,24 @@ class Player(Stock):
         print('cash is',self.cash)
         print('stocks are',self.stocks)
         print('/'*20)
-        
-        # if quantity > sum([stock[2] for stock in self.stocks if stock[0] == name]):
-        #     quantity = sum([stock[1] for stock in self.stocks if stock[0] == name])
-        # self.cash += price*quantity
-        # print(self.stocks)
-        # self.messagedict[f'Sold {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
-        # if price*quantity < sum([stock[1] for stock in self.stocks if stock[0] == name]):
-        #     self.messagedict[f'Lost {round((price*quantity)-sum([self.stocks[i][1] for i in range(quantity) if self.stocks[i][0] == name]),2)} from {name}'] = (time.time(),(200,0,0))
-        # else:
-        #     self.messagedict[f'Profited {round((price*quantity)-sum([self.stocks[i][1] for i in range(quantity) if self.stocks[i][0] == name]),2)} from {quantity} {name} shares'] = (time.time(),(0,200,0))
-        # for _ in range(quantity):
-        #     # originalprice = [stock[1] for stock in self.stocks if stock[0] == name][0]
-        #     print([stock[0] for stock in self.stocks],'stocks')
-        #     originalprice = self.stocks[[stock[0] for stock in self.stocks].index(name)][1]
-        #     print(self.stocks)
-        #     print(originalprice)
-        #     self.stocks.remove([name,originalprice,obj])
-        #     # if price < originalprice:
-        #     #     self.messagedict[f'Lost {round(price-originalprice,2)} from {name}'] = (time.time(),(200,0,0))
-        #     # else:
-        #     #     self.messagedict[f'Profited {round(price-originalprice,2)} from {name}'] = (time.time(),(0,200,0))
-        
-        
+
+    def buyOption(self,optionobj):
+        if self.cash >= optionobj.get_value():
+            self.cash -= optionobj.get_value()
+            self.options.append(optionobj)
+
+            print(f'buying {optionobj} for {optionobj.get_value():.2f}')
+            print('cash is',self.cash)
+            print('stocks are',self.stocks)
+            print('/'*20)
+
+    def sellOption(self,optionobj):
+        optionindex = self.options.index(optionobj)
+        self.cash += optionobj.get_value()
+        self.options.remove(optionobj)
+        print(f'selling {optionobj} for {optionobj.get_value():.2f}')
+        print('cash is',self.cash)
+
         
 
     def message(self,screen:pygame.Surface):
