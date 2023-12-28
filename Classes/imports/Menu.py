@@ -27,7 +27,7 @@ class Menu():
             if mousebuttons == 1:
                 
                 self.menudrawn = not self.menudrawn
-                sounds['clickbutton'].play()
+                soundEffects['clickbutton'].play()
                 if self.menudrawn:#if the menu is drawn, then set all the other menus to not drawn
                     for menu in menulist:
                         if menu != self: menu.menudrawn = False

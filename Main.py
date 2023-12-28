@@ -63,20 +63,28 @@ polybackground = pygame.transform.scale(polybackground,(window_width,window_heig
 
 gametime = GameTime(2023,11,7,9,30,0)
 menulist = [stockbook,portfolio,optiontrade]
-musicdata = Getfromfile(stockdict,player)
+musicdata = Getfromfile(stockdict,player)# muiscdata = [time, volume, songindex]
 
-pygame.mixer.music.load(r"Assets\Sounds\theme1.mp3")
+# pygame.mixer.music.load(r"Assets\Sounds\theme1.mp3")
+# pygame.mixer.music.play()
+# pygame.mixer.music.set_pos(musicdata[0])
+# # pygame.mixer.music.set_volume(musicdata[1])
+# pygame.mixer.music.set_volume(0)
+
+pygame.mixer.music.set_endevent(pygame.USEREVENT)  # Set custom event when music ends
+player.options.append(Option(stocklist[0],600,8,'put'))
+
+musicnames = list(musicThemes)
+pygame.mixer.music.load(musicThemes[musicnames[musicdata[2]]] if musicdata[2] < len(musicnames) else musicThemes[musicnames[0]])
 pygame.mixer.music.play()
 pygame.mixer.music.set_pos(musicdata[0])
-# pygame.mixer.music.set_volume(musicdata[1])
-pygame.mixer.music.set_volume(0)
-player.options.append(Option(stocklist[0],600,8,'put'))
+pygame.mixer.music.set_volume(musicdata[1])
+print('now playing',musicnames[musicdata[2]])
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
         screen.fill((50,50,50))
         # screen.blit(polybackground,(0,0))# the background is 1152x896, tile it to fill the screen
-        
         
         # print(mousex,mousey)
         ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons)#draws the ui controls to the screen, and senses for clicks
@@ -84,7 +92,7 @@ if __name__ == "__main__":
         
         for i in range(ui_controls.gameplay_speed):
             # gametime = Gametime(gametime,,screen,clock.get_fps())
-            gametime.increase_time(1)
+            gametime.increase_time(10)
             for stock in stocklist:
                 stock.update_price(player)
             player.update_price(player)
@@ -103,8 +111,18 @@ if __name__ == "__main__":
 
         mousebuttons = 0
         for event in pygame.event.get():
+            if event.type == pygame.USEREVENT:
+                if pygame.USEREVENT == pygame.mixer.music.get_endevent():
+                    # Code to start a new song
+                    musicdata[2] = musicdata[2]+1 if musicdata[2]+1 < len(musicThemes) else 0# increment the song index
+                    musicdata[0] = 0# reset the song time
+                    print('song ended, now playing',musicnames[musicdata[2]])
+                    pygame.mixer.music.load(musicThemes[list(musicThemes.keys())[musicdata[2]]] if musicdata[2] < len(musicThemes) else musicThemes[list(musicThemes.keys())[0]])
+                    pygame.mixer.music.play()
+                    pygame.mixer.music.set_volume(musicdata[1])
+
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                musicdata = [pygame.mixer.music.get_pos()/1000+musicdata[0],pygame.mixer.music.get_volume()]
+                musicdata = [pygame.mixer.music.get_pos()/1000+musicdata[0],pygame.mixer.music.get_volume(),musicdata[2]]
                 data = [str(gametime),[[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks],player.graphrange,int(player.cash),musicdata]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)

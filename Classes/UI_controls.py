@@ -12,7 +12,7 @@ class UI_Controls():
     def __init__(self,windowoffset:list,stocklist) -> None:
         self.gameplay_speed = 0
         self.stockevent = StockEvents()# the stock events
-        self.bar = SliderBar(windowoffset,50,[(255,0,0),(110,110,110)])# the bar for the gameplay speed
+        self.bar = SliderBar(windowoffset,100,[(255,0,0),(110,110,110)])# the bar for the gameplay speed
         self.newsobj = News()
         for i in range(10):
             for stock in stocklist:
@@ -51,7 +51,7 @@ class UI_Controls():
             stocks_color = (80, 0, 0) if stocks_color == (120, 0, 0) else (20,20,20)
             if mousebuttons == 1:
                 self.view = "home"
-                sounds['clickbutton2'].play()
+                soundEffects['clickbutton2'].play()
 
         if point_in_triangle(mouse_pos, stockstri):
             stocks_color = (170, 0, 0)
@@ -59,7 +59,7 @@ class UI_Controls():
             
             if mousebuttons == 1:
                 self.view = "stock"
-                sounds['clickbutton2'].play()
+                soundEffects['clickbutton2'].play()
 
         # Draw the triangles
         pygame.draw.polygon(screen, home_color, [(x, y) for x, y in hometri])

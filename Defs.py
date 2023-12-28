@@ -5,15 +5,140 @@ from pygame import freetype
 import math
 import json
 import random
+import os
 pygame.font.init()
 pygame.mixer.init()
-# mainthemes = [pygame.mixer.Sound(r'Assets\Sounds\maintheme1.wav')]
+pygame.init()
+#  ////////////////////////////////////////////Fonts///////////////////////////////////////////////////////////////////////////////////////
+fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size*.75)
+crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)
+pixfonts = lambda font_size: freetype.Font(r'Assets\fonts\Silkscreen\Silkscreen-Regular.ttf', font_size*.75)
+fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.ttf', font_size*.75)
+# FUN THEME
+# fonts = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
+# fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
+# fonts = lambda font_size: freetype.Font(r'Assets\antonio\Liquid_Crystal_Extra_Characters.otf', font_size)
+bold40 = fontsbold(45)
+fontlist = [fonts(num) for num in range(0,100)]#list of fonts from 0-100
+fontlistcry = [crystalfonts(num) for num in range(0,100)]#list of fonts from 0-100
+fontlistpix = [pixfonts(num) for num in range(0,100)]#list of fonts from 0-100
+font45 = fonts(45)
+#  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-sounds = {
-    'clickbutton': pygame.mixer.Sound(r'Assets\Sounds\clickbutton.wav'),
-    'clickbutton2': pygame.mixer.Sound(r'Assets\Sounds\clickbutton2.wav'),
+soundEffects = {
+    'clickbutton': pygame.mixer.Sound(r'Assets\Soundeffects\clickbutton.wav'),
+    'clickbutton2': pygame.mixer.Sound(r'Assets\Soundeffects\clickbutton2.wav'),
 }
+musicThemes = {}
+for song in os.listdir(r'Assets\Music\themes'):
+    musicThemes[f'maintheme{song}'] = rf'Assets\Music\themes\{song}'
+print(musicThemes)
+
+def playmusic(musicdata):
+    if musicdata[0] == 0:
+        pygame.mixer.music.load(r"Assets\Music\themes\maintheme1.wav")
+        pygame.mixer.music.play(-1)
+    else:
+        pygame.mixer.music.load(rf"Assets\Music\themes\maintheme{musicdata[0]}.wav")
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.get_endevent
+    pygame.mixer.music.set_volume(musicdata[1])
+    
+    return musicdata
+
+def reuserenders(renderlist,texts,textinfo,position) -> list:
+    """renderlist is a list of dicts, 
+    texts is the list of strings to be rendered, 
+    textinfo is a list of tuples containing the font size and the font index, 
+    position is the index of the renderlist to be used"""
+    for x, text in enumerate(texts):
+        if text in renderlist[position]:
+            render = renderlist[position][text]  # reuse old renders if possible
+            renderlist[position].pop(text)  # remove the text from the recentrenders
+            renderlist[position][text] = render  # add the text back to the recentrenders - so it is at the end of the dict (doesn't get deleted)
+        else:  # if the text is not in the recentrenders or recent renders doesn't have enough texts
+            render = fontlist[textinfo[x][1]].render(text, textinfo[x][0])[0]  # render the text
+            renderlist[position][text] = render  # add the text to the recentrenders
+    for text in list(renderlist[position].keys()):
+        if text not in texts:
+            renderlist[position].pop(text)
+    return renderlist
+emptytext = fontlist[45].render('Empty',(190,190,190))[0]
+
+def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:int,getpoints,shifts:tuple,selected_value:int,mousebuttons:int,defaultHeight:int,alltexts,percents) -> list:
+    """Draws the scroll bar for the latter menu"""
+    xshift,yshift = shifts
+    mousex, mousey = pygame.mouse.get_pos()
+
+    for i, stock in enumerate(values[barvalue:barvalue+5]):
+        ioffset = i+barvalue
+        texts = alltexts[i]
+        twidth = allrenders[i][texts[0]].get_width() + 25
+        twidth2 = max(allrenders[i][texts[1]].get_width(), allrenders[i][texts[2]].get_width()) + 30
+        twidth3 = max(allrenders[i][texts[3]].get_width(), allrenders[i][texts[4]].get_width()) + 45
+        
+        # find the points for the polygons
+        points,points2,points3,totalpolyon = getpoints(twidth, twidth2, twidth3, (i * xshift), (i * yshift))
+
+        # check if the mouse is hovering over the polygon
+        hover = False
+        if point_in_polygon((mousex, mousey), totalpolyon):  # check if mouse is inside the polygon
+            hover = True
+            if mousebuttons == 1:
+                soundEffects['clickbutton2'].play()
+                selected_value = ioffset
+
+        polycolor = (30, 30, 30) if not hover else (80, 80, 80)
+        # polycolor = (60, 60, 60) if selected_value == ioffset else polycolor
+
+        # ----------draw the polygons----------
+        gfxdraw.filled_polygon(screen, points, polycolor)  # draws the first polygon with the name of the stock
+        gfxdraw.filled_polygon(screen, points2, (polycolor))  # draws the second polygon with the price of the stock
+        gfxdraw.filled_polygon(screen, points3, (polycolor))  # draws the third polygon with the profit of the stock
+
+        # ----------Draw the text----------
+        screen.blit(allrenders[i][texts[0]], (320 + (i * xshift), 235 + (i * yshift)))  # display name of stock
+        screen.blit(allrenders[i][texts[1]], (330 + (i * xshift) + twidth, 210 + (i * yshift)))# display bought price of stock
+        screen.blit(allrenders[i][texts[2]], (345 + (i * xshift) + twidth, 265 + (i * yshift)))# display current price of stock
+        screen.blit(allrenders[i][texts[3]], (330 + twidth + twidth2 + (i * xshift), 210 + (i * yshift)))# display profit of stock
+        screen.blit(allrenders[i][texts[4]], (345 + twidth + twidth2 + (i * xshift), 265 + (i * yshift)))# display percent change of stock
+        
+        # top left, top right, bottom right, bottom left
+        bottom_polygon = [[totalpolyon[0][0]+12, totalpolyon[0][1] + defaultHeight - 15], 
+                            [totalpolyon[1][0], totalpolyon[1][1]], 
+                            [totalpolyon[2][0], totalpolyon[2][1]], 
+                            [totalpolyon[3][0], totalpolyon[3][1]],
+                            [totalpolyon[3][0]-15, totalpolyon[3][1]],
+                            [totalpolyon[3][0]-3, totalpolyon[3][1] + defaultHeight - 15],
+                            ]
+        if hover or selected_value == ioffset:
+            if percents[i] > 0:bottomcolor = (0, 200, 0)
+            elif percents[i] == 0:bottomcolor = (200, 200, 200)
+            else:bottomcolor = (200, 0, 0)
+        else:
+            if percents[i] > 0: bottomcolor = (0, 80, 0)
+            elif percents[i] == 0: bottomcolor = (80, 80, 80)
+            else: bottomcolor = (80, 0, 0)
+        if not selected_value == ioffset:
+            pygame.draw.polygon(screen, bottomcolor, bottom_polygon)
+        outlinecolor = (0, 0, 0) if selected_value != ioffset else (180, 180, 180)
+        pygame.draw.polygon(screen, outlinecolor, points, 5)  # draw the outline of the polygon
+        pygame.draw.polygon(screen, outlinecolor, points2, 5)  # draw the outline of the second polygon
+        pygame.draw.polygon(screen, outlinecolor, points3, 5)  # draw the outline of the third polygon
+            
+    emptyboxnum = 5-len([(stock) for i,stock in enumerate(values) if i >= barvalue and i < barvalue+5])
+    for i in range(emptyboxnum):
+        ioffset = i+(5-emptyboxnum)
+        points,points2,points3,totalpolyon = getpoints(150,200,200,(ioffset*xshift),(ioffset*yshift))
+        
+        gfxdraw.filled_polygon(screen, points, (30,30,30))
+        gfxdraw.filled_polygon(screen, points2, (30,30,30))
+        gfxdraw.filled_polygon(screen, points3, (30,30,30))
+        pygame.draw.polygon(screen, (0,0,0), points, 5)
+        pygame.draw.polygon(screen, (0,0,0), points2, 5)
+        pygame.draw.polygon(screen, (0,0,0), points3, 5)
+        screen.blit(emptytext, (320 + (ioffset * xshift), 235 + (ioffset * yshift)))  # display name of stock
+    return allrenders,selected_value
 
 def update_fps(clock):
     fps = str(int(clock.get_fps()))
@@ -42,7 +167,7 @@ def time_loop(loop):
         print(f"Loop took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-pygame.init()
+
 def Getfromfile(stockdict:dict,player):
     with open('Assets/Stockdata/extradata.json','r') as file:
         data = json.load(file)
@@ -55,7 +180,7 @@ def Getfromfile(stockdict:dict,player):
             for i,stockobj in enumerate(stockdict.values()):
                 stockobj.graphrange = data[i+5]
             return musicdata
-        return [0,1]
+        return [0,1,0]# time, volume, songindex
 
 def Writetofile(stocklist,player,data):
     for stock in stocklist:
@@ -204,24 +329,7 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
 # fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Regular.ttf',font_size)
 # fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Bold.ttf',font_size)
 
-fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size*.75)
-crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)
-pixfonts = lambda font_size: freetype.Font(r'Assets\fonts\Silkscreen\Silkscreen-Regular.ttf', font_size*.75)
-fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.ttf', font_size*.75)
 
-
-# FUN THEME
-# fonts = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
-# fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
-
-# fonts = lambda font_size: freetype.Font(r'Assets\antonio\Liquid_Crystal_Extra_Characters.otf', font_size)
-bold40 = fontsbold(45)
-
-fontlist = [fonts(num) for num in range(0,100)]#list of fonts from 0-100
-fontlistcry = [crystalfonts(num) for num in range(0,100)]#list of fonts from 0-100
-fontlistpix = [pixfonts(num) for num in range(0,100)]#list of fonts from 0-100
-    
-font45 = fonts(45)
 
 def drawgametime(currenttime,screen:pygame.Surface):
     numtime_text,rect = fontlist[50].render(f'{currenttime[3]}:{"0" if currenttime[4] < 10 else ""}{currenttime[4]}{currenttime[6]}',(255,255,255))
