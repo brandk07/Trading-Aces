@@ -48,7 +48,7 @@ class Stock():
 
     def __str__(self) -> str:
         return f'{self.name}'
-
+    
     def reset_trends(self):
         """Sets/resets the trends for the stock"""
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]#resets the trends for each bonus trend
@@ -362,7 +362,7 @@ class Stock():
                     
         else:
             # goes off the current price of the stock, not the original value stored in the stock object
-            screen.blit(fontlist[40].render(f' Net Worth ${self.cash+sum([stock[0].price*stock[2] for stock in player.stocks]):,.2f}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
+            screen.blit(fontlist[40].render(f' Net Worth ${player.get_Networth():,.2f}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
             
 
         screen.blit(self.nametext,(self.endpos[0]+15,self.startpos[1]+15))#draws the text that displays the name of the stock or the player

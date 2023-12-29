@@ -4,14 +4,12 @@ from optionprice import Option
 # Scale down the prices for numerical stability
 # stock_price = 4_750_000
 # strike_price = 5_000_000
-stock_price = 250
-strike_price = 600
-
-time_to_expiration = 8  # 10 days
-annual_volatility = 200  # This should be estimated from historical data
+stock_price = 139.71
+strike_price = 135
+time_to_expiration = 20  # 10 days
 risk_free_rate = 0.05  # You should use the actual risk-free rate
-volatility = .2
-option_type = "put"
+volatility = .3994
+option_type = "call"
 
 # stock_price = 4_050_000
 # time_to_expiration = 8

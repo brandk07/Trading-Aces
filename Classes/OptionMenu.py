@@ -5,15 +5,17 @@ from Classes.imports.Menu import Menu
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 from Classes.Stockbook import quantityControls
-from Classes.imports.Option import Option
+from Classes.imports.StockOption import StockOption
 import math
 
+#used for the Owned options
 DX = 300
 DY = 200
 DH = 120
+
 class Optiontrade(Menu):
-    def __init__(self):
-        
+    def __init__(self,windowoffset,stocklist:list):
+        self.winset = windowoffset
         # self.icon = pygame.image.load(r'Assets\Portfolio\portfolio2.png').convert_alpha()
 
         self.icon = pygame.image.load(r'Assets\Menu_Icons\bulloption2.png').convert_alpha()
@@ -35,8 +37,12 @@ class Optiontrade(Menu):
         self.menudrawn = True
         self.renderedpietexts = None; self.renderedback = None
         self.allrenders = []
-        self.selected_option = None; self.quantity = 0
+        self.selected_option = None
         self.view = "Owned"# Owned or Available
+        self.selected_avalaible = None
+        self.leverageBar = SliderBar(self.winset, 100, [(0, 120, 0), (110, 110, 110)]); self.leverageBar.value = 1
+        self.refreshOptions(stocklist)
+
     
         
     def getpoints(self, w1, w2, w3, x, y):
@@ -49,7 +55,7 @@ class Optiontrade(Menu):
 
         return [p1, p2, p3, total]
     
-    def drawSelectedStock(self, screen, optionindex, mousebuttons, player):
+    def SelectedPlayerOption(self, screen, optionindex, mousebuttons, player):
         if optionindex != None:
             option = player.options[optionindex]
             mousex, mousey = pygame.mouse.get_pos()
@@ -66,8 +72,7 @@ class Optiontrade(Menu):
             if point_in_polygon((mousex,mousey),[(1110,805),(1125,875),(1465,875),(1450,805)]):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
-                    if player.cash > option.price:
-                        player.buyOption(option)
+                    player.sellOption(option)
             else:
                 sellcolor = (225,225,225)
 
@@ -75,6 +80,7 @@ class Optiontrade(Menu):
             yshift = 100
             text = []   
 
+            # for loop to draw lots of polygons with text
 
             # total value of the stocks above the sell button
             # strike_price = option.strike_price
@@ -111,7 +117,7 @@ class Optiontrade(Menu):
 
         self.bar.draw_bar(screen, [225, DY], [45, DY + (yshift*4) - 80], 'vertical', barwh=[43, barheight], shift=85, reversedscroll=True, text=False)
 
-        self.drawSelectedStock(screen, self.selected_option, mousebuttons, player)# draws the additional stock info
+        self.SelectedPlayerOption(screen, self.selected_option, mousebuttons, player)# draws the additional stock info
 
         percents = []; alltexts = []
         for i, option in enumerate(player.options[self.bar.value:self.bar.value+5]):
@@ -142,54 +148,109 @@ class Optiontrade(Menu):
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.95),math.ceil(stock.price*1.2))
-            self.putoptions.append(Option(stock,strikeprice,random.randint(3,25),'put'))
+            self.putoptions.append(StockOption(stock,strikeprice,random.randint(3,25),'put'))
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.9),math.ceil(stock.price*1.1))
-            self.calloptions.append(Option(stock,strikeprice,random.randint(3,25),'call'))
+            self.calloptions.append(StockOption(stock,strikeprice,random.randint(3,25),'call'))
+            
+    def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player):
+         if optionindex != None:
+            option = (self.putoptions+self.calloptions)[optionindex]
+            mousex, mousey = pygame.mouse.get_pos()
+           
+            # draw a trapozid using gfxdraw.filled_polygon from 1050,565 to 1529,925
+            gfxdraw.filled_polygon(screen, [(1000, 200), (1480, 200), (1565, 925), (1100, 925)], (30, 30, 30))
+            pygame.draw.polygon(screen, (0, 0, 0), [(1000, 200), (1480, 200), (1565, 925), (1100, 925)], 5)
 
-    def draw_Available(self,screen,mousebuttons):
+            # draw the stock name
+            text = fontlist[45].render(f'{option.stockobj.name} Option', (190, 190, 190))[0]
+            screen.blit(text, (1015, 215))
+           
+
+            xshift = 15
+            yshift = 100
+            text = []   
+
+            # draw a polygon from 1030,230 to 1500, 675
+            points = [(1030, 260), (1450, 260), (1500, 675), (1100, 675)]
+            gfxdraw.filled_polygon(screen, points, (15, 15, 15))
+            pygame.draw.polygon(screen, (0, 0, 0), points, 5)
+
+            
+            # draws the leverage bar below the option info
+            text = fontlist[45].render(f'Leverage Customization', (190, 190, 190))[0]
+            screen.blit(text, (1150, 550))
+            
+            leverage = self.leverageBar.draw_bar(screen, [1110, 600], [350, 50], 'horizontal', barwh=[20, 50], reversedscroll=True)
+
+            # Draws the information about the option on the right side of the screen
+            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.calculate_volatility()*100,15)}%']
+            for i,txt in enumerate(info):
+                screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),280+(i*50)))
+            
+             # use the same system found in the stockbook class to draw the sell button and the selector for the amount of stocks to sell
+            if point_in_polygon((mousex,mousey),[(1110,805),(1125,875),(1465,875),(1450,805)]):
+                sellcolor = (150,0,0)
+                if mousebuttons == 1:
+                    if player.cash > (option.get_value()*leverage):
+                        option.set_leverage(leverage)
+                        player.buyOption(option)
+            else:
+                sellcolor = (225,225,225)
+            # gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total value button
+            # pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total value button polygon
+
+            value = option.get_value()
+            text = fontlist[45].render(f'Cost: ${limit_digits(value*leverage,15)}', (190, 190, 190))[0]
+            gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total cost button
+            pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total cost button polygon
+            
+            screen.blit(text, (1130, 725))
+            # PURCHASE button
+            gfxdraw.filled_polygon(screen,((1110,805),(1125,875),(1465,875),(1450,805)),(15,15,15))#polygon for the PURCHASE button
+            pygame.draw.polygon(screen, (0,0,0), ((1110,805),(1125,875),(1465,875),(1450,805)),5)#outline PURCHASE button polygon
+            buy_text, _ = fontlist[65].render(f'PURCHASE', sellcolor)
+            buy_text_rect = buy_text.get_rect(center=(1280, 840))
+            screen.blit(buy_text, buy_text_rect)
+
+    def draw_Available(self,screen,mousebuttons,player):
         mousex, mousey = pygame.mouse.get_pos()
         xshift = 15
         yshift = 150    
-        if len(self.allrenders) < len(player.options):# if the player has more stocks than the renders
-            for i in range((len(player.options)-len(self.allrenders))+1):# add the amount of renders needed
+        alloptions = self.putoptions+self.calloptions
+        if len(self.allrenders) < len(alloptions):# if the player has more stocks than the renders
+            for i in range((len(alloptions)-len(self.allrenders))+1):# add the amount of renders needed
                 self.allrenders.append({})
-        if self.selected_option == None and len(player.options) > 0:
-            self.selected_option = 0
+        if self.selected_avalaible == None and len(alloptions) > 0:
+            self.selected_avalaible = 0
         self.bar.scroll(mousebuttons)# check for the scroll of the bar
-        self.bar.changemaxvalue(len(player.options) if len(player.options) > 0 else 1)# change the max value of the bar based on the amount of stocks the player has
+        self.bar.changemaxvalue(len(alloptions) if len(alloptions) > 0 else 1)# change the max value of the bar based on the amount of stocks the player has
 
-        barheight = 520//len(player.options) if len(player.options) > 0 else 1
+        barheight = 520//len(alloptions) if len(alloptions) > 0 else 1
 
         self.bar.draw_bar(screen, [225, DY], [45, DY + (yshift*4) - 80], 'vertical', barwh=[43, barheight], shift=85, reversedscroll=True, text=False)
 
-        self.drawSelectedStock(screen, self.selected_option, mousebuttons, player)# draws the additional stock info
+        self.SelectedAvailableOption(screen, self.selected_avalaible, mousebuttons, player)# draws the additional stock info
 
         percents = []; alltexts = []
-        for i, option in enumerate(player.options[self.bar.value:self.bar.value+5]):
-            percentchange = ((option.get_value() - option.ogvalue) / option.ogvalue) * 100
-            
-            if percentchange > 0:
-                grcolor = (0, 200, 0); profittext = "Profit"
-                
-            elif percentchange == 0:
-                grcolor = (200, 200, 200); profittext = ""
-            else:
-                grcolor = (225, 0, 0); profittext = "Loss"
+        for i, option in enumerate(alloptions[self.bar.value:self.bar.value+5]):
+            # percentchange = ((option.get_value() - option.ogvalue) / option.ogvalue) * 100
+        
+            grcolor = (200, 200, 200)
 
             textinfo = [[(190, 190, 190), 45],[(190, 190, 190), 35],[grcolor, 35],[grcolor, 35],[grcolor, 35]]
 
             texts = [f'{option.stockobj.name} {option.option_type}',
-                     f'Original Value: ${limit_digits(option.ogvalue,15)}',
-                     f'Value: ${limit_digits(option.get_value(),15)}',
-                     f'{profittext}: ${limit_digits((option.get_value() - option.ogvalue),15)}',
-                     f'Change %: {limit_digits(percentchange,15)}%'
+                     f'Expiration: {option.expiration_date} days',
+                     f'Cost: ${limit_digits(option.get_value(),15)}',
+                     f'Stock Price : ${limit_digits(option.stockobj.price,15)}',
+                     f'Strike Price: ${option.strike_price}'
                     ]
             self.allrenders = reuserenders(self.allrenders, texts, textinfo, i)
-            percents.append(percentchange); alltexts.append(texts)
+            alltexts.append(texts)
 
-        self.allrenders,self.selected_option = drawLatterScroll(screen,player.options,self.allrenders,self.bar.value,self.getpoints,(xshift,yshift),self.selected_option,mousebuttons,DH,alltexts,percents)
+        self.allrenders,self.selected_avalaible = drawLatterScroll(screen,alloptions,self.allrenders,self.bar.value,self.getpoints,(xshift,yshift),self.selected_avalaible,mousebuttons,DH,alltexts,[0 for i in range(len(alltexts))])
 
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player):
         """Draws all of the things in the option menu"""
@@ -218,5 +279,5 @@ class Optiontrade(Menu):
 
         if self.view == "Owned":
             self.draw_Owned(screen,mousebuttons,player)
-        elif self.view == "Available ":
-            self.draw_Available()
+        elif self.view == "Available":
+            self.draw_Available(screen,mousebuttons,player)

@@ -52,6 +52,12 @@ change teh bar class so that is snaps better (12/18/23)
 new system for when you open up the one of the menus (portfolio or stockbook) (12/18/23)
     -performance is bad and it looks bad currently with the background
 
+each stock should Have it's own color throughout all aspects of the game (12/28/23)
+
+The message board with the stock increases and decreases should Have the option to change it to a specific stock (12/28/23)
+
+Indicator in portfolio and option class for the amount of stocks/options in the drawLatterScroll (12/28/23)
+
 
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am

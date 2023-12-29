@@ -126,13 +126,13 @@ class SliderBar():
                 if reversedscroll:
                     self.barxy[0],self.value,mouseover = barpos(self.slider_points,self.sliderwh[0]-(self.barwh[0]/2),self.sliderxy[0],self.maxvalue,self.value,self.barwh[0],horizontal=True,reverse=True)
                 else:
-                    self.barxy[0],self.value,mouseover = barpos(self.slider_points,self.sliderwh[0],self.sliderxy[0],self.maxvalue,self.value,self.barwh[0])
+                    self.barxy[0],self.value,mouseover = barpos(self.slider_points,-self.sliderwh[0]+(self.barwh[0]*2),self.sliderxy[0]+self.sliderwh[0]-self.barwh[0],self.maxvalue,self.value,self.barwh[0],False)
         return mouseover
     def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation,barwh=None,shift=0,reversedscroll=False,text=True):
         """sliderxy [startx,starty], 
         sliderwh [width,height], 
         orientation ['horizontal','vertical'], 
-        shift is the offset for the bottom two points to make a trapezoid (Only works for vertical right now)"""
+        shift is the offset for the bottom two points to make a trapezoid (Must be positive)"""
 
         if self.sliderxy != sliderxy or self.sliderwh != sliderwh or shift != max(self.shift) or self.reversedscroll != reversedscroll:# if the slider has moved, then recreate the gradient and the slider_rect
             self.reversedscroll = reversedscroll
@@ -160,21 +160,22 @@ class SliderBar():
             # the offset for the bar to make a trapezoid - only needs part of the shift for the bar based on the bar's y position
             xoffset = self.shift[0]*(1-(subheight/self.sliderwh[1])) if self.orientation == 'vertical' else 0
             # the width of the barxy to the left of the slider
-            subwidth = self.barxy[0] - self.sliderxy[0]
+            subwidth = self.sliderwh[0]-self.barxy[0]+self.sliderxy[0]
             # the offset for the bar to make a trapezoid - only needs part of the shift for the bar based on the bar's x position
-            yoffset = self.shift[1] * (1 - (subwidth / self.sliderwh[0])) if self.orientation == 'horizontal' else 0
+            yoffset = (self.shift[1] * (1 - (subwidth / self.sliderwh[0]))) - self.shift[1] if self.orientation == 'horizontal' else 0
         else:
             xoffset = 0
+            yoffset = 0
 
 
         ratio = self.sliderwh[0]/self.barwh[0] if self.orientation == 'horizontal' else self.sliderwh[1]/(self.barwh[1])# ratio of the slider to the bar
         
         # The bar that the mouse drags across the slider
         gfxdraw.filled_polygon(screen, [
-                    (self.barxy[0] + xoffset+ self.barwh[0], self.barxy[1] + self.shift[1]),
-                    (self.barxy[0]  + xoffset , self.barxy[1] + (self.shift[1])),
-                    (self.barxy[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1] + (self.shift[1])),
-                    (self.barxy[0] + self.barwh[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1]+self.shift[1]),
+                    (self.barxy[0] + xoffset+ self.barwh[0], self.barxy[1] + self.shift[1] + yoffset),
+                    (self.barxy[0]  + xoffset , self.barxy[1] + (self.shift[1]) + yoffset),
+                    (self.barxy[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1] + (self.shift[1]) + yoffset),
+                    (self.barxy[0] + self.barwh[0] + xoffset + (self.shift[0]/ratio), self.barxy[1] + self.barwh[1]+self.shift[1] + yoffset),
                     ], color)
             
         # Box around the slider

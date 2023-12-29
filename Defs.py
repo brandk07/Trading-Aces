@@ -74,7 +74,7 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         ioffset = i+barvalue
         texts = alltexts[i]
         twidth = allrenders[i][texts[0]].get_width() + 25
-        twidth2 = max(allrenders[i][texts[1]].get_width(), allrenders[i][texts[2]].get_width()) + 30
+        twidth2 = max(allrenders[i][texts[1]].get_width(), allrenders[i][texts[2]].get_width()) + 40
         twidth3 = max(allrenders[i][texts[3]].get_width(), allrenders[i][texts[4]].get_width()) + 45
         
         # find the points for the polygons
@@ -92,16 +92,16 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         # polycolor = (60, 60, 60) if selected_value == ioffset else polycolor
 
         # ----------draw the polygons----------
-        gfxdraw.filled_polygon(screen, points, polycolor)  # draws the first polygon with the name of the stock
-        gfxdraw.filled_polygon(screen, points2, (polycolor))  # draws the second polygon with the price of the stock
-        gfxdraw.filled_polygon(screen, points3, (polycolor))  # draws the third polygon with the profit of the stock
+        # gfxdraw.filled_polygon(screen, points, polycolor)  # draws the first polygon with the name of the stock
+        # gfxdraw.filled_polygon(screen, points2, (polycolor))  # draws the second polygon with the price of the stock
+        # gfxdraw.filled_polygon(screen, points3, (polycolor))  # draws the third polygon with the profit of the stock
 
         # ----------Draw the text----------
-        screen.blit(allrenders[i][texts[0]], (320 + (i * xshift), 235 + (i * yshift)))  # display name of stock
-        screen.blit(allrenders[i][texts[1]], (330 + (i * xshift) + twidth, 210 + (i * yshift)))# display bought price of stock
-        screen.blit(allrenders[i][texts[2]], (345 + (i * xshift) + twidth, 265 + (i * yshift)))# display current price of stock
-        screen.blit(allrenders[i][texts[3]], (330 + twidth + twidth2 + (i * xshift), 210 + (i * yshift)))# display profit of stock
-        screen.blit(allrenders[i][texts[4]], (345 + twidth + twidth2 + (i * xshift), 265 + (i * yshift)))# display percent change of stock
+        screen.blit(allrenders[i][texts[0]], (points[0][0] + 20, points[0][1] + 35))  # display name of stock
+        screen.blit(allrenders[i][texts[1]], (points[0][0] + 30 + twidth, points[0][1] + 10))# display bought price of stock
+        screen.blit(allrenders[i][texts[2]], (points[0][0] + 45 + twidth, points[0][1] + 65))# display current price of stock
+        screen.blit(allrenders[i][texts[3]], (points[0][0] + 30 + twidth + twidth2, points[0][1] + 10))# display profit of stock
+        screen.blit(allrenders[i][texts[4]], (points[0][0] + 45 + twidth + twidth2, points[0][1] + 65))# display percent change of stock
         
         # top left, top right, bottom right, bottom left
         bottom_polygon = [[totalpolyon[0][0]+12, totalpolyon[0][1] + defaultHeight - 15], 
@@ -137,7 +137,9 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         pygame.draw.polygon(screen, (0,0,0), points, 5)
         pygame.draw.polygon(screen, (0,0,0), points2, 5)
         pygame.draw.polygon(screen, (0,0,0), points3, 5)
-        screen.blit(emptytext, (320 + (ioffset * xshift), 235 + (ioffset * yshift)))  # display name of stock
+        # screen.blit(emptytext, (320 + (ioffset * xshift), 235 + (ioffset * yshift)))  # display name of stock
+        # Use the points from the first polygon to draw teh empty text
+        screen.blit(emptytext, (points[0][0]+40, points[0][1]+40))  # displays empty text
     return allrenders,selected_value
 
 def update_fps(clock):

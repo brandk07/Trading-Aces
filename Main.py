@@ -11,7 +11,6 @@ from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
 from Classes.portfolio import Portfolio
 from Classes.OptionMenu import Optiontrade
-from Classes.imports.Option import Option
 import timeit
 
 pygame.init()
@@ -53,7 +52,7 @@ stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames) for na
 
 stocklist = [stockdict[name] for name in stocknames]
 portfolio = Portfolio()
-optiontrade = Optiontrade()
+optiontrade = Optiontrade(window_offset,stocklist)
 ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),stocklist)
 # ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
 mousebuttons = 0
@@ -65,14 +64,7 @@ gametime = GameTime(2023,11,7,9,30,0)
 menulist = [stockbook,portfolio,optiontrade]
 musicdata = Getfromfile(stockdict,player)# muiscdata = [time, volume, songindex]
 
-# pygame.mixer.music.load(r"Assets\Sounds\theme1.mp3")
-# pygame.mixer.music.play()
-# pygame.mixer.music.set_pos(musicdata[0])
-# # pygame.mixer.music.set_volume(musicdata[1])
-# pygame.mixer.music.set_volume(0)
-
 pygame.mixer.music.set_endevent(pygame.USEREVENT)  # Set custom event when music ends
-player.options.append(Option(stocklist[0],600,8,'put'))
 
 musicnames = list(musicThemes)
 pygame.mixer.music.load(musicThemes[musicnames[musicdata[2]]] if musicdata[2] < len(musicnames) else musicThemes[musicnames[0]])

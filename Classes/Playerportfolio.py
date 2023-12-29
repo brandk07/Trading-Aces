@@ -5,7 +5,6 @@ from Classes.Stock import Stock
 from Defs import *
 from pygame import gfxdraw
 import numpy as np
-from Classes.imports.Option import Option
 
 class Player(Stock):
     def __init__(self,window_offset,stocknames) -> None:
@@ -82,7 +81,9 @@ class Player(Stock):
         print(f'selling {optionobj} for {optionobj.get_value():.2f}')
         print('cash is',self.cash)
 
-        
+    def get_Networth(self):
+        """returns the networth of the player"""
+        return self.cash + sum([stock[0].price*stock[2] for stock in self.stocks]) + sum([option.get_value() for option in self.options])
 
     def message(self,screen:pygame.Surface):
         """displays everything in the self.messagedict, key is the text, value is (time,color))]"""
