@@ -153,8 +153,8 @@ class Stock():
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             self.update_range_graphs()
         else:
-            stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
-            self.update_range_graphs(self.cash+stockvalues)#updates the range graphs
+            # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
+            self.update_range_graphs(self.get_Networth())#updates the range graphs
 
 
     def rangecontrols(self,screen:pygame.Surface,Mousebuttons):
@@ -351,7 +351,6 @@ class Stock():
 
         #draws the text that displays the price of the stock
         if type(self) == Stock:#text displaying the price, and the net worth
-            pass
             pricetext = fontlist[40].render(f'{self.price:,.2f}',(255,255,255))[0]
             textwidth = pricetext.get_width()+20+self.pricetext.get_width(); textheight = pricetext.get_height()
             textx = self.endpos[0]+20; texty = self.endpos[1]-55

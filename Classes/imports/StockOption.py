@@ -2,12 +2,20 @@ from optionprice import Option as Op
 import numpy as np
 
 class StockOption:
-    def __init__(self,stockobj,strike_price,expiration_date,option_type) -> None:
+    def __init__(self,stockobj,strike_price,expiration_date,option_type,leverage=1) -> None:
         self.stockobj = stockobj
         self.strike_price = strike_price
         self.expiration_date = int(expiration_date)
         self.option_type = str(option_type)
-        self.leverage = 1
+        self.leverage = leverage
+        self.option = Op(european=True,
+                    kind=self.option_type,
+                    s0=float(self.stockobj.price*self.leverage),
+                    k=self.strike_price*self.leverage,
+                    t=self.expiration_date,
+                    sigma=self.calculate_volatility(),
+                    r=0.05)
+        
         self.ogvalue = self.get_value()
         
     
@@ -31,16 +39,19 @@ class StockOption:
 
     def get_inputs(self):
         return (self.option_type,self.stockobj.price*self.leverage,self.strike_price*self.leverage,self.expiration_date,self.calculate_volatility(),0.05)
-    
+    # create a method to return an exact copy of the object
+    def get_copy(self,leverage=1) -> 'StockOption':        
+        return StockOption(self.stockobj,self.strike_price,self.expiration_date,self.option_type,leverage)
+    def advance_time(self):
+        self.expiration_date -= 1
+        self.option.t = self.expiration_date
+
     def get_value(self):
-        obj = Op(european=True,
-                    kind=self.option_type,
-                    s0=self.stockobj.price*self.leverage,
-                    k=self.strike_price*self.leverage,
-                    t=self.expiration_date,
-                    sigma=self.calculate_volatility(),
-                    r=0.05)
-        return obj.getPrice(method="BSM",iteration=50000)
+        self.option.s0 = float(self.stockobj.price*self.leverage)
+        self.option.k = self.strike_price*self.leverage
+        self.option.sigma = self.calculate_volatility()
+        # too slow, need to not do it mutliple times a second
+        return self.option.getPrice(method="BSM",iteration=1)
     
 
 # Option prices are impacted by 4 major elements i.e. delta, gamma, theta, vega.

@@ -4,7 +4,7 @@ import math
 from Defs import *
 import timeit
 class StockGraphManager:
-    def __init__(self):
+    def __init__(self,stocknames):
         self.graph_config = {
             'single': (1,1),
             'dual': (2,1),
@@ -32,7 +32,7 @@ class StockGraphManager:
         self.ui_rects = [pygame.Rect(745+(i*66),990,56,56) for i in range(len(self.images))]
 
         self.current_config = 'nona'
-        self.allstocks = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
+        self.allstocks = stocknames
         self.picked_stocks = [stock for stock in self.allstocks]
         self.mousehovering = None
         self.pickedstockconfig = {#the stock that is picked for each config
@@ -42,6 +42,7 @@ class StockGraphManager:
             'nona': [self.allstocks[i] for i in range(9)],
         }
         self.mcontrolstext = [[fontlist[45].render(text,(220,220,220))[0],text.lower()] for text in ['Recent','Hour','Day','Week','Month','Year','Custom']]
+        self.renderedstocknames = {name:fontlist[25].render(name,(255,255,255))[0] for name in self.allstocks}
         self.masterrange = 'hour'
         self.dragstock = [None,None,None]# [stock object, xoffset, yoffset]
     def draw_ui(self,screen,mousebuttons:int,stocklist:list):
@@ -149,7 +150,8 @@ class StockGraphManager:
                 color = (0, 200, 0) if pchange >= 0 else (200, 0, 0)
                 if pchange == 0:
                     color = (180, 180, 180)
-                nametext = fontlist[25].render(stock.name, color)[0]
+                # nametext = fontlist[25].render(stock.name, color)[0]
+                nametext = self.renderedstocknames[stock.name]
                 screen.blit(nametext, (x + int(width / 2) - nametext.get_width() / 2, y + 10))
 
     def masterControls(self,screen,mousebuttons:int,stocklist:list):

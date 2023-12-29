@@ -41,7 +41,7 @@ clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 window_offset = (window_x*-1,window_y)
 stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
-stockgraphmanager = StockGraphManager()
+stockgraphmanager = StockGraphManager(stocknames)
 stockbook = Stockbook(stocknames)
 
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         # screen.blit(polybackground,(0,0))# the background is 1152x896, tile it to fill the screen
         
         # print(mousex,mousey)
-        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons)#draws the ui controls to the screen, and senses for clicks
+        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist)#draws the ui controls to the screen, and senses for clicks
 
         
         for i in range(ui_controls.gameplay_speed):

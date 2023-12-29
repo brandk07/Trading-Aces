@@ -12,7 +12,7 @@ class Player(Stock):
         super().__init__(name,(2500,2500),0,Player,window_offset,stocknames)
         self.name = name
         self.window_offset = window_offset
-        self.cash = 1000
+        self.cash = 2500
         self.stocks = []# list of lists containing the stock object, the price bought at, and the quantity
         # self.pricepoints = np.array([[self.cash]],dtype=object)
         self.options = []#list of option objects
@@ -71,11 +71,11 @@ class Player(Stock):
 
             print(f'buying {optionobj} for {optionobj.get_value():.2f}')
             print('cash is',self.cash)
-            print('stocks are',self.stocks)
+            print('options are',self.options)
             print('/'*20)
 
     def sellOption(self,optionobj):
-        optionindex = self.options.index(optionobj)
+        # optionindex = self.options.index(optionobj)
         self.cash += optionobj.get_value()
         self.options.remove(optionobj)
         print(f'selling {optionobj} for {optionobj.get_value():.2f}')

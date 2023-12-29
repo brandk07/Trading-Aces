@@ -57,6 +57,8 @@ class Optiontrade(Menu):
     
     def SelectedPlayerOption(self, screen, optionindex, mousebuttons, player):
         if optionindex != None:
+            # print(optionindex)
+            # print(player.options)
             option = player.options[optionindex]
             mousex, mousey = pygame.mouse.get_pos()
            
@@ -73,12 +75,22 @@ class Optiontrade(Menu):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
                     player.sellOption(option)
+                    self.selected_option = None
             else:
                 sellcolor = (225,225,225)
 
             xshift = 15
             yshift = 100
             text = []   
+            # draw a polygon from 1030,230 to 1500, 675
+            points = [(1030, 260), (1450, 260), (1500, 675), (1100, 675)]
+            gfxdraw.filled_polygon(screen, points, (15, 15, 15))
+            pygame.draw.polygon(screen, (0, 0, 0), points, 5)
+
+            # Draws the information about the option on the right side of the screen
+            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.calculate_volatility()*100,15)}%']
+            for i,txt in enumerate(info):
+                screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),280+(i*50)))
 
             # for loop to draw lots of polygons with text
 
@@ -121,7 +133,8 @@ class Optiontrade(Menu):
 
         percents = []; alltexts = []
         for i, option in enumerate(player.options[self.bar.value:self.bar.value+5]):
-            percentchange = ((option.get_value() - option.ogvalue) / option.ogvalue) * 100
+            if option.ogvalue == 0: percentchange = 0
+            else:percentchange = ((option.get_value() - option.ogvalue) / option.ogvalue) * 100
             
             if percentchange > 0:
                 grcolor = (0, 200, 0); profittext = "Profit"
@@ -194,8 +207,7 @@ class Optiontrade(Menu):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
                     if player.cash > (option.get_value()*leverage):
-                        option.set_leverage(leverage)
-                        player.buyOption(option)
+                        player.buyOption(option.get_copy(leverage))
             else:
                 sellcolor = (225,225,225)
             # gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total value button

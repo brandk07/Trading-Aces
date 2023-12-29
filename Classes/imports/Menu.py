@@ -14,6 +14,7 @@ class Menu():
         # Set the icontext to be the name of the child class that inherits this class
         self.icontext = fontlist[36].render(self.__class__.__name__,(255,255,255))[0]
         self.menudrawn = False
+        self.menupoints = [(200,100),(1500,100),(1600,980),(300,980)]
 
     
     def draw_icon(self,screen,mousebuttons:int,stocklist:list,player,menulist,iconcoords:tuple):
@@ -25,12 +26,15 @@ class Menu():
             ypos = y+10
             gfxdraw.filled_polygon(screen,[(25,ypos-15),(width1+35,ypos-15),(width1+35,ypos+height1+height2),(25,ypos+height1+height2)],(110,110,110))
             if mousebuttons == 1:
-                
                 self.menudrawn = not self.menudrawn
                 soundEffects['clickbutton'].play()
                 if self.menudrawn:#if the menu is drawn, then set all the other menus to not drawn
                     for menu in menulist:
                         if menu != self: menu.menudrawn = False
+        else:# if the mouse is not colliding with the icon
+            if mousebuttons == 1 and not point_in_polygon(pygame.mouse.get_pos(),self.menupoints):# if the mouse is clicked outside of the menu, then set the menu to not drawn
+                self.menudrawn = False
+        
         # below is the code that draws the icon and the text
         # center the self.iocntext below the icon
         screen.blit(self.icon,iconcoords)
@@ -43,8 +47,16 @@ class Menu():
     def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,player):
         """Mearly a placeholder for the child classes to override"""
         pass
+    def draw_menu_sidebar(self,screen):
+        # draw a polygon with points (1150,40) to (1900,975)
+        points = ((1520,100),(1800,100),(1900,980),(1620,980))
+        gfxdraw.filled_polygon(screen, points,(40,40,40))
+        pygame.draw.polygon(screen, (0,0,0), points,10)
+        # gfxdraw.filled_polygon(screen, ((1150,40),(1900,40),(1900,975),(1150,975)),(40,40,40))
+        # pygame.draw.polygon(screen, (0,0,0), ((1150,40),(1900,40),(1900,975),(1150,975)),10)
 
-    def draw_menu(self,screen,Mousebuttons:int,stocklist:list,player):
-        gfxdraw.filled_polygon(screen, ((200,100),(1500,100),(1600,980),(300,980)),(40,40,40))
-        pygame.draw.polygon(screen, (0,0,0), ((200,100),(1500,100),(1600,980),(300,980)),10)
-        self.draw_menu_content(screen,stocklist,Mousebuttons,player)#draws the content of the menu, defined in the child classes
+    def draw_menu(self,screen,mousebuttons:int,stocklist:list,player):
+        gfxdraw.filled_polygon(screen, self.menupoints,(40,40,40))
+        pygame.draw.polygon(screen, (0,0,0), self.menupoints,10)
+        self.draw_menu_content(screen,stocklist,mousebuttons,player)#draws the content of the menu, defined in the child classes
+        self.draw_menu_sidebar(screen)

@@ -4,10 +4,10 @@ from optionprice import Option
 # Scale down the prices for numerical stability
 # stock_price = 4_750_000
 # strike_price = 5_000_000
-stock_price = 139.71
-strike_price = 135
-time_to_expiration = 20  # 10 days
-risk_free_rate = 0.05  # You should use the actual risk-free rate
+stock_price = 1390545456546456.71
+strike_price = 135456456456456
+time_to_expiration = 206  # 10 days
+risk_free_rate = 0.055535  # You should use the actual risk-free rate
 volatility = .3994
 option_type = "call"
 
@@ -28,9 +28,9 @@ some_option = Option(european=True,
                     k=strike_price,
                     t=time_to_expiration,
                     sigma=volatility,
-                    r=0.05)
+                    r=0.05,dv=.15)
 
-print(some_option.getPrice(method="BSM",iteration=50000))
+print(some_option.getPrice(method="BSM",iteration=100000))
 # print(some_option.getPrice(method="BT"))
 # print(some_option.getPrice(method="MC"))
 # print()

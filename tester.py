@@ -92,14 +92,21 @@ stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','M
 stockdict = {name:np.array(data,dtype=object) for name in stocknames}
 
 start_time = timeit.default_timer()
+# create folders for each stockname in the directory if they don't already exist
 
 
 for name in stocknames:
     for i in ['recent','hour','day','week','month','year','trends']:
         file_path = f"{directory}/{name}/{i}.json"
-        with open(file_path, "w+") as f:
-            # f.write("[]")
-            json.dump([], f)
+        if os.path.exists(file_path):
+            with open(file_path, "w+") as f:
+                # f.write("[]")
+                json.dump([], f)
+        else:
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, "w+") as f:
+                # f.write("[]")
+                json.dump([], f)
 # for name in stocknames:
 #     file_path = f"{directory}/{name}/trend.json"
 #     os.remove(file_path)

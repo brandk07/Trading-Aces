@@ -34,8 +34,8 @@ class UI_Controls():
         backsurface.set_colorkey((255, 255, 255))
         self.renderedpietexts = None;  self.renderedback = backsurface
         
-    def drawIcon(self, screen: pygame.Surface,mousebuttons):
-        """Draws the home/stock icon in the top left corner."""
+    def drawIcon(self, screen: pygame.Surface,mousebuttons) -> bool:
+        """Draws the home/stock icon in the top left corner, returns True if the icon is clicked"""
         # Draw the triangles to form a square in the top left corner
         hometri = [(25, 10), (25, 160), (175, 10)]
         stockstri = [(175, 10), (175, 160), (25, 160)]
@@ -52,6 +52,7 @@ class UI_Controls():
             if mousebuttons == 1:
                 self.view = "home"
                 soundEffects['clickbutton2'].play()
+                return True
 
         if point_in_triangle(mouse_pos, stockstri):
             stocks_color = (170, 0, 0)
@@ -60,6 +61,7 @@ class UI_Controls():
             if mousebuttons == 1:
                 self.view = "stock"
                 soundEffects['clickbutton2'].play()
+                return True
 
         # Draw the triangles
         pygame.draw.polygon(screen, home_color, [(x, y) for x, y in hometri])
@@ -74,6 +76,7 @@ class UI_Controls():
         screen.blit(home, (90 - home.get_width() / 2 - 15, 45 - home.get_height() / 2))
         stocks = fontlist[50].render('Stocks', (255, 255, 255))[0]
         screen.blit(stocks, (140 - stocks.get_width() / 2 - 15, 95 + stocks.get_height() / 2))
+        return False
 
 
 
@@ -147,21 +150,21 @@ class UI_Controls():
         values.append([player.cash, "Cash"])
         _,self.renderedpietexts = draw_pie_chart(screen, values, 175, (1460, 160),self.renderedback,self.renderedpietexts)
 
-        
+    def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist):
+        if self.drawIcon(screen,mousebuttons):
+            for i in range(len(menulist)):menulist[i].menudrawn = False
+        if not any(menu.menudrawn for menu in menulist):# if any of the menus are drawn, then don't draw
+            if self.view == "home":
+                mousex,mousey = pygame.mouse.get_pos()
+                
+                self.draw_home(screen,stocklist,gametime,player)            
 
-    def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons):
-        self.drawIcon(screen,mousebuttons)
-        if self.view == "home":
-            mousex,mousey = pygame.mouse.get_pos()
-            
-            self.draw_home(screen,stocklist,gametime,player)            
-
-            player.draw(screen,player,(900,160),(250,700),stocklist,mousebuttons,True)
-            self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
+                player.draw(screen,player,(900,160),(250,700),stocklist,mousebuttons,True)
+                self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
 
 
-        elif self.view == "stock":
-            stockgraphmanager.draw_graphs(screen,stocklist,player,mousebuttons)
-            # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
-            self.gameplay_speed = self.bar.draw_bar(screen,[1620,650],[120,380],'vertical')
+            elif self.view == "stock":
+                stockgraphmanager.draw_graphs(screen,stocklist,player,mousebuttons)
+                # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
+                self.gameplay_speed = self.bar.draw_bar(screen,[1620,650],[120,380],'vertical')
 
