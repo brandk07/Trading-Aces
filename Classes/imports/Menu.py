@@ -17,7 +17,7 @@ class Menu():
         self.menupoints = [(200,100),(1500,100),(1600,980),(300,980)]
 
     
-    def draw_icon(self,screen,mousebuttons:int,stocklist:list,player,menulist,iconcoords:tuple):
+    def draw_icon(self,screen,mousebuttons:int,stocklist:list,player,menulist,iconcoords:tuple,ui_controls):
         x,y = iconcoords
         mousex,mousey = pygame.mouse.get_pos()
         collide = pygame.Rect.collidepoint(pygame.Rect(x,y,self.icon.get_width(),self.icon.get_height()+self.icontext.get_height()),mousex,mousey)
@@ -32,7 +32,8 @@ class Menu():
                     for menu in menulist:
                         if menu != self: menu.menudrawn = False
         else:# if the mouse is not colliding with the icon
-            if mousebuttons == 1 and not point_in_polygon(pygame.mouse.get_pos(),self.menupoints):# if the mouse is clicked outside of the menu, then set the menu to not drawn
+            fullmenu = [(self.menupoints[0][0],self.menupoints[0][1]),(self.menupoints[1][0]+300,self.menupoints[1][1]),(self.menupoints[2][0]+300,self.menupoints[2][1]),(self.menupoints[3][0],self.menupoints[3][1])]
+            if mousebuttons == 1 and not point_in_polygon(pygame.mouse.get_pos(),fullmenu):# if the mouse is clicked outside of the menu, then set the menu to not drawn
                 self.menudrawn = False
         
         # below is the code that draws the icon and the text
@@ -42,21 +43,27 @@ class Menu():
         screen.blit(self.icontext,(textx,self.icon.get_height()+y+5))
         
         if self.menudrawn:
-            self.draw_menu(screen,mousebuttons,stocklist,player)
+            self.draw_menu(screen,mousebuttons,stocklist,player,ui_controls)
 
     def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,player):
         """Mearly a placeholder for the child classes to override"""
         pass
-    def draw_menu_sidebar(self,screen):
+    def draw_menu_sidebar(self,screen,ui_controls,stocklist):
         # draw a polygon with points (1150,40) to (1900,975)
         points = ((1520,100),(1800,100),(1900,980),(1620,980))
         gfxdraw.filled_polygon(screen, points,(40,40,40))
         pygame.draw.polygon(screen, (0,0,0), points,10)
+
+        ui_controls.gameplay_speed = ui_controls.bar.draw_bar(screen,[1650,630],[120,320],'vertical',shift=40)
+
+        # draws the top stock bar 
+        ui_controls.draw_stockbar(screen,stocklist,[200,10],[1300,80])
+        
         # gfxdraw.filled_polygon(screen, ((1150,40),(1900,40),(1900,975),(1150,975)),(40,40,40))
         # pygame.draw.polygon(screen, (0,0,0), ((1150,40),(1900,40),(1900,975),(1150,975)),10)
 
-    def draw_menu(self,screen,mousebuttons:int,stocklist:list,player):
+    def draw_menu(self,screen,mousebuttons:int,stocklist:list,player,ui_controls):
         gfxdraw.filled_polygon(screen, self.menupoints,(40,40,40))
         pygame.draw.polygon(screen, (0,0,0), self.menupoints,10)
         self.draw_menu_content(screen,stocklist,mousebuttons,player)#draws the content of the menu, defined in the child classes
-        self.draw_menu_sidebar(screen)
+        self.draw_menu_sidebar(screen,ui_controls,stocklist)# draws the sidebar on the right side of the screen and the top stock bar

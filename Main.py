@@ -41,14 +41,15 @@ clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 window_offset = (window_x*-1,window_y)
 stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
+stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(218, 112, 214),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 stockgraphmanager = StockGraphManager(stocknames)
 stockbook = Stockbook(stocknames)
 
 
 
-player = Player(window_offset,stocknames)
+player = Player(window_offset,stocknames,stockcolors[-1])
 #name, startingvalue_range, volatility, Playerclass, window_offset,stocknames,time
-stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames) for name in stocknames}
+stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames,stockcolors[i]) for i,name in enumerate(stocknames)}
 
 stocklist = [stockdict[name] for name in stocknames]
 portfolio = Portfolio()
@@ -92,7 +93,7 @@ if __name__ == "__main__":
 
         # gametime.drawgametime(screen,True)
         for i,menu in enumerate(menulist):
-            menu.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,165+(i*175)))
+            menu.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,165+(i*175)),ui_controls)
 
 
         # stockbook.draw_icon(screen,mousebuttons,stocklist,player,menulist)

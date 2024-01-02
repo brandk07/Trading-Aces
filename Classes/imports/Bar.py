@@ -22,11 +22,11 @@ def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizo
     return [int(gamespeed*seclength)+xy,gamespeed,False]
 
 class SliderBar():
-    def __init__(self,windowoffset:list,maxvalue:int,color:list) -> None:
+    def __init__(self,windowoffset:list,maxvalue:int,color:list,minvalue=0) -> None:
         """Max value must be less than the slider width-20, or height-20 if vertical, color = [(colorstart),(colorend)]"""
         self.winset = windowoffset
         self.value = 0
-        self.maxvalue = maxvalue
+        self.maxvalue = maxvalue; self.minvalue = minvalue
         self.gamevaluetexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue+1)]
         
         self.orientation = 'horizontal'
@@ -186,4 +186,7 @@ class SliderBar():
             textx = (self.sliderwh[0]//2 if self.orientation == 'horizontal' else self.sliderwh[0]//1.5) - self.gamevaluetexts[self.value].get_width()
             texty = self.gamevaluetexts[self.value].get_height()
             screen.blit(self.gamevaluetexts[self.value], (self.sliderxy[0]+textx, self.sliderxy[1]+self.sliderwh[1]//2-texty//2))
+        if self.value < self.minvalue:
+            self.value = self.minvalue
+            
         return self.value

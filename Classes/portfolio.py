@@ -42,14 +42,14 @@ class Portfolio(Menu):
             stock = player.stocks[stockindex]
             mousex, mousey = pygame.mouse.get_pos()
            
-            # draw a trapozid using gfxdraw.filled_polygon from 1050,565 to 1529,925
-            gfxdraw.filled_polygon(screen, [(1050, 565), (1530, 565), (1565, 925), (1085, 925)], (30, 30, 30))
-            pygame.draw.polygon(screen, (0, 0, 0), [(1050, 565), (1530, 565), (1565, 925), (1085, 925)], 5)
+            gfxdraw.filled_polygon(screen, [(1030, 425), (1505, 425), (1565, 925), (1085, 925)], (30, 30, 30))
+            pygame.draw.polygon(screen, (0, 0, 0), [(1030, 425), (1505, 425), (1565, 925), (1085, 925)], 6)
             self.quantity = quantityControls(screen,mousebuttons,player.stocks[stockindex][2],self.quantity,(1100,610))
+            
             # draw the stock name
-            text = fontlist[45].render(f'{stock[0]} X {limit_digits(stock[2],10,False)}', (190, 190, 190))[0]
-                
-            screen.blit(text, (1060, 575))
+            text = fontlist[50].render(f'{stock[0]} X {limit_digits(stock[2],10,False)}', (190, 190, 190))[0]
+            screen.blit(text, (1040, 435))# display the stock name
+
             # use the same system found in the stockbook class to draw the sell button and the selector for the amount of stocks to sell
             if point_in_polygon((mousex,mousey),[(1110,805),(1125,875),(1465,875),(1450,805)]):
                 sellcolor = (150,0,0)
@@ -62,6 +62,11 @@ class Portfolio(Menu):
                     self.quantity = 0
             else:
                 sellcolor = (225,225,225)
+
+            # Draws the information about the stock on the right side of the screen
+            info = [f'Profit: ${limit_digits((stock[0].price - stock[1])*stock[2],15)}',f'Change %: {limit_digits(((stock[0].price - stock[1]) / stock[1]) * 100,15)}%',f'Paid Price: ${limit_digits(stock[1]*stock[2],15)}']
+            for i,txt in enumerate(info):
+                screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),490+(i*50)))
 
             # total value of the stocks above the sell button
             value = stock[0].price * self.quantity
@@ -126,6 +131,6 @@ class Portfolio(Menu):
 
         values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
         names = set([stock[0].name for stock in player.stocks])
-        values = [[sum([v[0] for v in values if v[1] == name]), name] for name in names]
+        values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
 
-        self.renderedback,self.renderedpietexts = draw_pie_chart(screen, values, 150,(1050, 200),self.renderedback,self.renderedpietexts)
+        self.renderedback,self.renderedpietexts = draw_pie_chart(screen, values, 150,(1010, 115),self.renderedback,self.renderedpietexts)

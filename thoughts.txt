@@ -49,12 +49,7 @@ add the variablitly thing and other details to the stock book (12/17/23)
 change teh bar class so that is snaps better (12/18/23)
     - when you are over halfway to the next interval, switch to it
 
-new system for when you open up the one of the menus (portfolio or stockbook) (12/18/23)
-    -performance is bad and it looks bad currently with the background
-
-each stock should Have it's own color throughout all aspects of the game (12/28/23)
-
-The message board with the stock increases and decreases should Have the option to change it to a specific stock (12/28/23)
+The message board with the stock increases and decreases should Have the option to change the look to display a stock instead of messages (12/28/23)
 
 Indicator in portfolio and option class for the amount of stocks/options in the drawLatterScroll (12/28/23)
 
@@ -62,12 +57,17 @@ Add past transactions (12/29/23)
 
 Customization screen in OptionTrade (12/29/23)
 
-Click off of a menu to close it / adding a close button (12/29/23)
-
 make it easier to see how much cash you have, especially in option trade menu (12/29/23)
 
 Add the banking and loans (12/29/23)
 
+Make options only 100 stocks of leverage (1/1/2024)
+
+//////////////////////////////////////////----URGENT----/////////////////////////////////////////////////////////////////////////////
+PROBLEM WITH THE quantityControls LOOK AT VIXEL AND TRY TO PUT IT BETWEEN 3 AND 6 (1/1/24)
+
+Change the drawLatterScroll to be more simple looking (1/1/24)
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
@@ -93,3 +93,7 @@ the selector in stockbook fails when the stock price moves, it is stored as a qu
     when the quantity changes then it doesn't highlight it (12/10/23) - (12/20/23)
 improve performance in stockbook - likely due to making lots of rects each frame
     and in portfolio, need a similar thing to the stock class with caching renders for text - (12/20/23)
+Click off of a menu to close it / adding a close button (12/29/23) - same day
+each stock should Have it's own color throughout all aspects of the game (12/28/23) - (12/29/23)
+new system for when you open up the one of the menus (portfolio or stockbook) (12/18/23) - Over a period of time
+    -performance is bad and it looks bad currently with the background

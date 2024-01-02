@@ -7,9 +7,11 @@ from pygame import gfxdraw
 import numpy as np
 
 class Player(Stock):
-    def __init__(self,window_offset,stocknames) -> None:
+    
+
+    def __init__(self,window_offset,stocknames,color) -> None:
         name = 'Net Worth'
-        super().__init__(name,(2500,2500),0,Player,window_offset,stocknames)
+        super().__init__(name,(2500,2500),0,Player,window_offset,stocknames,color)
         self.name = name
         self.window_offset = window_offset
         self.cash = 2500
@@ -18,6 +20,10 @@ class Player(Stock):
         self.options = []#list of option objects
         self.stockvalues = []
         self.messagedict = {}
+
+        self.optioncolors = [(211, 160, 147),(147, 196, 125),(227, 192, 198),(248, 150, 143),(252, 216, 60), (128, 189, 152),(162, 195, 243),(143, 134, 130),(248, 185, 173),(202, 80, 30),  (128, 128, 0),  (135, 206, 235),(145, 184, 106),(200, 162, 200),(255, 213, 148),(242, 201, 76), (112, 161, 151),(156, 51, 66),  (51, 51, 51),   (194, 178, 169),]
+
+
         # self.recent_movementvar = (None,None,(180,180,180))
         
     def buy(self,obj,price:int,quantity:int=1):
@@ -65,20 +71,29 @@ class Player(Stock):
         print('/'*20)
 
     def buyOption(self,optionobj):
-        if self.cash >= optionobj.get_value():
-            self.cash -= optionobj.get_value()
-            self.options.append(optionobj)
+        if self.cash >= optionobj.get_value(bypass=True):
 
-            print(f'buying {optionobj} for {optionobj.get_value():.2f}')
+            self.cash -= optionobj.get_value(True)
+            inoptions = False
+            for option in self.options:
+                inoptions = option.combine(optionobj)
+                if inoptions:break
+
+            if not inoptions:
+                self.options.append(optionobj)
+                optionobj.color = self.optioncolors[len(self.options)-1 if len(self.options)-1 < len(self.optioncolors) else randint(0,len(self.optioncolors)-1)]
+                print(optionobj.color)
+
+            print(f'buying {optionobj} for {optionobj.get_value(True):.2f}')
             print('cash is',self.cash)
             print('options are',self.options)
             print('/'*20)
 
     def sellOption(self,optionobj):
         # optionindex = self.options.index(optionobj)
-        self.cash += optionobj.get_value()
+        self.cash += optionobj.get_value(True)
         self.options.remove(optionobj)
-        print(f'selling {optionobj} for {optionobj.get_value():.2f}')
+        print(f'selling {optionobj} for {optionobj.get_value(True):.2f}')
         print('cash is',self.cash)
 
     def get_Networth(self):

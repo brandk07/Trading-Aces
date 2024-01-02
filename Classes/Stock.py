@@ -11,8 +11,8 @@ import json
 POINTSPERGRAPH = 200
 
 class Stock():
-    def __init__(self,name,startingvalue_range,volatility,Playerclass,window_offset,stocknames) -> None:
-        
+    def __init__(self,name,startingvalue_range,volatility,Playerclass,window_offset,stocknames,color) -> None:
+        self.color = color
         self.winset = window_offset
         self.startpos,self.endpos = (0,0),(0,0)
         self.Playerclass = Playerclass

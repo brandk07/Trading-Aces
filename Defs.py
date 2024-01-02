@@ -224,13 +224,14 @@ def point_in_triangle(point, triangle):
     return 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
 
 def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurface=None, renderedtext=None):
-        """Draws the pie chart for the portfolio menu. value is (value, name)"""
+        """Draws the pie chart for the portfolio menu. value is (value, name, color)"""
+        # the polygons are blit to this, then the backsurface is blit, then the backsurface is turned transparent and wholesurf is blit to the screen
+        wholesurf = pygame.Surface((radius*2,radius*2))
 
-        # get the total value of the stocks
-        total = sum([v[0] for v in values])
-        percentages = [[round((value[0]) / total,4)*100,value[1]] for value in values]
+        total = sum([v[0] for v in values])# get the total value of the stocks
+        percentages = [[round((value[0]) / total,4)*100,value[1],value[2]] for value in values]
 
-        other = [0,'Other']
+        other = [0,'Other',(255,255,0)]
 
         for i in range(len(percentages)-1,-1,-1):
             if percentages[i][0] < 5:# if the percentage is less than 5%, then add it to the ""other"" category
@@ -240,23 +241,21 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
         if other[0] > 0:# if there is an other category, then add it to the list
             percentages.append(other)
         percentages.sort(key=lambda x:x[0],reverse=True)
-
         percentindex = math.radians(0)
-
+        
         angles = []
         for i,percent in enumerate(percentages):# loop through the percentages and get the angles
             angles.append([math.radians(percentindex)])# the first angle is the previous angle
             percentindex += (percent[0]/100)*360
             angles[i].append(math.radians(percentindex))# the second angle is the current angle
-            angles[i].append(percent[1])
+            angles[i].append(percent[1])# the name
+            angles[i].append(percent[2])# the color
 
         corners = [coords, (coords[0] + radius*2, coords[1]), (coords[0] + radius*2, coords[1] + radius*2), (coords[0], coords[1] + radius*2)]
         
         points = []
 
-        colors = [(0, 102, 204),  (255, 0, 0),   (0, 128, 0),    (255, 165, 0),  (255, 215, 0),  (218, 112, 214),(46, 139, 87),  (255, 69, 0),   (0, 191, 255), (128, 0, 128)]
-
-        for colornum, (a1, a2,name) in enumerate(angles):# loop through the angles
+        for colornum, (a1, a2,name,color) in enumerate(angles):# loop through the angles
             p0 = (coords[0] + radius, coords[1]+radius)
             p1 = (coords[0] + radius + radius * math.cos(a1), radius + coords[1] + (radius * math.sin(a1) * -1))# the first point on the circle
             p2 = (coords[0] + radius + radius * math.cos(a2), radius + coords[1] + (radius * math.sin(a2) * -1))# the second point on the circle - drawn after the corner points
@@ -289,7 +288,7 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
             for degree in addedcorners:
                 points.insert(-2,dto_corner(degree))
             # draw the polygon
-            pygame.draw.polygon(screen, colors[colornum], points)            
+            pygame.draw.polygon(wholesurf, color, [(x[0]-coords[0],x[1]-coords[1]) for x in points])            
 
         if backsurface == None:  # if the backsurface is not none, then draw the circle on the backsurface
             backsurface = pygame.Surface((radius * 2 + 10, radius * 2 + 10))
@@ -297,11 +296,12 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
             pygame.draw.circle(backsurface, (255, 255, 255), (radius, radius), radius)
             backsurface.set_colorkey((255, 255, 255))
 
-        screen.blit(backsurface, coords)  # blit the backsurface to the screen
-
+        wholesurf.blit(backsurface, (0,0))  # blit the backsurface to the screen
+        wholesurf.set_colorkey((40,40,40))
+        screen.blit(wholesurf, coords)
         starpos = coords[1]+(((((radius*2))-(len(angles)*30))//2))
         #  drawing the boxes displaying the colors next to the names
-        for i, (a1, a2, name) in enumerate(angles):
+        for i, (a1, a2, name,color) in enumerate(angles):
             c = corners[1]
             cx = c[0]
             cy = starpos
@@ -309,11 +309,11 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
             box_y = cy + (i * 30)
             box_width = 15
             box_height = 15
-            gfxdraw.filled_polygon(screen, [(box_x, box_y), (box_x + box_width, box_y), (box_x + box_width, box_y + box_height), (box_x, box_y + box_height)], colors[i])
-       
+            gfxdraw.filled_polygon(screen, [(box_x, box_y), (box_x + box_width, box_y), (box_x + box_width, box_y + box_height), (box_x, box_y + box_height)], color)
+
         # rendering and blitting the text
-        if renderedtext == None or len(renderedtext) != len(angles)+1 or [name for (*_, name) in (angles)] != [name for (_, name) in (renderedtext)] or renderedtext[-1][1] != f'${total:,.2f}':
-            renderedtext = [[fontlist[35].render(f'{name}' if type(name) == str else{f'{name:,.2f}'}, (255, 255, 255))[0],name] for (*_, name) in (angles)]
+        if renderedtext == None or len(renderedtext) != len(angles)+1 or [name for (*_, name, color) in (angles)] != [name for (*_, name,color) in (renderedtext)] or renderedtext[-1][1] != f'${total:,.2f}':
+            renderedtext = [[fontlist[35].render(f'{name}' if type(name) == str else{f'{name:,.2f}'}, (255,255,255))[0],name] for (*_, name,color) in (angles)]
         for i,text in enumerate(renderedtext):
             text_x = cx + 30
             text_y = starpos -5 + (i * 30)

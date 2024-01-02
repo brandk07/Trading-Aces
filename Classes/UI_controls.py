@@ -12,7 +12,7 @@ class UI_Controls():
     def __init__(self,windowoffset:list,stocklist) -> None:
         self.gameplay_speed = 0
         self.stockevent = StockEvents()# the stock events
-        self.bar = SliderBar(windowoffset,100,[(255,0,0),(110,110,110)])# the bar for the gameplay speed
+        self.bar = SliderBar(windowoffset,100,[(20,50,200),(110,110,110)])# the bar for the gameplay speed
         self.newsobj = News()
         for i in range(10):
             for stock in stocklist:
@@ -29,10 +29,11 @@ class UI_Controls():
         self.percentchanges = self.get_listpercents(stocklist)
         self.totalperecent = lambda xlist : sum([self.get_percent(stock) for stock in xlist])
         # for pie chart
-        radius = 175; backsurface = pygame.Surface((radius * 2 + 10, radius * 2 + 10))
+        radius = 160; backsurface = pygame.Surface((radius * 2 + 10, radius * 2 + 10))
         backsurface.fill((50, 50, 50)); pygame.draw.circle(backsurface, (255, 255, 255), (radius, radius), radius)
         backsurface.set_colorkey((255, 255, 255))
         self.renderedpietexts = None;  self.renderedback = backsurface
+        self.stockbarsurf = pygame.Surface((1200,80))
         
     def drawIcon(self, screen: pygame.Surface,mousebuttons) -> bool:
         """Draws the home/stock icon in the top left corner, returns True if the icon is clicked"""
@@ -80,27 +81,35 @@ class UI_Controls():
 
 
 
-    def draw_stockbar(self,screen:pygame.Surface,stocklist:list):
+    def draw_stockbar(self,screen:pygame.Surface,stocklist:list,coords:list=[250,710],wh=[1200,80]):
+        """Draws a bar that scrolls across the screen, displaying the stock prices, maxwidth is 1710"""
+        dx,dy = coords
+        if wh[1] > 1710: wh[1] = 1710
+        if self.stockbarsurf.get_width() != wh[0] or self.stockbarsurf.get_height() != wh[1]:
+            self.stockbarsurf = pygame.Surface(wh)
+        
         self.graphscroll += 1*(self.gameplay_speed/self.bar.maxvalue)+1# the speed of the stock graph 
         self.percentchanges = self.get_listpercents(stocklist)
         if self.graphscroll > len(stocklist)*190: self.graphscroll = 0
         for i,stock in enumerate(stocklist):# draws the stock graph bar
-            x = int(250-self.graphscroll+(i*190))
-            if x < 250-120:
+            x = int(0-self.graphscroll+(i*190))
+            if x < -120:
                 x += len(stocklist)*190
-            if x < 1450+100:# if the stock is on the screen
+            if x < wh[0]+100:# if the stock is on the screen
                 
                 color = (0,200,0) if self.percentchanges[i] >= 0 else (200,0,0)
 
-                stocklist[i].baredraw(screen,(x+100,710),(x,710+80),'hour')# draws the graph
-                screen.blit(self.namerenders[i][0 if self.percentchanges[i] <= 0 else 1],(x-70,710+10))# draws the name of the stock
+                stocklist[i].baredraw(self.stockbarsurf,(x+100,0),(x,wh[1]),'hour')# draws the graph
+                self.stockbarsurf.blit(self.namerenders[i][0 if self.percentchanges[i] <= 0 else 1],(x-70,10))# draws the name of the stock
                 ptext = fontlist[28].render(limit_digits(stock.price,9),color)[0]# renders the price of the stock
-                screen.blit(ptext,(x-42-(ptext.get_width()/2),710+50))# draws the price of the stock
+                self.stockbarsurf.blit(ptext,(x-42-(ptext.get_width()/2),50))# draws the price of the stock
 
-        gfxdraw.filled_polygon(screen,[(50,710),(50,790),(250,790),(250,710)],(50,50,50))# cover up the left side of the stock graph bar
-        gfxdraw.filled_polygon(screen,[(1650,710),(1650,790),(1450,790),(1450,710)],(50,50,50)) # cover up the right side of the stock graph bar
-        # draw an outline for the stock  bar graph
-        pygame.draw.rect(screen,(0,0,0),pygame.Rect(250,710,1200,80),5)
+        pygame.draw.rect(self.stockbarsurf,(0,0,0),pygame.Rect(0,0,wh[0],wh[1]),5)# draws the outline of the stock graph bar
+        screen.blit(self.stockbarsurf,(dx,dy))# draw the stock graph bar to the screen
+        self.stockbarsurf.fill((30,30,30))# fill the stock graph bar with a dark grey color
+        
+        
+
 
     def draw_time(self,screen:pygame.Surface,gametime):
         # draws the time at the top of the screen
@@ -146,9 +155,14 @@ class UI_Controls():
 
         values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
         names = set([stock[0].name for stock in player.stocks])
-        values = [[sum([v[0] for v in values if v[1] == name]), name] for name in names]
-        values.append([player.cash, "Cash"])
-        _,self.renderedpietexts = draw_pie_chart(screen, values, 175, (1460, 160),self.renderedback,self.renderedpietexts)
+
+        values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
+        values.append([player.cash, "Cash",player.color])
+
+        # add the player.options to the values
+        for option in player.options:
+            values.append([option.get_value(),option.name,option.color])
+        _,self.renderedpietexts = draw_pie_chart(screen, values, 160, (1450, 160),self.renderedback,self.renderedpietexts)
 
     def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist):
         if self.drawIcon(screen,mousebuttons):
@@ -166,5 +180,7 @@ class UI_Controls():
             elif self.view == "stock":
                 stockgraphmanager.draw_graphs(screen,stocklist,player,mousebuttons)
                 # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
-                self.gameplay_speed = self.bar.draw_bar(screen,[1620,650],[120,380],'vertical')
+                self.gameplay_speed = self.bar.draw_bar(screen,[1620,575],[125,400],'vertical')
+
+
 
