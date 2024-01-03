@@ -221,18 +221,17 @@ class Stock():
 
     def baredraw(self,screen,startpos,endpos,graphrange):
         """Draws only the graph of the stock - uses the graphrange,startpos, and endpos parameter, not self.graphrange,self.startpos, and self.endpos"""
-        if startpos != self.startpos or endpos != self.endpos:#if the starting or ending positions have changed
-            self.startpos = (startpos[0] - self.winset[0], startpos[1] - self.winset[1])
-            self.endpos = (endpos[0] - self.winset[0], endpos[1] - self.winset[1])
+        startpos = (int(startpos[0] - self.winset[0]), int(startpos[1] - self.winset[1]))
+        endpos = (int(endpos[0] - self.winset[0]), int(endpos[1] - self.winset[1]))
         
         if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
             percentchange = round(((self.graphrangelists[graphrange][-1]/self.graphrangelists[graphrange][0])-1)*100,2)
             color = (0,55,0) if percentchange >= 0 else (55,0,0)
-            gfxdraw.filled_polygon(screen, [(self.endpos[0], self.startpos[1]), self.endpos, (self.startpos[0], self.endpos[1]), self.startpos],color)  # draws the perimeter around graphed values
-            gfxdraw.filled_polygon(screen,[(self.endpos[0],self.startpos[1]),(self.endpos[0],self.endpos[1]),(self.startpos[0],self.endpos[1]),(self.startpos[0],self.startpos[1])],(15,15,15))#draws the background of the graph
+            gfxdraw.filled_polygon(screen, [(endpos[0], startpos[1]), endpos, (startpos[0], endpos[1]), startpos],color)  # draws the perimeter around graphed values
+            gfxdraw.filled_polygon(screen,[(endpos[0],startpos[1]),(endpos[0],endpos[1]),(startpos[0],endpos[1]),(startpos[0],startpos[1])],(15,15,15))#draws the background of the graph
 
-        graphheight = ((self.endpos[1]-self.startpos[1])//2)
-        graphwidth = (self.startpos[0]-self.endpos[0])
+        graphheight = ((endpos[1]-startpos[1])//2)
+        graphwidth = (startpos[0]-endpos[0])
         graphingpoints = self.graphrangelists[graphrange]
         minpoint = (np.amin(self.graphrangelists[graphrange]))
         maxpoint = (np.amax(self.graphrangelists[graphrange]))        
@@ -240,13 +239,10 @@ class Stock():
         if minpoint != maxpoint:#prevents divide by zero error
             yScale = graphheight/(maxpoint-minpoint)#the amount of pixels per point with the y axis
 
-            yOffset = (self.startpos[1]+graphheight)-10# slides the graph up on the screen to fit
+            yOffset = (startpos[1]+graphheight)-10# slides the graph up on the screen to fit
 
             graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * yScale)) + yOffset# Doing the math to make the points fit on the graph 
-        # if len(self.graphrangelists[graphrange]) > 0 and len(self.graphrangelists[graphrange]) < graphwidth:#if there are points in the graph and the graph is not too small
-        #     spacing = graphwidth/len(self.graphrangelists[graphrange])#the spacing between each point
-        # else:
-        #     spacing = 1
+
         spacing = graphwidth/len(self.graphrangelists[graphrange])#the spacing between each point
 
         graphpointlen = len(graphingpoints)# doing this before the iteration to save time
@@ -255,9 +251,9 @@ class Stock():
                 pass#if last one in list or i is too great then don't draw line
             else:
                 nextvalue = graphingpoints[i+1]
-                xpos = self.endpos[0]
+                xpos = endpos[0]
                 gfxdraw.line(screen,xpos+int(i*spacing),int(value),xpos+int((i+1)*spacing),int(nextvalue),(255,255,255))
-        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(self.endpos[0], self.startpos[1], (self.startpos[0] - self.endpos[0]),(self.endpos[1] - self.startpos[1])), 5)
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(endpos[0], startpos[1], (startpos[0] - endpos[0]),(endpos[1] - startpos[1])), 5)
 
     def draw(self,screen:pygame.Surface,player:object,startpos,endpos,stocklist,Mousebuttons,rangecontrols=True):
         """Draws the graph of the stock along with the range controls, price lines, and the name"""

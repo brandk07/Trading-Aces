@@ -91,15 +91,11 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         polycolor = (30, 30, 30) if not hover else (80, 80, 80)
         # polycolor = (60, 60, 60) if selected_value == ioffset else polycolor
 
-        # ----------draw the polygons----------
-        # gfxdraw.filled_polygon(screen, points, polycolor)  # draws the first polygon with the name of the stock
-        # gfxdraw.filled_polygon(screen, points2, (polycolor))  # draws the second polygon with the price of the stock
-        # gfxdraw.filled_polygon(screen, points3, (polycolor))  # draws the third polygon with the profit of the stock
-
         # ----------Draw the text----------
         screen.blit(allrenders[i][texts[0]], (points[0][0] + 20, points[0][1] + 35))  # display name of stock
-        screen.blit(allrenders[i][texts[1]], (points[0][0] + 30 + twidth, points[0][1] + 10))# display bought price of stock
         screen.blit(allrenders[i][texts[2]], (points[0][0] + 45 + twidth, points[0][1] + 65))# display current price of stock
+
+        screen.blit(allrenders[i][texts[1]], (points[0][0] + 30 + twidth, points[0][1] + 10))# display bought price of stock
         screen.blit(allrenders[i][texts[3]], (points[0][0] + 30 + twidth + twidth2, points[0][1] + 10))# display profit of stock
         screen.blit(allrenders[i][texts[4]], (points[0][0] + 45 + twidth + twidth2, points[0][1] + 65))# display percent change of stock
         

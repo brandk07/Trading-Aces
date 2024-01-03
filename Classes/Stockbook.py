@@ -1,5 +1,5 @@
 import pygame
-from Defs import fontlist,point_in_polygon,limit_digits
+from Defs import *
 from pygame import gfxdraw
 from Classes.imports.Menu import Menu
 import numpy as np
@@ -113,6 +113,7 @@ class Stockbook(Menu):
             if (hover:=point_in_polygon((mousex,mousey),points)):#if the mouse is hovering over the stock name
                 if mousebuttons == 1:#if the mouse is hovering over the stock
                     self.selectedstock = i
+                    soundEffects['clickbutton2'].play()
                     self.quantity = 0
 
             change = stock.price - stock.graphrangelists[stock.graphrange][0]
