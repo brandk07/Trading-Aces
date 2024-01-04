@@ -116,7 +116,13 @@ if __name__ == "__main__":
 
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 musicdata = [pygame.mixer.music.get_pos()/1000+musicdata[0],pygame.mixer.music.get_volume(),musicdata[2]]
-                data = [str(gametime),[[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks],player.graphrange,int(player.cash),musicdata]
+                
+                stockdata = [[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks]
+                optiondata = [[option.stockobj.name,option.strike_price,option.expiration_date,option.option_type,option.ogvalue] for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
+                for option in optiondata:
+                    print(type(option))
+
+                data = [str(gametime),stockdata,optiondata,player.graphrange,int(player.cash),musicdata]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)

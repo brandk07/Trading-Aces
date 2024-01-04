@@ -44,7 +44,6 @@ class Optiontrade(Menu):
         self.selected_option = None
         self.view = "Owned"# Owned or Available or Custom
         self.selected_avalaible = None
-        self.leverageBar = SliderBar(self.winset, 100, [(0, 120, 0), (110, 110, 110)],minvalue=1); self.leverageBar.value = 1
         self.refreshOptions(stocklist)
 
     
@@ -93,7 +92,7 @@ class Optiontrade(Menu):
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
             # Draws the information about the option on the right side of the screen
-            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.self_volatility()*100,15)}%',f'Leverage: {option.leverage}']
+            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.self_volatility()*100,15)}%']
             for i,txt in enumerate(info):
                 screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),280+(i*50)))
 
@@ -139,7 +138,7 @@ class Optiontrade(Menu):
         percents = []; alltexts = []
         for i, option in enumerate(player.options[self.barowned.value:self.barowned.value+5]):
             if option.ogvalue == 0: percentchange = 0
-            else:percentchange = ((option.get_value() - (option.ogvalue*option.leverage)) / (option.ogvalue*option.leverage)) * 100
+            else:percentchange = option.percent_change()
             
             if percentchange > 0:
                 grcolor = (0, 200, 0); profittext = "Profit"
@@ -154,9 +153,9 @@ class Optiontrade(Menu):
             inputs = option.get_inputs()# [type,stock price,strike price,expiration date,volatility,risk free rate]
 
             texts = [f'{option.stockobj.name} {inputs[0]}',
-                     f'Initial: ${limit_digits(option.ogvalue*option.leverage,15)}',
+                     f'Initial: ${limit_digits(option.ogvalue,15)}',
                      f'Current: ${limit_digits(option.get_value(),15)}',
-                     f'{profittext}: ${limit_digits((option.get_value() - (option.ogvalue*option.leverage)),15)}',
+                     f'{profittext}: ${limit_digits((option.get_value() - (option.ogvalue)),15)}',
                      f'Change %: {limit_digits(percentchange,15)}%'
                     ]
             self.allrenders = reuserenders(self.allrenders, texts, textinfo, i)
@@ -167,11 +166,11 @@ class Optiontrade(Menu):
         self.calloptions = []; self.putoptions = []
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
-            strikeprice = random.randint(math.floor(stock.price*0.95),math.ceil(stock.price*1.2))
+            strikeprice = random.randint(math.floor(stock.price*0.95)*100,math.ceil(stock.price*1.2)*100)/100
             self.putoptions.append(StockOption(stock,strikeprice,random.randint(3,25),'put'))
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
-            strikeprice = random.randint(math.floor(stock.price*0.9),math.ceil(stock.price*1.1))
+            strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
             self.calloptions.append(StockOption(stock,strikeprice,random.randint(3,25),'call'))
             
     def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player):
@@ -199,13 +198,6 @@ class Optiontrade(Menu):
             gfxdraw.filled_polygon(screen, points, (15, 15, 15))
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
-            
-            # draws the leverage bar below the option info
-            text = fontlist[45].render(f'Leverage Customization', (190, 190, 190))[0]
-            screen.blit(text, (1150, 550))
-            
-            leverage = self.leverageBar.draw_bar(screen, [1110, 600], [350, 50], 'horizontal', barwh=[20, 50], reversedscroll=True)
-
             # Draws the information about the option on the right side of the screen
             info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.self_volatility()*100,15)}%']
             for i,txt in enumerate(info):
@@ -215,15 +207,15 @@ class Optiontrade(Menu):
             if point_in_polygon((mousex,mousey),[(1110,805),(1125,875),(1465,875),(1450,805)]):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
-                    if player.cash > (option.get_value(True)*leverage):
-                        player.buyOption(option.get_copy(leverage))
+                    if player.cash > (option.get_value(True)):
+                        player.buyOption(option)
             else:
                 sellcolor = (225,225,225)
             # gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total value button
             # pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total value button polygon
 
             value = option.get_value()
-            text = fontlist[45].render(f'Cost: ${limit_digits(value*leverage,15)}', (190, 190, 190))[0]
+            text = fontlist[45].render(f'Cost: ${limit_digits(value,15)}', (190, 190, 190))[0]
             gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total cost button
             pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total cost button polygon
             

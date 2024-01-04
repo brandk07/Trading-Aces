@@ -21,7 +21,8 @@ class UI_Controls():
         # self.view = "stock"# homeview or stockview
         self.view = "stock"# homeview or stock
         self.graphscroll = 0
-        self.namerenders = [[fontlist[30].render(stock.name,(200,0,0))[0],fontlist[30].render(stock.name,(0,200,0))[0]] for stock in stocklist]# [red,green]
+        self.namerenders = [fontlist[30].render(stock.name,stock.color)[0] for stock in stocklist]# [red,green]
+        # self.namerenders = [[fontlist[30].render(stock.name,(200,0,0))[0],fontlist[30].render(stock.name,(0,200,0))[0]] for stock in stocklist]# [red,green]
 
         # get 
         self.get_percent = lambda stock : round(((stock.graphrangelists[stock.graphrange][-1]/stock.graphrangelists[stock.graphrange][0])-1)*100,2)
@@ -100,7 +101,7 @@ class UI_Controls():
                 color = (0,200,0) if self.percentchanges[i] >= 0 else (200,0,0)
 
                 stocklist[i].baredraw(self.stockbarsurf,(x+100,0),(x,wh[1]),'hour')# draws the graph
-                self.stockbarsurf.blit(self.namerenders[i][0 if self.percentchanges[i] <= 0 else 1],(x-70,10))# draws the name of the stock
+                self.stockbarsurf.blit(self.namerenders[i],(x-70,10))# draws the name of the stock
                 ptext = fontlist[28].render(limit_digits(stock.price,9),color)[0]# renders the price of the stock
                 self.stockbarsurf.blit(ptext,(x-42-(ptext.get_width()/2),50))# draws the price of the stock
 

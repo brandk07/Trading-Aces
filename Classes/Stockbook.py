@@ -3,7 +3,7 @@ from Defs import *
 from pygame import gfxdraw
 from Classes.imports.Menu import Menu
 import numpy as np
-
+from Classes.imports.Bar import SliderBar
 def quantityControls(screen, mousebuttons:int, maxpurchase, quantity, coords):
     """This function is called for the buy and sell controls in the stockbook menu"""
     mousex, mousey = pygame.mouse.get_pos()
@@ -88,6 +88,7 @@ class Stockbook(Menu):
         self.selectedstock = 0
         self.menudrawn = False
         self.purchasetext = [fontlist[65].render(f'PURCHASE', color)[0] for color in [(0,150,0),(225,225,225)]]
+        self.quantitybar = SliderBar((0,0),50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         with open(r'Assets\stockdescriptions.txt','r') as descriptions:
 
             filecontents = descriptions.readlines()
@@ -174,7 +175,10 @@ class Stockbook(Menu):
         self.draw_descriptions(screen,stocklist,player,mousebuttons)
         # self.quantitycontrols(screen,mousebuttons,player,stocklist)
         stock = stocklist[self.selectedstock]
-        self.quantity = quantityControls(screen,mousebuttons,int(player.cash/stock.price),self.quantity,(1105,110))
+        # self.quantity = quantityControls(screen,mousebuttons,int(player.cash/stock.price),self.quantity,(1105,110))
+        self.quantitybar.changemaxvalue(int(player.cash/stock.price))
+        self.quantitybar.draw_bar(screen,[1110,140],[340,45],orientation='horizontal',reversedscroll=True)
+        self.quantity = self.quantitybar.value
         self.draw_costpurchase(screen,mousebuttons,player,stocklist)
 
     

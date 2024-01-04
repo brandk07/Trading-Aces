@@ -6,6 +6,7 @@ import math
 import json
 import random
 import os
+from Classes.imports.StockOption import StockOption
 pygame.font.init()
 pygame.mixer.init()
 pygame.init()
@@ -171,14 +172,15 @@ def Getfromfile(stockdict:dict,player):
         data = json.load(file)
         print(data)
         if data:
-            player.stocks = [[stockdict[stock[0]],stock[1],stock[2],] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
-            player.graphrange = data[2]
-            player.cash = data[3] if data[3] != 0 else 2500
-            musicdata = (data[4])
+            player.stocks = [[stockdict[stock[0]],stock[1],stock[2]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
+            player.options = [StockOption(stockdict[option[0]],option[1],option[2],option[3],ogprice=option[4]) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
+            player.graphrange = data[3]
+            player.cash = data[4] if data[4] != 0 else 2500
+            musicdata = (data[5])
             for i,stockobj in enumerate(stockdict.values()):
-                stockobj.graphrange = data[i+5]
+                stockobj.graphrange = data[i+6]
             return musicdata
-        return [0,1,0]# time, volume, songindex
+        return [0,0,0]# time, volume, songindex
 
 def Writetofile(stocklist,player,data):
     for stock in stocklist:

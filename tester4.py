@@ -1,9 +1,10 @@
-import pygame
+# import pygame
 
-pygame.mixer.init()
-pygame.mixer.music.load("Assets\Sounds\Timo Versemann - Shalom Chaverim.mp3")
-pygame.mixer.music.play()
+# pygame.mixer.init()
+# pygame.mixer.music.load("Assets\Sounds\Timo Versemann - Shalom Chaverim.mp3")
+# pygame.mixer.music.play()
 
-while pygame.mixer.music.get_busy():
-    pygame.time.Clock().tick(10)
-    print('playing')
+# while pygame.mixer.music.get_busy():
+#     pygame.time.Clock().tick(10)
+#     print('playing')
+print(round(16.5161,0))

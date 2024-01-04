@@ -14,7 +14,7 @@ class Player(Stock):
         super().__init__(name,(2500,2500),0,Player,window_offset,stocknames,color)
         self.name = name
         self.window_offset = window_offset
-        self.cash = 2500
+        self.cash = 25000
         self.stocks = []# list of lists containing the stock object, the price bought at, and the quantity
         # self.pricepoints = np.array([[self.cash]],dtype=object)
         self.options = []#list of option objects
@@ -52,8 +52,9 @@ class Player(Stock):
             print('/'*20)
 
     def sell(self,obj,ogprice,quantity:int=1):
+        
+        stockindex = [(stock[0],stock[1]) for stock in self.stocks].index((obj,ogprice))# finds the index of the stock in the self.stocks list
 
-        stockindex = [(stock[0],stock[1]) for stock in self.stocks].index((obj,ogprice))
         if quantity > (quant:=self.stocks[stockindex][2]):
             quantity = quant
         
@@ -74,15 +75,9 @@ class Player(Stock):
         if self.cash >= optionobj.get_value(bypass=True):
 
             self.cash -= optionobj.get_value(True)
-            inoptions = False
-            for option in self.options:
-                inoptions = option.combine(optionobj)
-                if inoptions:break
 
-            if not inoptions:
-                self.options.append(optionobj)
-                optionobj.color = self.optioncolors[len(self.options)-1 if len(self.options)-1 < len(self.optioncolors) else randint(0,len(self.optioncolors)-1)]
-                print(optionobj.color)
+            self.options.append(optionobj)
+            optionobj.color = self.optioncolors[len(self.options)-1 if len(self.options)-1 < len(self.optioncolors) else randint(0,len(self.optioncolors)-1)]
 
             print(f'buying {optionobj} for {optionobj.get_value(True):.2f}')
             print('cash is',self.cash)

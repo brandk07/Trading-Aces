@@ -8,7 +8,7 @@ from Classes.Stockbook import quantityControls
 import math
 
 DX = 300# default x
-DY = 200# default y
+DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
     def __init__(self):
@@ -18,14 +18,17 @@ class Portfolio(Menu):
         self.icon.set_colorkey((255,255,255))
         super().__init__(self.icon)
         # remove all the white from the image
-        self.bar = SliderBar((0,0),50,[(0,120,0),(110,110,110)])
+        self.bar = SliderBar((0,0),50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         self.bar.value = 0
+        self.quantitybar = SliderBar((0,0),50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
+
         
-        self.portfoliotext = fontlist[65].render('Portfolio',(220,220,220))[0]
+        self.portfoliotext = fontlist[65].render('Owned Shares',(220,220,220))[0]
+        self.showingtext = fontlist[45].render('Showing ',(220,220,220))[0]
         self.menudrawn = False
         self.renderedpietexts = None; self.renderedback = None
         self.allrenders = []
-        self.selected_stock = None; self.quantity = 0
+        self.selected_stock = None
 
         self.latterScrollsurf = pygame.Surface((730,730))
         
@@ -45,8 +48,9 @@ class Portfolio(Menu):
            
             gfxdraw.filled_polygon(screen, [(1030, 425), (1505, 425), (1565, 925), (1085, 925)], (30, 30, 30))
             pygame.draw.polygon(screen, (0, 0, 0), [(1030, 425), (1505, 425), (1565, 925), (1085, 925)], 6)
-            self.quantity = quantityControls(screen,mousebuttons,stock[2],self.quantity,(1100,610))
-            
+            # self.quantity = quantityControls(screen,mousebuttons,stock[2],self.quantity,(1100,610))
+            self.quantitybar.changemaxvalue(stock[2])
+            self.quantitybar.draw_bar(screen,[1100,700],[300,35],'horizontal',reversedscroll=True)
             # draw the stock name
             text = fontlist[50].render(f'{stock[0]} X {limit_digits(stock[2],10,False)}', (190, 190, 190))[0]
             screen.blit(text, (1040, 435))# display the stock name
@@ -55,33 +59,31 @@ class Portfolio(Menu):
             if point_in_polygon((mousex,mousey),[(1110,805),(1125,875),(1465,875),(1450,805)]):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
-                    if self.quantity >= stock[2]:
-                        player.sell(stock[0],stock[1],int(self.quantity))
-                        self.selected_stock = None
-                    else:
-                        player.sell(stock[0],stock[1],int(self.quantity))
-                    self.quantity = 0
+                    player.sell(stock[0],stock[1],int(self.quantitybar.value))
+                    self.selected_stock = None
+                    self.quantitybar.value = 0
             else:
                 sellcolor = (225,225,225)
 
-            # Draws the information about the stock on the right side of the screen
-            info = [f'Paid Price: ${limit_digits(stock[1]*stock[2],15)}',f'Profit: ${limit_digits((stock[0].price - stock[1])*stock[2],15)}',f'Change %: {limit_digits(((stock[0].price - stock[1]) / stock[1]) * 100,15)}%']
+            # Draws the information about the stock on the right side of the screen 
+            info = [f'Paid Price: ${limit_digits(stock[1]*stock[2],15)}',f'{"Profit" if (stock[0].price - stock[1])*stock[2] > 0 else "Loss"}: ${limit_digits((stock[0].price - stock[1])*stock[2],15)}',f'Change %: {limit_digits(((stock[0].price - stock[1]) / stock[1]) * 100,15)}%']
             for i,txt in enumerate(info):
                 screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),490+(i*50)))
 
             # total value of the stocks above the sell button
-            value = stock[0].price * self.quantity
-            text = fontlist[45].render(f'Value: ${limit_digits(value,15)}', (190, 190, 190))[0]
-            gfxdraw.filled_polygon(screen,((1110,705),(1125,775),(1465,775),(1450,705)),(15,15,15))#polygon for the total value button
-            pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total value button polygon
-            
-            
-            screen.blit(text, (1130, 725))
+            value = stock[0].price * self.quantitybar.value
+            valuetext = fontlist[45].render(f'Value: ${limit_digits(value,15)}', (190, 190, 190))[0]
+            points = [(1100, 745), (1115, 815), (1455, 815), (1440, 745)]
+            gfxdraw.filled_polygon(screen, points, (15,15,15))
+            pygame.draw.polygon(screen, (0, 0, 0), points, 5)
+            screen.blit(valuetext, (1115, 765))
+
             # sell button
-            gfxdraw.filled_polygon(screen,((1110,805),(1125,875),(1465,875),(1450,805)),(15,15,15))#polygon for the sell button
-            pygame.draw.polygon(screen, (0,0,0), ((1110,805),(1125,875),(1465,875),(1450,805)),5)#outline sell button polygon
+            points = [(1110, 840), (1125, 910), (1465, 910), (1450, 840)]
+            gfxdraw.filled_polygon(screen, points, (15,15,15))
+            pygame.draw.polygon(screen, (0, 0, 0), points, 5)
             sell_text, _ = fontlist[65].render(f'SELL', sellcolor)
-            sell_text_rect = sell_text.get_rect(center=(1280, 840))
+            sell_text_rect = sell_text.get_rect(center=(1280, 875))
             screen.blit(sell_text, sell_text_rect)
             
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player):
@@ -100,20 +102,27 @@ class Portfolio(Menu):
         self.bar.scroll(mousebuttons)# check for the scroll of the bar
         self.bar.changemaxvalue(len(player.stocks)-5 if len(player.stocks) > 5 else 1)# change the max value of the bar based on the amount of stocks the player has
 
-        barheight = 520//(len(player.stocks)-5) if len(player.stocks) > 5 else 520
         
-        self.bar.draw_bar(screen, [225, DY], [20, DY + (yshift*4) - 80], 'vertical', barwh=[43, barheight], shift=85, reversedscroll=True, text=False)
+        self.bar.draw_bar(screen, [225, DY], [35, int(DY + (yshift*3.25) - 50)], 'vertical', barwh=[33, 65], shift=85, reversedscroll=True, text=False)
         
         screen.blit(self.portfoliotext,(220,120))# display the portfolio text
 
         self.drawSelectedStock(screen, self.selected_stock, mousebuttons, player)# draws the additional stock info
 
+        screen.blit(self.showingtext,(300,190))# display the showing text
+        shownnumtext = fontlist[45].render(f'{self.bar.value+1} - {self.bar.value+5 if self.bar.value+5 < len(player.stocks) else len(player.stocks)} of {len(player.stocks)}', (190, 190, 190))[0]
+        screen.blit(shownnumtext, (self.showingtext.get_width()+300, 190))
+        
         x,y = DX,DY
         drawnstocks = 0
-        # NEED TO FIGURE OUT IF LESS THAN DISPLAYED STOCKS AS WELL
-        if self.bar.value > sortedstocks.index(self.selected_stock):
-            self.selected_stock = sortedstocks[self.bar.value]
-        while y < 920 and self.bar.value+drawnstocks < len(player.stocks)-1:
+
+        if self.selected_stock != None:
+            if self.bar.value > sortedstocks.index(self.selected_stock) and self.bar.value < len(sortedstocks):# if the selected stock is above what is displayed
+                self.selected_stock = sortedstocks[self.bar.value]# select the highest stock being displayed
+            elif self.bar.value+4 < sortedstocks.index(self.selected_stock) and self.bar.value+4 < len(sortedstocks):# if the selected stock is below what is displayed
+                self.selected_stock = sortedstocks[self.bar.value+4]# select the lowest stock being displayed
+
+        while y < 830 and self.bar.value+drawnstocks < len(player.stocks):
             stock = sortedstocks[self.bar.value+drawnstocks]
 
             percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100
@@ -123,26 +132,19 @@ class Portfolio(Menu):
             nametext = fontlist[50].render(f'{stock[0]} ', stock[0].color)[0]
             sharetext = fontlist[35].render(f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}", (190, 190, 190))[0]
             pricetext = fontlist[45].render(f'${limit_digits(stock[0].price*stock[2],15)}', (190, 190, 190))[0]
-            width = nametext.get_width() + pricetext.get_width() + 180
+            addedx = 0 if sharetext.get_width() < 85 else round(sharetext.get_width()-85,-1)
+            width = nametext.get_width() + pricetext.get_width() + 180 + addedx 
 
             points = [(x, y), (x + 15, y + height), (x + 25 + width, y + height), (x + 10 + width, y)]
             gfxdraw.filled_polygon(screen, points, (15, 15, 15))
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
-
-            # draw a polygon around the pricetext\
-            # ph = pricetext.get_height()
-            # nw = nametext.get_width()
-            # pw = pricetext.get_width()
-            # namepolypoints = [(x + nw + 85, y + 15), (x + pw + nw + 110, y + 15), (x + pw + nw + 120, y + ph + 35), (x + nw + 95, y + ph + 35)]
-            
-            # gfxdraw.filled_polygon(screen, namepolypoints, (30, 30, 30))
-            # pygame.draw.polygon(screen, (0, 0, 0), namepolypoints, 5)
             
             screen.blit(nametext, (x+20, y+15))
             screen.blit(sharetext, (x+25, y+60))
-            stock[0].baredraw(screen, (x+230, y), (x+120, y+height-7), 'hour')
             
-            screen.blit(pricetext, (x+250, y+30))
+            stock[0].baredraw(screen, (x+230+addedx, y), (x+120+addedx, y+height-7), 'hour')
+            
+            screen.blit(pricetext, (x+250+addedx, y+30))
 
             if (hover:=point_in_polygon((mousex,mousey),points)):
                 if mousebuttons == 1:

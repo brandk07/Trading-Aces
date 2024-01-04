@@ -14,21 +14,33 @@ def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizo
             mouselength = int(((mousey-(barwh/2))-xy)/seclength)
         mouselength = maxspeed if mouselength > maxspeed else mouselength
         mouselength = 0 if mouselength < 0 else mouselength
-        # mouselength = mouselength if horizontal else maxspeed-mouselength
-        return [int(mouselength*seclength)+xy,mouselength,True]
+
+        if mouselength == maxspeed:
+            return [int(mouselength*seclength)+xy,mouselength,True]
+        # the code below is to make it snap to the closest bar - before it would always go to the top bar because of the int truncate
+        next_mouselength = mouselength + 1# the next bar
+        next_barpos = int(next_mouselength * seclength) + xy# the next bar position
+        current_barpos = int(mouselength * seclength) + xy# the current bar position
+        comparingvar = mousex if horizontal else mousey# the mouse x or y position depending on the orientation of the bar
+        if abs(comparingvar - next_barpos) < abs(comparingvar - current_barpos):# if the next bar is closer to the mouse than the current bar
+            return [next_barpos, next_mouselength, True]
+        else:
+            return [current_barpos, mouselength, True]
+
+        # return [int(mouselength*seclength)+xy,mouselength,True]
    
     seclength = (wh-(barwh * (0.5 if reverse else 1)))/maxspeed# minus 10 for bar width / 2
 
     return [int(gamespeed*seclength)+xy,gamespeed,False]
 
 class SliderBar():
-    def __init__(self,windowoffset:list,maxvalue:int,color:list,minvalue=0) -> None:
+    def __init__(self,windowoffset:list,maxvalue:int,color:list,minvalue=0,barcolor=((150,150,150),(210,210,210))) -> None:
         """Max value must be less than the slider width-20, or height-20 if vertical, color = [(colorstart),(colorend)]"""
         self.winset = windowoffset
         self.value = 0
         self.maxvalue = maxvalue; self.minvalue = minvalue
         self.gamevaluetexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue+1)]
-        
+        self.barcolors = barcolor
         self.orientation = 'horizontal'
         self.sliderwh = [0,0]
         self.sliderxy = [0,0]
@@ -146,11 +158,11 @@ class SliderBar():
         # blit the sliderpoly surface to the screen first
         screen.blit(self.sliderpoly,self.sliderxy)
 
-        color = (150,150,150)
+        color = self.barcolors[0]
         # Calculates the bar position and the gameplay speed based on the mouse coords
         if pygame.mouse.get_pressed()[0]:
             if self.updatebarxy(reversedscroll):
-                color = (200,200,200)
+                color = self.barcolors[1]
 
             
 
@@ -188,5 +200,5 @@ class SliderBar():
             screen.blit(self.gamevaluetexts[self.value], (self.sliderxy[0]+textx, self.sliderxy[1]+self.sliderwh[1]//2-texty//2))
         if self.value < self.minvalue:
             self.value = self.minvalue
-            
+
         return self.value
