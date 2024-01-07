@@ -66,7 +66,7 @@ class Portfolio(Menu):
                 sellcolor = (225,225,225)
 
             # Draws the information about the stock on the right side of the screen 
-            info = [f'Paid Price: ${limit_digits(stock[1]*stock[2],15)}',f'{"Profit" if (stock[0].price - stock[1])*stock[2] > 0 else "Loss"}: ${limit_digits((stock[0].price - stock[1])*stock[2],15)}',f'Change %: {limit_digits(((stock[0].price - stock[1]) / stock[1]) * 100,15)}%']
+            info = [f'Paid Price: ${limit_digits(stock[1]*stock[2],12)}'f' | ${limit_digits(stock[1],8)} Per Share',f'{"Profit" if (stock[0].price - stock[1])*stock[2] > 0 else "Loss"}: ${limit_digits((stock[0].price - stock[1])*stock[2],15)}',f'Change %: {limit_digits(((stock[0].price - stock[1]) / stock[1]) * 100,15)}%']
             for i,txt in enumerate(info):
                 screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),490+(i*50)))
 

@@ -18,10 +18,11 @@ class UI_Controls():
             for stock in stocklist:
                 self.newsobj.addStockNews(stock.name)
 
-        # self.view = "stock"# homeview or stockview
-        self.view = "stock"# homeview or stock
+        self.view = "home"# home or stock
         self.graphscroll = 0
         self.namerenders = [fontlist[30].render(stock.name,stock.color)[0] for stock in stocklist]# [red,green]
+        self.weeknames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
+        self.weekdaystext = {weekday:fontlist[95].render(weekday,(255,255,255))[0] for weekday in self.weeknames}
         # self.namerenders = [[fontlist[30].render(stock.name,(200,0,0))[0],fontlist[30].render(stock.name,(0,200,0))[0]] for stock in stocklist]# [red,green]
 
         # get 
@@ -109,29 +110,6 @@ class UI_Controls():
         screen.blit(self.stockbarsurf,(dx,dy))# draw the stock graph bar to the screen
         self.stockbarsurf.fill((30,30,30))# fill the stock graph bar with a dark grey color
         
-        
-
-
-    def draw_time(self,screen:pygame.Surface,gametime):
-        # draws the time at the top of the screen
-        renders = gametime.getrenders()
-        width = 0
-        for i in range(3):
-            screen.blit(renders[i],(275+(width),65))
-            width += renders[i].get_width()*1.5
-            if i != 2:
-                text = fontlist[55].render('/',(255,255,255))[0]
-                screen.blit(text,(275+(width),65))
-                width += text.get_width()+renders[i].get_width()/2
-        for i in range(3,6):
-            screen.blit(renders[i],(275+(width),65))
-            width += renders[i].get_width()*1.5
-            if i == 3:
-                text = fontlist[55].render(':',(255,255,255))[0]
-                screen.blit(text,(275+(width),73))
-                width += text.get_width()+renders[i].get_width()/2
-
-        
     def drawStockEvents(self,screen:pygame.Surface,stocklist:list):
         minmove = min([stock for stock in stocklist],key=self.get_percent)
         maxmove = max([stock for stock in stocklist],key=self.get_percent)
@@ -141,10 +119,27 @@ class UI_Controls():
         # self.stockevent.addStockEvent('KSTON',100)
         
         self.stockevent.draw(screen)
+    def draw_time(self,screen,gametime):
+        texts = gametime.getrenders(50,50,50,105,50,50)# month,day,year,timerender,dayname,monthname
+        month,day,year,timerender,dayname,monthname = texts
+
+        screen.blit(timerender,(260,20))
+        screen.blit(dayname,(260,110))
+        screen.blit(monthname,(260+dayname.get_width()+10,110))
+        screen.blit(day,(260+dayname.get_width()+monthname.get_width()+20,110))
+        screen.blit(year,(260+dayname.get_width()+monthname.get_width()+day.get_width()+30,110))
+
+
         
+
+
+
     def draw_home(self,screen:pygame.Surface,stocklist:list,gametime,player):
         gfxdraw.filled_polygon(screen,[(200,10),(250,150),(1450,150),(1400,10)],(10,10,10))# time etc
+        # screen.blit(self.weekdaystext[gametime.get_day_name()],(265,20))
         self.draw_time(screen,gametime)
+
+
         gfxdraw.filled_polygon(screen,[(250,800),(275,1050),(1475,1050),(1450,800)],(10,10,10))# the News bar at the bottom
         
         gfxdraw.filled_polygon(screen,[(250,710),(250,790),(1450,790),(1450,710)],(30,30,30))# stock graph bar (scrolls across screen)

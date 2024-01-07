@@ -1,30 +1,44 @@
 from Defs import fontlist
 import pygame
+DAYS_PER_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+MINUTES_PER_HOUR = 60
+HOURS_PER_DAY = 24
+MINUTES_PER_DAY = MINUTES_PER_HOUR * HOURS_PER_DAY
+SECONDS_PER_MINUTE = 60
+MINUTES_PER_HOUR = 60
+HOURS_PER_DAY = 24
+MINUTES_PER_DAY = MINUTES_PER_HOUR * HOURS_PER_DAY
+MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+class GameTime:    
 
-class GameTime:
-    DAYS_PER_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    MINUTES_PER_HOUR = 60
-    HOURS_PER_DAY = 24
-    MINUTES_PER_DAY = MINUTES_PER_HOUR * HOURS_PER_DAY
-    SECONDS_PER_MINUTE = 60
-    MINUTES_PER_HOUR = 60
-    HOURS_PER_DAY = 24
-    MINUTES_PER_DAY = MINUTES_PER_HOUR * HOURS_PER_DAY
-    MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-    DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    
-    def __init__(self, year, month, day, hour, minute, second):
+    def __init__(self, year, month, day, hour, minute, weekday):
+        self.weekdayoffset = DAY_NAMES.index(weekday)-7
         self.rendercache = {}
         self.year = year
         self.month = month
         self.day = day
         self.hour = hour
         self.minute = minute
-        self.second = second
-        self.mdhrenders = [fontlist[55].render(str(i),(255,255,255))[0] for i in range(1,32)]
-        self.renderednumbers = [fontlist[55].render("0"+str(i) if i < 10 else str(i),(255,255,255))[0] for i in range(0,60)]
-        self.ampmtext = [fontlist[50].render('AM',(255,255,255))[0],fontlist[50].render('PM',(255,255,255))[0]]
-        self.renderedyear = [self.year,fontlist[55].render(str(self.year),(255,255,255))[0]]
+        self.second = 0
+        self.colonrenders = [fontlist[i].render(':',(255,255,255))[0] for i in range(1,200)]
+
+        self.mdhfunc = lambda size : [fontlist[size].render(str(i)+',',(255,255,255))[0] for i in range(1,32)]
+        self.numfunc = lambda size : [fontlist[size].render("0"+str(i) if i < 10 else str(i),(255,255,255))[0] for i in range(0,60)]
+        self.ampmfunc = lambda size : [fontlist[size].render('AM',(255,255,255))[0],fontlist[size].render('PM',(255,255,255))[0]]
+        self.yearfunc = lambda size : [fontlist[size].render(str(self.year),(255,255,255))[0]]
+        self.daynamesfunc = lambda size : {dayname : fontlist[size].render(dayname+',',(255,255,255))[0] for dayname in DAY_NAMES}
+        self.monthnamesfunc = lambda size : {monthname : fontlist[size].render(monthname,(255,255,255))[0] for monthname in MONTH_NAMES}
+
+        self.daynames = {}# size : [name : render]
+        self.monthnames = {}# size : [name : render]
+
+
+        self.mdhrenders = {}# size : [renders]
+        self.lasttimerender = (None,None)
+        # self.renderednumbers = {}# size : [renders]
+        # self.ampmtext = {}# size : [renders]
+        self.renderedyear = {}# size : [[year,render],[differentyear,render],etc...]
     def __str__(self) -> str:
         return f'{self.year}-{self.month}-{self.day} {self.hour}:{self.minute}:{self.second}'
     def add_second(self):
@@ -44,7 +58,7 @@ class GameTime:
         if self.is_leap_year() and self.month == 2:
             if self.day > 29: 
                 self.add_month(); self.day = 1
-        elif self.day > self.DAYS_PER_MONTH[self.month-1]: 
+        elif self.day > DAYS_PER_MONTH[self.month-1]: 
             self.add_month(); self.day = 1
     def add_month(self):
         self.month += 1
@@ -68,36 +82,70 @@ class GameTime:
             return True
         return False
 
-    def getrenders(self):
-        month = self.mdhrenders[self.month-1]
-        day = self.mdhrenders[self.day-1]
-        if self.renderedyear[0] == self.year:
-            year = self.renderedyear[1]
+    def getrenders(self,monthsize,daysize,yearsize,timesize,daynamesize,monthnamesize):
+        """returns a list of renders for the month,day,time(minute:Day Am/Pm), dayname, monthname parameters are the sizes of the renders (in return order)"""
+        if daynamesize not in self.daynames:# if the day name size is not in the cache
+            self.daynames[daynamesize] = self.daynamesfunc(daynamesize)
+        dayname = self.daynames[daynamesize][self.get_day_name()]
+
+        if monthnamesize not in self.monthnames:# if the month name size is not in the cache
+            self.monthnames[monthnamesize] = self.monthnamesfunc(monthnamesize)
+        monthname = self.monthnames[monthnamesize][self.get_month_name()]
+
+        if monthsize not in self.mdhrenders:# if the month size is not in the cache
+            self.mdhrenders[monthsize] = self.mdhfunc(monthsize)
+        month = self.mdhrenders[monthsize][self.month-1]
+
+        if daysize not in self.mdhrenders:# if the day size is not in the cache
+            self.mdhrenders[daysize] = self.mdhfunc(daysize)
+        day = self.mdhrenders[daysize][self.day-1]
+
+        if yearsize not in self.renderedyear:# if the year size is not in the cache
+            # size : [[year,render],[differentyear,render],etc...]
+            self.renderedyear[yearsize] = [[self.year,self.yearfunc(yearsize)]]
+            year = self.renderedyear[yearsize][0][1]
+        else:# if the year size is in the cache
+            if self.year in (justnum:=[year[0] for year in self.renderedyear[yearsize]]):# if the year is already in the cache
+                year = self.renderedyear[yearsize][justnum.index(self.year)][1]
+            else:# if the year is not in the size cache
+                self.renderedyear[yearsize].append([self.year,self.yearfunc(yearsize)])
+                year = self.renderedyear[yearsize][-1][1]
+
+        time = f'{self.hour if self.hour <= 12 else self.hour-12}:{self.minute:02d} {str("AM" if self.hour < 12 else "PM")}'
+        if time == self.lasttimerender[0]:
+            time_render = self.lasttimerender[1]
         else:
-            year = self.renderedyear[1] = fontlist[55].render(str(self.year),(255,255,255))[0]
-        hour = self.mdhrenders[self.hour-1 if self.hour <= 12 else self.hour-13]
-        minute = self.renderednumbers[self.minute]
-        ampm = self.ampmtext[0 if self.hour < 12 else 1]
-        return [month,day,year,hour,minute,ampm]
+            time_render = fontlist[timesize].render(time,(255,255,255))[0]
+            self.lasttimerender = (time,time_render)
+        # if timesize not in self.mdhrenders:# if the hour size is not in the cache
+        #     self.mdhrenders[timesize] = self.mdhfunc(timesize)
+        # hour = self.mdhrenders[timesize][self.hour-1 if self.hour <= 12 else self.hour-13]
+        # if timesize not in self.renderednumbers:
+        #     self.renderednumbers[timesize] = self.numfunc(timesize)
+        # minute = self.renderednumbers[timesize][self.minute]
+        # if timesize not in self.ampmtext:
+        #     self.ampmtext[timesize] = self.ampmfunc(timesize)
+        # ampm = self.ampmtext[timesize][0 if self.hour < 12 else 1]
 
 
+        return [month,day,year[0],time_render,dayname,monthname]
 
 
     def get_month_name(self):
-        return self.MONTH_NAMES[self.month - 1]
+        return MONTH_NAMES[self.month - 1]
 
     def get_day_name(self):
-        days_since_monday = (self.get_total_minutes() // self.MINUTES_PER_DAY) % 7
-        return self.DAY_NAMES[days_since_monday]
+        days_since_monday = ((self.get_total_minutes() // MINUTES_PER_DAY)+self.weekdayoffset) % 7
+        return DAY_NAMES[days_since_monday]
 
     def get_time_string(self):
         return f"{self.get_month_name()} {self.day}, {self.hour}:{self.minute:02d}:{self.second:02d}"
     
     def get_total_minutes(self):
-        days_since_jan1 = sum(self.DAYS_PER_MONTH[:self.month - 1]) + self.day - 1
+        days_since_jan1 = sum(DAYS_PER_MONTH[:self.month - 1]) + self.day - 1
         if self.month > 2 and self.is_leap_year():
             days_since_jan1 += 1
-        total_minutes = days_since_jan1 * self.MINUTES_PER_DAY + self.hour * self.MINUTES_PER_HOUR + self.minute
+        total_minutes = days_since_jan1 * MINUTES_PER_DAY + self.hour * MINUTES_PER_HOUR + self.minute
         return total_minutes
     
     def drawgametime(self,screen:pygame.Surface,onlytime:bool):

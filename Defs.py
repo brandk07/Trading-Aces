@@ -20,9 +20,9 @@ fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.
 # fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
 # fonts = lambda font_size: freetype.Font(r'Assets\antonio\Liquid_Crystal_Extra_Characters.otf', font_size)
 bold40 = fontsbold(45)
-fontlist = [fonts(num) for num in range(0,100)]#list of fonts from 0-100
-fontlistcry = [crystalfonts(num) for num in range(0,100)]#list of fonts from 0-100
-fontlistpix = [pixfonts(num) for num in range(0,100)]#list of fonts from 0-100
+fontlist = [fonts(num) for num in range(0,201)]#list of fonts from 0-100
+fontlistcry = [crystalfonts(num) for num in range(0,201)]#list of fonts from 0-100
+fontlistpix = [pixfonts(num) for num in range(0,201)]#list of fonts from 0-100
 font45 = fonts(45)
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

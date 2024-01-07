@@ -61,7 +61,7 @@ polybackground = pygame.image.load('Assets/polybackground2.png')
 polybackground = pygame.transform.scale(polybackground,(window_width,window_height))
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
 
-gametime = GameTime(2023,11,7,9,30,0)
+gametime = GameTime(0,3,8,9,30,'Saturday')
 menulist = [stockbook,portfolio,optiontrade]
 musicdata = Getfromfile(stockdict,player)# muiscdata = [time, volume, songindex]
 
@@ -85,7 +85,7 @@ if __name__ == "__main__":
         
         for i in range(ui_controls.gameplay_speed):
             # gametime = Gametime(gametime,,screen,clock.get_fps())
-            gametime.increase_time(10)
+            gametime.increase_time(1000)
             for stock in stocklist:
                 stock.update_price(player)
             player.update_price(player)
