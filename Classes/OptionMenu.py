@@ -57,7 +57,7 @@ class Optiontrade(Menu):
         total = [(DX + x, DY + y), (DX + 15 + x, DY + DH + y), (DX + 25 + w1 + w2 + w3 + x, DY + DH + y), (DX + 10 + w1 + w2 + w3 + x, DY + y)]
 
         return [p1, p2, p3, total]
-    
+    @timing_decorator
     def SelectedPlayerOption(self, screen, optionindex, mousebuttons, player):
         if optionindex != None:
             option = player.options[optionindex]
@@ -116,7 +116,7 @@ class Optiontrade(Menu):
             sell_text, _ = fontlist[65].render(f'SELL', sellcolor)
             sell_text_rect = sell_text.get_rect(center=(1280, 840))
             screen.blit(sell_text, sell_text_rect)
-
+    @timing_decorator
     def draw_Owned(self,screen,mousebuttons,player):
         mousex, mousey = pygame.mouse.get_pos()
         xshift = 15
@@ -172,7 +172,7 @@ class Optiontrade(Menu):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
             self.calloptions.append(StockOption(stock,strikeprice,random.randint(3,25),'call'))
-            
+    @timing_decorator
     def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player):
          if optionindex != None:
             option = (self.putoptions+self.calloptions)[optionindex]
@@ -226,7 +226,7 @@ class Optiontrade(Menu):
             buy_text, _ = fontlist[65].render(f'PURCHASE', sellcolor)
             buy_text_rect = buy_text.get_rect(center=(1280, 840))
             screen.blit(buy_text, buy_text_rect)
-
+    @timing_decorator
     def draw_Available(self,screen,mousebuttons,player,stocklist):
         mousex, mousey = pygame.mouse.get_pos()
         xshift = 15
@@ -278,6 +278,7 @@ class Optiontrade(Menu):
     def draw_Custom(self,screen,mousebuttons,player):
         pass
 
+    @timing_decorator
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player):
         """Draws all of the things in the option menu"""
         screen.blit(self.optiontext,(220,120))# display the option text

@@ -6,10 +6,22 @@ import math
 import json
 import random
 import os
+import timeit
 from Classes.imports.StockOption import StockOption
 pygame.font.init()
 pygame.mixer.init()
 pygame.init()
+
+
+def timing_decorator(func):
+    def wrapper(*args, **kwargs):
+        start_time = timeit.default_timer()
+        result = func(*args, **kwargs)
+        end_time = timeit.default_timer()
+        print(f"Function {func.__name__} took {end_time - start_time} seconds to execute.")
+        return result
+    return wrapper
+
 #  ////////////////////////////////////////////Fonts///////////////////////////////////////////////////////////////////////////////////////
 fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size*.75)
 crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)

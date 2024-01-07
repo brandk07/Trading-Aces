@@ -85,13 +85,27 @@ if __name__ == "__main__":
         
         for i in range(ui_controls.gameplay_speed):
             # gametime = Gametime(gametime,,screen,clock.get_fps())
-            gametime.increase_time(1000)
+            gametime.increase_time(100)
             for stock in stocklist:
                 stock.update_price(player)
             player.update_price(player)
         # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
 
-        # gametime.drawgametime(screen,True)
+#         Function draw_Owned took 0.016690099999998154 seconds to execute.
+        # Function draw_menu_content took 0.01778009999999952 seconds to execute.
+        # Function SelectedPlayerOption took 0.006947699999997781 seconds to execute.
+        # Function draw_Owned took 0.01846930000000313 seconds to execute.
+        # Function draw_menu_content took 0.019413899999999984 seconds to execute.
+        
+#         Function SelectedAvailableOption took 0.00499969999999994 seconds to execute.
+        # Function draw_Available took 0.01676149999999943 seconds to execute.
+        # Function draw_menu_content took 0.0181635 seconds to execute.
+        # Function SelectedAvailableOption took 0.0046623999999999555 seconds to execute.
+        # Function draw_Available took 0.013989500000000099 seconds to execute.
+        # Function draw_menu_content took 0.014926200000000556 seconds to execute.
+
+        # optiontrade.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,515),ui_controls)
+        
         for i,menu in enumerate(menulist):
             menu.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,165+(i*175)),ui_controls)
 
