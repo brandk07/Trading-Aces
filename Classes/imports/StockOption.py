@@ -2,32 +2,21 @@ from optionprice import Option as Op
 import numpy as np
 from collections import deque
 from numpy import array_equal
-import timeit
-from functools import lru_cache
-
-def timing_decorator(func):
-    def wrapper(*args, **kwargs):
-        start_time = timeit.default_timer()
-        result = func(*args, **kwargs)
-        end_time = timeit.default_timer()
-        print(f"Function {func.__name__} took {end_time - start_time} seconds to execute.")
-        return result
-    return wrapper
-
 # ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
-recentcalculations = {}# key is value of volatility: value is the list of points
-@timing_decorator
-@lru_cache(maxsize=128)
-def calculate_volatility(points : tuple) -> float:
-    """Calculate the volatility of a stock based on the last 100 , Points must be a tuple or it will raise a unhashable type error"""
-    points = np.array(points)  # Convert points back to a numpy array
-    if len(points) > 100:
-        points = points[-100:]
+recentcalculations = {}  # key is hash of points: value is the volatility
 
-    print('calculating volatility')
-    # Check if there are enough points for calculation
+def calculate_volatility(points) -> float:
+    """Calculate the volatility of a stock based on the last 100 points"""
+    global recentcalculations
+    points = points[-100::2]
     if len(points) < 2:
         return .1
+    
+    # Convert points to a hashable type
+    points_tuple = tuple(points)
+    if points_tuple in recentcalculations:
+        return recentcalculations[points_tuple]
+
     # Calculate daily returns
     returns = np.diff(points) / points[:-1]
 
@@ -37,6 +26,7 @@ def calculate_volatility(points : tuple) -> float:
     # Annualize volatility
     annualized_volatility = np.sqrt(252) * daily_volatility
 
+    recentcalculations[points_tuple] = annualized_volatility
     return annualized_volatility
     
 
@@ -50,27 +40,27 @@ class StockOption:
         self.color = (0,0,0)
         self.name = f'{self.stockobj.name} {self.option_type}'
 
-        self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=calculate_volatility(tuple(self.stockobj.graphrangelists['month'])),r=0.05)
+        self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=calculate_volatility(self.stockobj.graphrangelists['month']),r=0.05)
         if ogprice:
             self.ogvalue = ogprice
         else:
-            self.ogvalue = self.option.getPrice(method="BSM",iteration=1)
+            self.ogvalue = self.option.getPrice(method="MC",iteration=200)
 
         self.lastvalue = [self.stockobj.price*100,self.get_value(True)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
         
         
     def __eq__(self,other):
         return [self.stockobj,self.strike_price,self.option_type,self.expiration_date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date]
-    @timing_decorator
+    
     def self_volatility(self):
         """returns the volatility of the option"""
-        return calculate_volatility(tuple(self.stockobj.graphrangelists['month']))
+        return calculate_volatility(self.stockobj.graphrangelists['month'])
         
     def percent_change(self):
         """returns the percent change of the option"""
         return ((self.get_value() - (self.ogvalue)) / (self.ogvalue)) * 100
     def get_inputs(self):
-        return (self.option_type,self.stockobj.price,self.strike_price,self.expiration_date,calculate_volatility(tuple(self.stockobj.graphrangelists['month'])),0.05,)
+        return (self.option_type,self.stockobj.price,self.strike_price,self.expiration_date,calculate_volatility(self.stockobj.graphrangelists['month']),0.05,)
     
     # create a method to return an exact copy of the object
     def get_copy(self,quantity=1) -> 'StockOption':        
@@ -79,15 +69,23 @@ class StockOption:
     def advance_time(self):
         self.expiration_date -= 1
         self.option.t = self.expiration_date
-    @timing_decorator
+
     def get_value(self,bypass=False):
         """""Bypass is used to force a recalculation of the option value"""
-        if bypass or (self.stockobj.price/self.lastvalue[0]) > 1.01 or (self.stockobj.price/self.lastvalue[0]) < 0.99:# if the stock price has changed by more than 2%
+        if bypass:
             self.option.s0 = float(self.stockobj.price)*100
             self.option.k = self.strike_price*100
-            self.option.sigma = calculate_volatility(tuple(self.stockobj.graphrangelists['month']))
+            self.option.sigma = calculate_volatility(self.stockobj.graphrangelists['month'])
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="BSM",iteration=1)]
+            return self.lastvalue[1]
+        if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.005 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.995:# if the stock price has changed by more than 2%
+            # print('recalculating option value',bypass)
+            self.option.s0 = float(self.stockobj.price)*100
+            self.option.k = self.strike_price*100
+            self.option.sigma = calculate_volatility(self.stockobj.graphrangelists['month'])
+            
+            self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="MC",iteration=200)]
             return self.lastvalue[1]
         return self.lastvalue[1]
     

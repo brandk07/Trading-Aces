@@ -11,6 +11,7 @@ from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
 from Classes.portfolio import Portfolio
 from Classes.OptionMenu import Optiontrade
+from collections import deque
 import timeit
 
 pygame.init()
@@ -73,6 +74,7 @@ pygame.mixer.music.play()
 pygame.mixer.music.set_pos(musicdata[0])
 pygame.mixer.music.set_volume(musicdata[1])
 print('now playing',musicnames[musicdata[2]])
+lastfps = deque(maxlen=300)
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
@@ -85,24 +87,12 @@ if __name__ == "__main__":
         
         for i in range(ui_controls.gameplay_speed):
             # gametime = Gametime(gametime,,screen,clock.get_fps())
-            gametime.increase_time(100)
+            gametime.increase_time(1)
             for stock in stocklist:
                 stock.update_price(player)
             player.update_price(player)
         # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
 
-#         Function draw_Owned took 0.016690099999998154 seconds to execute.
-        # Function draw_menu_content took 0.01778009999999952 seconds to execute.
-        # Function SelectedPlayerOption took 0.006947699999997781 seconds to execute.
-        # Function draw_Owned took 0.01846930000000313 seconds to execute.
-        # Function draw_menu_content took 0.019413899999999984 seconds to execute.
-        
-#         Function SelectedAvailableOption took 0.00499969999999994 seconds to execute.
-        # Function draw_Available took 0.01676149999999943 seconds to execute.
-        # Function draw_menu_content took 0.0181635 seconds to execute.
-        # Function SelectedAvailableOption took 0.0046623999999999555 seconds to execute.
-        # Function draw_Available took 0.013989500000000099 seconds to execute.
-        # Function draw_menu_content took 0.014926200000000556 seconds to execute.
 
         # optiontrade.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,515),ui_controls)
         
@@ -113,7 +103,8 @@ if __name__ == "__main__":
         # stockbook.draw_icon(screen,mousebuttons,stocklist,player,menulist)
         # portfolio.draw_icon(screen,mousebuttons,stocklist,player,menulist)
         # optiontrade.draw_icon(screen,mousebuttons,stocklist,player,menulist)
-        screen.blit(update_fps(clock),(1900,0))
+ 
+        screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30)]))
 
 
         mousebuttons = 0

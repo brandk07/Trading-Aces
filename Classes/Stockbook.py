@@ -87,7 +87,7 @@ class Stockbook(Menu):
         self.stocktext = {name:[] for name in stocknames}
         self.selectedstock = 0
         self.menudrawn = False
-        self.purchasetext = [fontlist[65].render(f'PURCHASE', color)[0] for color in [(0,150,0),(225,225,225)]]
+        self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
         self.quantitybar = SliderBar((0,0),50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         with open(r'Assets\stockdescriptions.txt','r') as descriptions:
 
@@ -144,7 +144,7 @@ class Stockbook(Menu):
             x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))
             
-    def draw_costpurchase(self,screen,mousebuttons:int,player,stocklist:list):
+    def draw_costpurchase(self,screen,mousebuttons:int,player,stocklist:list,abletobuy:bool):
         """This function is called for the cost and purchase buttons in the stockbook menu"""
         mousex,mousey = pygame.mouse.get_pos()
         # Cost button polygon and outline
@@ -154,17 +154,19 @@ class Stockbook(Menu):
         text = fontlist[45].render(f'Cost : ${self.quantity*stocklist[self.selectedstock].price:.2f}',(255, 255, 255))[0]
         screen.blit(text,(1175,210))
 
-        if point_in_polygon((mousex,mousey),[(1110,265),(1125,335),(1465,335),(1450,265)]):
+        if abletobuy and point_in_polygon((mousex,mousey),[(1110,265),(1125,335),(1465,335),(1450,265)]):
             purchasecolor = (0,150,0)
             if mousebuttons == 1:
                 player.buy(stocklist[self.selectedstock],stocklist[self.selectedstock].price,int(self.quantity))
                 self.quantity = 0
+        elif not abletobuy:
+            purchasecolor = (150,0,0)
         else:
             purchasecolor = (225,225,225)
         gfxdraw.filled_polygon(screen,((1110,265),(1125,335),(1465,335),(1450,265)),(30,30,30))#polygon for the purchase button
         pygame.draw.polygon(screen, (0,0,0), ((1110,265),(1125,335),(1465,335),(1450,265)),5)#outline confirm button polygon
 
-        confirm_text = self.purchasetext[[(0,150,0),(225,225,225)].index(purchasecolor)]
+        confirm_text = self.purchasetext[[(0,150,0),(225,225,225),(150,0,0)].index(purchasecolor)]
         confirm_text_rect = confirm_text.get_rect(center=(1280, 300))
         screen.blit(confirm_text, confirm_text_rect)
         
@@ -176,10 +178,15 @@ class Stockbook(Menu):
         # self.quantitycontrols(screen,mousebuttons,player,stocklist)
         stock = stocklist[self.selectedstock]
         # self.quantity = quantityControls(screen,mousebuttons,int(player.cash/stock.price),self.quantity,(1105,110))
-        self.quantitybar.changemaxvalue(int(player.cash/stock.price))
-        self.quantitybar.draw_bar(screen,[1110,140],[340,45],orientation='horizontal',reversedscroll=True)
-        self.quantity = self.quantitybar.value
-        self.draw_costpurchase(screen,mousebuttons,player,stocklist)
+        abletobuy = int(player.cash/stock.price) > 0
+        if abletobuy:
+            self.quantitybar.changemaxvalue(int(player.cash/stock.price))
+            self.quantitybar.draw_bar(screen,[1110,140],[340,45],orientation='horizontal',reversedscroll=True)
+            self.quantity = self.quantitybar.value
+        else:
+            self.quantity = 0
+            
+        self.draw_costpurchase(screen,mousebuttons,player,stocklist,abletobuy)
 
     
     

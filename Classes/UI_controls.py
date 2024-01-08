@@ -124,18 +124,15 @@ class UI_Controls():
         month,day,year,timerender,dayname,monthname = texts
 
         screen.blit(timerender,(260,20))
-        screen.blit(dayname,(260,110))
-        screen.blit(monthname,(260+dayname.get_width()+10,110))
-        screen.blit(day,(260+dayname.get_width()+monthname.get_width()+20,110))
-        screen.blit(year,(260+dayname.get_width()+monthname.get_width()+day.get_width()+30,110))
-
-
-        
-
+        screen.blit(dayname,(260,105))
+        screen.blit(monthname,(260+dayname.get_width()+10,105))
+        screen.blit(day,(260+dayname.get_width()+monthname.get_width()+20,105))
+        screen.blit(year,(260+dayname.get_width()+monthname.get_width()+day.get_width()+30,105))
 
 
     def draw_home(self,screen:pygame.Surface,stocklist:list,gametime,player):
         gfxdraw.filled_polygon(screen,[(200,10),(250,150),(1450,150),(1400,10)],(10,10,10))# time etc
+        pygame.draw.polygon(screen,(0,0,0),[(200,10),(250,150),(1450,150),(1400,10)],5)# time etc
         # screen.blit(self.weekdaystext[gametime.get_day_name()],(265,20))
         self.draw_time(screen,gametime)
 

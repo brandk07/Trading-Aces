@@ -21,7 +21,7 @@ class Player(Stock):
         self.stockvalues = []
         self.messagedict = {}
 
-        self.optioncolors = [(211, 160, 147),(147, 196, 125),(227, 192, 198),(248, 150, 143),(252, 216, 60), (128, 189, 152),(162, 195, 243),(143, 134, 130),(248, 185, 173),(202, 80, 30),  (128, 128, 0),  (135, 206, 235),(145, 184, 106),(200, 162, 200),(255, 213, 148),(242, 201, 76), (112, 161, 151),(156, 51, 66),  (51, 51, 191),   (194, 178, 169),]
+        self.optioncolors = [(211, 160, 147),(147, 196, 125),(227, 192, 198),(248, 150, 143),(252, 216, 60), (128, 189, 152),(162, 195, 243),(143, 134, 130),(248, 185, 173),(202, 80, 30),  (128, 128, 0),  (135, 206, 235),(145, 184, 106),(200, 162, 200),(255, 213, 148),(242, 201, 76), (112, 161, 151),(156, 51, 66),  (51, 51, 191),   (194, 178, 169)]
 
 
         # self.recent_movementvar = (None,None,(180,180,180))
@@ -90,7 +90,9 @@ class Player(Stock):
         self.options.remove(optionobj)
         print(f'selling {optionobj} for {optionobj.get_value(True):.2f}')
         print('cash is',self.cash)
-
+    def giveoptioncolor(self,optionlist):
+        for i,option in enumerate(optionlist):
+            option.color = self.optioncolors[i if i < len(self.optioncolors) else randint(0,len(self.optioncolors)-1)]
     def get_Networth(self):
         """returns the networth of the player"""
         return self.cash + sum([stock[0].price*stock[2] for stock in self.stocks]) + sum([option.get_value() for option in self.options])

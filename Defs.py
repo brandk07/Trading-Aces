@@ -7,6 +7,7 @@ import json
 import random
 import os
 import timeit
+from collections import deque
 from Classes.imports.StockOption import StockOption
 pygame.font.init()
 pygame.mixer.init()
@@ -151,10 +152,14 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         screen.blit(emptytext, (points[0][0]+40, points[0][1]+40))  # displays empty text
     return allrenders,selected_value
 
-def update_fps(clock):
+def update_fps(clock,lastfps:deque):
     fps = str(int(clock.get_fps()))
+    lastfps.append(fps)
     fps_text = fontlist[25].render(fps, pygame.Color("coral"))[0]
-    return fps_text
+
+    averagefps = sum([int(fps) for fps in lastfps])/len(lastfps)
+    averagefps_text = fontlist[25].render(str(int(averagefps)), pygame.Color("coral"))[0]
+    return fps_text,averagefps_text
 
 def time_it(func):
     def wrapper(*args, **kwargs):
@@ -186,6 +191,7 @@ def Getfromfile(stockdict:dict,player):
         if data:
             player.stocks = [[stockdict[stock[0]],stock[1],stock[2]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
             player.options = [StockOption(stockdict[option[0]],option[1],option[2],option[3],ogprice=option[4]) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
+            player.giveoptioncolor(player.options)
             player.graphrange = data[3]
             player.cash = data[4] if data[4] != 0 else 2500
             musicdata = (data[5])

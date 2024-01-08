@@ -10,6 +10,9 @@ HOURS_PER_DAY = 24
 MINUTES_PER_DAY = MINUTES_PER_HOUR * HOURS_PER_DAY
 MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+def interpolate_color(color1, color2, ratio):
+    """Interpolate between two colors"""
+    return tuple(max(0, min(255, int(c1 * (1 - ratio) + c2 * ratio))) for c1, c2 in zip(color1, color2))
 class GameTime:    
 
     def __init__(self, year, month, day, hour, minute, weekday):
@@ -23,12 +26,12 @@ class GameTime:
         self.second = 0
         self.colonrenders = [fontlist[i].render(':',(255,255,255))[0] for i in range(1,200)]
 
-        self.mdhfunc = lambda size : [fontlist[size].render(str(i)+',',(255,255,255))[0] for i in range(1,32)]
-        self.numfunc = lambda size : [fontlist[size].render("0"+str(i) if i < 10 else str(i),(255,255,255))[0] for i in range(0,60)]
-        self.ampmfunc = lambda size : [fontlist[size].render('AM',(255,255,255))[0],fontlist[size].render('PM',(255,255,255))[0]]
-        self.yearfunc = lambda size : [fontlist[size].render(str(self.year),(255,255,255))[0]]
-        self.daynamesfunc = lambda size : {dayname : fontlist[size].render(dayname+',',(255,255,255))[0] for dayname in DAY_NAMES}
-        self.monthnamesfunc = lambda size : {monthname : fontlist[size].render(monthname,(255,255,255))[0] for monthname in MONTH_NAMES}
+        self.mdhfunc = lambda size,color : [fontlist[size].render(str(i)+',',color)[0] for i in range(1,32)]
+        self.numfunc = lambda size,color : [fontlist[size].render("0"+str(i) if i < 10 else str(i),color)[0] for i in range(0,60)]
+        self.ampmfunc = lambda size,color : [fontlist[size].render('AM',color)[0],fontlist[size].render('PM',color)[0]]
+        self.yearfunc = lambda size,color : [fontlist[size].render("Year "+str(self.year),color)[0]]
+        self.daynamesfunc = lambda size,color : {dayname : fontlist[size].render(dayname+',',color)[0] for dayname in DAY_NAMES}
+        self.monthnamesfunc = lambda size,color : {monthname : fontlist[size].render(monthname,color)[0] for monthname in MONTH_NAMES}
 
         self.daynames = {}# size : [name : render]
         self.monthnames = {}# size : [name : render]
@@ -85,37 +88,43 @@ class GameTime:
     def getrenders(self,monthsize,daysize,yearsize,timesize,daynamesize,monthnamesize):
         """returns a list of renders for the month,day,time(minute:Day Am/Pm), dayname, monthname parameters are the sizes of the renders (in return order)"""
         if daynamesize not in self.daynames:# if the day name size is not in the cache
-            self.daynames[daynamesize] = self.daynamesfunc(daynamesize)
+            self.daynames[daynamesize] = self.daynamesfunc(daynamesize,(150,150,150))
         dayname = self.daynames[daynamesize][self.get_day_name()]
 
         if monthnamesize not in self.monthnames:# if the month name size is not in the cache
-            self.monthnames[monthnamesize] = self.monthnamesfunc(monthnamesize)
+            self.monthnames[monthnamesize] = self.monthnamesfunc(monthnamesize,(150,150,150))
         monthname = self.monthnames[monthnamesize][self.get_month_name()]
 
         if monthsize not in self.mdhrenders:# if the month size is not in the cache
-            self.mdhrenders[monthsize] = self.mdhfunc(monthsize)
+            self.mdhrenders[monthsize] = self.mdhfunc(monthsize,(150,150,150))
         month = self.mdhrenders[monthsize][self.month-1]
 
         if daysize not in self.mdhrenders:# if the day size is not in the cache
-            self.mdhrenders[daysize] = self.mdhfunc(daysize)
+            self.mdhrenders[daysize] = self.mdhfunc(daysize,(150,150,150))
         day = self.mdhrenders[daysize][self.day-1]
 
         if yearsize not in self.renderedyear:# if the year size is not in the cache
             # size : [[year,render],[differentyear,render],etc...]
-            self.renderedyear[yearsize] = [[self.year,self.yearfunc(yearsize)]]
+            self.renderedyear[yearsize] = [[self.year,self.yearfunc(yearsize,(150,150,150))]]
             year = self.renderedyear[yearsize][0][1]
         else:# if the year size is in the cache
             if self.year in (justnum:=[year[0] for year in self.renderedyear[yearsize]]):# if the year is already in the cache
                 year = self.renderedyear[yearsize][justnum.index(self.year)][1]
             else:# if the year is not in the size cache
-                self.renderedyear[yearsize].append([self.year,self.yearfunc(yearsize)])
+                self.renderedyear[yearsize].append([self.year,self.yearfunc(yearsize,(150,150,150))])
                 year = self.renderedyear[yearsize][-1][1]
 
         time = f'{self.hour if self.hour <= 12 else self.hour-12}:{self.minute:02d} {str("AM" if self.hour < 12 else "PM")}'
         if time == self.lasttimerender[0]:
             time_render = self.lasttimerender[1]
         else:
-            time_render = fontlist[timesize].render(time,(255,255,255))[0]
+            # make the color of the time render go from a light yellow to dark blue depending on the time of day
+            color1 = (238, 255, 0)
+            color2 = (128, 0, 255)
+            ratio = (((self.hour)*60+(self.minute)) / (24*60))
+            color = interpolate_color(color1, color2, ratio)
+            print(color)
+            time_render = fontlist[timesize].render(time,color)[0]
             self.lasttimerender = (time,time_render)
         # if timesize not in self.mdhrenders:# if the hour size is not in the cache
         #     self.mdhrenders[timesize] = self.mdhfunc(timesize)
