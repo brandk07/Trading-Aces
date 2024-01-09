@@ -9,6 +9,8 @@ import os
 import timeit
 from collections import deque
 from Classes.imports.StockOption import StockOption
+from functools import lru_cache 
+import pygame.gfxdraw
 pygame.font.init()
 pygame.mixer.init()
 pygame.init()
@@ -59,6 +61,8 @@ def playmusic(musicdata):
     pygame.mixer.music.set_volume(musicdata[1])
     
     return musicdata
+
+
 
 def reuserenders(renderlist,texts,textinfo,position) -> list:
     """renderlist is a list of dicts, 
@@ -169,7 +173,7 @@ def time_it(func):
         print(f"{func.__name__} took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-def limit_digits(num, max_digits,floater=True):
+def limit_digits(num, max_digits,floater=True) -> str:
     if len("{:,.2f}".format(num)) > max_digits:
         return "{:,.2e}".format(num)    
     else:
@@ -238,6 +242,49 @@ def point_in_triangle(point, triangle):
     b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denominator
     c = 1 - a - b
     return 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
+
+renderednums = {}# size : [{len(text) : surface}, renders nums 0-9.,]
+@lru_cache(maxsize=1000)
+def num_renderer(num, size, color,digitlimit=20):
+    global renderednums
+    text = limit_digits(num, digitlimit)
+    width,height = ((len(text)*size)//(2.1)),(size)*1.1
+    if size not in renderednums:
+        surf = pygame.Surface((width,height))
+        renderednums[size] = [{len(text):surf},[fontlist[size].render(str(i), color)[0] for i in range(0,10)]]
+        renderednums[size][1].append(fontlist[size].render('.', color)[0])
+        renderednums[size][1].append(fontlist[size].render(',', color)[0])
+
+    if len(text) not in renderednums[size][0]:# if the number of digits is not in the dictionary for the size
+        surf = pygame.Surface((width,height))
+        renderednums[size][0][len(text)] = surf
+    else:
+        surf = renderednums[size][0][len(text)]
+    # surf = pygame.Surface(((size/len(text))*25,(size/len(text))*15))
+    # surf.fill((0,0,0))
+    # With this line
+    pygame.gfxdraw.box(surf, (0,0,width,height), (0,0,0))
+    surf.set_colorkey((0,0,0))
+    blit_sequence = []
+    for i in range(0,len(text)):
+        if text[i] == '.' or text[i] == ',':# if the character is a decimal point
+            n = 10 if text[i] == '.' else 11; yoffset = height*.55# set the number to 10 if it's a decimal point, 11 if it's a comma
+        else:# if the character is a number
+            n = int(text[i]); yoffset = 0# set the number to the integer value of the character
+
+        if i == 0:# if it's the first character just add to the blit sequence
+            blit_sequence.append((renderednums[size][1][n], (0,yoffset)))
+            xoffset = 0
+        else:# if it's not the first character, add to the blit sequence with an offset
+            if text[i-1] == '.' or text[i-1] == ',':# checking for the prior character being a decimal point
+                n2 = 10 if text[i-1] == '.' else 11
+            else:
+                n2 = int(text[i-1])
+            xoffset = renderednums[size][1][n2].get_width()+(size/13)+xoffset# the offset is the width of the prior character plus a little extra
+            blit_sequence.append((renderednums[size][1][n], (xoffset,yoffset)))# add to the blit sequence with the offset
+
+    surf.blits(blit_sequence)
+    return surf
 
 def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurface=None, renderedtext=None):
         """Draws the pie chart for the portfolio menu. value is (value, name, color)"""

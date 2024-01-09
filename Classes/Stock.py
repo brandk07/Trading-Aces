@@ -319,19 +319,20 @@ class Stock():
                 yvalpos = np.where(self.graphrangelists[self.graphrange] == point)[0][0]
                 
                 # -------render the text for the graph----------
-                if len(self.recentrenders) > i and round(point,2) in self.recentrenders:
-                    text = self.recentrenders[round(point,2)]# reuse old renders if possible
-                    self.recentrenders.pop(round(point,2))# remove the text from the recentrenders
-                    self.recentrenders[round(point,2)] = text# add the text back to the recentrenders - so it is at the end of the dict (doesn't get deleted)
+                # if len(self.recentrenders) > i and round(point,2) in self.recentrenders:
+                #     text = self.recentrenders[round(point,2)]# reuse old renders if possible
+                #     self.recentrenders.pop(round(point,2))# remove the text from the recentrenders
+                #     self.recentrenders[round(point,2)] = text# add the text back to the recentrenders - so it is at the end of the dict (doesn't get deleted)
 
-                else:# if the text is not in the recentrenders or recent renders doesn't have enough texts
-                    text = fontlist[30].render(f'{point:,.2f}',(255,255,255))[0]# render the text
-                    self.recentrenders[round(point,2)] = text# add the text to the recentrenders
+                # else:# if the text is not in the recentrenders or recent renders doesn't have enough texts
+                #     text = fontlist[30].render(f'{point:,.2f}',(255,255,255))[0]# render the text
+                #     self.recentrenders[round(point,2)] = text# add the text to the recentrenders
                 
-                for i in range(len(self.recentrenders)-4):# if recentrenders has more then 4 texts
-                    self.recentrenders.pop(list(self.recentrenders)[0])# remove the first text from recentrenders
+                # for i in range(len(self.recentrenders)-4):# if recentrenders has more then 4 texts
+                #     self.recentrenders.pop(list(self.recentrenders)[0])# remove the first text from recentrenders
                         
                 # draw the text and the lines
+                text = num_renderer(point, 30, (255,255,255))
                 gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
                 text_rect = text.get_rect(center=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
                 screen.blit(text,text_rect)
@@ -347,7 +348,8 @@ class Stock():
 
         #draws the text that displays the price of the stock
         if type(self) == Stock:#text displaying the price, and the net worth
-            pricetext = fontlist[40].render(f'{self.price:,.2f}',(255,255,255))[0]
+            # pricetext = fontlist[40].render(f'{self.price:,.2f}',(255,255,255))[0]
+            pricetext = num_renderer(self.price, 40, (255,255,255))
             textwidth = pricetext.get_width()+20+self.pricetext.get_width(); textheight = pricetext.get_height()
             textx = self.endpos[0]+20; texty = self.endpos[1]-55
             # use textx, and texty to draw the polygon
