@@ -334,8 +334,8 @@ class Stock():
                 # draw the text and the lines
                 text = num_renderer(point, 30, (255,255,255))
                 gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
-                text_rect = text.get_rect(center=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
-                screen.blit(text,text_rect)
+                # text_rect = text.get_rect(left=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
+                screen.blit(text,(self.startpos[0]-text.get_width(),(graphingpoints[yvalpos]-text.get_height()//2-5)))
                 
         else:#if the minpoint and maxpoint are the same
             gfxdraw.line(screen,self.endpos[0],int(self.startpos[1]+graphheight),self.startpos[0]-blnkspacex,int(self.startpos[1]+graphheight),(255,255,255))#draws a line across the graph
@@ -349,7 +349,7 @@ class Stock():
         #draws the text that displays the price of the stock
         if type(self) == Stock:#text displaying the price, and the net worth
             # pricetext = fontlist[40].render(f'{self.price:,.2f}',(255,255,255))[0]
-            pricetext = num_renderer(self.price, 40, (255,255,255))
+            pricetext = num_renderer(self.price, 45, (255,255,255))
             textwidth = pricetext.get_width()+20+self.pricetext.get_width(); textheight = pricetext.get_height()
             textx = self.endpos[0]+20; texty = self.endpos[1]-55
             # use textx, and texty to draw the polygon
