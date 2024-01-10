@@ -32,6 +32,13 @@ fontlist = [fonts(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistcry = [crystalfonts(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistpix = [pixfonts(num) for num in range(0,201)]#list of fonts from 0-100
 font45 = fonts(45)
+
+@lru_cache(maxsize=100)
+def s_render(string:str, size, color) -> pygame.Surface:
+    """Caches the renders of the strings, and returns the rendered surface"""
+    print(f"Caching arguments: {string}, {size}, {color}")
+    text = fontlist[size].render(string, (color))[0]
+    return text
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 soundEffects = {
@@ -152,11 +159,13 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
 def update_fps(clock,lastfps:deque):
     fps = str(int(clock.get_fps()))
     lastfps.append(fps)
-    fps_text = fontlist[25].render(fps, pygame.Color("coral"))[0]
-
-    averagefps = sum([int(fps) for fps in lastfps])/len(lastfps)
-    averagefps_text = fontlist[25].render(str(int(averagefps)), pygame.Color("coral"))[0]
-    return fps_text,averagefps_text
+    fps_text = s_render(fps, 25, (225,64,35))
+    intlastfps = [int(fps) for fps in lastfps]
+    averagefps = sum(intlastfps)/len(lastfps)
+    averagefps_text = s_render(str(int(averagefps)), 25, (225,64,35))
+    lowestfps = min(intlastfps)
+    lowestfps_text = s_render(str(lowestfps), 25, (225,64,35))
+    return fps_text,averagefps_text,lowestfps_text
 
 def time_it(func):
     def wrapper(*args, **kwargs):
@@ -235,144 +244,14 @@ def point_in_triangle(point, triangle):
     b = ((y3 - y1) * (x - x3) + (x1 - x3) * (y - y3)) / denominator
     c = 1 - a - b
     return 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
-
-renderednums = {}# size : [{len(text) : surface}, renders nums 0-9.,]
-# @lru_cache(maxsize=1000,typed=False)
-# def num_renderer(num, size, color,digitlimit=20):
-#     print(f"Caching arguments: {num}, {size}, {color}, {digitlimit}")
-#     global renderednums
-#     text = limit_digits(num, digitlimit)
-#     width,height = ((len(text)*size)//(2.1)),(size)*1.1
-#     if size not in renderednums:
-#         surf = pygame.Surface((width,height))
-#         renderednums[size] = [{len(text):surf},[fontlist[size].render(str(i), color)[0] for i in range(0,10)]]
-#         renderednums[size][1].append(fontlist[size].render('.', color)[0])
-#         renderednums[size][1].append(fontlist[size].render(',', color)[0])
-
-#     if len(text) not in renderednums[size][0]:# if the number of digits is not in the dictionary for the size
-#         surf = pygame.Surface((width,height))
-#         renderednums[size][0][len(text)] = surf
-#     else:
-#         surf = renderednums[size][0][len(text)]
-#     # surf = pygame.Surface(((size/len(text))*25,(size/len(text))*15))
-#     # surf.fill((0,0,0))
-#     # With this line
-#     pygame.gfxdraw.box(surf, (0,0,width,height), (0,0,0))
-#     surf.set_colorkey((0,0,0))
-#     blit_sequence = []
-#     for i in range(0,len(text)):
-#         if text[i] == '.' or text[i] == ',':# if the character is a decimal point
-#             n = 10 if text[i] == '.' else 11; yoffset = height*.55# set the number to 10 if it's a decimal point, 11 if it's a comma
-#         else:# if the character is a number
-#             n = int(text[i]); yoffset = 0# set the number to the integer value of the character
-
-#         if i == 0:# if it's the first character just add to the blit sequence
-#             blit_sequence.append((renderednums[size][1][n], (0,yoffset)))
-#             xoffset = 0
-#         else:# if it's not the first character, add to the blit sequence with an offset
-#             if text[i-1] == '.' or text[i-1] == ',':# checking for the prior character being a decimal point
-#                 n2 = 10 if text[i-1] == '.' else 11
-#             else:
-#                 n2 = int(text[i-1])
-#             xoffset = renderednums[size][1][n2].get_width()+(size/13)+xoffset# the offset is the width of the prior character plus a little extra
-#             blit_sequence.append((renderednums[size][1][n], (xoffset,yoffset)))# add to the blit sequence with the offset
-
-#     surf.blits(blit_sequence)
-#     return surf.copy(),text
-@lru_cache(maxsize=100)
-def split_string(s):
-    """Splits the string into parts that are either all digits or all non-digits"""
-    # Example: 'Price $5,689' -> ['Price $', '5', ',', '6', '8', '9']
-    # having the lru_cache isn't really necessary, but it speeds up the function a little bit
-    # Split the string into parts that are either all digits or all non-digits
-    parts = re.split('(\d)', s)
-
-    # Remove any empty strings from the list
-    parts = [part for part in parts if part]
-
-    # Convert the numeric parts to integers
-    for i in range(len(parts)):
-        if parts[i].isdigit():
-            parts[i] = str(parts[i])
-
-    return parts
-@lru_cache(maxsize=1000)
-def single_render(string:str, size, color):
-    print(f"Caching arguments: {string}, {size}, {color}")
-    text = fontlist[size].render(string, color)[0]
-    return text
-
-@lru_cache(maxsize=1000)
-def string_renderer(string:str, size, color) -> pygame.Surface:
-    """Renders text to a surface, and returns the surface | MUCH FASTER THAN THE NORMAL PYGAME RENDERER"""
-    global renderednums
-    text = split_string(string)
-
-    width,height = ((len(string)*size)//(2.5)),(size)*1.1
-    if size not in renderednums:
-        renderednums[size] = [fontlist[size].render(str(i), color)[0] for i in range(0,10)]
-        renderednums[size].append(fontlist[size].render('.', color)[0])
-        renderednums[size].append(fontlist[size].render(',', color)[0])
-
-    surf = pygame.Surface((width,height))
-    surf.set_colorkey((0,0,0))
-
-    blit_sequence = []
-    lastwidth = 0
-    for i in range(0,len(text)):
-        if not text[i].isdigit() and not(text[i] == '.' or text[i] == ','):# if the character(s) is(are) a string
-            render = single_render(text[i], size, color)
-            blit_sequence.append((render, (0 if i == 0 else lastwidth,0)))
-            lastwidth += render.get_width()+(size/13)
-        else:
-            if text[i] == '.' or text[i] == ',':# if the character is a decimal point
-                n = 10 if text[i] == '.' else 11; yoffset = height*.5# set the number to 10 if it's a decimal point, 11 if it's a comma
-            else:# if the character is a number
-                n = int(text[i]); yoffset = 0# set the number to the integer value of the character
-
-            blit_sequence.append((renderednums[size][n], (lastwidth,yoffset)))# add to the blit sequence with the offset
-            lastwidth += renderednums[size][n].get_width()+(size/13)# add the width of the current
-
-    surf.blits(blit_sequence)
-    return surf.copy()
-# @lru_cache(maxsize=1000)
-# def num_renderer(num, size, color):
-#     global renderednums
-#     text = f'{num:,.2f}'
-#     width,height = ((len(text)*size)//(2.1)),(size)*1.1
-#     if size not in renderednums:
-#         renderednums[size] = [fontlist[size].render(str(i), color)[0] for i in range(0,10)]
-#         renderednums[size].append(fontlist[size].render('.', color)[0])
-#         renderednums[size].append(fontlist[size].render(',', color)[0])
-
-#     surf = pygame.Surface((width,height))
-#     # surf.fill((0,0,0))
-#     # With this line
-#     # pygame.gfxdraw.box(surf, (0,0,width,height), (0,0,0))
-#     surf.set_colorkey((0,0,0))
-
-#     blit_sequence = []
-#     for i in range(0,len(text)):
-#         if text[i] == '.' or text[i] == ',':# if the character is a decimal point
-#             n = 10 if text[i] == '.' else 11; yoffset = height*.55# set the number to 10 if it's a decimal point, 11 if it's a comma
-#         else:# if the character is a number
-#             n = int(text[i]); yoffset = 0# set the number to the integer value of the character
-
-#         if i == 0:# if it's the first character just add to the blit sequence
-#             blit_sequence.append((renderednums[size][n], (0,yoffset)))
-#             xoffset = 0
-#         else:# if it's not the first character, add to the blit sequence with an offset
-#             if text[i-1] == '.' or text[i-1] == ',':# checking for the prior character being a decimal point
-#                 n2 = 10 if text[i-1] == '.' else 11
-#             else:
-#                 n2 = int(text[i-1])
-#             xoffset = renderednums[size][n2].get_width()+(size/13)+xoffset# the offset is the width of the prior character plus a little extra
-#             blit_sequence.append((renderednums[size][n], (xoffset,yoffset)))# add to the blit sequence with the offset
-
-#     surf.blits(blit_sequence)
-#     return surf.copy()
-
-def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurface=None, renderedtext=None):
+@lru_cache(maxsize=10)
+def createbacksurf(radius):
+    backsurface = pygame.Surface((radius * 2 + 10, radius * 2 + 10))
+    backsurface.fill((0, 0, 0))
+    pygame.draw.circle(backsurface, (255, 255, 255), (radius, radius), radius)
+    backsurface.set_colorkey((255, 255, 255))
+    return backsurface
+def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords):
         """Draws the pie chart for the portfolio menu. value is (value, name, color)"""
         # the polygons are blit to this, then the backsurface is blit, then the backsurface is turned transparent and wholesurf is blit to the screen
         wholesurf = pygame.Surface((radius*2,radius*2))
@@ -439,14 +318,9 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
             # draw the polygon
             pygame.draw.polygon(wholesurf, color, [(x[0]-coords[0],x[1]-coords[1]) for x in points])            
 
-        if backsurface == None:  # if the backsurface is not none, then draw the circle on the backsurface
-            backsurface = pygame.Surface((radius * 2 + 10, radius * 2 + 10))
-            backsurface.fill((40, 40, 40))
-            pygame.draw.circle(backsurface, (255, 255, 255), (radius, radius), radius)
-            backsurface.set_colorkey((255, 255, 255))
 
-        wholesurf.blit(backsurface, (0,0))  # blit the backsurface to the screen
-        wholesurf.set_colorkey((40,40,40))
+        wholesurf.blit(createbacksurf(radius), (0,0))  # blit the backsurface to the screen
+        wholesurf.set_colorkey((0,0,0))
         screen.blit(wholesurf, coords)
         starpos = coords[1]+(((((radius*2))-(len(angles)*30))//2))
         #  drawing the boxes displaying the colors next to the names
@@ -461,8 +335,8 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
             gfxdraw.filled_polygon(screen, [(box_x, box_y), (box_x + box_width, box_y), (box_x + box_width, box_y + box_height), (box_x, box_y + box_height)], color)
 
         # rendering and blitting the text
-        if renderedtext == None or len(renderedtext) != len(angles)+1 or [name for (*_, name, color) in (angles)] != [name for (*_, name,color) in (renderedtext)] or renderedtext[-1][1] != f'${total:,.2f}':
-            renderedtext = [[fontlist[35].render(f'{name}' if type(name) == str else{f'{name:,.2f}'}, (255,255,255))[0],name] for (*_, name,color) in (angles)]
+        
+        renderedtext = [[s_render(f'{name}' if type(name) == str else{f'{name:,.2f}'},35,(255,255,255)),name] for (*_, name,color) in (angles)]
         for i,text in enumerate(renderedtext):
             text_x = cx + 30
             text_y = starpos -5 + (i * 30)
@@ -473,15 +347,6 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurf
         renderedtext.append([totaltext,f'${total:,.2f}'])
         screen.blit(totaltext, (corners[0][0]+radius-(totaltext.get_width()/2), corners[0][1]+radius-(totaltext.get_height()/2)))
 
-        return backsurface,renderedtext
-
-
-    
-# fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Regular.ttf',font_size)
-# fonts = lambda font_size: pygame.font.SysFont(r'Assets/antonio/Antonio-Bold.ttf',font_size)
-
-
-
 def drawgametime(currenttime,screen:pygame.Surface):
     numtime_text,rect = fontlist[50].render(f'{currenttime[3]}:{"0" if currenttime[4] < 10 else ""}{currenttime[4]}{currenttime[6]}',(255,255,255))
     numtime_rect = numtime_text.get_rect(center=(100, 950))
@@ -490,83 +355,3 @@ def drawgametime(currenttime,screen:pygame.Surface):
     pygame.draw.polygon(screen, (255, 255, 255), polygon_points, 5)
     pygame.draw.polygon(screen, (0, 0, 0), polygon_points, 1)
     screen.blit(numtime_text, numtime_rect)
-#for time testing
-# start_time = time.time()
-
-# for i, point in enumerate(self.pricepoints):
-#     # do something
-
-# end_time = time.time()
-# print(f"Loop took {end_time - start_time:.5f} seconds to execute.")
-
-# import math
-# from scipy.stats import norm
-# import numpy as np
-
-# def calculate_option_cost(stock_price, strike_price, time_to_expiration, annualized_volatility, risk_free_rate, option_type="call"):
-#     d1 = (math.log(stock_price / strike_price) + (risk_free_rate + 0.5 * (annualized_volatility ** 2)) * time_to_expiration) / (annualized_volatility * math.sqrt(time_to_expiration))
-#     d2 = d1 - annualized_volatility * math.sqrt(time_to_expiration)
-
-#     if option_type == "call":
-#         option_price = stock_price * norm.cdf(d1) - strike_price * math.exp(-risk_free_rate * time_to_expiration) * norm.cdf(d2)
-#     elif option_type == "put":
-#         option_price = strike_price * math.exp(-risk_free_rate * time_to_expiration) * norm.cdf(-d2) - stock_price * norm.cdf(-d1)
-#     else:
-#         raise ValueError("Invalid option type. Use 'call' or 'put'.")
-
-#     return option_price
-
-
-# import numpy as np
-
-# def annualized_volatility(stock_prices):
-#     """
-#     Calculate the annualized volatility of a stock based on its daily closing prices.
-
-#     Parameters:
-#     - stock_prices (list): List of daily closing prices of the stock.
-
-#     Returns:
-#     - annualized_volatility (float): Annualized volatility of the stock.
-#     """
-#     # Normalize prices
-#     normalized_prices = np.array(stock_prices) / stock_prices[0]
-
-#     # Calculate daily returns as logarithmic returns
-#     log_returns = np.diff(np.log(normalized_prices))
-
-#     # Calculate standard deviation of daily returns
-#     daily_volatility = np.std(log_returns)
-
-#     # Annualize the volatility and convert to percentage
-#     annualized_volatility = daily_volatility * np.sqrt(252) * 100  # Assuming 252 trading days in a year
-
-#     return annualized_volatility
-
-# # Example usage:
-# stock_prices = [6968.671473400675, 7130.065535543774, 7413.781403525257, 7804.211905571063, 7504.192594931716, 6662.6513250357975, 6651.27444480081, 6410.6296061408775, 5917.474287146435, 6245.1338505537005, 5274.899282224345, 5418.906391525891, 4817.254313086428, 4231.81072941926, 4840.2229778030405, 4314.12702144972, 4175.471447850328, 3780.434234360048, 4277.758649447638, 4487.405767871783, 4263.5080782880805, 5103.681568262018, 5233.036999154541, 5863.534525172299, 6667.2167742608, 7401.018816139965, 9198.332279091126, 8910.70919237949, 9100.32066376311, 10961.723147257198, 12840.067206530097, 14714.302335599088, 17701.235358828046, 20066.886896634336, 22904.68829080952, 23355.614296338368, 23362.580500010095, 26453.578546194778, 31265.715486597128, 36648.09126098657, 40328.91159188258, 42591.90263782226, 36733.793066229904, 32479.90265677884, 28041.94237340091, 24182.800884364664, 23835.824565965242, 28593.012747011988, 28773.725723746607, 31659.361917756927, 31624.944653858034, 37367.76835726075, 46742.8957489271, 53084.902119909675, 50091.330266249526, 47894.68273337462, 46342.177750923525, 55778.14889835074, 67329.80661730806, 77653.32735888498, 84034.25730545163, 84705.29911896402, 72632.44776154935, 71694.39824841112, 71307.15412321776, 63929.040310706834, 58254.26814835845, 60096.190143911714, 55794.20725434445, 47266.703416110235, 41677.30792070973, 54382.76060220838, 73171.30688660842, 73871.87077274256, 72864.4163660437, 82018.79553115902, 85073.84093599494, 101645.04559451054, 94288.70373126621, 85568.801953486, 90677.78466019875, 95149.33691819578, 86300.8741739137, 79571.04414915909, 81027.12107689284, 76883.9689450006, 74554.26927680653, 80545.65482198782, 72469.92000261076, 75284.71562800018, 84796.34751394768, 84871.2615377753, 102897.9329097338, 92956.90332257377, 93969.66691886807, 89407.3095219999, 93126.4391035934, 89765.37417589765, 93925.21869443622, 83268.93746613545, 81880.09584328328, 74894.99257663086, 76797.78567392839, 81587.56104687724, 74561.19552869526, 69078.5881610414, 68479.95132560984, 70030.81473291053, 73025.9963540791, 59123.60386420274, 70299.42793521816, 70810.52023505612, 64370.90043337661, 55342.507030752924, 51347.35400384111, 48129.490603574835, 47915.28525679948, 55933.02536704292, 65379.47908856028, 67830.6517713528, 67224.82883902047, 68320.99638164375, 73731.22625468986, 68699.24399509639, 72062.13324120226, 83505.90607222567, 88034.25766776262, 86300.67256049823, 90263.83690938131, 96729.24714038309, 84957.08327476007, 76891.6093465021, 72663.93461339458, 69386.24122072825, 59072.44684128064, 57612.56213574908, 58283.03843705381, 67624.81113676328, 75334.28314206227, 77006.51252857139, 69783.90231797888, 79149.06076130195, 94977.98602958283, 87609.38439271822, 76052.78758286432, 98109.32472869488, 132511.09652388064, 141000.79596083402, 124007.03714419524, 130286.69079665888, 150474.56309303132, 163703.67473820326, 178165.51437135064, 196388.7281981462, 218474.26578975146, 219072.49598746706, 197687.1898567102, 177527.25883324342, 162252.81345111594, 186540.25844513837, 241878.02651100678, 297701.85577262024, 305940.47759020387, 351521.74097633327, 404667.9508040024, 414117.85670367355, 386825.6681092981, 351190.69112617173, 373004.6341035231, 393874.0720087913, 416415.26399850054, 450379.0324946436, 466472.4552874157, 408222.80998102773, 369889.6820126304, 391889.8783033573, 423736.5911029872, 464723.10830442666, 621812.5002380103, 714606.631214622, 872047.9535671985, 1016651.3789869269, 1205089.5303538993, 1487428.5774086732, 1672647.5695822951, 2052938.6831482092, 2259507.355827015, 2473055.76190208, 2623672.558890709, 3023875.72891826, 3571878.100914787, 4052492.852266942, 4709381.786866437, 5260859.856963037, 5967405.459595003, 6856793.483765439, 7843867.689440922, 7376339.097168212, 7786463.801612487, 8155213.04422233]
-
-# volatility = annualized_volatility(stock_prices)
-# print(f"Annualized Volatility: {volatility:.4f}%")
-
-
-
-
-# # Scale down the prices for numerical stability
-# scale_factor = 1000000
-# stock_price = 4709381.786866437 / scale_factor
-# strike_price = 5000000 / scale_factor
-
-# time_to_expiration = 10/365  # 6 months
-# # annual_volatility = volatility  # This should be estimated from historical data
-# annual_volatility = 20000  # This should be estimated from historical data
-# risk_free_rate = 0.05  # You should use the actual risk-free rate
-# option_type = "call"
-
-# # Calculate the option cost
-# option_cost = calculate_option_cost(stock_price, strike_price, time_to_expiration, annualized_volatility, risk_free_rate, option_type)
-
-# # Scale the option cost back up
-# option_cost *= scale_factor
-
-# print("Option cost:", f'{option_cost:,.2f}')

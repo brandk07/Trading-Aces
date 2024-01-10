@@ -333,7 +333,7 @@ class Stock():
                         
                 # draw the text and the lines
 
-                text = string_renderer(str(limit_digits(point,13)), 30, (255,255,255))
+                text = s_render(str(limit_digits(point,13)), 30, (255,255,255))
                 gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
                 # text_rect = text.get_rect(left=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
                 screen.blit(text,(self.startpos[0]-text.get_width(),(graphingpoints[yvalpos]-text.get_height()//2-5)))
@@ -351,7 +351,7 @@ class Stock():
         if type(self) == Stock:#text displaying the price, and the net worth
             # pricetext = fontlist[40].render(f'{self.price:,.2f}',(255,255,255))[0]
             # print(f"Price ${limit_digits(self.price,10)}")
-            pricetext = string_renderer(f"Price ${limit_digits(self.price,15)}", 45, (210,210,210))
+            pricetext = s_render(f"Price ${limit_digits(self.price,15)}", 45, (210,210,210))
             textwidth = pricetext.get_width()-50; textheight = pricetext.get_height()-15
             textx = self.endpos[0]+20; texty = self.endpos[1]-55
             # use textx, and texty to draw the polygon
@@ -363,7 +363,8 @@ class Stock():
                     
         else:
             # goes off the current price of the stock, not the original value stored in the stock object
-            screen.blit(fontlist[40].render(f' Net Worth ${player.get_Networth():,.2f}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
+            # screen.blit(fontlist[40].render(f' Net Worth ${player.get_Networth():,.2f}',(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]-40)) 
+            screen.blit(s_render(f' Net Worth ${player.get_Networth():,.2f}',40,(255,255,255)),(self.endpos[0]+10,self.endpos[1]-40)) 
             
 
         screen.blit(self.nametext,(self.endpos[0]+15,self.startpos[1]+15))#draws the text that displays the name of the stock or the player
@@ -376,15 +377,18 @@ class Stock():
         
         if type(self) == Stock:
             change_text = '+' + str(percentchange) + '%' if percentchange >= 0 else '-' + str(percentchange) + '%'
-            change_text_rendered = fontlist[40].render(change_text, color)[0]
+            # change_text_rendered = fontlist[40].render(change_text, color)[0]
+            change_text_rendered = s_render(change_text, 40, color)
             screen.blit(change_text_rendered, (self.endpos[0]+15, self.startpos[1]+45))
         elif type(self) == self.Playerclass:
             change_text = '+' + str(percentchange) + '%' if percentchange >= 0 else '-' + str(percentchange) + '%'
-            change_text_rendered = fontlist[40].render(change_text, color)[0]
+            # change_text_rendered = fontlist[40].render(change_text, color)[0]
+            change_text_rendered = s_render(change_text, 40, color)
             screen.blit(change_text_rendered, (self.endpos[0]+15, self.startpos[1]+80))
 
         if type(self) == self.Playerclass:
-            cash_text = fontlist[40].render(f'Cash ${self.cash:,.2f}', (255,255,255))[0]
+            cash_text = s_render(f'Cash ${limit_digits(player.cash,15)}', 45, (210,210,210))
+            # cash_text = fontlist[40].render(f'Cash ${self.cash:,.2f}', (255,255,255))[0]
             screen.blit(cash_text, (self.endpos[0]+15, self.startpos[1]+50))
         
         self.mouseover(screen,graphingpoints,spacing,blnkspacey)#displays the price of the stock when the mouse is over the graph

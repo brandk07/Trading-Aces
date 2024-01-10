@@ -162,18 +162,19 @@ class StockEvents():
 
     def draw(self,screen:pygame.Surface):
         """Draws all the stock events to the screen"""
-        if len(self.stockevents) > 9:
-            for i in range(len(self.stockevents)-9):
+        if len(self.stockevents) > 8:
+            for i in range(len(self.stockevents)-8):
                 del self.stockevents[list(self.stockevents)[i]]
         events_to_remove = []
         for i,event in enumerate(list(self.stockevents.values())):
             text, color, duration = event
             if duration > 0:
                 # draw a polygon behind the text, trapozoid, length of 520, height of 50
-                gfxdraw.filled_polygon(screen,[(940,175+(i*55)),(955,215+(i*55)),(940+505,215+(i*55)),(925+505,175+(i*55))],color)
+                points = [(940,230+(i*55)),(955,270+(i*55)),(940+505,270+(i*55)),(925+505,230+(i*55))]
+                gfxdraw.filled_polygon(screen,points,color)
                 # createa a border around the polygon
-                pygame.draw.polygon(screen,(0,0,0),[(940,175+(i*55)),(955,215+(i*55)),(940+505,215+(i*55)),(925+505,175+(i*55))],5)
-                screen.blit(text,(965,185+(i*55)))
+                pygame.draw.polygon(screen,(0,0,0),points,5)
+                screen.blit(text,(965,240+(i*55)))
                 event[2] -= 1# subtracts one from the duration
             else:
                 events_to_remove.append(list(self.stockevents)[i])

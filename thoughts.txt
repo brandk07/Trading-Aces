@@ -74,6 +74,8 @@ Add a extra text parameter to the num_renderer so that more text can be rendered
 
 Improve performance with adding points to stock graphs (1/8/2024)
 
+Include the date when the stock was purchased (1/10/2024)
+
 //////////////////////////////////////////----URGENT----/////////////////////////////////////////////////////////////////////////////
 PROBLEM WITH THE quantityControls LOOK AT VIXEL AND TRY TO PUT IT BETWEEN 3 AND 6 (1/1/24)
 

@@ -104,7 +104,7 @@ if __name__ == "__main__":
         # portfolio.draw_icon(screen,mousebuttons,stocklist,player,menulist)
         # optiontrade.draw_icon(screen,mousebuttons,stocklist,player,menulist)
  
-        screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30)]))
+        screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
 
 
         mousebuttons = 0

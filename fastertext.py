@@ -9,7 +9,7 @@ pygame.init()
 screen = pygame.display.set_mode([900,900])
 pygame.display.set_caption("Pygame Shell")
 
-fonts = lambda font_size: freetype.Font(r'Antonio-Regular.ttf', font_size)
+fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size)
 fontlist = [fonts(num) for num in range(0,201)]#list of fonts from 0-100
 
 # below is a dictionary of all the rendered numbers
@@ -20,7 +20,7 @@ renderednums = {}# size : [{len(text) : surface}, renders nums 0-9]
 # 53 and 25 pre num renderer
 # 
 # take text as extra argument, but the text won't be in prerenders
-# @lru_cache(maxsize=100)
+@lru_cache(maxsize=100)
 def split_string(s):
     # Split the string into parts that are either all digits or all non-digits
     parts = re.split('(\d)', s)
@@ -51,7 +51,7 @@ def string_renderer(string:str, size, color):
 def num_renderer(string:str, size, color) -> pygame.Surface:
     """Renders text to a surface, and returns the surface"""
     global renderednums
-    string = f"Price ${string:,.2f} is the amount of"
+    string = f"Price ${string:,.2f}"
     text = split_string(string)
     # text = f'Price {string:,.2f}'
 
@@ -63,7 +63,7 @@ def num_renderer(string:str, size, color) -> pygame.Surface:
         renderednums[size].append(fontlist[size].render(',', color)[0])
 
     surf = pygame.Surface((width,height))
-    # surf.set_colorkey((0,0,0))
+    surf.set_colorkey((0,0,0))
 
     blit_sequence = []
     lastwidth = 0
@@ -84,7 +84,7 @@ def num_renderer(string:str, size, color) -> pygame.Surface:
     surf.blits(blit_sequence)
     return surf.copy()
 
-dsize = 20
+dsize = 45
 randomnumbers = [randint(0,1000000) for i in range(0,10000)]
 text1 = num_renderer(16521321, dsize, "coral")
 start = timeit.default_timer()
@@ -97,8 +97,8 @@ print("Time to prerender: ", (stop-start))
 
 
 start = timeit.default_timer()
-for i in range(0,1):  
-    text2 = fontlist[dsize].render(f"{randomnumbers[9999]:,.2f}", pygame.Color("coral"))[0]
+for i in range(0,10000):  
+    text2 = fontlist[dsize].render(f"Price ${randomnumbers[i]:,.2f}", pygame.Color("coral"))[0]
 
 stop = timeit.default_timer()
 print("Time to render: ", (stop-start))
