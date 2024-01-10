@@ -332,7 +332,8 @@ class Stock():
                 #     self.recentrenders.pop(list(self.recentrenders)[0])# remove the first text from recentrenders
                         
                 # draw the text and the lines
-                text = num_renderer(point, 30, (255,255,255))
+
+                text = string_renderer(str(limit_digits(point,13)), 30, (255,255,255))
                 gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
                 # text_rect = text.get_rect(left=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
                 screen.blit(text,(self.startpos[0]-text.get_width(),(graphingpoints[yvalpos]-text.get_height()//2-5)))
@@ -349,13 +350,16 @@ class Stock():
         #draws the text that displays the price of the stock
         if type(self) == Stock:#text displaying the price, and the net worth
             # pricetext = fontlist[40].render(f'{self.price:,.2f}',(255,255,255))[0]
-            pricetext = num_renderer(self.price, 45, (255,255,255))
-            textwidth = pricetext.get_width()+20+self.pricetext.get_width(); textheight = pricetext.get_height()
+            # print(f"Price ${limit_digits(self.price,10)}")
+            pricetext = string_renderer(f"Price ${limit_digits(self.price,15)}", 45, (210,210,210))
+            textwidth = pricetext.get_width()-50; textheight = pricetext.get_height()-15
             textx = self.endpos[0]+20; texty = self.endpos[1]-55
             # use textx, and texty to draw the polygon
-            gfxdraw.filled_polygon(screen,[(textx-15,texty-5),(textx+textwidth,texty-5),(textx+textwidth+10,texty+textheight+5),(textx,texty+textheight+5)],(60,60,60))
-            screen.blit(self.pricetext,(textx,texty))#draws the word price
-            screen.blit(pricetext,(textx+self.pricetext.get_width(),texty))# draws the price
+            gfxdraw.filled_polygon(screen,[(textx-15,texty-5),(textx+textwidth,texty-5),(textx+textwidth+10,texty+textheight+5),(textx,texty+textheight+5)],(30,30,30))
+            pygame.draw.polygon(screen,(0,0,0),[(textx-15,texty-5),(textx+textwidth,texty-5),(textx+textwidth+10,texty+textheight+5),(textx,texty+textheight+5)],5)
+            # screen.blit(self.pricetext,(textx,texty))#draws the word price
+
+            screen.blit(pricetext,(textx,texty))# draws the price
                     
         else:
             # goes off the current price of the stock, not the original value stored in the stock object
@@ -368,7 +372,7 @@ class Stock():
         # percentchange = round(((self.price - self.graphrangelists[self.graphrange][-2])/self.graphrangelists[self.graphrange][-2])*100,2)
         percentchange = round(((self.graphrangelists[self.graphrange][-1]/self.graphrangelists[self.graphrange][0])-1)*100,2)
        
-        color = (0,200,0) if percentchange >= 0 else (200,0,0)
+        color = (0,175,0) if percentchange >= 0 else (175,0,0)
         
         if type(self) == Stock:
             change_text = '+' + str(percentchange) + '%' if percentchange >= 0 else '-' + str(percentchange) + '%'

@@ -1,16 +1,9 @@
-import pygame
-import time
-from pygame import gfxdraw
-from pygame import freetype
-import math
-import json
-import random
-import os
-import timeit
+import pygame,time
+from pygame import gfxdraw,freetype
+import os,re,random,json,math,timeit
 from collections import deque
 from Classes.imports.StockOption import StockOption
 from functools import lru_cache 
-import pygame.gfxdraw
 pygame.font.init()
 pygame.mixer.init()
 pygame.init()
@@ -244,47 +237,140 @@ def point_in_triangle(point, triangle):
     return 0 <= a <= 1 and 0 <= b <= 1 and 0 <= c <= 1
 
 renderednums = {}# size : [{len(text) : surface}, renders nums 0-9.,]
+# @lru_cache(maxsize=1000,typed=False)
+# def num_renderer(num, size, color,digitlimit=20):
+#     print(f"Caching arguments: {num}, {size}, {color}, {digitlimit}")
+#     global renderednums
+#     text = limit_digits(num, digitlimit)
+#     width,height = ((len(text)*size)//(2.1)),(size)*1.1
+#     if size not in renderednums:
+#         surf = pygame.Surface((width,height))
+#         renderednums[size] = [{len(text):surf},[fontlist[size].render(str(i), color)[0] for i in range(0,10)]]
+#         renderednums[size][1].append(fontlist[size].render('.', color)[0])
+#         renderednums[size][1].append(fontlist[size].render(',', color)[0])
+
+#     if len(text) not in renderednums[size][0]:# if the number of digits is not in the dictionary for the size
+#         surf = pygame.Surface((width,height))
+#         renderednums[size][0][len(text)] = surf
+#     else:
+#         surf = renderednums[size][0][len(text)]
+#     # surf = pygame.Surface(((size/len(text))*25,(size/len(text))*15))
+#     # surf.fill((0,0,0))
+#     # With this line
+#     pygame.gfxdraw.box(surf, (0,0,width,height), (0,0,0))
+#     surf.set_colorkey((0,0,0))
+#     blit_sequence = []
+#     for i in range(0,len(text)):
+#         if text[i] == '.' or text[i] == ',':# if the character is a decimal point
+#             n = 10 if text[i] == '.' else 11; yoffset = height*.55# set the number to 10 if it's a decimal point, 11 if it's a comma
+#         else:# if the character is a number
+#             n = int(text[i]); yoffset = 0# set the number to the integer value of the character
+
+#         if i == 0:# if it's the first character just add to the blit sequence
+#             blit_sequence.append((renderednums[size][1][n], (0,yoffset)))
+#             xoffset = 0
+#         else:# if it's not the first character, add to the blit sequence with an offset
+#             if text[i-1] == '.' or text[i-1] == ',':# checking for the prior character being a decimal point
+#                 n2 = 10 if text[i-1] == '.' else 11
+#             else:
+#                 n2 = int(text[i-1])
+#             xoffset = renderednums[size][1][n2].get_width()+(size/13)+xoffset# the offset is the width of the prior character plus a little extra
+#             blit_sequence.append((renderednums[size][1][n], (xoffset,yoffset)))# add to the blit sequence with the offset
+
+#     surf.blits(blit_sequence)
+#     return surf.copy(),text
+@lru_cache(maxsize=100)
+def split_string(s):
+    """Splits the string into parts that are either all digits or all non-digits"""
+    # Example: 'Price $5,689' -> ['Price $', '5', ',', '6', '8', '9']
+    # having the lru_cache isn't really necessary, but it speeds up the function a little bit
+    # Split the string into parts that are either all digits or all non-digits
+    parts = re.split('(\d)', s)
+
+    # Remove any empty strings from the list
+    parts = [part for part in parts if part]
+
+    # Convert the numeric parts to integers
+    for i in range(len(parts)):
+        if parts[i].isdigit():
+            parts[i] = str(parts[i])
+
+    return parts
 @lru_cache(maxsize=1000)
-def num_renderer(num, size, color,digitlimit=20):
+def single_render(string:str, size, color):
+    print(f"Caching arguments: {string}, {size}, {color}")
+    text = fontlist[size].render(string, color)[0]
+    return text
+
+@lru_cache(maxsize=1000)
+def string_renderer(string:str, size, color) -> pygame.Surface:
+    """Renders text to a surface, and returns the surface | MUCH FASTER THAN THE NORMAL PYGAME RENDERER"""
     global renderednums
-    text = limit_digits(num, digitlimit)
-    width,height = ((len(text)*size)//(2.1)),(size)*1.1
+    text = split_string(string)
+
+    width,height = ((len(string)*size)//(2.5)),(size)*1.1
     if size not in renderednums:
-        surf = pygame.Surface((width,height))
-        renderednums[size] = [{len(text):surf},[fontlist[size].render(str(i), color)[0] for i in range(0,10)]]
-        renderednums[size][1].append(fontlist[size].render('.', color)[0])
-        renderednums[size][1].append(fontlist[size].render(',', color)[0])
+        renderednums[size] = [fontlist[size].render(str(i), color)[0] for i in range(0,10)]
+        renderednums[size].append(fontlist[size].render('.', color)[0])
+        renderednums[size].append(fontlist[size].render(',', color)[0])
 
-    if len(text) not in renderednums[size][0]:# if the number of digits is not in the dictionary for the size
-        surf = pygame.Surface((width,height))
-        renderednums[size][0][len(text)] = surf
-    else:
-        surf = renderednums[size][0][len(text)]
-    # surf = pygame.Surface(((size/len(text))*25,(size/len(text))*15))
-    # surf.fill((0,0,0))
-    # With this line
-    pygame.gfxdraw.box(surf, (0,0,width,height), (0,0,0))
+    surf = pygame.Surface((width,height))
     surf.set_colorkey((0,0,0))
-    blit_sequence = []
-    for i in range(0,len(text)):
-        if text[i] == '.' or text[i] == ',':# if the character is a decimal point
-            n = 10 if text[i] == '.' else 11; yoffset = height*.55# set the number to 10 if it's a decimal point, 11 if it's a comma
-        else:# if the character is a number
-            n = int(text[i]); yoffset = 0# set the number to the integer value of the character
 
-        if i == 0:# if it's the first character just add to the blit sequence
-            blit_sequence.append((renderednums[size][1][n], (0,yoffset)))
-            xoffset = 0
-        else:# if it's not the first character, add to the blit sequence with an offset
-            if text[i-1] == '.' or text[i-1] == ',':# checking for the prior character being a decimal point
-                n2 = 10 if text[i-1] == '.' else 11
-            else:
-                n2 = int(text[i-1])
-            xoffset = renderednums[size][1][n2].get_width()+(size/13)+xoffset# the offset is the width of the prior character plus a little extra
-            blit_sequence.append((renderednums[size][1][n], (xoffset,yoffset)))# add to the blit sequence with the offset
+    blit_sequence = []
+    lastwidth = 0
+    for i in range(0,len(text)):
+        if not text[i].isdigit() and not(text[i] == '.' or text[i] == ','):# if the character(s) is(are) a string
+            render = single_render(text[i], size, color)
+            blit_sequence.append((render, (0 if i == 0 else lastwidth,0)))
+            lastwidth += render.get_width()+(size/13)
+        else:
+            if text[i] == '.' or text[i] == ',':# if the character is a decimal point
+                n = 10 if text[i] == '.' else 11; yoffset = height*.5# set the number to 10 if it's a decimal point, 11 if it's a comma
+            else:# if the character is a number
+                n = int(text[i]); yoffset = 0# set the number to the integer value of the character
+
+            blit_sequence.append((renderednums[size][n], (lastwidth,yoffset)))# add to the blit sequence with the offset
+            lastwidth += renderednums[size][n].get_width()+(size/13)# add the width of the current
 
     surf.blits(blit_sequence)
-    return surf
+    return surf.copy()
+# @lru_cache(maxsize=1000)
+# def num_renderer(num, size, color):
+#     global renderednums
+#     text = f'{num:,.2f}'
+#     width,height = ((len(text)*size)//(2.1)),(size)*1.1
+#     if size not in renderednums:
+#         renderednums[size] = [fontlist[size].render(str(i), color)[0] for i in range(0,10)]
+#         renderednums[size].append(fontlist[size].render('.', color)[0])
+#         renderednums[size].append(fontlist[size].render(',', color)[0])
+
+#     surf = pygame.Surface((width,height))
+#     # surf.fill((0,0,0))
+#     # With this line
+#     # pygame.gfxdraw.box(surf, (0,0,width,height), (0,0,0))
+#     surf.set_colorkey((0,0,0))
+
+#     blit_sequence = []
+#     for i in range(0,len(text)):
+#         if text[i] == '.' or text[i] == ',':# if the character is a decimal point
+#             n = 10 if text[i] == '.' else 11; yoffset = height*.55# set the number to 10 if it's a decimal point, 11 if it's a comma
+#         else:# if the character is a number
+#             n = int(text[i]); yoffset = 0# set the number to the integer value of the character
+
+#         if i == 0:# if it's the first character just add to the blit sequence
+#             blit_sequence.append((renderednums[size][n], (0,yoffset)))
+#             xoffset = 0
+#         else:# if it's not the first character, add to the blit sequence with an offset
+#             if text[i-1] == '.' or text[i-1] == ',':# checking for the prior character being a decimal point
+#                 n2 = 10 if text[i-1] == '.' else 11
+#             else:
+#                 n2 = int(text[i-1])
+#             xoffset = renderednums[size][n2].get_width()+(size/13)+xoffset# the offset is the width of the prior character plus a little extra
+#             blit_sequence.append((renderednums[size][n], (xoffset,yoffset)))# add to the blit sequence with the offset
+
+#     surf.blits(blit_sequence)
+#     return surf.copy()
 
 def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords, backsurface=None, renderedtext=None):
         """Draws the pie chart for the portfolio menu. value is (value, name, color)"""

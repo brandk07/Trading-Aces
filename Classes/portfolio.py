@@ -52,8 +52,9 @@ class Portfolio(Menu):
             self.quantitybar.changemaxvalue(stock[2])
             self.quantitybar.draw_bar(screen,[1100,700],[300,35],'horizontal',reversedscroll=True)
             # draw the stock name
-            text = fontlist[50].render(f'{stock[0]} X {limit_digits(stock[2],10,False)}', (190, 190, 190))[0]
-            screen.blit(text, (1040, 435))# display the stock name
+
+            # text = fontlist[50].render(f'{stock[0]} X {limit_digits(stock[2],10,False)}', (190, 190, 190))[0]
+            screen.blit(string_renderer(f'{stock[0]} X {limit_digits(stock[2],10,False)}', 50, (190, 190, 190)), (1040, 435))# display the stock name
 
             # use the same system found in the stockbook class to draw the sell button and the selector for the amount of stocks to sell
             if point_in_polygon((mousex,mousey),[(1110,805),(1125,875),(1465,875),(1450,805)]):
@@ -66,13 +67,16 @@ class Portfolio(Menu):
                 sellcolor = (225,225,225)
 
             # Draws the information about the stock on the right side of the screen 
-            info = [f'Paid Price: ${limit_digits(stock[1]*stock[2],12)}'f' | ${limit_digits(stock[1],8)} Per Share',f'{"Profit" if (stock[0].price - stock[1])*stock[2] > 0 else "Loss"}: ${limit_digits((stock[0].price - stock[1])*stock[2],15)}',f'Change %: {limit_digits(((stock[0].price - stock[1]) / stock[1]) * 100,15)}%']
+            info = [f'Paid Price: ${limit_digits(stock[1]*stock[2],12)}',f'Paid ${limit_digits(stock[1],12)} | Current ${limit_digits(stock[0].price,12)}',f'{"Profit" if (stock[0].price - stock[1])*stock[2] > 0 else "Loss"}: ${limit_digits((stock[0].price - stock[1])*stock[2],15)}',f'Change %: {limit_digits(((stock[0].price - stock[1]) / stock[1]) * 100,15)}%']
+            
             for i,txt in enumerate(info):
-                screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),490+(i*50)))
+                # screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),490+(i*50)))
+                screen.blit(string_renderer(txt,35,(190,190,190)),(1050+(i*8),490+(i*50)))
 
             # total value of the stocks above the sell button
             value = stock[0].price * self.quantitybar.value
-            valuetext = fontlist[45].render(f'Value: ${limit_digits(value,15)}', (190, 190, 190))[0]
+            valuetext = string_renderer(f'Value: ${limit_digits(value,15)}', 45, (190, 190, 190))
+            # valuetext = fontlist[45].render(f'Value: ${limit_digits(value,15)}', (190, 190, 190))[0]
             points = [(1100, 745), (1115, 815), (1455, 815), (1440, 745)]
             gfxdraw.filled_polygon(screen, points, (15,15,15))
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
@@ -82,7 +86,8 @@ class Portfolio(Menu):
             points = [(1110, 840), (1125, 910), (1465, 910), (1450, 840)]
             gfxdraw.filled_polygon(screen, points, (15,15,15))
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
-            sell_text, _ = fontlist[65].render(f'SELL', sellcolor)
+            sell_text = string_renderer(f'SELL', 45, sellcolor)
+            # sell_text, _ = fontlist[65].render(f'SELL', sellcolor)
             sell_text_rect = sell_text.get_rect(center=(1280, 875))
             screen.blit(sell_text, sell_text_rect)
             
@@ -128,10 +133,12 @@ class Portfolio(Menu):
             percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100
 
             height = DH if self.selected_stock == stock else DH*.85
-
-            nametext = fontlist[50].render(f'{stock[0]} ', stock[0].color)[0]
-            sharetext = fontlist[35].render(f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}", (190, 190, 190))[0]
-            pricetext = fontlist[45].render(f'${limit_digits(stock[0].price*stock[2],15)}', (190, 190, 190))[0]
+            nametext = string_renderer(f'{stock[0]} ', 50, stock[0].color)
+            # nametext = fontlist[50].render(f'{stock[0]} ', stock[0].color)[0]
+            sharetext = string_renderer(f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}", 35, (190, 190, 190))
+            # sharetext = fontlist[35].render(f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}", (190, 190, 190))[0]
+            pricetext = string_renderer(f'${limit_digits(stock[0].price*stock[2],15)}', 45, (190, 190, 190))
+            # pricetext = fontlist[45].render(f'${limit_digits(stock[0].price*stock[2],15)}', (190, 190, 190))[0]
             addedx = 0 if sharetext.get_width() < 85 else round(sharetext.get_width()-85,-1)
             width = nametext.get_width() + pricetext.get_width() + 180 + addedx 
 
