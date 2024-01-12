@@ -29,6 +29,8 @@ Make a progression where you have to get enough money to unlock certain features
     amount of stocks/options you can hold
     how fast you can warp time
 
+Add crypto (1/12/2024)
+
 -----------------Small things-------------------
 performance in quantityControls function can be improved line 25-30 prerender texts (12/20/23)
 

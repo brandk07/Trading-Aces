@@ -20,7 +20,7 @@ class UI_Controls():
                 self.newsobj.addStockNews(stock.name)
 
         self.view = "home"# home or stock
-        self.accbar_middle = "announce"# annouce, stock, pie
+        self.accbar_middle = "move"# move, stock, pie
         self.accbar_right = "topAsset"# topAsset, transactions, loans
         self.graphscroll = 0
         self.namerenders = [fontlist[30].render(stock.name,stock.color)[0] for stock in stocklist]# [red,green]
@@ -124,21 +124,21 @@ class UI_Controls():
         
         
         stocktext = s_render('STOCKS',30,scolor if self.accbar_middle == "stock" else dcolor)
-        announcetext = s_render('ANNOUNCEMENTS',30,scolor if self.accbar_middle == "announce" else dcolor)
+        movetext = s_render('MOVEMENTS',30,scolor if self.accbar_middle == "move" else dcolor)
         pietext = s_render('PIE CHART',30,scolor if self.accbar_middle == "pie" else dcolor)
-        blitpoints = [(940,170),(940+stocktext.get_width()+30,170),(940+stocktext.get_width()+60+announcetext.get_width(),170)]
+        blitpoints = [(940,170),(940+stocktext.get_width()+30,170),(940+stocktext.get_width()+60+movetext.get_width(),170)]
         
 
-        texts = [stocktext,announcetext,pietext]
+        texts = [stocktext,movetext,pietext]
         screen.blits((text,point) for text,point in zip(texts,blitpoints))
 
-        for point,text,name in zip(blitpoints,texts,["stock","announce","pie"]):
+        for point,text,name in zip(blitpoints,texts,["stock","move","pie"]):
             # pygame.draw.rect(screen,(0,0,0),pygame.Rect(point,text.get_size()))
             if pygame.Rect(point,text.get_size()).collidepoint(pygame.mouse.get_pos()):
                 if mousebuttons == 1:
-                    self.announce_state = name
+                    self.accbar_middle = name
 
-        if self.accbar_middle == "announce":
+        if self.accbar_middle == "move":
             minmove = min([stock for stock in stocklist],key=self.get_percent)
             maxmove = max([stock for stock in stocklist],key=self.get_percent)
 
@@ -218,9 +218,9 @@ class UI_Controls():
         gfxdraw.filled_polygon(screen,[(250,710),(250,790),(1450,790),(1450,710)],(30,30,30))# stock graph bar (scrolls across screen)
         
         
-        gfxdraw.filled_polygon(screen,[(930,160),(930,700),(1450,700),(1450,160)],(50,50,50))# Announcements bar (right of the portfolio)
+        gfxdraw.filled_polygon(screen,[(930,160),(930,700),(1450,700),(1450,160)],(50,50,50))# Movements bar (right of the portfolio)
         gfxdraw.box(screen,pygame.Rect(930,160,520,40),(30,30,30))# Top part of the announce (right of the portfolio)
-        pygame.draw.polygon(screen,(0,0,0),[(930,160),(930,700),(1450,700),(1450,160)],5)# Announcements bar (right of the portfolio) Outline
+        pygame.draw.polygon(screen,(0,0,0),[(930,160),(930,700),(1450,700),(1450,160)],5)# Movements bar (right of the portfolio) Outline
 
         points = [(1460,160),(1460,700),(1910,700),(1910,160)]
         gfxdraw.filled_polygon(screen,points,(30,30,30))
