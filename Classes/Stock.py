@@ -11,9 +11,8 @@ import json
 POINTSPERGRAPH = 200
 
 class Stock():
-    def __init__(self,name,startingvalue_range,volatility,Playerclass,window_offset,stocknames,color) -> None:
+    def __init__(self,name,startingvalue_range,volatility,Playerclass,stocknames,color) -> None:
         self.color = color
-        self.winset = window_offset
         self.startpos,self.endpos = (0,0),(0,0)
         self.Playerclass = Playerclass
         self.starting_value_range = startingvalue_range
@@ -221,8 +220,8 @@ class Stock():
 
     def baredraw(self,screen,startpos,endpos,graphrange):
         """Draws only the graph of the stock - uses the graphrange,startpos, and endpos parameter, not self.graphrange,self.startpos, and self.endpos"""
-        startpos = (int(startpos[0] - self.winset[0]), int(startpos[1] - self.winset[1]))
-        endpos = (int(endpos[0] - self.winset[0]), int(endpos[1] - self.winset[1]))
+        startpos = (int(startpos[0]), int(startpos[1]))
+        endpos = (int(endpos[0]), int(endpos[1]))
         
         if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
             percentchange = round(((self.graphrangelists[graphrange][-1]/self.graphrangelists[graphrange][0])-1)*100,2)
@@ -260,8 +259,8 @@ class Stock():
         if startpos != self.startpos or endpos != self.endpos:#if the starting or ending positions have changed
             #setting the starting and ending positions - where the graphs are located is constantly changing
             # startingpos is the top left corner of the graph, endingpos is the bottom right corner of the graph
-            self.startpos = (startpos[0] - self.winset[0], startpos[1] - self.winset[1])
-            self.endpos = (endpos[0] - self.winset[0], endpos[1] - self.winset[1])
+            self.startpos = (startpos[0], startpos[1])
+            self.endpos = (endpos[0], endpos[1])
         
         if type(self) == self.Playerclass:#if it is a Player object
             self.graph(stocklist)#graph the player networth
@@ -336,7 +335,7 @@ class Stock():
                 text = s_render(str(limit_digits(point,13)), 30, (255,255,255))
                 gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
                 # text_rect = text.get_rect(left=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
-                screen.blit(text,(self.startpos[0]-text.get_width(),(graphingpoints[yvalpos]-text.get_height()//2-5)))
+                screen.blit(text,(self.startpos[0]-blnkspacex-text.get_width(),(graphingpoints[yvalpos]-text.get_height()//2-5)))
                 
         else:#if the minpoint and maxpoint are the same
             gfxdraw.line(screen,self.endpos[0],int(self.startpos[1]+graphheight),self.startpos[0]-blnkspacex,int(self.startpos[1]+graphheight),(255,255,255))#draws a line across the graph

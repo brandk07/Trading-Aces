@@ -14,8 +14,7 @@ DY = 200
 DH = 120
 
 class Optiontrade(Menu):
-    def __init__(self,windowoffset,stocklist:list):
-        self.winset = windowoffset
+    def __init__(self,stocklist:list):
         # self.icon = pygame.image.load(r'Assets\Portfolio\portfolio2.png').convert_alpha()
 
         self.icon = pygame.image.load(r'Assets\Menu_Icons\bulloption2.png').convert_alpha()
@@ -26,9 +25,9 @@ class Optiontrade(Menu):
         super().__init__(self.icon)
         
         
-        self.barowned = SliderBar((0,0),50,[(180,120,0),(110,110,110)])
+        self.barowned = SliderBar(50,[(180,120,0),(110,110,110)])
         self.barowned.value = 0
-        self.baravailable = SliderBar((0,0),50,[(180,120,0),(110,110,110)])
+        self.baravailable = SliderBar(50,[(180,120,0),(110,110,110)])
         self.baravailable.value = 0
         # self.icon.set_colorkey((255,255,255))
         self.optiontext = fontlist[65].render('Options',(220,220,220))[0]

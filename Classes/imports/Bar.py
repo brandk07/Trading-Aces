@@ -34,9 +34,8 @@ def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizo
     return [int(gamespeed*seclength)+xy,gamespeed,False]
 
 class SliderBar():
-    def __init__(self,windowoffset:list,maxvalue:int,color:list,minvalue=0,barcolor=((150,150,150),(210,210,210))) -> None:
+    def __init__(self,maxvalue:int,color:list,minvalue=0,barcolor=((150,150,150),(210,210,210))) -> None:
         """Max value must be less than the slider width-20, or height-20 if vertical, color = [(colorstart),(colorend)]"""
-        self.winset = windowoffset
         self.value = 0
         self.maxvalue = maxvalue; self.minvalue = minvalue
         self.gamevaluetexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue+1)]
@@ -110,7 +109,7 @@ class SliderBar():
         else:
             self.barwh = [sliderwh[0]//19,sliderwh[1]] if orientation == 'horizontal' else [sliderwh[0],sliderwh[1]//19]
         self.sliderwh = sliderwh
-        self.sliderxy = [sliderxy[0]+self.winset[0],sliderxy[1]+self.winset[1]]
+        self.sliderxy = [sliderxy[0],sliderxy[1]]
         self.barxy = self.sliderxy.copy() if orientation == 'horizontal' else [self.sliderxy[0],self.sliderxy[1]+self.sliderwh[1]-self.barwh[1]]
 
         # soff = [-20,0,40,0] if orientation == 'horizontal' else [0,-20,0,40]

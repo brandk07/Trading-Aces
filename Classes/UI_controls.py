@@ -4,22 +4,24 @@ from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 from Classes.imports.stockeventspos import StockEvents
 from Classes.imports.Newsbar import News
+from Classes.Stock import Stock
 
 # [20,60] [60,20]
 # [700,1000] [1000,650]
 
 class UI_Controls():
-    def __init__(self,windowoffset:list,stocklist) -> None:
+    def __init__(self,stocklist) -> None:
         self.gameplay_speed = 0
         self.stockevent = StockEvents()# the stock events
-        self.bar = SliderBar(windowoffset,100,[(20,50,200),(110,110,110)])# the bar for the gameplay speed
+        self.bar = SliderBar(100,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
         self.newsobj = News()
         for i in range(10):
             for stock in stocklist:
                 self.newsobj.addStockNews(stock.name)
 
         self.view = "home"# home or stock
-        self.announce_state = "announce"# annouce or stock
+        self.accbar_middle = "announce"# annouce, stock, pie
+        self.accbar_right = "topAsset"# topAsset, transactions, loans
         self.graphscroll = 0
         self.namerenders = [fontlist[30].render(stock.name,stock.color)[0] for stock in stocklist]# [red,green]
         self.weeknames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
@@ -108,39 +110,88 @@ class UI_Controls():
         screen.blit(self.stockbarsurf,(dx,dy))# draw the stock graph bar to the screen
         self.stockbarsurf.fill((30,30,30))# fill the stock graph bar with a dark grey color
         
-    def drawAnnouncements(self,screen:pygame.Surface,stocklist:list,mousebuttons):
+    def draw_accbar_middle(self,screen:pygame.Surface,stocklist:list,mousebuttons,player):
         """Draws the stock events to the screen"""
-        points1 = [(940,175),(955,215),(940+250,215),(925+250,175)]
-        points2 = [(940+250,175),(955+250,215),(940+505,215),(925+505,175)]
+        # points1 = [(940,175),(955,215),(940+250,215),(925+250,175)]
+        # points2 = [(940+250,175),(955+250,215),(940+505,215),(925+505,175)]
         
-        gfxdraw.filled_polygon(screen,points1,(30,30,30))
-        gfxdraw.filled_polygon(screen,points2,(30,30,30))
-        pygame.draw.polygon(screen,(0,0,0),points1,5)
-        pygame.draw.polygon(screen,(0,0,0),points2,5)
-        scolor = (255,255,255); acolor = (255,255,255)
-        if point_in_polygon(pygame.mouse.get_pos(),points1):
-            scolor = (0,255,0)
-            if mousebuttons == 1:
-                self.announce_state = "stock"
-        elif point_in_polygon(pygame.mouse.get_pos(),points2):
-            acolor = (0,255,0)
-            if mousebuttons == 1:
-                self.announce_state = "announce"
+        # gfxdraw.filled_polygon(screen,points1,(30,30,30))
+        # gfxdraw.filled_polygon(screen,points2,(30,30,30))
+        # pygame.draw.polygon(screen,(0,0,0),points1,5)
+        # pygame.draw.polygon(screen,(0,0,0),points2,5)
+        dcolor = (255,255,255)
+        scolor = (0,220,0)
+        
+        
+        stocktext = s_render('STOCKS',30,scolor if self.accbar_middle == "stock" else dcolor)
+        announcetext = s_render('ANNOUNCEMENTS',30,scolor if self.accbar_middle == "announce" else dcolor)
+        pietext = s_render('PIE CHART',30,scolor if self.accbar_middle == "pie" else dcolor)
+        blitpoints = [(940,170),(940+stocktext.get_width()+30,170),(940+stocktext.get_width()+60+announcetext.get_width(),170)]
+        
 
-        stocktext = fontlist[30].render('Stocks', scolor)[0]
-        screen.blit(stocktext,(940+125-stocktext.get_width()/2,190-stocktext.get_height()/2))
-        announcetext = fontlist[30].render('Announcements', acolor)[0]
-        screen.blit(announcetext,(940+375-announcetext.get_width()/2,190-announcetext.get_height()/2))
+        texts = [stocktext,announcetext,pietext]
+        screen.blits((text,point) for text,point in zip(texts,blitpoints))
 
-        if self.announce_state == "announce":
+        for point,text,name in zip(blitpoints,texts,["stock","announce","pie"]):
+            # pygame.draw.rect(screen,(0,0,0),pygame.Rect(point,text.get_size()))
+            if pygame.Rect(point,text.get_size()).collidepoint(pygame.mouse.get_pos()):
+                if mousebuttons == 1:
+                    self.announce_state = name
+
+        if self.accbar_middle == "announce":
             minmove = min([stock for stock in stocklist],key=self.get_percent)
             maxmove = max([stock for stock in stocklist],key=self.get_percent)
 
             self.stockevent.addStockEvent(minmove.name,1600,abs(self.get_percent(minmove)),False)
             self.stockevent.addStockEvent(maxmove.name,1600,abs(self.get_percent(maxmove)))
             self.stockevent.draw(screen)
-        elif self.announce_state == "stock":    
+        elif self.accbar_middle == "pie":
+
+            values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
+            names = set([stock[0].name for stock in player.stocks])
+
+            values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
+            values.append([player.cash, "Cash",player.color])
+            for option in player.options:
+                values.append([option.get_value(),option.name,option.color])
+            draw_pie_chart(screen, values, 190, (935, 235))
+
+        elif self.accbar_middle == "stock":    
             pass
+    
+    def draw_accbar_right(self,screen:pygame.Surface,stocklist:list,player,mousebuttons):
+        dcolor = (255,255,255)
+        scolor = (0,220,0)
+        
+        topAssettext = s_render('TOP ASSETS',30,scolor if self.accbar_right == "topAsset" else dcolor)
+        transactionstext = s_render('TRANSACTIONS',30,scolor if self.accbar_right == "transactions" else dcolor)
+        loanstext = s_render('LOANS',30,scolor if self.accbar_right == "loans" else dcolor)
+        blitpoints = [(1460,170),(1460+topAssettext.get_width()+30,170),(1460+topAssettext.get_width()+60+transactionstext.get_width(),170)]
+        
+        texts = [topAssettext,transactionstext,loanstext]
+        screen.blits((text,point) for text,point in zip(texts,blitpoints))
+
+        for point,text,name in zip(blitpoints,texts,["topAsset","transactions","loans"]):
+            # pygame.draw.rect(screen,(0,0,0),pygame.Rect(point,text.get_size()))
+            if pygame.Rect(point,text.get_size()).collidepoint(pygame.mouse.get_pos()):
+                if mousebuttons == 1:
+                    self.accbar_right = name
+        
+        if self.accbar_right == "topAsset":
+
+            assets = player.get_Assets(5)
+            for i,asset in enumerate(assets):
+                if isinstance(asset[0],Stock):
+                    s = f'${asset[0].price*asset[2]:.2f} '
+                    s2 = f'{asset[2]} shares of {asset[0].name}'
+                    s3 = f'{self.get_percent(asset[0])}%'
+                elif isinstance(asset[0],StockOption):
+                    s = f'${asset[0].get_value():.2f}'
+                    s2 = f'{asset[0].name} option'
+                    s3 = f'{asset[0].percent_change():.2f}%'
+                screen.blit(s_render(s,45,(255,255,255)),(1470,200+(i*100)))
+                screen.blit(s_render(s2,20,(255,255,255)),(1490,245+(i*100)))
+                screen.blit(s_render(s3,20,(255,255,255)),(1490,275+(i*100)))
 
         
         
@@ -166,23 +217,24 @@ class UI_Controls():
         pygame.draw.polygon(screen,(0,0,0),[(250,800),(275,1050),(1475,1050),(1450,800)],5)# the News bar at the bottom Outline
         gfxdraw.filled_polygon(screen,[(250,710),(250,790),(1450,790),(1450,710)],(30,30,30))# stock graph bar (scrolls across screen)
         
-        gfxdraw.filled_polygon(screen,[(930,160),(930,700),(1450,700),(1450,160)],(75,75,75))# Announcements bar (right of the portfolio)
+        
+        gfxdraw.filled_polygon(screen,[(930,160),(930,700),(1450,700),(1450,160)],(50,50,50))# Announcements bar (right of the portfolio)
+        gfxdraw.box(screen,pygame.Rect(930,160,520,40),(30,30,30))# Top part of the announce (right of the portfolio)
         pygame.draw.polygon(screen,(0,0,0),[(930,160),(930,700),(1450,700),(1450,160)],5)# Announcements bar (right of the portfolio) Outline
+
+        points = [(1460,160),(1460,700),(1910,700),(1910,160)]
+        gfxdraw.filled_polygon(screen,points,(30,30,30))
+        gfxdraw.box(screen,pygame.Rect(1460,160,450,40),(15,15,15))# Top part of the announce (right of the portfolio)
+        pygame.draw.polygon(screen,(0,0,0),points,5)
+
         
         self.draw_stockbar(screen,stocklist)# draws the stock graph bar
-        self.drawAnnouncements(screen,stocklist,mousebuttons)# draws the stock events (On the right of the portfolio)
+        self.draw_accbar_middle(screen,stocklist,mousebuttons,player)# draws the stock events (On the right of the portfolio)
+        self.draw_accbar_right(screen,stocklist,player,mousebuttons)# draws the stock events (On the very right of the screen)
         self.newsobj.draw(screen)
 
-        values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
-        names = set([stock[0].name for stock in player.stocks])
-
-        values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
-        values.append([player.cash, "Cash",player.color])
-
         # add the player.options to the values
-        for option in player.options:
-            values.append([option.get_value(),option.name,option.color])
-        _,self.renderedpietexts = draw_pie_chart(screen, values, 160, (800, 160),self.renderedback,self.renderedpietexts)
+        
 
     def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist):
         if self.drawIcon(screen,mousebuttons):
@@ -193,14 +245,19 @@ class UI_Controls():
                 
                 self.draw_home(screen,stocklist,gametime,player,mousebuttons)            
 
-                player.draw(screen,player,(900,160),(250,700),stocklist,mousebuttons,True)
-                self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
+                player.draw(screen,player,(920,160),(250,700),stocklist,mousebuttons,True)
+                # self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
+                
+                screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(1020,20))
+                self.gameplay_speed = self.bar.draw_bar(screen,[930,70],[450,65],'horizontal',reversedscroll=True)
 
 
             elif self.view == "stock":
                 stockgraphmanager.draw_graphs(screen,stocklist,player,mousebuttons)
                 # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
                 self.gameplay_speed = self.bar.draw_bar(screen,[1620,575],[125,400],'vertical')
+
+            
 
 
 

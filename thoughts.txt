@@ -33,8 +33,6 @@ Make a progression where you have to get enough money to unlock certain features
 performance in quantityControls function can be improved line 25-30 prerender texts (12/20/23)
 
 -----------------Things to do-------------------
-create function to fill points in each stock. Would fill a whole year of points.
-
 Add a settings menu to save new games (12/26/23)
     ablility to change the amount of points per stock - effects performance
     ablility to turn on or off the sound - and adjust the volume and switch song 
@@ -58,8 +56,6 @@ change teh bar class so that is snaps better (12/18/23)
 
 The message board with the stock increases and decreases should Have the option to change the look to display a stock instead of messages (12/28/23)
 
-Indicator in portfolio and option class for the amount of stocks/options in the drawLatterScroll (12/28/23)
-
 Add past transactions (12/29/23)
 
 Customization screen in OptionTrade (12/29/23)
@@ -73,8 +69,11 @@ create a point in pie for mouseover the pie chart (1/2/2024)
 Add a extra text parameter to the num_renderer so that more text can be rendered in the same thing (1/8/2024)
 
 Improve performance with adding points to stock graphs (1/8/2024)
+    create function to fill points in each stock. Would fill a whole year of points.
 
 Include the date when the stock was purchased (1/10/2024)
+
+options should disappear from available when purchased (1/10/2024)
 
 //////////////////////////////////////////----URGENT----/////////////////////////////////////////////////////////////////////////////
 PROBLEM WITH THE quantityControls LOOK AT VIXEL AND TRY TO PUT IT BETWEEN 3 AND 6 (1/1/24)
@@ -111,3 +110,4 @@ each stock should Have it's own color throughout all aspects of the game (12/28/
 new system for when you open up the one of the menus (portfolio or stockbook) (12/18/23) - Over a period of time
     -performance is bad and it looks bad currently with the background
 Make options only 100 stocks of leverage (1/1/2024) - (1/3/24)
+Indicator in portfolio and option class for the amount of stocks/options in the drawLatterScroll (12/28/23)

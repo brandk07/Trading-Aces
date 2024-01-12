@@ -18,15 +18,14 @@ class Portfolio(Menu):
         self.icon.set_colorkey((255,255,255))
         super().__init__(self.icon)
         # remove all the white from the image
-        self.bar = SliderBar((0,0),50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
+        self.bar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         self.bar.value = 0
-        self.quantitybar = SliderBar((0,0),50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
+        self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
 
         
         self.portfoliotext = fontlist[65].render('Owned Shares',(220,220,220))[0]
         self.showingtext = fontlist[45].render('Showing ',(220,220,220))[0]
         self.menudrawn = False
-        self.renderedpietexts = None; self.renderedback = None
         self.allrenders = []
         self.selected_stock = None
 
@@ -206,4 +205,4 @@ class Portfolio(Menu):
         names = set([stock[0].name for stock in player.stocks])
         values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
 
-        self.renderedback,self.renderedpietexts = draw_pie_chart(screen, values, 150,(1010, 115),self.renderedback,self.renderedpietexts)
+        draw_pie_chart(screen, values, 150,(1010, 115))

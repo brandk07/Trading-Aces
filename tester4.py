@@ -7,4 +7,4 @@
 # while pygame.mixer.music.get_busy():
 #     pygame.time.Clock().tick(10)
 #     print('playing')
-print(round(16.5161,0))
+print('hello world'[1:])

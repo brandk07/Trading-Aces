@@ -48,15 +48,15 @@ stockbook = Stockbook(stocknames)
 
 
 
-player = Player(window_offset,stocknames,stockcolors[-1])
-#name, startingvalue_range, volatility, Playerclass, window_offset,stocknames,time
-stockdict = {name:Stock(name,(20,400),10,Player,window_offset,stocknames,stockcolors[i]) for i,name in enumerate(stocknames)}
+player = Player(stocknames,stockcolors[-1])
+#name, startingvalue_range, volatility, Playerclass, stocknames,time
+stockdict = {name:Stock(name,(20,400),10,Player,stocknames,stockcolors[i]) for i,name in enumerate(stocknames)}
 
 stocklist = [stockdict[name] for name in stocknames]
 portfolio = Portfolio()
-optiontrade = Optiontrade(window_offset,stocklist)
-ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),stocklist)
-# ui_controls = UI_Controls((window_offset[0]*-1,window_offset[1]),6,[1500,650],[60,380],'vertical')
+optiontrade = Optiontrade(stocklist)
+ui_controls = UI_Controls(stocklist)
+
 mousebuttons = 0
 polybackground = pygame.image.load('Assets/polybackground2.png')
 polybackground = pygame.transform.scale(polybackground,(window_width,window_height))

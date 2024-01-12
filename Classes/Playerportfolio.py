@@ -9,14 +9,12 @@ import numpy as np
 class Player(Stock):
     
 
-    def __init__(self,window_offset,stocknames,color) -> None:
+    def __init__(self,stocknames,color) -> None:
         name = 'Net Worth'
-        super().__init__(name,(2500,2500),0,Player,window_offset,stocknames,color)
+        super().__init__(name,(2500,2500),0,Player,stocknames,color)
         self.name = name
-        self.window_offset = window_offset
         self.cash = 25000
-        self.stocks = []# list of lists containing the stock object, the price bought at, and the quantity
-        # self.pricepoints = np.array([[self.cash]],dtype=object)
+        self.stocks = []# list of lists containing the [stock object, the price bought at, and the quantity]
         self.options = []#list of option objects
         self.stockvalues = []
         self.messagedict = {}
@@ -96,7 +94,18 @@ class Player(Stock):
     def get_Networth(self):
         """returns the networth of the player"""
         return self.cash + sum([stock[0].price*stock[2] for stock in self.stocks]) + sum([option.get_value() for option in self.options])
-
+    def get_Assets(self,amount:int=0):
+        """returns the assets of the player, returns all of them if amount is 0 else returns the top amount assets"""
+        if amount == 0:
+            return self.stocks + self.options
+        stocks = [[stock[0].price*stock[2],stock[0],stock[1],stock[2]] for stock in self.stocks]
+        options = [[option.get_value(),option] for option in self.options]
+        allassets = stocks + options
+        allassets.sort(key=lambda x:x[0],reverse=True)
+    
+        return [a[1:] for a in allassets[:amount]]
+        
+    
     def message(self,screen:pygame.Surface):
         """displays everything in the self.messagedict, key is the text, value is (time,color))]"""
         keys_to_delete = []

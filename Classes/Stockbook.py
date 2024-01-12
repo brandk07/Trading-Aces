@@ -88,7 +88,7 @@ class Stockbook(Menu):
         self.selectedstock = 0
         self.menudrawn = False
         self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
-        self.quantitybar = SliderBar((0,0),50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
+        self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         with open(r'Assets\stockdescriptions.txt','r') as descriptions:
 
             filecontents = descriptions.readlines()
