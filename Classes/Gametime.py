@@ -10,6 +10,7 @@ HOURS_PER_DAY = 24
 MINUTES_PER_DAY = MINUTES_PER_HOUR * HOURS_PER_DAY
 MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+HOLIDAYS = [(1,1),(1,15),(2,19),(3,29),(5,27),(6,19),(7,4),(9,2),(11,28),(12,25)]
 def interpolate_color(color1, color2, ratio):
     """Interpolate between two colors"""
     return tuple(max(0, min(255, int(c1 * (1 - ratio) + c2 * ratio))) for c1, c2 in zip(color1, color2))
@@ -36,7 +37,7 @@ class GameTime:
         self.daynames = {}# size : [name : render]
         self.monthnames = {}# size : [name : render]
 
-
+        self.skipToOpen = False
         self.mdhrenders = {}# size : [renders]
         self.lasttimerender = (None,None)
         # self.renderednumbers = {}# size : [renders]
@@ -70,10 +71,11 @@ class GameTime:
     def add_year(self):
         self.year += 1
 
-
+    
     def increase_time(self,seconds:int):
         for i in range(seconds):
             self.add_second()
+        return self.year, self.month, self.day, self.hour, self.minute, self.second
 
 
     def is_leap_year(self):
@@ -123,7 +125,7 @@ class GameTime:
             color2 = (128, 0, 255)
             ratio = (((self.hour)*60+(self.minute)) / (24*60))
             color = interpolate_color(color1, color2, ratio)
-            print(color)
+            # print(color)
             time_render = fontlist[timesize].render(time,color)[0]
             self.lasttimerender = (time,time_render)
         # if timesize not in self.mdhrenders:# if the hour size is not in the cache
@@ -139,6 +141,15 @@ class GameTime:
 
         return [month,day,year[0],time_render,dayname,monthname]
 
+    def isOpen(self):
+        if (self.month,self.day) in HOLIDAYS:
+            return False, 'Holiday'
+        if self.get_day_name() in ['Saturday','Sunday']:
+            return False, 'Weekend'
+        if not(((self.hour == 9 and self.minute >= 30) or self.hour > 9) and self.hour < 16):
+            return False, 'Off Hours'
+        return True, 'Open'
+    
 
     def get_month_name(self):
         return MONTH_NAMES[self.month - 1]

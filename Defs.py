@@ -36,7 +36,7 @@ font45 = fonts(45)
 @lru_cache(maxsize=100)
 def s_render(string:str, size, color) -> pygame.Surface:
     """Caches the renders of the strings, and returns the rendered surface"""
-    print(f"Caching arguments: {string}, {size}, {color}")
+    # print(f"Caching arguments: {string}, {size}, {color}")
     text = fontlist[size].render(string, (color))[0]
     return text
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

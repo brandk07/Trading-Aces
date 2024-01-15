@@ -1,47 +1,74 @@
 from Defs import *
 import pygame,pygame.gfxdraw
 
-class LaterScroll():
-    def __init__(self):
-        self.texts = []
-        self.totalwidth = 0
+class LatterScroll():
+    def __init__(self,polysdisplayed=5):
+        self.pdis = polysdisplayed# number of polygons displayed at once
+        self.texts = []# list of dicts, each dict is {(x,y):text}, each is for a different polygon
+        self.totalwidth = []# the total width of the box, each item is a int for each polygon
 
-    def storeTexts(self,extraspace=0,**kwargs):
+        # the coords and heights of each polygon drawn in the last call of draw_polys, Not used in this class, but may be used in child classes
+        self.coords_height = []
+
+    def storeTexts(self,extraspace=0,resetlist=False,**kwargs):
         """Kwargs should be 'text:str':(relativex,relativey,fontsize,fontcolor))"""
         """Relative coords are relative to the top left of the box"""
-        self.texts = []
+        """This function should be called for each polygon in the latter"""
+        if resetlist:# if it is the first time in a new frame
+            self.texts = []
+            self.totalwidth = []
         
-        self.texts = {(x,y):s_render(text,size,color) for i,text,(x,y,size,color) in enumerate(kwargs.items())}
-        furthest  = max(self.texts.keys(),key=lambda x:x[0])
-        self.totalwidth = furthest[0]+self.texts[furthest].get_width()+extraspace
+        self.texts.append({(x,y):s_render(text,size,color) for text,(x,y,size,color) in kwargs.items()})
+        furthest = max(self.texts[-1].keys(),key=lambda x:x[0])# finding the furthest x value being drawn
 
-    def storeTextsVariable(self,extraspace=0,**kwargs):
+        self.totalwidth.append(0)# adding a new item to the list of total widths
+        self.totalwidth[-1] = furthest[0]+self.texts[-1][furthest].get_width()+extraspace# adding the width of the furthest text to the total width (used for width of polygon)
+        return self.totalwidth, self.texts
+    def storeTextsVariable(self,extraspace=0,resetlist=False,**kwargs):
         """Allows for text width to be based on the width of another text"""
         """Kwargs should be 'text:str':((text,x),relativey,fontsize,fontcolor))"""
         # an input could be {'VIXEL':(50,100,fontsize,color),'QWIRE':(('VIXEL',30),y,fontsize,color)}
         # the x value of QWIRE will be the width of VIXEL + 30
 
-        texts = {text:s_render(text,size,color) for i,text,(x,y,size,color) in enumerate(kwargs.items())}
-        textwidths = {text:texts[text].get_width() for text in texts}
-        self.texts.clear()
-        for text,(x,y,*_) in kwargs.items():
-            if type(x) == tuple:
-                x = textwidths[x[0]]+x[1]
-            self.texts[(x,y)] = texts[text]
+        if resetlist:# if it is the first time in a new frame
+            self.texts = []
+            self.totalwidth = []
 
-    def draw_polys(self,screen:pygame.Surface,coords:tuple,maxy:int,polywh:tuple,mousebuttons,selected_value,xshift=0):
+        self.texts.append({})
+        texts = {text:s_render(text,size,color) for text,(x,y,size,color) in kwargs.items()}# creating a dict of texts for the polygon
+        textwidths = {text:texts[text].get_width() for text in texts}# creating a dict of text widths for the polygon
+
+        for text,(x,y,*_) in kwargs.items():# looping through the kwargs (all the texts to be drawn)
+            if type(x) == tuple:# if the x value is a tuple, it is a variable width meaning it is based on the width of another text
+
+                x = textwidths[x[0]]+x[1]# the first x value is a string, the second is the offset. They are both added, one from the width of another text
+            self.texts[-1][(x,y)] = texts[text]# adding the text to the dict of texts for the polygon
+        furthest = max(self.texts[-1].keys(),key=lambda x:x[0])# finding the furthest x value being drawn
+
+        self.totalwidth.append(0)# adding a new item to the list of total widths
+        self.totalwidth[-1] = furthest[0]+self.texts[-1][furthest].get_width()+extraspace# adding the width of the furthest text to the total width (used for width of polygon)
+        return self.totalwidth, self.texts
+
+    def decidebottomcolor(self,hover,selected_value,numdrawn,*args):
+        """This can be overriden in child classes"""
+        return ((80,80,80),(200,200,200)) if hover or numdrawn == selected_value else ((50,50,50),(150,150,150))
+    
+    def draw_polys(self,screen:pygame.Surface,coords:tuple,maxy:int,polyheight:tuple,mousebuttons,selected_value,xshift=0,showbottom=True,*args):
+        """This function is called once after all the texts have been stored and draws the polygons to the screen
+        args is a list of arguments that will be passed to decidebottomcolor"""
+
         x,y = coords
         numdrawn = 0 
-        
+        self.coords_height = []
         while y < maxy and numdrawn < len(self.texts):
             
-            height = polywh[1] if numdrawn == selected_value else polywh[1]*.85
-
-            points = [(x, y), (x + 15, y + height), (x + 25 + self.totalwidth, y + height), (x + 10 + self.totalwidth, y)]
+            height = polyheight*.85 if numdrawn == selected_value else polyheight*.65
+            self.coords_height.append((x,y,height))
+            points = [(x, y), (x + 15, y + height), (x + 25 + self.totalwidth[numdrawn], y + height), (x + 10 + self.totalwidth[numdrawn], y)]
             gfxdraw.filled_polygon(screen, points, (15, 15, 15))
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
-            for (xoffset,yoffset),text in self.texts.items():
+            for (xoffset,yoffset),text in self.texts[numdrawn].items():
                 screen.blit(text, (x+xoffset, y+yoffset))
             
             if (hover:=point_in_polygon(pygame.mouse.get_pos(),points)):
@@ -56,85 +83,42 @@ class LaterScroll():
                             [points[3][0]-7, points[3][1]],
                             [points[3][0]+5, points[3][1] + height - 7],
                             ]
-            bottomcolor = ((80,80,80),(200,200,200)) if hover or numdrawn == selected_value else ((50,50,50),(150,150,150))
-            gfxdraw.filled_polygon(screen,bottom_polygon,bottomcolor[1])
+            if showbottom:
+                bottomcolor = self.decidebottomcolor(hover,selected_value,numdrawn,args[numdrawn])         
+                # bottomcolor = self.decidebottomcolor(hover,selected_value,numdrawn,*[arg[numdrawn] for arg in args])         
+                gfxdraw.filled_polygon(screen,bottom_polygon,bottomcolor)
 
             if numdrawn == selected_value:
-                y += height; x += xshift; numdrawn += 1
+                y += polyheight; x += xshift; numdrawn += 1
             else:
-                y += height*.85; x += xshift*.85; numdrawn += 1
+                y += polyheight*.8; x += xshift*.85; numdrawn += 1
+
+        return selected_value
         
 
+class PortfolioLatter(LatterScroll):
+    def __init__(self, polysdisplayed=5):
+        super().__init__(polysdisplayed)
+    
+    def draw_stockgraph(self,screen,stocks):
 
-
-
-
-
-    # def draw(self,screen,coords:tuple,wh:tuple,values,mousebuttons,valueindex,xshift=0,bottomcolors=None):
-    #     """"values is list of strings [main text,below name text, right side text]
-    #     wh is (width,height) of the box
-    #     valueindex is self.bar.value"""
-
-    #     # for stocks, values is [(stock name,size,stockcolor),(#shares,size,color),($price,size,color)]
-    #     mousex,mousey = pygame.mouse.get_pos()
-    #     x,y = coords
-    #     drawnstocks = 0
-
-    #     if self.selected_stock != None:
-    #         if valueindex > values.index(self.selected_stock) and valueindex < len(values):# if the selected stock is above what is displayed
-    #             self.selected_stock = values[valueindex]# select the highest stock being displayed
-    #         elif valueindex+4 < values.index(self.selected_stock) and valueindex+4 < len(values):# if the selected stock is below what is displayed
-    #             self.selected_stock = values[valueindex+4]# select the lowest stock being displayed
-
-    #     while y < 830 and valueindex+drawnstocks < len(player.stocks):
-    #         currentind = valueindex+drawnstocks
-
-    #         height = wh[1] if self.selected_stock == stock else wh[1]*.85
-    #         # nametext = s_render(f'{stock[0]} ', 50, stock[0].color)
-    #         # # nametext = fontlist[50].render(f'{stock[0]} ', stock[0].color)[0]
-    #         # sharetext = s_render(f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}", 35, (190, 190, 190))
-    #         # # sharetext = fontlist[35].render(f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}", (190, 190, 190))[0]
-    #         # pricetext = s_render(f'${limit_digits(stock[0].price*stock[2],15)}', 45, (190, 190, 190))
-    #         # pricetext = fontlist[45].render(f'${limit_digits(stock[0].price*stock[2],15)}', (190, 190, 190))[0]
-    #         texts = [s_render(value) for value in values[currentind]]# nametext,sharetext,pricetext
-
-    #         addedx = 0 if texts[1].get_width() < 85 else round(texts[1].get_width()-85,-1)
-    #         width = texts[0].get_width() + texts[2].get_width() + 180 + addedx 
-
-    #         points = [(x, y), (x + 15, y + height), (x + 25 + width, y + height), (x + 10 + width, y)]
-    #         gfxdraw.filled_polygon(screen, points, (15, 15, 15))
-    #         pygame.draw.polygon(screen, (0, 0, 0), points, 5)
+        for i,stock in enumerate(stocks):
             
+            x,y,height = self.coords_height[i]
+            addedx = self.texts[i][list(self.texts[i])[0]].get_width()+45
+            stock[0].baredraw(screen, (x+130+addedx, y), (x+addedx, y+height-9), 'hour')
 
-    #         screen.blit(nametext, (x+20, y+15))
-    #         screen.blit(sharetext, (x+25, y+60))
-            
-    #         # stock[0].baredraw(screen, (x+230+addedx, y), (x+120+addedx, y+height-7), 'hour')
-            
-    #         screen.blit(pricetext, (x+250+addedx, y+30))
+    def decidebottomcolor(self,hover,selected_value,numdrawn,stock):
+        percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100
 
-    #         if (hover:=point_in_polygon((mousex,mousey),points)):
-    #             if mousebuttons == 1:
-    #                 self.selected_stock = stock
-    #                 soundEffects['clickbutton2'].play()
-            
-    #         bottom_polygon = [[points[0][0]+18, points[0][1] + height - 7], 
-    #                         [points[1][0]+5, points[1][1]], 
-    #                         [points[2][0], points[2][1]], 
-    #                         [points[3][0], points[3][1]],
-    #                         [points[3][0]-7, points[3][1]],
-    #                         [points[3][0]+5, points[3][1] + height - 7],
-    #                         ]
-    #         if bottomcolors != None:
-    #             bottomcolor = bottomcolors[currentind]
-    #         else:
-    #             bottomcolor = ((80,80,80),(200,200,200))
+        if hover or selected_value == numdrawn:
+            if percentchange > 0:bottomcolor = (0, 200, 0)
+            elif percentchange == 0:bottomcolor = (200, 200, 200)
+            else:bottomcolor = (200, 0, 0)
+        else:
+            if percentchange > 0: bottomcolor = (0, 80, 0)
+            elif percentchange == 0: bottomcolor = (80, 80, 80)
+            else: bottomcolor = (80, 0, 0)
+        return bottomcolor
 
-    #         bottomcolor = bottomcolor[1] if hover or self.selected_stock == stock else bottomcolor[0]
-
-    #         gfxdraw.filled_polygon(screen,bottom_polygon,bottomcolor)
-
-    #         if self.selected_stock == stock:
-    #             y += wh[1]; x += xshift; drawnstocks += 1
-    #         else:
-    #             y += wh[1]*.85; x += xshift*.85; drawnstocks += 1
+    

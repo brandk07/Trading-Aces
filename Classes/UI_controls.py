@@ -3,6 +3,7 @@ from Defs import *
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 from Classes.imports.stockeventspos import StockEvents
+from Classes.imports.Latterscroll import LatterScroll
 from Classes.imports.Newsbar import News
 from Classes.Stock import Stock
 
@@ -10,11 +11,12 @@ from Classes.Stock import Stock
 # [700,1000] [1000,650]
 
 class UI_Controls():
-    def __init__(self,stocklist) -> None:
-        self.gameplay_speed = 0
+    def __init__(self,stocklist,gamespeed) -> None:
+        self.gameplay_speed = gamespeed
         self.stockevent = StockEvents()# the stock events
         self.bar = SliderBar(100,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
         self.newsobj = News()
+        self.latterscroll = LatterScroll(5)
         for i in range(10):
             for stock in stocklist:
                 self.newsobj.addStockNews(stock.name)
@@ -35,6 +37,8 @@ class UI_Controls():
         self.totalperecent = lambda xlist : sum([self.get_percent(stock) for stock in xlist])
         # for pie chart
         self.stockbarsurf = pygame.Surface((1200,80))
+
+        self.autofastforward = True
         
         
     def drawIcon(self, screen: pygame.Surface,mousebuttons) -> bool:
@@ -85,6 +89,7 @@ class UI_Controls():
 
     def draw_stockbar(self,screen:pygame.Surface,stocklist:list,coords:list=[250,710],wh=[1200,80]):
         """Draws a bar that scrolls across the screen, displaying the stock prices, maxwidth is 1710"""
+
         dx,dy = coords
         if wh[1] > 1710: wh[1] = 1710
         if self.stockbarsurf.get_width() != wh[0] or self.stockbarsurf.get_height() != wh[1]:
@@ -166,7 +171,7 @@ class UI_Controls():
         topAssettext = s_render('TOP ASSETS',30,scolor if self.accbar_right == "topAsset" else dcolor)
         transactionstext = s_render('TRANSACTIONS',30,scolor if self.accbar_right == "transactions" else dcolor)
         loanstext = s_render('LOANS',30,scolor if self.accbar_right == "loans" else dcolor)
-        blitpoints = [(1460,170),(1460+topAssettext.get_width()+30,170),(1460+topAssettext.get_width()+60+transactionstext.get_width(),170)]
+        blitpoints = [(1480,170),(1480+topAssettext.get_width()+30,170),(1480+topAssettext.get_width()+60+transactionstext.get_width(),170)]
         
         texts = [topAssettext,transactionstext,loanstext]
         screen.blits((text,point) for text,point in zip(texts,blitpoints))
@@ -181,17 +186,37 @@ class UI_Controls():
 
             assets = player.get_Assets(5)
             for i,asset in enumerate(assets):
+                #all the texts to be rendered
+                
                 if isinstance(asset[0],Stock):
-                    s = f'${asset[0].price*asset[2]:.2f} '
-                    s2 = f'{asset[2]} shares of {asset[0].name}'
-                    s3 = f'{self.get_percent(asset[0])}%'
+                    percentchange = ((asset[0].price - asset[1]) / asset[1]) * 100
+                    c = '+' if percentchange > 0 else ''
+                    texts = [f'${limit_digits(asset[0].price*asset[2],10)}',f'{asset[2]} shares of {asset[0].name}',f'{c}{limit_digits(percentchange,6)}%',]
                 elif isinstance(asset[0],StockOption):
-                    s = f'${asset[0].get_value():.2f}'
-                    s2 = f'{asset[0].name} option'
-                    s3 = f'{asset[0].percent_change():.2f}%'
-                screen.blit(s_render(s,45,(255,255,255)),(1470,200+(i*100)))
-                screen.blit(s_render(s2,20,(255,255,255)),(1490,245+(i*100)))
-                screen.blit(s_render(s3,20,(255,255,255)),(1490,275+(i*100)))
+                    percentchange = asset[0].percent_change()
+                    c = '+' if percentchange > 0 else ''
+                    texts = [f'${limit_digits(asset[0].get_value(),10)}',f'{asset[0].name} option',f'{c}{limit_digits(percentchange,6)}%',]
+
+                    
+                    
+                # all the coords for the texts to be rendered
+                coords = [(15,10),(20,50),((texts[1],75),30)]
+                color = ((0,160,0) if percentchange >= 0 else (160,0,0)) if percentchange != 0 else (160,160,160)
+                colors = [asset[0].color,(190,190,190),color]
+
+                finaldict = {}
+                for ind,text in enumerate(texts):
+                    finaldict[text] = (coords[ind][0],coords[ind][1],[50,30,45][ind],colors[ind])
+
+                self.latterscroll.storeTextsVariable(resetlist=(i == 0),extraspace=20,**finaldict)
+                
+            self.selected_stock = self.latterscroll.draw_polys(screen,(1475,245),790,115,mousebuttons,None,showbottom=False)
+
+
+                # screen.blit(s_render(s,45,(255,255,255)),(1470,200+(i*100)))
+                # screen.blit(s_render(s2,20,(255,255,255)),(1490,245+(i*100)))
+                # screen.blit(s_render(s3,20,(255,255,255)),(1490,275+(i*100)))
+
 
         
         
@@ -205,10 +230,21 @@ class UI_Controls():
         screen.blit(day,(260+dayname.get_width()+monthname.get_width()+20,105))
         screen.blit(year,(260+dayname.get_width()+monthname.get_width()+day.get_width()+30,105))
 
+    def marketStatus(self,screen,gametime):
+        color = (0,150,0) if gametime.isOpen()[0] else (150,0,0)
+        screen.blit(s_render(f"MARKET {'OPEN' if gametime.isOpen()[0] else 'CLOSED'}",115 if gametime.isOpen()[0] else 95,color),(725,20))
+        if not gametime.isOpen()[0]: 
+            render = s_render(f"{gametime.isOpen()[1]}",65,color)
+            screen.blit(render,(890-(render.get_width()/2),95))
+            if self.autofastforward:
+                gametime.skipToOpen = True
+
 
     def draw_home(self,screen:pygame.Surface,stocklist:list,gametime,player,mousebuttons):
-        gfxdraw.filled_polygon(screen,[(200,10),(250,150),(1450,150),(1400,10)],(10,10,10))# time etc
-        pygame.draw.polygon(screen,(0,0,0),[(200,10),(250,150),(1450,150),(1400,10)],5)# time etc
+        """Draws the home screen"""
+        timebarpoints = [(200,10),(250,150),(1910,150),(1860,10)]
+        gfxdraw.filled_polygon(screen,timebarpoints,(10,10,10))# time etc
+        pygame.draw.polygon(screen,(0,0,0),timebarpoints,5)# time etc
         # screen.blit(self.weekdaystext[gametime.get_day_name()],(265,20))
         self.draw_time(screen,gametime)
 
@@ -233,6 +269,10 @@ class UI_Controls():
         self.draw_accbar_right(screen,stocklist,player,mousebuttons)# draws the stock events (On the very right of the screen)
         self.newsobj.draw(screen)
 
+        self.marketStatus(screen,gametime)
+
+
+
         # add the player.options to the values
         
 
@@ -248,8 +288,8 @@ class UI_Controls():
                 player.draw(screen,player,(920,160),(250,700),stocklist,mousebuttons,True)
                 # self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
                 
-                screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(1020,20))
-                self.gameplay_speed = self.bar.draw_bar(screen,[930,70],[450,65],'horizontal',reversedscroll=True)
+                screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(1470,20))
+                self.gameplay_speed = self.bar.draw_bar(screen,[1380,70],[450,65],'horizontal',reversedscroll=True)
 
 
             elif self.view == "stock":

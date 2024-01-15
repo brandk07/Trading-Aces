@@ -23,7 +23,7 @@ class Stock():
         self.stocknames = stocknames
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
-        self.graphrangeoptions = {'recent':POINTSPERGRAPH*5,'hour':10800,'day':70200,'week':351000,'month':1_404_000,'year':16_848_000}
+        self.graphrangeoptions = {'recent':POINTSPERGRAPH*5,'hour':3600,'day':23_400,'week':117_000,'month':489_450,'year':5_873_400}
         # self.gra phrangeoptions = (('recent',466),('hour',10800),('day',70200),('week',351000),('month',1_404_000),('year',16_884_000),('all',None))
         self.graphtext = [[fontlist[30].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']],[fontlist[55].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']]]
         
@@ -37,8 +37,6 @@ class Stock():
         self.datafromfile()
         self.price = self.graphrangelists['recent'][-1]
         
-        self.nametext = bold40.render(f' {self.name}',(255,255,255))[0] if type(self) == Stock else bold40.render(f' Portfolio',(255,255,255))[0]
-        self.pricetext = fontlist[40].render(f'Price $',(255,255,255))[0]
         #variables for the stock price+
         self.volatility = volatility
         self.recentrenders = {}# a dict of the renders of the recent prices
@@ -220,6 +218,7 @@ class Stock():
 
     def baredraw(self,screen,startpos,endpos,graphrange):
         """Draws only the graph of the stock - uses the graphrange,startpos, and endpos parameter, not self.graphrange,self.startpos, and self.endpos"""
+        # startingpos is the top left corner of the graph, endingpos is the bottom right corner of the graph
         startpos = (int(startpos[0]), int(startpos[1]))
         endpos = (int(endpos[0]), int(endpos[1]))
         
@@ -268,6 +267,8 @@ class Stock():
         
         blnkspacex = (self.startpos[0]-self.endpos[0])//10#the amount of blank space to be left on the right side of the graph for x
         blnkspacey = (self.endpos[1]-self.startpos[1])//10#the amount of blank space to be left on the right side of the graph for y
+        
+        percentchange = round(((self.graphrangelists[self.graphrange][-1]/self.graphrangelists[self.graphrange][0])-1)*100,2)
 
         if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
             percentchange = round(((self.graphrangelists[self.graphrange][-1]/self.graphrangelists[self.graphrange][0])-1)*100,2)
@@ -300,6 +301,13 @@ class Stock():
             spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
 
             graphpointlen = len(graphingpoints)# doing this before the iteration to save time
+            points = [(self.endpos[0],self.endpos[1]-blnkspacey)]
+            points.extend([(self.endpos[0]+int(i*spacing),int(value)) for i,value in enumerate(graphingpoints)])
+            points.append((self.startpos[0]-blnkspacex,self.endpos[1]-blnkspacey))
+
+            color = (30,30,30) if percentchange == 0 else (0,30,0) if percentchange > 0 else (30,0,0)
+            gfxdraw.filled_polygon(screen,points,color)#draws the graphed points of the graph
+
             for i,value in enumerate(graphingpoints):
                 if i >= graphpointlen-1:
                     pass#if last one in list or i is too great then don't draw line
@@ -316,21 +324,6 @@ class Stock():
                 
                 #gets the position of the point in the graphingpoints (the y values) - the sorted list moves the points around so the index of the point is different
                 yvalpos = np.where(self.graphrangelists[self.graphrange] == point)[0][0]
-                
-                # -------render the text for the graph----------
-                # if len(self.recentrenders) > i and round(point,2) in self.recentrenders:
-                #     text = self.recentrenders[round(point,2)]# reuse old renders if possible
-                #     self.recentrenders.pop(round(point,2))# remove the text from the recentrenders
-                #     self.recentrenders[round(point,2)] = text# add the text back to the recentrenders - so it is at the end of the dict (doesn't get deleted)
-
-                # else:# if the text is not in the recentrenders or recent renders doesn't have enough texts
-                #     text = fontlist[30].render(f'{point:,.2f}',(255,255,255))[0]# render the text
-                #     self.recentrenders[round(point,2)] = text# add the text to the recentrenders
-                
-                # for i in range(len(self.recentrenders)-4):# if recentrenders has more then 4 texts
-                #     self.recentrenders.pop(list(self.recentrenders)[0])# remove the first text from recentrenders
-                        
-                # draw the text and the lines
 
                 text = s_render(str(limit_digits(point,13)), 30, (255,255,255))
                 gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
@@ -342,20 +335,22 @@ class Stock():
             spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
             graphingpoints = [self.startpos[1]+graphheight]*(graphwidth)#makes the graphingpoints a list of the same y value
             
-        # black outline of the graph
-        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(self.endpos[0], self.startpos[1], (self.startpos[0] - self.endpos[0]),(self.endpos[1] - self.startpos[1])), 5)
+        # black outline around the whole graph and the smaller graph
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(self.endpos[0], self.startpos[1], (self.startpos[0] - self.endpos[0])-blnkspacex,(self.endpos[1] - self.startpos[1])-blnkspacey), 5)# the one around the graph itself
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(self.endpos[0], self.startpos[1], (self.startpos[0] - self.endpos[0]),(self.endpos[1] - self.startpos[1])), 5)# 
+        
         
 
         #draws the text that displays the price of the stock
         if type(self) == Stock:#text displaying the price, and the net worth
             # pricetext = fontlist[40].render(f'{self.price:,.2f}',(255,255,255))[0]
             # print(f"Price ${limit_digits(self.price,10)}")
-            pricetext = s_render(f"Price ${limit_digits(self.price,15)}", 45, (210,210,210))
-            textwidth = pricetext.get_width()-50; textheight = pricetext.get_height()-15
-            textx = self.endpos[0]+20; texty = self.endpos[1]-55
+            pricetext = s_render(f"${limit_digits(self.price,15)}", 45 if 45 > int((self.endpos[1]-self.startpos[1])/12.5) else int((self.endpos[1]-self.startpos[1])/12.5), (200,200,200))
+            # textwidth = pricetext.get_width()-50; textheight = pricetext.get_height()-15
+            textx = self.endpos[0]+10; texty = self.endpos[1]-pricetext.get_height()-15
             # use textx, and texty to draw the polygon
-            gfxdraw.filled_polygon(screen,[(textx-15,texty-5),(textx+textwidth,texty-5),(textx+textwidth+10,texty+textheight+5),(textx,texty+textheight+5)],(30,30,30))
-            pygame.draw.polygon(screen,(0,0,0),[(textx-15,texty-5),(textx+textwidth,texty-5),(textx+textwidth+10,texty+textheight+5),(textx,texty+textheight+5)],5)
+            # gfxdraw.filled_polygon(screen,[(textx-15,texty-5),(textx+textwidth,texty-5),(textx+textwidth+10,texty+textheight+5),(textx,texty+textheight+5)],(30,30,30))
+            # pygame.draw.polygon(screen,(0,0,0),[(textx-15,texty-5),(textx+textwidth,texty-5),(textx+textwidth+10,texty+textheight+5),(textx,texty+textheight+5)],5)
             # screen.blit(self.pricetext,(textx,texty))#draws the word price
 
             screen.blit(pricetext,(textx,texty))# draws the price
@@ -366,29 +361,28 @@ class Stock():
             screen.blit(s_render(f' Net Worth ${player.get_Networth():,.2f}',40,(255,255,255)),(self.endpos[0]+10,self.endpos[1]-40)) 
             
 
-        screen.blit(self.nametext,(self.endpos[0]+15,self.startpos[1]+15))#draws the text that displays the name of the stock or the player
+        screen.blit(s_render(f"{self.name if type(self) == Stock else 'Portfolio'}",50,self.color),(self.endpos[0]+10,self.startpos[1]+10))#draws the text that displays the name of the stock or the player
 
         #Below is the price change text
         # percentchange = round(((self.price - self.graphrangelists[self.graphrange][-2])/self.graphrangelists[self.graphrange][-2])*100,2)
-        percentchange = round(((self.graphrangelists[self.graphrange][-1]/self.graphrangelists[self.graphrange][0])-1)*100,2)
+        
        
         color = (0,175,0) if percentchange >= 0 else (175,0,0)
         
-        if type(self) == Stock:
-            change_text = '+' + str(percentchange) + '%' if percentchange >= 0 else '-' + str(percentchange) + '%'
-            # change_text_rendered = fontlist[40].render(change_text, color)[0]
-            change_text_rendered = s_render(change_text, 40, color)
-            screen.blit(change_text_rendered, (self.endpos[0]+15, self.startpos[1]+45))
-        elif type(self) == self.Playerclass:
-            change_text = '+' + str(percentchange) + '%' if percentchange >= 0 else '-' + str(percentchange) + '%'
-            # change_text_rendered = fontlist[40].render(change_text, color)[0]
-            change_text_rendered = s_render(change_text, 40, color)
-            screen.blit(change_text_rendered, (self.endpos[0]+15, self.startpos[1]+80))
+        # if type(self) == Stock:
+        change_text = '+' + str(percentchange) + '%' if percentchange >= 0 else '' + str(percentchange) + '%'
+        # change_text_rendered = fontlist[40].render(change_text, color)[0]
+        change_text_rendered = s_render(change_text, 40, color)
+        screen.blit(change_text_rendered, (self.endpos[0]+10, self.startpos[1]+50))
+        # elif type(self) == self.Playerclass:
+        #     change_text = '+' + str(percentchange) + '%' if percentchange >= 0 else '' + str(percentchange) + '%'
+        #     # change_text_rendered = fontlist[40].render(change_text, color)[0]
+        #     change_text_rendered = s_render(change_text, 40, color)
+        #     screen.blit(change_text_rendered, (self.endpos[0]+10, self.startpos[1]+80))
 
-        if type(self) == self.Playerclass:
-            cash_text = s_render(f'Cash ${limit_digits(player.cash,15)}', 45, (210,210,210))
-            # cash_text = fontlist[40].render(f'Cash ${self.cash:,.2f}', (255,255,255))[0]
-            screen.blit(cash_text, (self.endpos[0]+15, self.startpos[1]+50))
+        # if type(self) == self.Playerclass:
+        #     cash_text = s_render(f'Cash ${limit_digits(player.cash,15)}', 45, (210,210,210))
+        #     screen.blit(cash_text, (self.endpos[0]+10, self.startpos[1]+50))
         
         self.mouseover(screen,graphingpoints,spacing,blnkspacey)#displays the price of the stock when the mouse is over the graph
                 

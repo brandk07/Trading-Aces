@@ -4,7 +4,7 @@ from Defs import *
 from Classes.imports.Menu import Menu
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
-from Classes.imports.Latterscroll import LaterScroll
+from Classes.imports.Latterscroll import *
 from Classes.Stockbook import quantityControls
 import math
 
@@ -13,7 +13,6 @@ DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
     def __init__(self):
-        
         self.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
         self.icon = pygame.transform.scale(self.icon,(140,100))
         self.icon.set_colorkey((255,255,255))
@@ -31,7 +30,7 @@ class Portfolio(Menu):
         self.selected_stock = None
 
         # self.latterScrollsurf = pygame.Surface((730,730))
-        self.latterscroll = LaterScroll()
+        self.latterscroll = PortfolioLatter()
 
         
     def getpoints(self, w1, w2, w3, x, y):
@@ -116,9 +115,8 @@ class Portfolio(Menu):
         screen.blit(self.showingtext,(300,190))# display the showing text
         shownnumtext = fontlist[45].render(f'{self.bar.value+1} - {self.bar.value+5 if self.bar.value+5 < len(player.stocks) else len(player.stocks)} of {len(player.stocks)}', (190, 190, 190))[0]
         screen.blit(shownnumtext, (self.showingtext.get_width()+300, 190))
-        
-        x,y = DX,DY
-        drawnstocks = 0
+
+
 
         if self.selected_stock != None:
             if self.bar.value > sortedstocks.index(self.selected_stock) and self.bar.value < len(sortedstocks):# if the selected stock is above what is displayed
@@ -126,19 +124,37 @@ class Portfolio(Menu):
             elif self.bar.value+4 < sortedstocks.index(self.selected_stock) and self.bar.value+4 < len(sortedstocks):# if the selected stock is below what is displayed
                 self.selected_stock = sortedstocks[self.bar.value+4]# select the lowest stock being displayed
 
-        #all the texts to be rendered
-        texts = [(f'{stock[0]} ',
-                    f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}",
-                    f'${limit_digits(stock[0].price*stock[2],15)}',
-                ) for stock in sortedstocks[self.bar.value:self.bar.value+5]]
-        # all the coords for the texts to be rendered
-        coords = [((20,15),(25,60),((texts[i][1],250),30),) for i in range(len(texts))]
-        finaldict = {text:(coord[0],coord[1],) for text,coord in zip(texts,coords)}
+        if sortedstocks[self.bar.value:self.bar.value+5]:# if the player has stocks
+            for i,stock in enumerate(sortedstocks[self.bar.value:self.bar.value+5]):
 
-        self.latterscroll.storeTextsVariable(extraspace=230,**finaldict)
+                #all the texts to be rendered
+                texts = [f'{stock[0]} ',
+                            f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}",
+                            f'${limit_digits(stock[0].price*stock[2],15)}',
+                        ]
+                # all the coords for the texts to be rendered
+                coords = [(20,15),(25,60),((texts[1],200),30)]
+                colors = [stock[0].color,(190,190,190),(190,190,190)]
+
+                finaldict = {}
+                # print(finaldict)
+                for ind,text in enumerate(texts):
+                    finaldict[text] = (coords[ind][0],coords[ind][1],[50,35,45][ind],colors[ind])
+
+                self.latterscroll.storeTextsVariable(resetlist=(i == 0),extraspace=20,**finaldict)
+            if self.selected_stock != None:
+                spot = sortedstocks.index(self.selected_stock)-self.bar.value
+            else:
+                spot = None
+            
+
+            self.selected_stock = self.latterscroll.draw_polys(screen, (DX, DY), 830, 160, mousebuttons, spot, 15,True,*sortedstocks[self.bar.value:self.bar.value+5])
+            if self.selected_stock != None:
+                self.selected_stock = sortedstocks[self.bar.value:self.bar.value+5][self.selected_stock]
+
+            self.latterscroll.draw_stockgraph(screen,sortedstocks[self.bar.value:self.bar.value+5])
         # while y < 830 an  d self.bar.value+drawnstocks < len(player.stocks):
         #     stock = sortedstocks[self.bar.value+drawnstocks]
-
         #     percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100
 
         #     height = DH if self.selected_stock == stock else DH*.85

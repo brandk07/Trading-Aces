@@ -47,10 +47,15 @@ class StockOption:
             self.ogvalue = self.option.getPrice(method="MC",iteration=200)
 
         self.lastvalue = [self.stockobj.price*100,self.get_value(True)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
-        
-        
+    
     def __eq__(self,other):
         return [self.stockobj,self.strike_price,self.option_type,self.expiration_date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date]
+    
+    def __iadd__(self,other):
+        if self == other:
+            
+            return self
+        raise ValueError('The options must be the same')
     
     def self_volatility(self):
         """returns the volatility of the option"""
@@ -63,9 +68,10 @@ class StockOption:
         return (self.option_type,self.stockobj.price,self.strike_price,self.expiration_date,calculate_volatility(self.stockobj.graphrangelists['month']),0.05,)
     
     # create a method to return an exact copy of the object
-    def get_copy(self,quantity=1) -> 'StockOption':        
-            return StockOption(self.stockobj,self.strike_price,self.expiration_date,self.option_type,quantity)
-    
+    def get_copy(self) -> 'StockOption':        
+            return StockOption(self.stockobj,self.strike_price,self.expiration_date,self.option_type,self.get_value(True))
+    def resetOgValue(self):
+        self.ogvalue = self.get_value(True)
     def advance_time(self):
         self.expiration_date -= 1
         self.option.t = self.expiration_date

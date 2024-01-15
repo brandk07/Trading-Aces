@@ -17,10 +17,9 @@ class Optiontrade(Menu):
     def __init__(self,stocklist:list):
         # self.icon = pygame.image.load(r'Assets\Portfolio\portfolio2.png').convert_alpha()
 
-        self.icon = pygame.image.load(r'Assets\Menu_Icons\bulloption2.png').convert_alpha()
-        width = 140
-        height = int(width / self.icon.get_width() * self.icon.get_height())
-        self.icon = pygame.transform.scale(self.icon, (width, height))
+        self.icon = pygame.image.load(r'Assets\Menu_Icons\noblack_option3.png').convert_alpha()
+
+        self.icon = pygame.transform.scale(self.icon, (140, 100))
         
         super().__init__(self.icon)
         
@@ -207,7 +206,7 @@ class Optiontrade(Menu):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
                     if player.cash > (option.get_value(True)):
-                        player.buyOption(option)
+                        player.buyOption(option.get_copy())
             else:
                 sellcolor = (225,225,225)
             # gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total value button

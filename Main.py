@@ -13,7 +13,7 @@ from Classes.portfolio import Portfolio
 from Classes.OptionMenu import Optiontrade
 from collections import deque
 import timeit
-
+GAMESPEED = 25
 pygame.init()
 pygame.mixer.init()
 
@@ -55,14 +55,16 @@ stockdict = {name:Stock(name,(20,400),10,Player,stocknames,stockcolors[i]) for i
 stocklist = [stockdict[name] for name in stocknames]
 portfolio = Portfolio()
 optiontrade = Optiontrade(stocklist)
-ui_controls = UI_Controls(stocklist)
+ui_controls = UI_Controls(stocklist,GAMESPEED)
 
 mousebuttons = 0
-polybackground = pygame.image.load('Assets/polybackground2.png')
-polybackground = pygame.transform.scale(polybackground,(window_width,window_height))
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
 
-gametime = GameTime(0,3,8,9,30,'Saturday')
+background = pygame.image.load(r'Assets\backgrounds\Background (6).png').convert_alpha()
+background = pygame.transform.scale(background,(window_width,window_height))
+background.set_alpha(100)
+
+gametime = GameTime(0,3,29,9,30,'Saturday')
 menulist = [stockbook,portfolio,optiontrade]
 musicdata = Getfromfile(stockdict,player)# muiscdata = [time, volume, songindex]
 
@@ -79,25 +81,34 @@ if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
         screen.fill((50,50,50))
+        screen.blit(background,(0,0))
         # screen.blit(polybackground,(0,0))# the background is 1152x896, tile it to fill the screen
         
         # print(mousex,mousey)
         ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist)#draws the ui controls to the screen, and senses for clicks
-
         
+        if gametime.skipToOpen:
+            if (opened:=not gametime.isOpen()[0]):
+                ui_controls.bar.set_currentvalue(250)
+            gametime.skipToOpen = opened
+
         for i in range(ui_controls.gameplay_speed):
-            # gametime = Gametime(gametime,,screen,clock.get_fps())
+            if gametime.isOpen()[0] and ui_controls.gameplay_speed > GAMESPEED:
+                ui_controls.bar.set_currentvalue(0)
+                ui_controls.bar.changemaxvalue(GAMESPEED)
+                break
             gametime.increase_time(1)
-            for stock in stocklist:
-                stock.update_price(player)
-            player.update_price(player)
+            if gametime.isOpen()[0]:
+                for stock in stocklist:
+                    stock.update_price(player)
+                player.update_price(player)
         # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
 
 
         # optiontrade.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,515),ui_controls)
         
         for i,menu in enumerate(menulist):
-            menu.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,165+(i*175)),ui_controls)
+            menu.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,165+(i*175)),ui_controls,gametime)
 
 
         # stockbook.draw_icon(screen,mousebuttons,stocklist,player,menulist)

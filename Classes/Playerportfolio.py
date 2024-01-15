@@ -71,7 +71,7 @@ class Player(Stock):
 
     def buyOption(self,optionobj):
         if self.cash >= optionobj.get_value(bypass=True):
-
+            
             self.cash -= optionobj.get_value(True)
 
             self.options.append(optionobj)
@@ -88,6 +88,7 @@ class Player(Stock):
         self.options.remove(optionobj)
         print(f'selling {optionobj} for {optionobj.get_value(True):.2f}')
         print('cash is',self.cash)
+        
     def giveoptioncolor(self,optionlist):
         for i,option in enumerate(optionlist):
             option.color = self.optioncolors[i if i < len(self.optioncolors) else randint(0,len(self.optioncolors)-1)]

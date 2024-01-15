@@ -38,7 +38,7 @@ class SliderBar():
         """Max value must be less than the slider width-20, or height-20 if vertical, color = [(colorstart),(colorend)]"""
         self.value = 0
         self.maxvalue = maxvalue; self.minvalue = minvalue
-        self.gamevaluetexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue+1)]
+        self.gamevaluetexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue)]
         self.barcolors = barcolor
         self.orientation = 'horizontal'
         self.sliderwh = [0,0]
@@ -57,14 +57,25 @@ class SliderBar():
         if maxvalue != self.maxvalue:
             self.maxvalue = maxvalue
             if self.maxvalue > len(self.gamevaluetexts)-1:
-                for i in range(self.maxvalue-len(self.gamevaluetexts)+1):
-                    self.gamevaluetexts.append(fontlist[40].render(f'x{len(self.gamevaluetexts)+i}',(0,0,0))[0])
+                for i in range(1,self.maxvalue-len(self.gamevaluetexts)+3):
+                    self.gamevaluetexts.append(fontlist[40].render(f'x{len(self.gamevaluetexts)}',(0,0,0))[0])
 
             self.value = self.value if self.value < self.maxvalue else self.maxvalue
+    def set_currentvalue(self,newvalue,overridemax=False):
+        self.value = newvalue
+        if not overridemax and self.value > self.maxvalue:
+            self.changemaxvalue(self.value)
+    
+        self.value = self.maxvalue if self.value > self.maxvalue else self.value
+        self.value = 0 if self.value < 0 else self.value
+        self.updatebarxy(self.reversedscroll)
 
-    def changecurrentvalue(self,offset):
+    def changecurrentvalue(self,offset,overridemax=False):
         """changes the current value by the offset"""
         self.value += offset
+        if not overridemax and self.value > self.maxvalue:
+            self.changemaxvalue(self.value)
+    
         self.value = self.maxvalue if self.value > self.maxvalue else self.value
         self.value = 0 if self.value < 0 else self.value
         self.updatebarxy(self.reversedscroll)
@@ -137,7 +148,7 @@ class SliderBar():
                 if reversedscroll:
                     self.barxy[0],self.value,mouseover = barpos(self.slider_points,self.sliderwh[0]-(self.barwh[0]/2),self.sliderxy[0],self.maxvalue,self.value,self.barwh[0],horizontal=True,reverse=True)
                 else:
-                    self.barxy[0],self.value,mouseover = barpos(self.slider_points,-self.sliderwh[0]+(self.barwh[0]*2),self.sliderxy[0]+self.sliderwh[0]-self.barwh[0],self.maxvalue,self.value,self.barwh[0],False)
+                    self.barxy[0],self.value,mouseover = barpos(self.slider_points,-self.sliderwh[0]+(self.barwh[0]*2),self.sliderxy[0]+self.sliderwh[0]-self.barwh[0],self.maxvalue,self.value,self.barwh[0],True)
         return mouseover
     def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation,barwh=None,shift=0,reversedscroll=False,text=True):
         """sliderxy [startx,starty], 
