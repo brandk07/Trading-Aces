@@ -202,7 +202,7 @@ class SliderBar():
             
         # Box around the slider
         pygame.draw.polygon(screen,(0,0,0),self.slider_points,5)
-        
+    
         if text:
             # Draw the text that displays the gameplay speed
             textx = (self.sliderwh[0]//2 if self.orientation == 'horizontal' else self.sliderwh[0]//1.5) - self.gamevaluetexts[self.value].get_width()

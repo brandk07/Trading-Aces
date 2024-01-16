@@ -22,10 +22,13 @@ class Portfolio(Menu):
         self.bar.value = 0
         self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
 
-        
+        self.sharebackground = pygame.image.load(r"Assets\backgrounds\Background (8).png").convert_alpha()
+        self.sharebackground = self.sharebackground.subsurface((0,0,485,880))
+        self.sharebackground.set_alpha(150)
+
         self.portfoliotext = fontlist[65].render('Owned Shares',(220,220,220))[0]
         self.showingtext = fontlist[45].render('Showing ',(220,220,220))[0]
-        self.menudrawn = False
+        self.menudrawn = True
         self.allrenders = []
         self.selected_stock = None
 
@@ -94,6 +97,7 @@ class Portfolio(Menu):
         mousex, mousey = pygame.mouse.get_pos()
         xshift = 15
         yshift = 150 
+        screen.blit(self.sharebackground,(1425,100))
         sortedstocks = sorted(player.stocks,key=lambda stock: stock[0].price*stock[2],reverse=True)
 
         if len(self.allrenders) < len(player.stocks):# if the player has more stocks than the renders
@@ -105,109 +109,59 @@ class Portfolio(Menu):
         self.bar.scroll(mousebuttons)# check for the scroll of the bar
         self.bar.changemaxvalue(len(player.stocks)-5 if len(player.stocks) > 5 else 1)# change the max value of the bar based on the amount of stocks the player has
 
+        player.draw(screen,player,(800,100),(200,600),stocklist,mousebuttons,True)
         
-        self.bar.draw_bar(screen, [225, DY], [35, int(DY + (yshift*3.25) - 50)], 'vertical', barwh=[33, 65], shift=85, reversedscroll=True, text=False)
+        # self.bar.draw_bar(screen, [1450, 100], [20, 880], 'vertical', barwh=[20, 65], reversedscroll=True, text=False)
         
-        screen.blit(self.portfoliotext,(220,120))# display the portfolio text
+        # screen.blit(self.portfoliotext,(220,120))# display the portfolio text
 
-        self.drawSelectedStock(screen, self.selected_stock, mousebuttons, player)# draws the additional stock info
+        # self.drawSelectedStock(screen, self.selected_stock, mousebuttons, player)# draws the additional stock info
 
-        screen.blit(self.showingtext,(300,190))# display the showing text
-        shownnumtext = fontlist[45].render(f'{self.bar.value+1} - {self.bar.value+5 if self.bar.value+5 < len(player.stocks) else len(player.stocks)} of {len(player.stocks)}', (190, 190, 190))[0]
-        screen.blit(shownnumtext, (self.showingtext.get_width()+300, 190))
+        # screen.blit(self.showingtext,(300,190))# display the showing text
+        # shownnumtext = fontlist[45].render(f'{self.bar.value+1} - {self.bar.value+5 if self.bar.value+5 < len(player.stocks) else len(player.stocks)} of {len(player.stocks)}', (190, 190, 190))[0]
+        # screen.blit(shownnumtext, (self.showingtext.get_width()+300, 190))
 
 
-
+        disamt = 6# the amount of stocks to display
+        slicedstocks = sortedstocks[self.bar.value:self.bar.value+disamt]
         if self.selected_stock != None:
             if self.bar.value > sortedstocks.index(self.selected_stock) and self.bar.value < len(sortedstocks):# if the selected stock is above what is displayed
                 self.selected_stock = sortedstocks[self.bar.value]# select the highest stock being displayed
-            elif self.bar.value+4 < sortedstocks.index(self.selected_stock) and self.bar.value+4 < len(sortedstocks):# if the selected stock is below what is displayed
-                self.selected_stock = sortedstocks[self.bar.value+4]# select the lowest stock being displayed
+            elif self.bar.value+disamt-1 < sortedstocks.index(self.selected_stock) and self.bar.value+disamt-1 < len(sortedstocks):# if the selected stock is below what is displayed
+                self.selected_stock = sortedstocks[self.bar.value+disamt-1]# select the lowest stock being displayed
 
-        if sortedstocks[self.bar.value:self.bar.value+5]:# if the player has stocks
-            for i,stock in enumerate(sortedstocks[self.bar.value:self.bar.value+5]):
-
+        if slicedstocks:# if the player has stocks
+            for i,stock in enumerate(slicedstocks):
                 #all the texts to be rendered
                 texts = [f'{stock[0]} ',
                             f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}",
                             f'${limit_digits(stock[0].price*stock[2],15)}',
                         ]
                 # all the coords for the texts to be rendered
-                coords = [(20,15),(25,60),((texts[1],200),30)]
+                coords = [(20,15),(25,60),((texts[1],50),30)]
                 colors = [stock[0].color,(190,190,190),(190,190,190)]
 
                 finaldict = {}
-                # print(finaldict)
                 for ind,text in enumerate(texts):
                     finaldict[text] = (coords[ind][0],coords[ind][1],[50,35,45][ind],colors[ind])
 
                 self.latterscroll.storeTextsVariable(resetlist=(i == 0),extraspace=20,**finaldict)
+
             if self.selected_stock != None:
                 spot = sortedstocks.index(self.selected_stock)-self.bar.value
             else:
                 spot = None
             
 
-            self.selected_stock = self.latterscroll.draw_polys(screen, (DX, DY), 830, 160, mousebuttons, spot, 15,True,*sortedstocks[self.bar.value:self.bar.value+5])
+            self.selected_stock = self.latterscroll.draw_polys(screen, (1500, 105), 1505, 160, mousebuttons, spot, 0,True,*slicedstocks)
             if self.selected_stock != None:
-                self.selected_stock = sortedstocks[self.bar.value:self.bar.value+5][self.selected_stock]
+                self.selected_stock = slicedstocks[self.selected_stock]
 
-            self.latterscroll.draw_stockgraph(screen,sortedstocks[self.bar.value:self.bar.value+5])
-        # while y < 830 an  d self.bar.value+drawnstocks < len(player.stocks):
-        #     stock = sortedstocks[self.bar.value+drawnstocks]
-        #     percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100
-
-        #     height = DH if self.selected_stock == stock else DH*.85
-        #     nametext = s_render(f'{stock[0]} ', 50, stock[0].color)
-    
-        #     sharetext = s_render(f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}", 35, (190, 190, 190))
-       
-        #     pricetext = s_render(f'${limit_digits(stock[0].price*stock[2],15)}', 45, (190, 190, 190))
-      
-        #     addedx = 0 if sharetext.get_width() < 85 else round(sharetext.get_width()-85,-1)
-        #     width = nametext.get_width() + pricetext.get_width() + 180 + addedx 
-
-        #     points = [(x, y), (x + 15, y + height), (x + 25 + width, y + height), (x + 10 + width, y)]
-        #     gfxdraw.filled_polygon(screen, points, (15, 15, 15))
-        #     pygame.draw.polygon(screen, (0, 0, 0), points, 5)
-            
-        #     screen.blit(nametext, (x+20, y+15))
-        #     screen.blit(sharetext, (x+25, y+60))
-            
-        #     stock[0].baredraw(screen, (x+230+addedx, y), (x+120+addedx, y+height-7), 'hour')
-            
-        #     screen.blit(pricetext, (x+250+addedx, y+30))
-
-        #     if (hover:=point_in_polygon((mousex,mousey),points)):
-        #         if mousebuttons == 1:
-        #             self.selected_stock = stock
-        #             soundEffects['clickbutton2'].play()
-            
-        #     bottom_polygon = [[points[0][0]+18, points[0][1] + height - 7], 
-        #                     [points[1][0]+5, points[1][1]], 
-        #                     [points[2][0], points[2][1]], 
-        #                     [points[3][0], points[3][1]],
-        #                     [points[3][0]-7, points[3][1]],
-        #                     [points[3][0]+5, points[3][1] + height - 7],
-        #                     ]
-        #     if hover or self.selected_stock == stock:
-        #         if percentchange > 0:bottomcolor = (0, 200, 0)
-        #         elif percentchange == 0:bottomcolor = (200, 200, 200)
-        #         else:bottomcolor = (200, 0, 0)
-        #     else:
-        #         if percentchange > 0: bottomcolor = (0, 80, 0)
-        #         elif percentchange == 0: bottomcolor = (80, 80, 80)
-        #         else: bottomcolor = (80, 0, 0)
-        #     gfxdraw.filled_polygon(screen,bottom_polygon,bottomcolor)
-
-        #     if self.selected_stock == stock:
-        #         y += yshift; x += xshift; drawnstocks += 1
-        #     else:
-        #         y += yshift*.85; x += xshift*.85; drawnstocks += 1
+            # self.latterscroll.draw_stockgraph(screen,sortedstocks[self.bar.value:self.bar.value+7])
             
 
         values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
         names = set([stock[0].name for stock in player.stocks])
         values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
 
-        draw_pie_chart(screen, values, 150,(1010, 115))
+        draw_pie_chart(screen, values, 150,(200, 650))

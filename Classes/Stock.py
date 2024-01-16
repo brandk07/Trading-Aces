@@ -23,11 +23,9 @@ class Stock():
         self.stocknames = stocknames
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
-        self.graphrangeoptions = {'recent':POINTSPERGRAPH*5,'hour':3600,'day':23_400,'week':117_000,'month':489_450,'year':5_873_400}
-        # self.gra phrangeoptions = (('recent',466),('hour',10800),('day',70200),('week',351000),('month',1_404_000),('year',16_884_000),('all',None))
-        self.graphtext = [[fontlist[30].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']],[fontlist[55].render(f'{text}',(200,0,0))[0] for text in ['R','H', 'D', 'W', 'M', 'Y', 'A']]]
+        self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":489_450,"3M":1_468_350,"1Y":5_873_400}
         
-        self.graphrange = 'hour' #
+        self.graphrange = '1H' # H, D, W, M, 3M, Y
         self.graphrangelists = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
         
@@ -35,7 +33,7 @@ class Stock():
         self.bonustrendranges = [[(-1,1),(1,3600)] for i in range(12)]
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]
         self.datafromfile()
-        self.price = self.graphrangelists['recent'][-1]
+        self.price = self.graphrangelists['1H'][-1]
         
         #variables for the stock price+
         self.volatility = volatility
@@ -52,16 +50,16 @@ class Stock():
     
     def reset_graphs(self):
         """resets the graphs to be empty"""
-        for i in ['recent','hour','day','week','month','year','trends']:
+        for i in ["1H","1D","1W","1M","3M","1Y","trends"]:
             file_path = f"Assets/Stockdata/{self}/{i}.json"
             with open(file_path, "w+") as f:
                 json.dump([], f)
         newprice = randint(*self.starting_value_range)
-        for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year], assign the new price to each graph
+        for grange in self.graphrangelists.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"], assign the new price to each graph
             self.graphrangelists[grange] = np.array([newprice])
     def datafromfile(self):
         """gets the data from each file and puts it into the graphlist"""
-        for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year]
+        for grange in self.graphrangelists.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
             with open(f'Assets/Stockdata/{self.name}/{grange}.json','r') as file:
                 file.seek(0)# go to the start of the file
                 contents = json.load(file)# load the contents of the file
@@ -77,7 +75,7 @@ class Stock():
             else:
                 self.reset_trends()
     def save_data(self):
-        for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year]
+        for grange in self.graphrangelists.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
             with open(f'Assets/Stockdata/{self.name}/{grange}.json','w') as file:
                 file.seek(0)# go to the start of the file
                 file.truncate()# clear the file
@@ -112,7 +110,7 @@ class Stock():
     def stock_split(self,player):
         if self.price >= 2500:
             player.messagedict[f'{self.name} has split'] = (time.time(),(0,0,200))
-            for grange in self.graphrangelists.keys():# for each graph range, [recent,hour,day,week,month,year]
+            for grange in self.graphrangelists.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
                 self.graphrangelists[grange] = np.array([point*0.5 for point in self.graphrangelists[grange]])
             self.price = self.price*0.5
             stock_quantity = len([stock for stock in player.stocks if stock[0] == self])
@@ -156,34 +154,46 @@ class Stock():
 
     def rangecontrols(self,screen:pygame.Surface,Mousebuttons):
         """draws the range controls and checks for clicks"""
-        
+        x,y = self.startpos[0]-15,self.endpos[1]-15
+        for i in range(len(self.graphrangeoptions),0,-1):
+            name = list(self.graphrangeoptions)[i-1]
+            text = s_render(name,int((self.endpos[1]-self.startpos[1])/15),(255,255,255) if self.graphrange == name else (120,120,120))
+            screen.blit(text,(x-text.get_width(),y-text.get_height()))
+            if pygame.Rect(x-text.get_width()-3,y-text.get_height()-3,text.get_width()+6,text.get_height()+6).collidepoint(pygame.mouse.get_pos()):
+                if Mousebuttons == 1:
+                    self.graphrange = name
+            x -= text.get_width()+13
+
+            
+            
+
         #draw 4 25/25 filled polygons in the top left corner of the graph with the last one's x pos being startpos[0]-5
         # self.startpos[0]
-        box_xy = (self.startpos[0]-self.endpos[0])//22.3#the x and y value of the box (dimensions of the box)
-        leftshift = (self.startpos[0]-self.endpos[0])//10#the amount of blank space to be left on the left side of the graph
-        for i in range(6):
+        # box_xy = (self.startpos[0]-self.endpos[0])//22.3#the x and y value of the box (dimensions of the box)
+        # leftshift = (self.startpos[0]-self.endpos[0])//10#the amount of blank space to be left on the left side of the graph
+        # for i in range(6):
 
-            x1 = self.startpos[0] - leftshift-box_xy - 5 - (i * (box_xy+(box_xy//6)))#the x value of the top left corner of the box
-            x2 = self.startpos[0] - leftshift - 5 - (i * (box_xy+(box_xy//6)))#the x value of the top right corner of the box
-            y1 = self.startpos[1] + 10#the y value of the top left corner of the box
-            y2 = self.startpos[1] + 10+box_xy#the y value of the bottom left corner of the box
-            if self.graphrange == list(self.graphrangeoptions.keys())[i]:
-                gfxdraw.filled_polygon(screen, [(x1, y1), (x2, y1), (x2, y2), (x1, y2)], (200, 200, 200))
-            else:
-                gfxdraw.filled_polygon(screen, [(x1, y1), (x2, y1), (x2, y2), (x1, y2)], (60, 60, 60))
-            # check for collisions on each using mousebuttons
-            if box_xy > 35:#if the box is big enough to fit the larger text
-                text = self.graphtext[1][i]#use the larger text
-            else:
-                text = self.graphtext[0][i]#use the smaller text
+        #     x1 = self.startpos[0] - leftshift-box_xy - 5 - (i * (box_xy+(box_xy//6)))#the x value of the top left corner of the box
+        #     x2 = self.startpos[0] - leftshift - 5 - (i * (box_xy+(box_xy//6)))#the x value of the top right corner of the box
+        #     y1 = self.startpos[1] + 10#the y value of the top left corner of the box
+        #     y2 = self.startpos[1] + 10+box_xy#the y value of the bottom left corner of the box
+        #     if self.graphrange == list(self.graphrangeoptions.keys())[i]:
+        #         gfxdraw.filled_polygon(screen, [(x1, y1), (x2, y1), (x2, y2), (x1, y2)], (200, 200, 200))
+        #     else:
+        #         gfxdraw.filled_polygon(screen, [(x1, y1), (x2, y1), (x2, y2), (x1, y2)], (60, 60, 60))
+        #     # check for collisions on each using mousebuttons
+        #     if box_xy > 35:#if the box is big enough to fit the larger text
+        #         text = self.graphtext[1][i]#use the larger text
+        #     else:
+        #         text = self.graphtext[0][i]#use the smaller text
 
-            text_rect = text.get_rect(center=((x1+x2)//2,(y1+y2)//2))#the center of the text is the center of the box
-            screen.blit(text, text_rect)
-            mousex,mousey = pygame.mouse.get_pos()
-            if pygame.Rect(x1,y1,box_xy,box_xy).collidepoint(mousex,mousey):#if the mouse is over the box
-                if Mousebuttons == 1:
-                    self.graphrange = list(self.graphrangeoptions.keys())[i]
-                    print('clicked',i)
+        #     text_rect = text.get_rect(center=((x1+x2)//2,(y1+y2)//2))#the center of the text is the center of the box
+        #     screen.blit(text, text_rect)
+        #     mousex,mousey = pygame.mouse.get_pos()
+        #     if pygame.Rect(x1,y1,box_xy,box_xy).collidepoint(mousex,mousey):#if the mouse is over the box
+        #         if Mousebuttons == 1:
+        #             self.graphrange = list(self.graphrangeoptions.keys())[i]
+
     def mouseover(self,screen:pygame.Surface,graphpoints,spacing,blnkspacey):
         """displays the price of the stock when the mouse is over the graph"""
         mousex,mousey = pygame.mouse.get_pos()
@@ -257,7 +267,7 @@ class Stock():
         """Draws the graph of the stock along with the range controls, price lines, and the name"""
         if startpos != self.startpos or endpos != self.endpos:#if the starting or ending positions have changed
             #setting the starting and ending positions - where the graphs are located is constantly changing
-            # startingpos is the top left corner of the graph, endingpos is the bottom right corner of the graph
+            # startingpos is the top right corner of the graph, endingpos is the bottom left corner of the graph
             self.startpos = (startpos[0], startpos[1])
             self.endpos = (endpos[0], endpos[1])
         
@@ -326,12 +336,12 @@ class Stock():
                 yvalpos = np.where(self.graphrangelists[self.graphrange] == point)[0][0]
 
                 text = s_render(str(limit_digits(point,13)), 30, (255,255,255))
-                gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-5,int(graphingpoints[yvalpos]),(150,150,150))
+                gfxdraw.line(screen,self.endpos[0]+5,int(graphingpoints[yvalpos]),self.startpos[0]-blnkspacex-5,int(graphingpoints[yvalpos]),(150,150,150))
                 # text_rect = text.get_rect(left=((self.startpos[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
-                screen.blit(text,(self.startpos[0]-blnkspacex-text.get_width(),(graphingpoints[yvalpos]-text.get_height()//2-5)))
+                screen.blit(text,(self.startpos[0]-blnkspacex-text.get_width()-10,(graphingpoints[yvalpos]-text.get_height())))
                 
         else:#if the minpoint and maxpoint are the same
-            gfxdraw.line(screen,self.endpos[0],int(self.startpos[1]+graphheight),self.startpos[0]-blnkspacex,int(self.startpos[1]+graphheight),(255,255,255))#draws a line across the graph
+            gfxdraw.line(screen,self.endpos[0],int(self.startpos[1]+graphheight),self.startpos[0]-blnkspacex-5,int(self.startpos[1]+graphheight),(255,255,255))#draws a line across the graph
             spacing = graphwidth/len(self.graphrangelists[self.graphrange])#the spacing between each point
             graphingpoints = [self.startpos[1]+graphheight]*(graphwidth)#makes the graphingpoints a list of the same y value
             

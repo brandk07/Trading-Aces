@@ -39,7 +39,10 @@ def sdf(a,b,c=5,*args):
         print(arg)
 
 mylist = [3, 4, 5, 6, 7, 8, 9, 10]
-sdf(22,23,c=24,*mylist)
+# sdf(22,23,c=24,*mylist)
+for i in range(len(mylist)-1,0,-1):
+    print(mylist[i])
+
 
 # start = timeit.default_timer()
 # for i in range(1000000):

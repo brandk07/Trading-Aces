@@ -65,7 +65,7 @@ class LatterScroll():
             height = polyheight*.85 if numdrawn == selected_value else polyheight*.65
             self.coords_height.append((x,y,height))
             points = [(x, y), (x + 15, y + height), (x + 25 + self.totalwidth[numdrawn], y + height), (x + 10 + self.totalwidth[numdrawn], y)]
-            gfxdraw.filled_polygon(screen, points, (15, 15, 15))
+            gfxdraw.filled_polygon(screen, points, (15, 15, 15, 150))
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
             for (xoffset,yoffset),text in self.texts[numdrawn].items():
@@ -106,7 +106,7 @@ class PortfolioLatter(LatterScroll):
             
             x,y,height = self.coords_height[i]
             addedx = self.texts[i][list(self.texts[i])[0]].get_width()+45
-            stock[0].baredraw(screen, (x+130+addedx, y), (x+addedx, y+height-9), 'hour')
+            stock[0].baredraw(screen, (x+130+addedx, y), (x+addedx, y+height-9), '1D')
 
     def decidebottomcolor(self,hover,selected_value,numdrawn,stock):
         percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100

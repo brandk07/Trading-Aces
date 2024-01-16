@@ -96,7 +96,7 @@ start_time = timeit.default_timer()
 
 
 for name in stocknames:
-    for i in ['recent','hour','day','week','month','year','trends']:
+    for i in ["1H","1D","1W","1M","3M","1Y",'trends']:
         file_path = f"{directory}/{name}/{i}.json"
         if os.path.exists(file_path):
             with open(file_path, "w+") as f:

@@ -15,7 +15,8 @@ class Menu():
         # Set the icontext to be the name of the child class that inherits this class
         self.icontext = fontlist[36].render(self.__class__.__name__,(255,255,255))[0]
         self.menudrawn = False
-        self.menupoints = [(200,10),(1910,10),(1910,980),(200,980)]
+        self.menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
+        self.topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]
 
     
     def draw_icon(self,screen,mousebuttons:int,stocklist:list,player,menulist,iconcoords:tuple,ui_controls,gametime):
@@ -82,7 +83,9 @@ class Menu():
 
     def draw_menu(self,screen,mousebuttons:int,stocklist:list,player,ui_controls,gametime):
         gfxdraw.filled_polygon(screen, self.menupoints,(40,40,40,200))
-
         pygame.draw.polygon(screen, (0,0,0), self.menupoints,5)
+
+        gfxdraw.filled_polygon(screen, self.topbarpoints,(80,80,80,200))
+        pygame.draw.polygon(screen, (0,0,0), self.topbarpoints,5)
         self.draw_menu_content(screen,stocklist,mousebuttons,player)#draws the content of the menu, defined in the child classes
 

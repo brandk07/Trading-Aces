@@ -60,11 +60,11 @@ ui_controls = UI_Controls(stocklist,GAMESPEED)
 mousebuttons = 0
 #gametime is #months,weeks,days,hours,minutes,update interval,am/pm
 
-background = pygame.image.load(r'Assets\backgrounds\Background (6).png').convert_alpha()
-background = pygame.transform.scale(background,(window_width,window_height))
+background = pygame.image.load(r'Assets\backgrounds\Background (9).png').convert_alpha()
+background = pygame.transform.smoothscale_by(background,2)
 background.set_alpha(100)
 
-gametime = GameTime(0,3,29,9,30,'Saturday')
+gametime = GameTime(0,1,15,10,12,'Monday')
 menulist = [stockbook,portfolio,optiontrade]
 musicdata = Getfromfile(stockdict,player)# muiscdata = [time, volume, songindex]
 
