@@ -6,7 +6,7 @@
 # list of the stocks you must do,  ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
 import pygame
 from pygame import gfxdraw
-from Defs import fontlist
+from Defs import *
 from random import randint
 class StockEvents():
     def __init__(self) -> None:
@@ -144,17 +144,14 @@ class StockEvents():
     }
 
 
-    def addStockEvent(self,stock,duration,percent,Postive=True):
+    def addStockEvent(self,stock,duration,Postive=True):
         """Postive is a boolean that determines if the stock event is positive or negative"""
-        color = (0,140,0) if Postive else (175,0,0)
         if stock not in self.stockevents:
-            indexloc = list(self.events_pos).index(stock)
-            if Postive:
-                addminus = " +"
-                self.stockevents[stock] = ([fontlist[25].render(list(self.events_pos.values())[indexloc][randint(0,2)]+addminus+str(percent)+"%",(0,0,0))[0],color,duration])
-            else:
-                addminus = " -"
-                self.stockevents[stock] = ([fontlist[25].render(list(self.events_neg.values())[indexloc][randint(0,2)]+addminus+str(percent)+"%",(0,0,0))[0],color,duration])
+            indexloc = list(self.events_pos).index(stock.name)
+
+            randomevent = list(self.events_pos.values())[indexloc][randint(0,2)]# gets a random event from the list of events
+            fullstring = (randomevent[:7],randomevent[7:])# splits the string into two parts (name, event)
+            self.stockevents[stock] = [fullstring,duration]
             
 
     def addEvent(self,event:str,duration,color,eventname):
@@ -166,16 +163,20 @@ class StockEvents():
             for i in range(len(self.stockevents)-8):
                 del self.stockevents[list(self.stockevents)[i]]
         events_to_remove = []
-        for i,event in enumerate(list(self.stockevents.values())):
-            text, color, duration = event
+        for i,(stock,event) in enumerate(list(self.stockevents.items())):
+            (namestr,eventstr), duration = event
             if duration > 0:
-                # draw a polygon behind the text, trapozoid, length of 520, height of 50
-                points = [(940,230+(i*55)),(955,270+(i*55)),(940+505,270+(i*55)),(925+505,230+(i*55))]
-                gfxdraw.filled_polygon(screen,points,color)
-                # createa a border around the polygon
-                pygame.draw.polygon(screen,(0,0,0),points,5)
-                screen.blit(text,(965,240+(i*55)))
-                event[2] -= 1# subtracts one from the duration
+                percent = ((stock.price/stock.graphrangelists["1D"][0])-1)
+                nametext = s_render(namestr,30,(stock.color))
+                eventtext = s_render(eventstr,30,(200,200,200))
+                pcolor = ((0,180,0) if percent > 0 else (180,0,0)) if percent != 0 else (200,200,200)
+                percenttext = s_render(("" if percent < 0 else "+")+f'{percent:,.2f}',30,(pcolor))
+
+                screen.blit(nametext,(940,230+(i*55)))
+                screen.blit(eventtext,(nametext.get_width()+940,230+(i*55)))
+                screen.blit(percenttext,(nametext.get_width()+eventtext.get_width()+950,230+(i*55)))
+
+                event[1] -= 1# subtracts one from the duration
             else:
                 events_to_remove.append(list(self.stockevents)[i])
         

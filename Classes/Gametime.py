@@ -37,7 +37,7 @@ class GameTime:
         self.daynames = {}# size : [name : render]
         self.monthnames = {}# size : [name : render]
 
-        self.skipToOpen = False
+        self.fastforward = False
         self.mdhrenders = {}# size : [renders]
         self.lasttimerender = (None,None)
         # self.renderednumbers = {}# size : [renders]
@@ -72,9 +72,12 @@ class GameTime:
         self.year += 1
 
     
-    def increase_time(self,seconds:int):
+    def increase_time(self,seconds:int,autofastforward):
         for i in range(seconds):
             self.add_second()
+        if not self.isOpen()[0] and autofastforward:
+            self.fastforward = True
+        
         return self.year, self.month, self.day, self.hour, self.minute, self.second
 
 

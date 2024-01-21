@@ -31,14 +31,12 @@ class UI_Controls():
         # self.namerenders = [[fontlist[30].render(stock.name,(200,0,0))[0],fontlist[30].render(stock.name,(0,200,0))[0]] for stock in stocklist]# [red,green]
 
         # get 
-        self.get_percent = lambda stock : round(((stock.graphrangelists[stock.graphrange][-1]/stock.graphrangelists[stock.graphrange][0])-1)*100,2)
+        self.get_percent = lambda stock : round(((stock.graphrangelists["1D"][-1]/stock.graphrangelists["1D"][0])-1)*100,2)
         self.get_listpercents = lambda xlist : [self.get_percent(stock) for stock in xlist]
         self.percentchanges = self.get_listpercents(stocklist)
         self.totalperecent = lambda xlist : sum([self.get_percent(stock) for stock in xlist])
         # for pie chart
         self.stockbarsurf = pygame.Surface((1200,80))
-
-        self.autofastforward = True
         
         
     def drawIcon(self, screen: pygame.Surface,mousebuttons) -> bool:
@@ -93,7 +91,7 @@ class UI_Controls():
         dx,dy = coords
         if wh[1] > 1710: wh[1] = 1710
         if self.stockbarsurf.get_width() != wh[0] or self.stockbarsurf.get_height() != wh[1]:
-            self.stockbarsurf = pygame.Surface(wh)
+            self.stockbarsurf = pygame.Surface(wh).convert_alpha()
         
         self.graphscroll += 1*(self.gameplay_speed/self.bar.maxvalue)+1# the speed of the stock graph 
         self.percentchanges = self.get_listpercents(stocklist)
@@ -147,8 +145,8 @@ class UI_Controls():
             minmove = min([stock for stock in stocklist],key=self.get_percent)
             maxmove = max([stock for stock in stocklist],key=self.get_percent)
 
-            self.stockevent.addStockEvent(minmove.name,1600,abs(self.get_percent(minmove)),False)
-            self.stockevent.addStockEvent(maxmove.name,1600,abs(self.get_percent(maxmove)))
+            self.stockevent.addStockEvent(minmove,1600,False)
+            self.stockevent.addStockEvent(maxmove,1600,)
             self.stockevent.draw(screen)
         elif self.accbar_middle == "pie":
 
@@ -236,30 +234,28 @@ class UI_Controls():
         if not gametime.isOpen()[0]: 
             render = s_render(f"{gametime.isOpen()[1]}",65,color)
             screen.blit(render,(890-(render.get_width()/2),95))
-            if self.autofastforward:
-                gametime.skipToOpen = True
+            
 
 
     def draw_home(self,screen:pygame.Surface,stocklist:list,gametime,player,mousebuttons):
         """Draws the home screen"""
         timebarpoints = [(200,10),(250,150),(1910,150),(1860,10)]
-        gfxdraw.filled_polygon(screen,timebarpoints,(10,10,10))# time etc
+        gfxdraw.filled_polygon(screen,timebarpoints,(10,10,10,225))# time etc
         pygame.draw.polygon(screen,(0,0,0),timebarpoints,5)# time etc
         # screen.blit(self.weekdaystext[gametime.get_day_name()],(265,20))
         self.draw_time(screen,gametime)
 
 
-        gfxdraw.filled_polygon(screen,[(250,800),(275,1050),(1475,1050),(1450,800)],(10,10,10))# the News bar at the bottom
+        gfxdraw.filled_polygon(screen,[(250,800),(275,1050),(1475,1050),(1450,800)],(10,10,10,175))# the News bar at the bottom
         pygame.draw.polygon(screen,(0,0,0),[(250,800),(275,1050),(1475,1050),(1450,800)],5)# the News bar at the bottom Outline
-        gfxdraw.filled_polygon(screen,[(250,710),(250,790),(1450,790),(1450,710)],(30,30,30))# stock graph bar (scrolls across screen)
         
         
-        gfxdraw.filled_polygon(screen,[(930,160),(930,700),(1450,700),(1450,160)],(50,50,50))# Movements bar (right of the portfolio)
+        gfxdraw.filled_polygon(screen,[(930,160),(930,700),(1450,700),(1450,160)],(40,40,40,175))# Movements bar (right of the portfolio)
         gfxdraw.box(screen,pygame.Rect(930,160,520,40),(30,30,30))# Top part of the announce (right of the portfolio)
         pygame.draw.polygon(screen,(0,0,0),[(930,160),(930,700),(1450,700),(1450,160)],5)# Movements bar (right of the portfolio) Outline
 
         points = [(1460,160),(1460,700),(1910,700),(1910,160)]
-        gfxdraw.filled_polygon(screen,points,(30,30,30))
+        gfxdraw.filled_polygon(screen,points,(30,30,30,175))
         gfxdraw.box(screen,pygame.Rect(1460,160,450,40),(15,15,15))# Top part of the announce (right of the portfolio)
         pygame.draw.polygon(screen,(0,0,0),points,5)
 
@@ -268,18 +264,13 @@ class UI_Controls():
         self.draw_accbar_middle(screen,stocklist,mousebuttons,player)# draws the stock events (On the right of the portfolio)
         self.draw_accbar_right(screen,stocklist,player,mousebuttons)# draws the stock events (On the very right of the screen)
         self.newsobj.draw(screen)
-
-        self.marketStatus(screen,gametime)
-
-
-
-        # add the player.options to the values
         
 
     def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist):
         if self.drawIcon(screen,mousebuttons):
             for i in range(len(menulist)):menulist[i].menudrawn = False
         if not any(menu.menudrawn for menu in menulist):# if any of the menus are drawn, then don't draw
+            self.marketStatus(screen,gametime)
             if self.view == "home":
                 mousex,mousey = pygame.mouse.get_pos()
                 
@@ -288,14 +279,15 @@ class UI_Controls():
                 player.draw(screen,player,(920,160),(250,700),stocklist,mousebuttons,True)
                 # self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
                 
-                screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(1470,20))
-                self.gameplay_speed = self.bar.draw_bar(screen,[1380,70],[450,65],'horizontal',reversedscroll=True)
+                screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(830,20))
+
+                self.gameplay_speed = self.bar.draw_bar(screen,[740,75],[450,65],'horizontal',reversedscroll=True,text='SKIPPING' if gametime.fastforward else True)
 
 
             elif self.view == "stock":
                 stockgraphmanager.draw_graphs(screen,stocklist,player,mousebuttons)
                 # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
-                self.gameplay_speed = self.bar.draw_bar(screen,[1620,575],[125,400],'vertical')
+                self.gameplay_speed = self.bar.draw_bar(screen,[1620,575],[125,400],'vertical',text='SKIPPING' if gametime.fastforward else True)
 
             
 

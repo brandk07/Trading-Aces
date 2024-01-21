@@ -32,16 +32,20 @@ from Classes.imports.Latterscroll import LatterScroll
 
 # import timeit
 
-def sdf(a,b,c=5,*args):
-    print(a,b,c)
-    for arg in args:
+# def sdf(a,b,c=5,*args):
+#     print(a,b,c)
+#     for arg in args:
         
-        print(arg)
+#         print(arg)
 
-mylist = [3, 4, 5, 6, 7, 8, 9, 10]
-# sdf(22,23,c=24,*mylist)
-for i in range(len(mylist)-1,0,-1):
-    print(mylist[i])
+# mylist = [3, 4, 5, 6, 7, 8, 9, 10]
+# # sdf(22,23,c=24,*mylist)
+# for i in range(len(mylist)-1,0,-1):
+#     print(mylist[i])
+
+mylist = [['XKSTO ', 50, (255, 165, 0)], ['48 Shares', 35, (190, 190, 190)], ['$5,732.00', 0, (190, 190, 190)]]
+
+print([(i[0],i[1],i[2]) for i in mylist])
 
 
 # start = timeit.default_timer()

@@ -1,5 +1,5 @@
 import pygame
-from Defs import fontlist,point_in_polygon
+from Defs import *
 from pygame import gfxdraw
 
 def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizontal=True,reverse=False):
@@ -41,17 +41,14 @@ class SliderBar():
         self.gamevaluetexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue)]
         self.barcolors = barcolor
         self.orientation = 'horizontal'
-        self.sliderwh = [0,0]
-        self.sliderxy = [0,0]
-        self.barwh = [0,0]
-        self.barxy = [0,0]
-        self.shift = [0,0]
+        self.sliderwh = self.sliderxy = self.barwh = self.barxy = self.shift = [0, 0]
         self.color = color
         self.reversedscroll = False
         # below is the slider offset, gives a bit more space for the mouse to get to 0 and max speed - conditional statement later for no errors
         # self.slider_rect = pygame.Rect(0,0,0,0)
         # the points for the slider polygon
         self.slider_points = []
+
 
     def changemaxvalue(self,maxvalue):
         if maxvalue != self.maxvalue:
@@ -68,7 +65,8 @@ class SliderBar():
     
         self.value = self.maxvalue if self.value > self.maxvalue else self.value
         self.value = 0 if self.value < 0 else self.value
-        self.updatebarxy(self.reversedscroll)
+        if self.sliderxy != [0,0]:
+            self.updatebarxy(self.reversedscroll)
 
     def changecurrentvalue(self,offset,overridemax=False):
         """changes the current value by the offset"""
@@ -143,12 +141,14 @@ class SliderBar():
                         self.barxy[1],self.value,mouseover = barpos(self.slider_points,self.sliderwh[1]-(self.barwh[1]/2),self.sliderxy[1],self.maxvalue,self.value,self.barwh[1],horizontal=False,reverse=True)
                 else:
                     self.barxy[1],self.value,mouseover = barpos(self.slider_points,-self.sliderwh[1]+(self.barwh[1]*2),self.sliderxy[1]+self.sliderwh[1]-self.barwh[1],self.maxvalue,self.value,self.barwh[1],False)
+            else: raise ValueError(f'Bar height must be less than the slider height bh{self.barwh[1]} sh{self.sliderwh[1]}')
         elif self.orientation == 'horizontal':
             if self.barwh[0] < self.sliderwh[0]:
                 if reversedscroll:
                     self.barxy[0],self.value,mouseover = barpos(self.slider_points,self.sliderwh[0]-(self.barwh[0]/2),self.sliderxy[0],self.maxvalue,self.value,self.barwh[0],horizontal=True,reverse=True)
                 else:
                     self.barxy[0],self.value,mouseover = barpos(self.slider_points,-self.sliderwh[0]+(self.barwh[0]*2),self.sliderxy[0]+self.sliderwh[0]-self.barwh[0],self.maxvalue,self.value,self.barwh[0],True)
+            else: raise ValueError(f'Bar width must be less than the slider width bw{self.barwh[0]} sw{self.sliderwh[0]}')
         return mouseover
     def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation,barwh=None,shift=0,reversedscroll=False,text=True):
         """sliderxy [startx,starty], 
@@ -202,12 +202,18 @@ class SliderBar():
             
         # Box around the slider
         pygame.draw.polygon(screen,(0,0,0),self.slider_points,5)
-    
-        if text:
+        
+        if type(text) == bool and text:
             # Draw the text that displays the gameplay speed
-            textx = (self.sliderwh[0]//2 if self.orientation == 'horizontal' else self.sliderwh[0]//1.5) - self.gamevaluetexts[self.value].get_width()
+            textx = (self.sliderwh[0]//2 if self.orientation == 'horizontal' else self.sliderwh[0]//2) - (self.gamevaluetexts[self.value].get_width()/2)
             texty = self.gamevaluetexts[self.value].get_height()
             screen.blit(self.gamevaluetexts[self.value], (self.sliderxy[0]+textx, self.sliderxy[1]+self.sliderwh[1]//2-texty//2))
+        elif type(text) == str:
+            text = s_render(text,40,(0,0,0))
+            width = text.get_width()
+            textx = ((self.sliderwh[0]/2)-(width/2) if self.orientation == 'horizontal' else (self.sliderwh[0]/2)-(width/2))
+            texty = text.get_height()
+            screen.blit(text, (self.sliderxy[0]+textx, self.sliderxy[1]+self.sliderwh[1]//2-texty//2))
         if self.value < self.minvalue:
             self.value = self.minvalue
 
