@@ -139,7 +139,7 @@ class Stockbook(Menu):
         screen.blit(self.renderedstocknames[stocklist[self.selectedstock].name],(300,710))# blits the stock name to the screen
 
         # stocklist[self.selectedstock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
-        stocklist[self.selectedstock].draw(screen,player,(1100,130),(550,680),stocklist,mousebuttons)
+        stocklist[self.selectedstock].draw(screen,player,(550,130),(550,550),stocklist,mousebuttons)
         for i,line in enumerate(self.stocktext[stocklist[self.selectedstock].name]):
             x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))

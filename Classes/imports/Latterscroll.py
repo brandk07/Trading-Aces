@@ -10,6 +10,7 @@ class LatterScroll():
         # the coords and heights of each polygon drawn in the last call of draw_polys, Not used in this class, but may be used in child classes
         self.coords_height = []
         self.surf = pygame.Surface((0,0))
+        self.omittedstocks = (0,None)#index of the first and last stock omitted from the latter scroll
 
     def storeTexts(self,extraspace=0,resetlist=False,**kwargs):
         """Kwargs should be 'text:str':(relativex,relativey,fontsize,fontcolor))"""
@@ -65,11 +66,12 @@ class LatterScroll():
         self.texts = textinfo
 
     def get_textcoord(self,textcoord:list,strtexts,rendertexts):
-        # print(textcoord,strtexts,rendertexts)
+        """textcoord is a list of tuples, each tuple is the coords for each text drawn
+        strtexts is a list of strings, each string is the text for each text drawn"""
         for i in range(len(textcoord)):
             x,y = textcoord[i]
-            if type(x) == tuple:
-                x = rendertexts[strtexts.index(x[0])].get_width()+x[1]
+            if type(x) == tuple:# if the x is ('text',offset) it is a variable width
+                x = rendertexts[strtexts.index(x[0])].get_width()+x[1]# the width of the text + the offset
             if type(y) == tuple:
                 y = rendertexts[strtexts.index(y[0])].get_height()+y[1]
             
@@ -77,39 +79,45 @@ class LatterScroll():
 
         return textcoord
         
-    def store_rendercoords(self,coords:tuple,max_y:int,polyheight:tuple,xcoordshift:int,polyshift:int,extrawidth:int):
+    def store_rendercoords(self,coords:tuple,maxcoords:tuple,polyheight:tuple,xcoordshift:int,polyshift:int,extrawidth:int):
         
         self.renderedtexts = []
         self.polycoords = []
-
-        x,y = 0,0-self.scrollvalue+coords[1]
+        self.polyheight = polyheight
+        x,y = 0+5,0-self.scrollvalue+5
         ndrawn = 0
-        height = polyheight*.8
+        height = polyheight*.9
         maxwidth = 0
 
         
         for i,text in enumerate(self.texts):
-            if y+polyheight >= 0 and y <= max_y:
+            if y+polyheight >= 0 and y < maxcoords[1]-10:
+                # print(i,y,max_y,'i')
                 if ndrawn == 0:
+                    self.omittedstocks = (i,None)
                     self.textcoords = self.textcoords[i:]
                 self.renderedtexts.append([s_render(info[0],info[1],info[2]) for info in text])
                  
                 
                 # print(self.textcoords,'sdfsdf',ndrawn,'afterndrawn',self.texts)
-                self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn],[(t[0]) for t in text],self.renderedtexts[-1])
-            
-                
-                width = self.renderedtexts[-1][-1].get_width()+extrawidth+self.textcoords[ndrawn][-1][0]# the width of the last text drawn + the extra width + the xcoord of the last text drawn
-                maxwidth = max(maxwidth,width+x)
-                self.polycoords.append([(x, y), (x + polyshift, y + height), (x + 10 + polyshift + width, y + height), (x + 10 + width, y)])
+                self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn],[(t[0]) for t in text],self.renderedtexts[-1])                
+    
+                self.polycoords.append([(x, y), (x + polyshift, y + height), (x + polyshift + maxcoords[0] -10, y + height), (x + maxcoords[0]-10, y)])
                 ndrawn += 1
                 x += xcoordshift
+            else:# stock isn't being drawn (too high or too low)
+                if ndrawn > 0:# Stocks that are too far down to be drawn
+                    self.omittedstocks = (self.omittedstocks[0],i)
 
             y += polyheight
+            
 
+        if self.surf.get_size()[1] != maxcoords[1]-coords[1] or self.surf.get_size()[0] != maxcoords[0]:
+            self.surf = pygame.Surface((maxcoords[0], maxcoords[1]-coords[1]), pygame.HWSURFACE, 32)
+            self.surf.set_colorkey((0,0,0))
+        else:
+            self.surf.fill((0,0,0,0))
         
-        self.surf = pygame.Surface((maxwidth+35,max_y-coords[1]),pygame.SRCALPHA)
-        self.surf.set_colorkey((0,0,0))
 
     
     def get_bottompoints(self,points:list):
@@ -122,36 +130,35 @@ class LatterScroll():
     
 
     def scrollcontrols(self,mousebuttons):
-        if mousebuttons == 4:
+        if mousebuttons == 4 and self.scrollvalue > 0:
             self.scrollvalue -= 50
-        elif mousebuttons == 5:
+        elif mousebuttons == 5 and self.scrollvalue < len(self.polycoords)*self.polyheight-self.polyheight*5:
             self.scrollvalue += 50
     def draw_polys(self,screen,coords,mousebuttons,selected_value,*args):
-        
+
         self.scrollcontrols(mousebuttons)
         for numdrawn,(text_renders,points) in enumerate(zip(self.renderedtexts,self.polycoords)):
             # draw the polygon
-            gfxdraw.filled_polygon(self.surf, points, (15, 15, 15, 180))
-
-           
+            gfxdraw.filled_polygon(self.surf, points, (30,30,30,180))
             
             # check if the mouse is hovering over the polygon
             if (hover:=point_in_polygon(pygame.mouse.get_pos(),[(point[0]+coords[0],point[1]+coords[1]) for point in points])):
                 if mousebuttons == 1:
-                    selected_value = numdrawn
+                    selected_value = numdrawn+self.omittedstocks[0]
                     soundEffects['clickbutton2'].play()
                     
             
             # get bottom coords
             bottom_polygon = self.get_bottompoints(points)
             # draw the bottom of the polygon
-            bottomcolor = self.decidebottomcolor(hover,selected_value,numdrawn,args[numdrawn])       
+            bottomcolor = self.decidebottomcolor(hover,selected_value,numdrawn+self.omittedstocks[0],args[numdrawn])       
             gfxdraw.filled_polygon(self.surf,bottom_polygon,bottomcolor)  
 
              # draw all the texts for each polygon
             for i,render in enumerate(text_renders):
                 # self.get_textcoord(self.textcoords[i],points[0],self.texts[numdrawn])
                 self.surf.blit(render,(points[0][0]+self.textcoords[numdrawn][i][0],points[0][1]+self.textcoords[numdrawn][i][1]))
+            pygame.draw.polygon(self.surf, (0, 0, 1), points, 5)
         screen.blit(self.surf,coords)
         return selected_value
     
@@ -171,14 +178,15 @@ class PortfolioLatter(LatterScroll):
     def decidebottomcolor(self,hover,selected_value,numdrawn,stock):
         percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100
 
+        bright,dull = 175,100
         if hover or selected_value == numdrawn:
-            if percentchange > 0:bottomcolor = (0, 150, 0, 175)
-            elif percentchange == 0:bottomcolor = (150, 150, 150, 175)
-            else:bottomcolor = (150, 0, 0, 175)
+            if percentchange > 0:bottomcolor = (0, bright, 0)
+            elif percentchange == 0:bottomcolor = (bright, bright, bright)
+            else:bottomcolor = (bright, 0, 0)
         else:
-            if percentchange > 0: bottomcolor = (0, 80, 0, 175)
-            elif percentchange == 0: bottomcolor = (80, 80, 80, 175)
-            else: bottomcolor = (80, 0, 0, 175)
+            if percentchange > 0: bottomcolor = (0, dull, 0)
+            elif percentchange == 0: bottomcolor = (dull, dull, dull)
+            else: bottomcolor = (dull, 0, 0)
         return bottomcolor
             
 # from Defs import *

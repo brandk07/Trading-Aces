@@ -141,7 +141,7 @@ class StockGraphManager:
                 else:
                     x = int(200 + (i * width))
                     y = 10
-                stock.baredraw(screen, (x + int(width) - 5, y), (x + 5, y + 80), self.masterrange if self.masterrange != 'Custom' else '1H')
+                stock.baredraw(screen, (x + 5, y), (int(width), 80), self.masterrange if self.masterrange != 'Custom' else '1H')
 
                 pchange = round(((stock.graphrangelists[stock.graphrange][-1] / stock.graphrangelists[stock.graphrange][0]) - 1) * 100, 2)
                 color = (0, 200, 0) if pchange >= 0 else (200, 0, 0)
@@ -185,8 +185,10 @@ class StockGraphManager:
                 ylength = int(880/self.graph_config[self.current_config][1])
                 # print(xlength,ylength,'xlength,ylength')
                 
-                startpos = ((ii+1)*xlength+200,i*ylength+100)
-                endpos = (ii*xlength+200,(i+1)*ylength+100)                
+                # startpos = ((ii+1)*xlength+200,i*ylength+100)
+                # endpos = (ii*xlength+200,(i+1)*ylength+100)    
+                coords = (ii*xlength+200,i*ylength+100)  
+                wh = (((ii+1)*xlength)-(ii*xlength),((i+1)*ylength)-(i*ylength))          
 
                 stockname = self.picked_stocks[(i*self.graph_config[self.current_config][0])+ii]
 
@@ -194,7 +196,7 @@ class StockGraphManager:
                 # if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
                 #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
 
-                stock.draw(screen,player,startpos,endpos,stocklist,mousebuttons,True if self.masterrange == 'Custom' else False)
+                stock.draw(screen,player,coords,wh,mousebuttons,stocklist,True if self.masterrange == 'Custom' else False)
                     
                 # if self.current_config != 'nona':#if no menus are drawn and the current config is not nona
                 #     self.changestockbutton(screen,startpos,endpos,mousebuttons,stockname,stocklist)#  ------------------------Used for changing stocks, don't want right now

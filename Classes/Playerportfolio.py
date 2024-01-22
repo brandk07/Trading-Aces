@@ -122,23 +122,23 @@ class Player(Stock):
         for key in keys_to_delete:
             del self.messagedict[key]
 
-    def graph(self,stocklist:list):
-        # print(self.cash,'cash')
-        self.stockvalues.clear()
-        if self.stocks:#if there are stocks
-            bankruptamounts = []#list containing the amount of money lost from each bankrupt stocks - all in 1 message so it doesn't spam the message box
-            for stock in self.stocks:
-                if isinstance([stockobj.pricereset_time for stockobj in stocklist if stockobj == stock[0]][0],float):#checking to see if the stockobj has a pricereset_time (if it's bankrupt)
-                    if not bankruptamounts:#if there are no amounts in bankruptamounts yet
-                        bankruptamounts.append(f'{stock[0]} went bankrupt')#only 1 of these messages
-                    bankruptamounts += [stock[1]]#add the amount of money lost from the bankrupt stock to the list
+    # def graph(self,stocklist:list):
+    #     # print(self.cash,'cash')
+    #     self.stockvalues.clear()
+    #     if self.stocks:#if there are stocks
+    #         bankruptamounts = []#list containing the amount of money lost from each bankrupt stocks - all in 1 message so it doesn't spam the message box
+    #         for stock in self.stocks:
+    #             if isinstance([stockobj.pricereset_time for stockobj in stocklist if stockobj == stock[0]][0],float):#checking to see if the stockobj has a pricereset_time (if it's bankrupt)
+    #                 if not bankruptamounts:#if there are no amounts in bankruptamounts yet
+    #                     bankruptamounts.append(f'{stock[0]} went bankrupt')#only 1 of these messages
+    #                 bankruptamounts += [stock[1]]#add the amount of money lost from the bankrupt stock to the list
 
-                    self.stocks.remove(stock)
-                self.stockvalues.append([stockobj for stockobj in stocklist if stockobj == stock[0]][0].price)
-            if bankruptamounts:
-                self.messagedict[bankruptamounts[0]] = (time.time(),(200,0,0))#add the bankrupt message to the message dict
-                bankruptamounts.remove(bankruptamounts[0])#remove the bankrupt message from bankruptamounts
-                self.messagedict[f'Lost {round(sum(bankruptamounts),2)} from bankrupt stocks'] = (time.time(),(200,0,0))#add the total amount of money lost from bankrupt stocks to the message dict
-            #Make for multiple stocks not just one---------------------------------------------------------------------  probably need a dict instead of banruptamounts list
+    #                 self.stocks.remove(stock)
+    #             self.stockvalues.append([stockobj for stockobj in stocklist if stockobj == stock[0]][0].price)
+    #         if bankruptamounts:
+    #             self.messagedict[bankruptamounts[0]] = (time.time(),(200,0,0))#add the bankrupt message to the message dict
+    #             bankruptamounts.remove(bankruptamounts[0])#remove the bankrupt message from bankruptamounts
+    #             self.messagedict[f'Lost {round(sum(bankruptamounts),2)} from bankrupt stocks'] = (time.time(),(200,0,0))#add the total amount of money lost from bankrupt stocks to the message dict
+    #         #Make for multiple stocks not just one---------------------------------------------------------------------  probably need a dict instead of banruptamounts list
             
         

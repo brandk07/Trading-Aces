@@ -22,7 +22,7 @@ monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.
 window_width, window_height = (monitor_width, monitor_height)
 
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
-screen = pygame.display.set_mode((window_width, window_height-100))
+screen = pygame.display.set_mode((window_width, window_height-100),pygame.NOFRAME|pygame.HWSURFACE)
 pygame.display.set_caption("Trading Aces")
 pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
@@ -49,7 +49,7 @@ autofastforward = True
 background = pygame.image.load(r'Assets\backgrounds\Background (9).png').convert_alpha()
 background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
 
-gametime = GameTime(0,1,15,10,12,'Monday')
+gametime = GameTime(0,5,15,10,12,'Monday')
 menulist = [stockbook,portfolio,optiontrade]
 musicdata = Getfromfile(stockdict,player)# muiscdata = [time, volume, songindex]
 
