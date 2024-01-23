@@ -116,7 +116,7 @@ class Portfolio(Menu):
         self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
         self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
         # Does most of the work for the latter scroll, renders the text and finds all the coords
-        self.latterscroll.store_rendercoords((1500, 105), (380,975),140,0,0,0)
+        self.latterscroll.store_rendercoords((1500, 105), (380,975),140,0,0)
         # drawing the latter scroll and assigning the selected stock
         self.selected_stock = sortedstocks[self.latterscroll.draw_polys(screen, (1500, 105), mousebuttons, sortedstocks.index(self.selected_stock), *sortedstocks)]
 
@@ -130,13 +130,37 @@ class Portfolio(Menu):
 
 
             percent = ((self.selected_stock[0].price/self.selected_stock[1])-1)
-            lostprotext =s_render('Profit' if percent >= 0 else 'Lost',45,(190,190,190))
-            screen.blit(lostprotext,(815,110))# display the portfolio text
-            percenttext = s_render(f'{limit_digits(percent,15)}%',45,(190,190,190))
-            screen.blit(percenttext,(820+lostprotext.get_width(),110))# display the portfolio text
 
-            pricetext = s_render(f'${limit_digits(self.selected_stock[0].price*self.selected_stock[2],15)}',45,(190,190,190))
-            screen.blit(pricetext,(1480-pricetext.get_width(),110))# display the portfolio text
+            # lostprotext = s_render('Profit' if percent >= 0 else 'Lost',45,(190,190,190))
+            # screen.blit(lostprotext,(815,110))# display the portfolio text
+            # percenttext = s_render(f'{limit_digits(percent,15)}%',45,(190,190,190))
+            # screen.blit(percenttext,(820+lostprotext.get_width(),110))# display the portfolio text
+
+            # pricetext = s_render(f'${limit_digits(self.selected_stock[0].price*self.selected_stock[2],15)}',45,(190,190,190))
+            # screen.blit(pricetext,(1480-pricetext.get_width(),110))# display the portfolio text
+
+            texts = [
+                s_render('Profit' if percent >= 0 else 'Lost',45,(190,190,190)),# text for the profit/loss
+                s_render(f'${limit_digits(percent,15)}%',45,(190,190,190)),# text for the percent
+                s_render(f'${limit_digits(self.selected_stock[1]*self.selected_stock[2],15)}',45,(190,190,190)),# text for the total paid
+                s_render('Bought at $',45,(190,190,190)),
+                s_render(str(limit_digits(self.selected_stock[1],15)),45,(190,190,190)),
+                s_render('per share',45,(190,190,190)),
+                s_render('Current Price $',45,(190,190,190)),
+                s_render(str(limit_digits(self.selected_stock[0].price,15)),45,(190,190,190)),
+            ]
+            coords = [
+                (815,110),# coords for the profit/loss
+                (820+texts[0].get_width(),110),# coords for the percent
+                (1480-texts[1].get_width(),110),# coords for the total paid
+                (820,465),# coords for the "bought at" text
+                (820+texts[3].get_width(),465),# coords for the price text
+                (830+texts[3].get_width()+texts[4].get_width(),465),# coords for the "per share" text
+                (820,515),# coords for the "current price" text
+                (820+texts[6].get_width(),515),# coords for the current price text
+            ]
+            for text,coord in zip(texts,coords):
+                screen.blit(text,coord)# display all the texts
 
 
             self.selected_stock[0].baredraw(screen,(820,155),(660,295),'1M',True)

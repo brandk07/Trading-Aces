@@ -218,35 +218,6 @@ class Stock():
             self.mouseover(screen,graphingpoints,spacing,0,coords,wh)#displays the price of the stock when the mouse is over the graph
 
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0],coords[1],graphwidth,graphheight), 5)
-        # if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
-        #     percentchange = round(((self.graphrangelists[graphrange][-1]/self.graphrangelists[graphrange][0])-1)*100,2)
-        #     color = (0,55,0) if percentchange >= 0 else (55,0,0)
-        #     gfxdraw.filled_polygon(screen, [(endpos[0], startpos[1]), endpos, (startpos[0], endpos[1]), startpos],color)  # draws the perimeter around graphed values
-        #     gfxdraw.filled_polygon(screen,[(endpos[0],startpos[1]),(endpos[0],endpos[1]),(startpos[0],endpos[1]),(startpos[0],startpos[1])],(15,15,15))#draws the background of the graph
-
-        # graphheight = ((endpos[1]-startpos[1])//2)
-        # graphwidth = (startpos[0]-endpos[0])
-        # graphingpoints = self.graphrangelists[graphrange]
-        # minpoint = (np.amin(self.graphrangelists[graphrange]))
-        # maxpoint = (np.amax(self.graphrangelists[graphrange]))        
-
-        # if minpoint != maxpoint:#prevents divide by zero error
-        #     yScale = graphheight/(maxpoint-minpoint)#the amount of pixels per point with the y axis
-
-        #     yOffset = (startpos[1]+graphheight)-10# slides the graph up on the screen to fit
-
-        #     graphingpoints = (((graphheight)-((graphingpoints - minpoint)) * yScale)) + yOffset# Doing the math to make the points fit on the graph 
-
-        # spacing = graphwidth/len(self.graphrangelists[graphrange])#the spacing between each point
-
-        # graphpointlen = len(graphingpoints)# doing this before the iteration to save time
-        # for i,value in enumerate(graphingpoints):
-        #     if i >= graphpointlen-1:
-        #         pass#if last one in list or i is too great then don't draw line
-        #     else:
-        #         nextvalue = graphingpoints[i+1]
-        #         xpos = endpos[0]
-        #         gfxdraw.line(screen,xpos+int(i*spacing),int(value),xpos+int((i+1)*spacing),int(nextvalue),(255,255,255))
         
 
     def draw(self,screen:pygame.Surface,player:object,coords,wh,Mousebuttons,stocklist=None,rangecontrols=True,graphrange=None):
@@ -276,19 +247,19 @@ class Stock():
         if rangecontrols:# if the range controls are drawn
             self.rangecontrols(screen,Mousebuttons,blnkspacey,coords,wh)#draws the range controls
 
-        
-        self.graph.setPoints(self.graphrangelists[self.graphrange])
+        # using the graph class to graph the points
+        self.graph.setPoints(self.graphrangelists[self.graphrange])# set the list of points
         color = (30,30,30) if percentchange == 0 else (0,30,0) if percentchange > 0 else (30,0,0)
         graphheight = (coords[1]+wh[1]-coords[1])-blnkspacey
         graphwidth = (coords[0]+wh[0]-coords[0])-blnkspacex
 
-        graphingpoints,spacing,minmax_same = self.graph.draw_graph(screen,(coords[0],coords[1]),(graphwidth,graphheight),color,True)
+        graphingpoints,spacing,minmax_same = self.graph.draw_graph(screen,(coords[0],coords[1]),(graphwidth,graphheight),color,True)# graph the points and get needed values
         
         # black outline around the whole graph and the smaller graph
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0], coords[1], (coords[0]+wh[0] - coords[0])-blnkspacex,(coords[1]+wh[1] - coords[1])-blnkspacey), 5)# the one around the graph itself
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0], coords[1], (coords[0]+wh[0] - coords[0]),(coords[1]+wh[1] - coords[1])), 5)# 
         
-        if not minmax_same:
+        if not minmax_same:# if the min and max are not the same
             """text that displays the price of the stock and the lines that go across the graph"""
             sortedlist = self.graphrangelists[self.graphrange].copy();sortedlist.sort()# first makes a copy of the list, then sorts the list
             for i in range(4):

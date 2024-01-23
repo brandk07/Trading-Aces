@@ -79,7 +79,7 @@ class LatterScroll():
 
         return textcoord
         
-    def store_rendercoords(self,coords:tuple,maxcoords:tuple,polyheight:tuple,xcoordshift:int,polyshift:int,extrawidth:int):
+    def store_rendercoords(self,coords:tuple,maxcoords:tuple,polyheight:tuple,xcoordshift:int,polyshift:int):
         
         self.renderedtexts = []
         self.polycoords = []
@@ -100,8 +100,9 @@ class LatterScroll():
                  
                 
                 # print(self.textcoords,'sdfsdf',ndrawn,'afterndrawn',self.texts)
-                self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn],[(t[0]) for t in text],self.renderedtexts[-1])                
-    
+                self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn],[(t[0]) for t in text],self.renderedtexts[-1])      
+
+
                 self.polycoords.append([(x, y), (x + polyshift, y + height), (x + polyshift + maxcoords[0] -10, y + height), (x + maxcoords[0]-10, y)])
                 ndrawn += 1
                 x += xcoordshift
@@ -132,7 +133,7 @@ class LatterScroll():
     def scrollcontrols(self,mousebuttons):
         if mousebuttons == 4 and self.scrollvalue > 0:
             self.scrollvalue -= 50
-        elif mousebuttons == 5 and self.scrollvalue < len(self.polycoords)*self.polyheight-self.polyheight*5:
+        elif mousebuttons == 5 and self.scrollvalue < len(self.polycoords)*self.polyheight-self.polyheight:
             self.scrollvalue += 50
     def draw_polys(self,screen,coords,mousebuttons,selected_value,*args):
 
