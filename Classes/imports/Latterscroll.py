@@ -117,7 +117,7 @@ class LatterScroll():
             self.surf = pygame.Surface((maxcoords[0], maxcoords[1]-coords[1]), pygame.HWSURFACE, 32)
             self.surf.set_colorkey((0,0,0))
         else:
-            self.surf.fill((0,0,0,0))
+            self.surf.fill((0,0,0))
         
 
     

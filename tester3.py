@@ -76,21 +76,70 @@
 
 
 
-def a(b):
-    if b == 50:
-        return b
-    return a(b+1)
+# def a(b):
+#     if b == 50:
+#         return b
+#     return a(b+1)
 
 
-print(a(0))
+# print(a(0))
 
-def reverse(string):
-    if len(string) == 0:
-        return string
-    print(string)
-    return reverse(string[1:]) + string[0]
+# def reverse(string):
+#     if len(string) == 0:
+#         return string
+#     print(string)
+#     return reverse(string[1:]) + string[0]
 
 from random import randint
 
-bonustrendranges = [[(-1,1),(1,3600)] for i in range(12)]
+volatility = 5
+bonustrendranges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]
+# bonustrendranges = [[((-1,1)),((140_400,421_200))],[((-3,3)),((59400,81000))],[((-8,8)),((8100,21600))],[((-12,12)),((150,3600))]]
 bonustrends = [[randint(*x[0]),randint(*x[1])] for x in bonustrendranges]
+
+
+from random import randint
+
+def addpoint_optimized(lastprice):
+    """returns the new price of the stock"""
+
+    global bonustrends, bonustrendranges
+
+    # bonustrends = [[randint(*bonustrendranges[i][0]), randint(*bonustrendranges[i][1])] if trend[1] <= 0 else [trend[0], trend[1] - 1] for i, trend in enumerate(bonustrends)]
+    for i,bonustrend in enumerate(bonustrends):
+        if bonustrend[1] <= 0:#if the time is out
+            bonustrends[i] = [randint(*bonustrendranges[i][0]),randint(*bonustrendranges[i][1])]
+
+        else:
+            bonustrend[1] -= 1
+
+    total_trend = sum(trend[0] for trend in bonustrends)
+    total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)
+    highvolitity = volatility + total_trend
+    lowvolitity = -volatility + total_trend
+    
+    factor = randint(lowvolitity, highvolitity) / 100000
+    return lastprice * (1 + factor if randint(0, 1) else 1 - factor)  # returns the new price of the stock
+
+def points100(lastprice,iteration):
+    for _ in range(iteration):
+        lastprice = addpoint_optimized(lastprice)
+    return lastprice
+    
+points = [addpoint_optimized(100) for i in range(100000)]
+
+print("New Run "*5)
+print(sum(points)/len(points))
+
+print("*"*50)
+points = [points100(100,23_400)for i in range(1000)]
+print(sum(points)/len(points),'Average')
+print(min(points),'Min')
+print(max(points),'Max')
+print(max(points)-min(points),'Deviation')
+# standard deviation
+import statistics
+std_dev = statistics.stdev(points)
+print("Standard Deviation:", std_dev)
+
+print(points)
