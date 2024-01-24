@@ -64,6 +64,8 @@ pygame.mixer.music.set_volume(musicdata[1])
 # LAST DECLARATIONS
 lastfps = deque(maxlen=300)
 mousebuttons = 0
+for stock in stocklist:
+    stock.fill_graphs()
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()

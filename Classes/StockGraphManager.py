@@ -143,7 +143,7 @@ class StockGraphManager:
                     y = 10
                 stock.baredraw(screen, (x + 5, y), (int(width), 80), self.masterrange if self.masterrange != 'Custom' else '1H')
 
-                pchange = round(((stock.graphrangelists[stock.graphrange][-1] / stock.graphrangelists[stock.graphrange][0]) - 1) * 100, 2)
+                pchange = round(((stock.graphs[stock.graphrange][-1] / stock.graphs[stock.graphrange][0]) - 1) * 100, 2)
                 color = (0, 200, 0) if pchange >= 0 else (200, 0, 0)
                 if pchange == 0:
                     color = (180, 180, 180)

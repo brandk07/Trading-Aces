@@ -117,7 +117,7 @@ class Stockbook(Menu):
                     soundEffects['clickbutton2'].play()
                     self.quantity = 0
 
-            change = stock.price - stock.graphrangelists[stock.graphrange][0]
+            change = stock.price - stock.graphs[stock.graphrange][0]
             if hover or self.selectedstock == i:
                 color = (0, 160, 0) if change > 0 else (160, 0, 0)
                 color = (160, 160, 160) if change == 0 else color

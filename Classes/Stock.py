@@ -28,14 +28,14 @@ class Stock():
         self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":489_450,"3M":1_468_350,"1Y":5_873_400}
         
         self.graphrange = '1H' # H, D, W, M, 3M, Y
-        self.graphrangelists = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+        self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
         
         # self.bonustrendranges = [[(-1*i,i),(100000-(i*8325),500000-(i*41400))] for i in range(12)]
-        self.bonustrendranges = [[(-1,1),(1,3600)] for i in range(12)]
+        self.bonustrendranges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]
         self.datafromfile()
-        self.price = self.graphrangelists['1H'][-1]
+        self.price = self.graphs['1H'][-1]
         
         #variables for the stock price+
         self.volatility = volatility
@@ -58,18 +58,18 @@ class Stock():
             with open(file_path, "w+") as f:
                 json.dump([], f)
         newprice = randint(*self.starting_value_range)
-        for grange in self.graphrangelists.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"], assign the new price to each graph
-            self.graphrangelists[grange] = np.array([newprice])
+        for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"], assign the new price to each graph
+            self.graphs[grange] = np.array([newprice])
     def datafromfile(self):
         """gets the data from each file and puts it into the graphlist"""
-        for grange in self.graphrangelists.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
+        for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
             with open(f'Assets/Stockdata/{self.name}/{grange}.json','r') as file:
                 file.seek(0)# go to the start of the file
                 contents = json.load(file)# load the contents of the file
                 if contents:# if the file is not empty
-                    self.graphrangelists[grange] = np.array(contents)# add the contents to the graphrangelists
+                    self.graphs[grange] = np.array(contents)# add the contents to the graphs
                 else:
-                    self.graphrangelists[grange] = np.array([self.price])# if the file is empty then make the only data the current price
+                    self.graphs[grange] = np.array([self.price])# if the file is empty then make the only data the current price
         with open(f'Assets/Stockdata/{self.name}/trends.json','r') as file:#get the trends from the trend file
             file.seek(0)
             contents = json.load(file)
@@ -78,11 +78,11 @@ class Stock():
             else:
                 self.reset_trends()
     def save_data(self):
-        for grange in self.graphrangelists.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
+        for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
             with open(f'Assets/Stockdata/{self.name}/{grange}.json','w') as file:
                 file.seek(0)# go to the start of the file
                 file.truncate()# clear the file
-                json.dump(self.graphrangelists[grange].tolist(),file)# write the new data to the file
+                json.dump(self.graphs[grange].tolist(),file)# write the new data to the file
         
         with open(f'Assets/Stockdata/{self.name}/trends.json','w') as file:
             file.seek(0)
@@ -113,8 +113,8 @@ class Stock():
     def stock_split(self,player):
         if self.price >= 2500:
             player.messagedict[f'{self.name} has split'] = (time.time(),(0,0,200))
-            for grange in self.graphrangelists.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
-                self.graphrangelists[grange] = np.array([point*0.5 for point in self.graphrangelists[grange]])
+            for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
+                self.graphs[grange] = np.array([point*0.5 for point in self.graphs[grange]])
             self.price = self.price*0.5
             stock_quantity = len([stock for stock in player.stocks if stock[0] == self])
             if stock_quantity > 0:
@@ -127,21 +127,53 @@ class Stock():
                         player.stocks.append([stock[0],stock[1]*0.5,stock[2]])
                 print('stocks are',player.stocks)
 
-    def addpoint(self,lastprice):
+    def addpoint(self, lastprice, multiplier=1):
         """returns the new price of the stock"""
- 
-        for i,bonustrend in enumerate(self.bonustrends):
-            if bonustrend[1] <= 0:#if the time is out
-                self.bonustrends[i] = [randint(*self.bonustrendranges[i][0]),randint(*self.bonustrendranges[i][1])]
-
+    
+        for i, bonustrend in enumerate(self.bonustrends):
+            if bonustrend[1] <= 0:  # if the time is out
+                self.bonustrends[i] = [randint(*self.bonustrendranges[i][0]), randint(*self.bonustrendranges[i][1])]
             else:
                 bonustrend[1] -= 1
-        total_trend = int(sum([trend[0] for trend in self.bonustrends]))
-        highvolitity = self.volatility+(total_trend if total_trend >= 0 else -1*(total_trend//2))
-        lowvolitity = -self.volatility+(total_trend if total_trend < 0 else -1*(total_trend//2))
+
+        total_trend = sum(trend[0] for trend in self.bonustrends)
+        total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)
+        highvolitity = self.volatility + total_trend
+        lowvolitity = -self.volatility + total_trend
         
-        return lastprice * (1+(randint(lowvolitity,highvolitity)/100000))#returns the new price of the stock
+        factor = (randint(lowvolitity, highvolitity) / 500_000) * multiplier
+        return lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
     
+    def fill_graphs(self):
+        def get_lowestgraph(pointsmade):
+            for name,points in self.graphs.items():
+                if (diff:=self.graphrangeoptions["1Y"]-self.graphrangeoptions[name]) <= pointsmade:#if the points made is less then the amount of points in the graph
+                    condensefactor = self.graphrangeoptions[name]/POINTSPERGRAPH
+                    # print(condensefactor,pointsmade-diff,condensefactor*len(points),name)
+                    if pointsmade-diff >= condensefactor*len(points):
+                        return name
+        self.graphs = {key:np.array([100],dtype=object) for key in self.graphrangeoptions.keys()}# reset the graphs
+
+        lastgraphed = ""
+        pointsmade = 29367
+        while len(self.graphs['1H']) < POINTSPERGRAPH:
+            # print(pointsmade,lastgraphed,'points,lastgraphed')
+            lastgraphed = get_lowestgraph(pointsmade)
+            multiplier = self.graphrangeoptions[lastgraphed]/POINTSPERGRAPH
+            newpoint = self.addpoint(self.graphs[lastgraphed][-1],multiplier)
+            # print(multiplier,'multiplier',newpoint,'newpoint',lastgraphed,'lastgraphed',self.graphs[lastgraphed][-1],'lastpoint')
+            for name,points in self.graphs.items():
+                if (diff:=self.graphrangeoptions["1Y"]-self.graphrangeoptions[name]) <= pointsmade:#if the points made is less then the amount of points in the graph
+                    condensefactor = self.graphrangeoptions[name]/POINTSPERGRAPH
+                    if pointsmade-diff >= condensefactor*len(points):
+                        self.graphs[name] = np.append(self.graphs[name],newpoint)
+                        # print(name,'appended',newpoint,self.graphs[name] )
+            
+            pointsmade += multiplier
+            # print(len(self.graphs['1Y']),pointsmade)
+        # print(self.graphs['1Y'])
+        
+
     def update_price(self,player:object):
         if self.bankrupcy(False):#if stock is not bankrupt
             pass
@@ -174,10 +206,10 @@ class Stock():
         mousex,mousey = pygame.mouse.get_pos()
         if pygame.Rect(coords[0],coords[1],(coords[0]+wh[0]-coords[0]),(coords[1]+wh[1]-coords[1])).collidepoint(mousex,mousey):
             pos = (mousex-coords[0])//spacing
-            if pos < len(self.graphrangelists[self.graphrange]):
-                text1 = fontlist[30].render(f'${self.graphrangelists[self.graphrange][int(pos)]:,.2f}',(255,255,255))[0]
+            if pos < len(self.graphs[self.graphrange]):
+                text1 = fontlist[30].render(f'${self.graphs[self.graphrange][int(pos)]:,.2f}',(255,255,255))[0]
                 screen.blit(text1,(mousex,graphpoints[int(pos)]))
-                percentchange = round(((self.graphrangelists[self.graphrange][int(pos)]/self.graphrangelists[self.graphrange][0])-1)*100,2)
+                percentchange = round(((self.graphs[self.graphrange][int(pos)]/self.graphs[self.graphrange][0])-1)*100,2)
                 color = (0,205,0) if percentchange >= 0 else (205,0,0)
                 if percentchange == 0: color = (205,205,205)
                 screen.blit(fontlist[30].render(f'{percentchange:,.2f}%',color)[0], (mousex,graphpoints[int(pos)]+text1.get_height()+5))
@@ -193,21 +225,21 @@ class Stock():
                 #add the last point to the list
                 self.graphfillvar[key] = 0
                 if type(self) == Stock:
-                    self.graphrangelists[key] = np.append(self.graphrangelists[key],self.price)
+                    self.graphs[key] = np.append(self.graphs[key],self.price)
                 else:
-                    self.graphrangelists[key] = np.append(self.graphrangelists[key],stockvalues)
+                    self.graphs[key] = np.append(self.graphs[key],stockvalues)
             
-            if len(self.graphrangelists[key]) > POINTSPERGRAPH:
-                # print('deleting',key,len(self.graphrangelists[key]))
-                self.graphrangelists[key] = np.delete(self.graphrangelists[key],0)
+            if len(self.graphs[key]) > POINTSPERGRAPH:
+                # print('deleting',key,len(self.graphs[key]))
+                self.graphs[key] = np.delete(self.graphs[key],0)
 
     def baredraw(self,screen,coords,wh,graphrange,mouseover=False):
         """Draws only the graph of the stock - uses the graphrange,startpos, and endpos parameter, not self.graphrange,(coords[0]+wh[0],coords[1]), and (coords[0],coords[1]+wh[1])"""
         # startingpos is the top left corner of the graph, endingpos is the bottom right corner of the graph
         
-        percentchange = round(((self.graphrangelists[graphrange][-1]/self.graphrangelists[graphrange][0])-1)*100,2)
+        percentchange = round(((self.graphs[graphrange][-1]/self.graphs[graphrange][0])-1)*100,2)
 
-        self.graph.setPoints(self.graphrangelists[graphrange])
+        self.graph.setPoints(self.graphs[graphrange])
         color = (30,30,30) if percentchange == 0 else (0,30,0) if percentchange > 0 else (30,0,0)
         graphheight = wh[1]
         graphwidth = wh[0]
@@ -235,10 +267,10 @@ class Stock():
         blnkspacex = (coords[0]+wh[0]-coords[0])//10#the amount of blank space to be left on the right side of the graph for x
         blnkspacey = (coords[1]+wh[1]-coords[1])//10#the amount of blank space to be left on the right side of the graph for y
         
-        percentchange = round(((self.graphrangelists[self.graphrange][-1]/self.graphrangelists[self.graphrange][0])-1)*100,2)
+        percentchange = round(((self.graphs[self.graphrange][-1]/self.graphs[self.graphrange][0])-1)*100,2)
 
         if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
-            percentchange = round(((self.graphrangelists[self.graphrange][-1]/self.graphrangelists[self.graphrange][0])-1)*100,2)
+            percentchange = round(((self.graphs[self.graphrange][-1]/self.graphs[self.graphrange][0])-1)*100,2)
             color = (0,55,0) if percentchange >= 0 else (55,0,0)
 
             gfxdraw.filled_polygon(screen, [(coords[0], coords[1]), (coords[0],coords[1]+wh[1]), (coords[0]+wh[0], coords[1]+wh[1]), (coords[0]+wh[0],coords[1])],color)  # draws the perimeter around graphed values
@@ -248,7 +280,7 @@ class Stock():
             self.rangecontrols(screen,Mousebuttons,blnkspacey,coords,wh)#draws the range controls
 
         # using the graph class to graph the points
-        self.graph.setPoints(self.graphrangelists[self.graphrange])# set the list of points
+        self.graph.setPoints(self.graphs[self.graphrange])# set the list of points
         color = (30,30,30) if percentchange == 0 else (0,30,0) if percentchange > 0 else (30,0,0)
         graphheight = (coords[1]+wh[1]-coords[1])-blnkspacey
         graphwidth = (coords[0]+wh[0]-coords[0])-blnkspacex
@@ -261,13 +293,13 @@ class Stock():
         
         if not minmax_same:# if the min and max are not the same
             """text that displays the price of the stock and the lines that go across the graph"""
-            sortedlist = self.graphrangelists[self.graphrange].copy();sortedlist.sort()# first makes a copy of the list, then sorts the list
+            sortedlist = self.graphs[self.graphrange].copy();sortedlist.sort()# first makes a copy of the list, then sorts the list
             for i in range(4):
-                lenpos = int((len(self.graphrangelists[self.graphrange])-1)*(i/3))#Position based purely on the length of the current graph size
+                lenpos = int((len(self.graphs[self.graphrange])-1)*(i/3))#Position based purely on the length of the current graph size
                 point = sortedlist[lenpos]#using the sorted list so an even amount of price values are displayed
                 
                 #gets the position of the point in the graphingpoints (the y values) - the sorted list moves the points around so the index of the point is different
-                yvalpos = np.where(self.graphrangelists[self.graphrange] == point)[0][0]
+                yvalpos = np.where(self.graphs[self.graphrange] == point)[0][0]
 
                 text = s_render(str(limit_digits(point,13)), 30, (255,255,255))
                 gfxdraw.line(screen,coords[0]+5,int(graphingpoints[yvalpos]),coords[0]+wh[0]-blnkspacex-5,int(graphingpoints[yvalpos]),(150,150,150))

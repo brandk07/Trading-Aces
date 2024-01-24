@@ -180,11 +180,12 @@ class Portfolio(Menu):
        
         player.draw(screen,player,(200,100),(600,500),mousebuttons,stocklist,True)
         
-        # draws the stocks on the right of the screen
-        self.draw_stockscroll(sortedstocks,screen,mousebuttons)
+        if len(player.stocks) > 0:
+            # draws the stocks on the right of the screen
+            self.draw_stockscroll(sortedstocks,screen,mousebuttons)
 
-        # draws the selected stock information in the middle of the screen
-        self.drawSelected(screen, mousebuttons, player)
+            # draws the selected stock information in the middle of the screen
+            self.drawSelected(screen, mousebuttons, player)
 
      
             

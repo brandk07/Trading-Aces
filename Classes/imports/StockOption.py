@@ -34,7 +34,7 @@ class StockOption:
         self.color = (0,0,0)
         self.name = f'{self.stockobj.name} {self.option_type}'
 
-        self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=calculate_volatility(tuple(self.stockobj.graphrangelists['1Y'])),r=0.05)
+        self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=calculate_volatility(tuple(self.stockobj.graphs['1Y'])),r=0.05)
         if ogprice:
             self.ogvalue = ogprice
         else:
@@ -53,13 +53,13 @@ class StockOption:
     
     def self_volatility(self):
         """returns the volatility of the option"""
-        return calculate_volatility(tuple(self.stockobj.graphrangelists['1Y']))
+        return calculate_volatility(tuple(self.stockobj.graphs['1Y']))
         
     def percent_change(self):
         """returns the percent change of the option"""
         return ((self.get_value() - (self.ogvalue)) / (self.ogvalue)) * 100
     def get_inputs(self):
-        return (self.option_type,self.stockobj.price,self.strike_price,self.expiration_date,calculate_volatility(tuple(self.stockobj.graphrangelists['1Y'])),0.05,)
+        return (self.option_type,self.stockobj.price,self.strike_price,self.expiration_date,calculate_volatility(tuple(self.stockobj.graphs['1Y'])),0.05,)
     
     # create a method to return an exact copy of the object
     def get_copy(self) -> 'StockOption':        
@@ -75,7 +75,7 @@ class StockOption:
         if bypass:
             self.option.s0 = float(self.stockobj.price)*100
             self.option.k = self.strike_price*100
-            self.option.sigma = calculate_volatility(tuple(self.stockobj.graphrangelists['1Y']))
+            self.option.sigma = calculate_volatility(tuple(self.stockobj.graphs['1Y']))
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="BSM",iteration=1)]
             return self.lastvalue[1]
@@ -83,7 +83,7 @@ class StockOption:
             # print('recalculating option value',bypass)
             self.option.s0 = float(self.stockobj.price)*100
             self.option.k = self.strike_price*100
-            self.option.sigma = calculate_volatility(tuple(self.stockobj.graphrangelists['1Y']))
+            self.option.sigma = calculate_volatility(tuple(self.stockobj.graphs['1Y']))
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="MC",iteration=200)]
             return self.lastvalue[1]

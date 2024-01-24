@@ -21,7 +21,7 @@ class UI_Controls():
             for stock in stocklist:
                 self.newsobj.addStockNews(stock.name)
 
-        self.view = "home"# home or stock
+        self.view = "stock"# home or stock
         self.accbar_middle = "move"# move, stock, pie
         self.accbar_right = "topAsset"# topAsset, transactions, loans
         self.graphscroll = 0
@@ -31,7 +31,7 @@ class UI_Controls():
         # self.namerenders = [[fontlist[30].render(stock.name,(200,0,0))[0],fontlist[30].render(stock.name,(0,200,0))[0]] for stock in stocklist]# [red,green]
 
         # get 
-        self.get_percent = lambda stock : round(((stock.graphrangelists["1D"][-1]/stock.graphrangelists["1D"][0])-1)*100,2)
+        self.get_percent = lambda stock : round(((stock.graphs["1D"][-1]/stock.graphs["1D"][0])-1)*100,2)
         self.get_listpercents = lambda xlist : [self.get_percent(stock) for stock in xlist]
         self.percentchanges = self.get_listpercents(stocklist)
         self.totalperecent = lambda xlist : sum([self.get_percent(stock) for stock in xlist])

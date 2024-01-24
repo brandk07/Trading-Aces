@@ -92,7 +92,7 @@
 
 from random import randint
 
-volatility = 5
+volatility = 10
 bonustrendranges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]
 # bonustrendranges = [[((-1,1)),((140_400,421_200))],[((-3,3)),((59400,81000))],[((-8,8)),((8100,21600))],[((-12,12)),((150,3600))]]
 bonustrends = [[randint(*x[0]),randint(*x[1])] for x in bonustrendranges]
@@ -118,8 +118,8 @@ def addpoint_optimized(lastprice):
     highvolitity = volatility + total_trend
     lowvolitity = -volatility + total_trend
     
-    factor = randint(lowvolitity, highvolitity) / 100000
-    return lastprice * (1 + factor if randint(0, 1) else 1 - factor)  # returns the new price of the stock
+    factor = randint(lowvolitity, highvolitity) / 350_000
+    return lastprice * (1 + factor) if randint(0, 1) else lastprice * (1 - factor)# returns the new price of the stock
 
 def points100(lastprice,iteration):
     for _ in range(iteration):
@@ -132,7 +132,7 @@ print("New Run "*5)
 print(sum(points)/len(points))
 
 print("*"*50)
-points = [points100(100,23_400)for i in range(1000)]
+points = [points100(100,5_873_400)for i in range(100)]
 print(sum(points)/len(points),'Average')
 print(min(points),'Min')
 print(max(points),'Max')
@@ -141,5 +141,20 @@ print(max(points)-min(points),'Deviation')
 import statistics
 std_dev = statistics.stdev(points)
 print("Standard Deviation:", std_dev)
+avrpoints = [point/100 for point in points]
+print(avrpoints)
+print((sum(avrpoints)/len(avrpoints))*100,'Average %')
 
-print(points)
+# with volatility = 5
+# 100.0014068216595 Average
+# 90.64458480271958 Min
+# 110.18290437084235 Max
+# 19.538319568122773 Deviation
+# Standard Deviation: 1.94196231920995
+
+# with volatility = 25
+# 100.10900906938176 Average
+# 87.71432861121033 Min
+# 110.66061768236355 Max
+# 22.946289071153217 Deviation
+# Standard Deviation: 2.993402559591465
