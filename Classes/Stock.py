@@ -42,6 +42,7 @@ class Stock():
         self.recentrenders = {}# a dict of the renders of the recent prices
         # self.reset_trends()
         self.graph = Graph()
+        # self.fill_graphs()
     
 
     def __str__(self) -> str:
@@ -127,39 +128,65 @@ class Stock():
                         player.stocks.append([stock[0],stock[1]*0.5,stock[2]])
                 print('stocks are',player.stocks)
 
-    def addpoint(self, lastprice, multiplier=1):
-        """returns the new price of the stock"""
-    
-        for i, bonustrend in enumerate(self.bonustrends):
-            if bonustrend[1] <= 0:  # if the time is out
-                self.bonustrends[i] = [randint(*self.bonustrendranges[i][0]), randint(*self.bonustrendranges[i][1])]
-            else:
-                bonustrend[1] -= 1
+    def addpoint(self, lastprice, multiplier=1,maxstep=25):
+        """returns the new price of the stock
+        maxstep is the maximum multiplier added to 1 price movement, a lower value will make it more accurate but slower"""
+        while multiplier > 0:
+            step = multiplier % maxstep if multiplier < maxstep else maxstep# how much to multiply the movement by
 
-        total_trend = sum(trend[0] for trend in self.bonustrends)
-        total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)
-        highvolitity = self.volatility + total_trend
-        lowvolitity = -self.volatility + total_trend
-        
-        factor = (randint(lowvolitity, highvolitity) / 500_000) * multiplier
-        return lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
+            for i, bonustrend in enumerate(self.bonustrends):# for each bonus trend
+                if bonustrend[1] <= 0:  # if the time is out
+                    self.bonustrends[i] = [randint(*self.bonustrendranges[i][0]), randint(*self.bonustrendranges[i][1])]
+                else:
+                    bonustrend[1] -= step
+
+            total_trend = sum(trend[0] for trend in self.bonustrends)# the total trend of all the bonus trends
+            total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)# if the total trend is negative, then divide it by 2
+            highvolitity = self.volatility + total_trend# the highest volitility that the stock can have
+            lowvolitity = -self.volatility + total_trend# the lowest volitility that the stock can have
+            
+            factor = (randint(lowvolitity, highvolitity) / 500_000) * step# the factor that the price will be multiplied by
+            lastprice = lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
+            multiplier -= step
+
+        return lastprice
     
     def fill_graphs(self):
         def get_lowestgraph(pointsmade):
             for name,points in self.graphs.items():
-                if (diff:=self.graphrangeoptions["1Y"]-self.graphrangeoptions[name]) <= pointsmade:#if the points made is less then the amount of points in the graph
+                """Returns the name of the lowest graph that should get points added to it"""
+                # the line below figures out if the amount of points made is greater than the amount of points that the graph can have
+                if (diff:=self.graphrangeoptions["1Y"]-self.graphrangeoptions[name]) <= pointsmade:
+                    # figuring out the amount of points that each index of the graph has
                     condensefactor = self.graphrangeoptions[name]/POINTSPERGRAPH
                     # print(condensefactor,pointsmade-diff,condensefactor*len(points),name)
+                    # if the amount of points made is greater than or equal to the amount of points that the graph can have
                     if pointsmade-diff >= condensefactor*len(points):
                         return name
-        self.graphs = {key:np.array([100],dtype=object) for key in self.graphrangeoptions.keys()}# reset the graphs
+
+        self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}# reset the graphs
 
         lastgraphed = ""
-        pointsmade = 29367
+        pointsmade = 0
+        # self.graphs['1Y'] = np.array([self.price],dtype=object)
         while len(self.graphs['1H']) < POINTSPERGRAPH:
             # print(pointsmade,lastgraphed,'points,lastgraphed')
-            lastgraphed = get_lowestgraph(pointsmade)
-            multiplier = self.graphrangeoptions[lastgraphed]/POINTSPERGRAPH
+            newgraphed = get_lowestgraph(pointsmade)
+            if newgraphed == None:
+                pointsmade += 1
+                continue
+            if self.graphs[newgraphed].size == 0:
+                if lastgraphed == "":
+                    self.graphs[newgraphed] = np.array([self.price],dtype=object)
+                else:
+                    # print('appending',self.graphs[lastgraphed][-1],'to',newgraphed)
+                    self.graphs[newgraphed] = np.append(self.graphs[newgraphed],self.graphs[lastgraphed][-1])
+                    # print(self.graphs[newgraphed])
+                
+            # print(self.graphs['1Y'])
+            lastgraphed = newgraphed
+            multiplier = int(self.graphrangeoptions[lastgraphed]/POINTSPERGRAPH)
+            
             newpoint = self.addpoint(self.graphs[lastgraphed][-1],multiplier)
             # print(multiplier,'multiplier',newpoint,'newpoint',lastgraphed,'lastgraphed',self.graphs[lastgraphed][-1],'lastpoint')
             for name,points in self.graphs.items():
@@ -171,17 +198,20 @@ class Stock():
             
             pointsmade += multiplier
             # print(len(self.graphs['1Y']),pointsmade)
-        # print(self.graphs['1Y'])
+        self.price = self.graphs['1H'][-1]
+        # print(self.graphs['1H'])
+        # print(len(self.graphs["1H"]))
         
 
-    def update_price(self,player:object):
+    def update_price(self,gamespeed):
         if self.bankrupcy(False):#if stock is not bankrupt
             pass
         
         if type(self) == Stock:#making sure that it is a Stock object and that update is true
-            self.price = self.addpoint(self.price)#updates the price of the stock
+            self.price = self.addpoint(self.price,multiplier=gamespeed,maxstep=2)#updates the price of the stock
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
-            self.update_range_graphs()
+            for _ in range(gamespeed):
+                self.update_range_graphs()
         else:
             # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
             self.update_range_graphs(self.get_Networth())#updates the range graphs
@@ -269,7 +299,7 @@ class Stock():
         
         percentchange = round(((self.graphs[self.graphrange][-1]/self.graphs[self.graphrange][0])-1)*100,2)
 
-        if self.bankrupcy(True,screen=screen):#if stock is not bankrupt, first argument is drawn
+        if self.bankrupcy(True,coords, wh, screen=screen):#if stock is not bankrupt, first argument is drawn
             percentchange = round(((self.graphs[self.graphrange][-1]/self.graphs[self.graphrange][0])-1)*100,2)
             color = (0,55,0) if percentchange >= 0 else (55,0,0)
 

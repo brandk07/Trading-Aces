@@ -45,11 +45,12 @@ from Classes.imports.Latterscroll import LatterScroll
 # for i in range(len(mylist)-1,0,-1):
 #     print(mylist[i])
 
-mylist = [['XKSTO ', 50, (255, 165, 0)], ['48 Shares', 35, (190, 190, 190)], ['$5,732.00', 0, (190, 190, 190)]]
+# mylist = [['XKSTO ', 50, (255, 165, 0)], ['48 Shares', 35, (190, 190, 190)], ['$5,732.00', 0, (190, 190, 190)]]
 
-print([(i[0],i[1],i[2]) for i in mylist])
+# print([(i[0],i[1],i[2]) for i in mylist])
+multiplier = 7
 
-
+print(multiplier % 10 if multiplier < 10 else 10)
 # start = timeit.default_timer()
 # for i in range(1000000):
 #     d = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}

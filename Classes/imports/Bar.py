@@ -38,7 +38,7 @@ class SliderBar():
         """Max value must be less than the slider width-20, or height-20 if vertical, color = [(colorstart),(colorend)]"""
         self.value = 0
         self.maxvalue = maxvalue; self.minvalue = minvalue
-        self.gamevaluetexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue)]
+        self.gamevaluetexts = [fontlist[40].render(f'x{value}',(0,0,0))[0] for value in range(self.maxvalue+1)]
         self.barcolors = barcolor
         self.orientation = 'horizontal'
         self.sliderwh = self.sliderxy = self.barwh = self.barxy = self.shift = [0, 0]

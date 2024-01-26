@@ -53,7 +53,7 @@ class LatterScroll():
 
     def decidebottomcolor(self,hover,selected_value,numdrawn,*args):
         """This can be overriden in child classes"""
-        return ((80,80,80),(200,200,200)) if hover or numdrawn == selected_value else ((50,50,50),(150,150,150))
+        return (80,80,80) if hover or numdrawn == selected_value else (50,50,50)
     
     def set_textcoords(self,textcoords):
         """textcoords is a list of lists of tuples, each tuple is y the coords for each text drawn [[(x,y),(x2,y2)]] 
@@ -135,8 +135,10 @@ class LatterScroll():
             self.scrollvalue -= 50
         elif mousebuttons == 5 and self.scrollvalue < len(self.polycoords)*self.polyheight-self.polyheight:
             self.scrollvalue += 50
-    def draw_polys(self,screen,coords,mousebuttons,selected_value,*args):
 
+    def draw_polys(self,screen,coords,mousebuttons,selected_value,*args):
+        """Draws the polygons to the screen, and returns the value of the polygon that is selected"""
+        # Selected value is a index
         self.scrollcontrols(mousebuttons)
         for numdrawn,(text_renders,points) in enumerate(zip(self.renderedtexts,self.polycoords)):
             # draw the polygon
@@ -152,7 +154,8 @@ class LatterScroll():
             # get bottom coords
             bottom_polygon = self.get_bottompoints(points)
             # draw the bottom of the polygon
-            bottomcolor = self.decidebottomcolor(hover,selected_value,numdrawn+self.omittedstocks[0],args[numdrawn])       
+            bottomargument = None if len(args) <= numdrawn else args[numdrawn]
+            bottomcolor = self.decidebottomcolor(hover,selected_value,numdrawn+self.omittedstocks[0],bottomargument)       
             gfxdraw.filled_polygon(self.surf,bottom_polygon,bottomcolor)  
 
              # draw all the texts for each polygon

@@ -13,7 +13,8 @@ from Classes.portfolio import Portfolio
 from Classes.OptionMenu import Optiontrade
 from collections import deque
 import timeit
-GAMESPEED = 25
+GAMESPEED = 100
+FASTFORWARDSPEED = 2500
 pygame.init()
 pygame.mixer.init()
 
@@ -64,8 +65,8 @@ pygame.mixer.music.set_volume(musicdata[1])
 # LAST DECLARATIONS
 lastfps = deque(maxlen=300)
 mousebuttons = 0
-for stock in stocklist:
-    stock.fill_graphs()
+# for stock in stocklist:
+#     stock.fill_graphs()
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
@@ -76,23 +77,30 @@ if __name__ == "__main__":
         # print(mousex,mousey)
         ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist)#draws the ui controls to the screen, and senses for clicks
         
-        if gametime.fastforward:
-            if (opened:=not gametime.isOpen()[0]):
-                ui_controls.bar.set_currentvalue(250)
-            gametime.fastforward = opened
+        if autofastforward:
+            if (marketopen:=not gametime.isOpen()[0]):
+
+                ui_controls.bar.set_currentvalue(FASTFORWARDSPEED)
+            gametime.fastforward = marketopen
 
         for i in range(ui_controls.gameplay_speed):
             if gametime.isOpen()[0] and ui_controls.gameplay_speed > GAMESPEED:
-                ui_controls.bar.set_currentvalue(0)
                 ui_controls.bar.changemaxvalue(GAMESPEED)
                 break
             gametime.increase_time(1,autofastforward)
-            if gametime.isOpen()[0]:
-                for stock in stocklist:
-                    stock.update_price(player)
-                player.update_price(player)
-        # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
+            # if gametime.isOpen()[0]:
+            #     for stock in stocklist:
+            #         stock.update_price(1)
+            #     player.update_price(1)
 
+        if gametime.isOpen()[0]:
+            for stock in stocklist:
+                stock.update_price(ui_controls.gameplay_speed)
+            player.update_price(ui_controls.gameplay_speed)
+
+        
+        # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
+        # break
 
         # optiontrade.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,515),ui_controls)
         

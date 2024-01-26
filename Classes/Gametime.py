@@ -131,20 +131,13 @@ class GameTime:
             # print(color)
             time_render = fontlist[timesize].render(time,color)[0]
             self.lasttimerender = (time,time_render)
-        # if timesize not in self.mdhrenders:# if the hour size is not in the cache
-        #     self.mdhrenders[timesize] = self.mdhfunc(timesize)
-        # hour = self.mdhrenders[timesize][self.hour-1 if self.hour <= 12 else self.hour-13]
-        # if timesize not in self.renderednumbers:
-        #     self.renderednumbers[timesize] = self.numfunc(timesize)
-        # minute = self.renderednumbers[timesize][self.minute]
-        # if timesize not in self.ampmtext:
-        #     self.ampmtext[timesize] = self.ampmfunc(timesize)
-        # ampm = self.ampmtext[timesize][0 if self.hour < 12 else 1]
 
 
         return [month,day,year[0],time_render,dayname,monthname]
 
     def isOpen(self):
+        """Checks if the market is open or not
+        returns a tuple of (bool,reason)"""
         if (self.month,self.day) in HOLIDAYS:
             return False, 'Holiday'
         if self.get_day_name() in ['Saturday','Sunday']:

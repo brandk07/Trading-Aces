@@ -104,7 +104,7 @@ class UI_Controls():
                 
                 color = (0,200,0) if self.percentchanges[i] >= 0 else (200,0,0)
 
-                stocklist[i].baredraw(self.stockbarsurf,(x+100,0),(x,wh[1]),'1H')# draws the graph
+                stocklist[i].baredraw(self.stockbarsurf,(x,0),(100,wh[1]),'1H')# draws the graph
                 self.stockbarsurf.blit(self.namerenders[i],(x-70,10))# draws the name of the stock
                 ptext = fontlist[28].render(limit_digits(stock.price,9),color)[0]# renders the price of the stock
                 self.stockbarsurf.blit(ptext,(x-42-(ptext.get_width()/2),50))# draws the price of the stock
@@ -181,42 +181,68 @@ class UI_Controls():
                     self.accbar_right = name
         
         if self.accbar_right == "topAsset":
-
+            
             assets = player.get_Assets(5)
-            for i,asset in enumerate(assets):
-                #all the texts to be rendered
-                
+
+            #     # function to get the text for each stock
+            # get_text = lambda stock : [f'{stock[0]} ',
+            #                             f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}",
+            #                             f'${limit_digits(stock[0].price*stock[2],15)}',]
+            def get_text(asset):
                 if isinstance(asset[0],Stock):
                     percentchange = ((asset[0].price - asset[1]) / asset[1]) * 100
                     c = '+' if percentchange > 0 else ''
-                    texts = [f'${limit_digits(asset[0].price*asset[2],10)}',f'{asset[2]} shares of {asset[0].name}',f'{c}{limit_digits(percentchange,6)}%',]
+                    return [f'${limit_digits(asset[0].price*asset[2],10)}',f'{asset[2]} shares of {asset[0].name}',f'{c}{limit_digits(percentchange,6)}%',]
                 elif isinstance(asset[0],StockOption):
                     percentchange = asset[0].percent_change()
                     c = '+' if percentchange > 0 else ''
-                    texts = [f'${limit_digits(asset[0].get_value(),10)}',f'{asset[0].name} option',f'{c}{limit_digits(percentchange,6)}%',]
+                    return [f'${limit_digits(asset[0].get_value(),10)}',f'{asset[0].name} option',f'{c}{limit_digits(percentchange,6)}%',]
 
-                    
-                    
-                # all the coords for the texts to be rendered
-                coords = [(15,10),(20,50),((texts[1],75),30)]
-                color = ((0,160,0) if percentchange >= 0 else (160,0,0)) if percentchange != 0 else (160,160,160)
-                colors = [asset[0].color,(190,190,190),color]
+            # getting the text for each stock
+            textlist = [get_text(asset) for asset in assets]# stores 3 texts for each stock in the sortedstocks list
 
-                finaldict = {}
-                for ind,text in enumerate(texts):
-                    finaldict[text] = (coords[ind][0],coords[ind][1],[50,30,45][ind],colors[ind])
+            textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
+            coords = [[(15,10),(20,60)] for i in range(len(textlist))]
+            # loop through the textlist and store the text info in the textinfo list
+            for i,(text,asset) in enumerate(zip(textlist,assets)):
+                polytexts = []# temporary list to store the text info for each stock
+                polytexts.append([text[0],50,asset[0].color])
+                polytexts.append([text[1],35,(190,190,190)])
+                polytexts.append([text[2],50,(190,190,190)])
+                textinfo.append(polytexts)
+                coords[i].append(((text[1],75),30))
 
-                self.latterscroll.storeTextsVariable(resetlist=(i == 0),extraspace=20,**finaldict)
+            self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
+            self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
+            # Does most of the work for the latter scroll, renders the text and finds all the coords
+            self.latterscroll.store_rendercoords((1475,205), (420,700),125,0,0)
+            # drawing the latter scroll and assigning the selected stock
+            self.latterscroll.draw_polys(screen, (1475,205), mousebuttons, None, None)
+            
+            # for i,asset in enumerate(assets):
+            #     #all the texts to be rendered
                 
-            self.selected_stock = self.latterscroll.draw_polys(screen,(1475,245),790,115,mousebuttons,None,showbottom=False)
+            #     if isinstance(asset[0],Stock):
+            #         percentchange = ((asset[0].price - asset[1]) / asset[1]) * 100
+            #         c = '+' if percentchange > 0 else ''
+            #         texts = [f'${limit_digits(asset[0].price*asset[2],10)}',f'{asset[2]} shares of {asset[0].name}',f'{c}{limit_digits(percentchange,6)}%',]
+            #     elif isinstance(asset[0],StockOption):
+            #         percentchange = asset[0].percent_change()
+            #         c = '+' if percentchange > 0 else ''
+            #         texts = [f'${limit_digits(asset[0].get_value(),10)}',f'{asset[0].name} option',f'{c}{limit_digits(percentchange,6)}%',]
+                    
+            #     # all the coords for the texts to be rendered
+            #     coords = [(15,10),(20,50),((texts[1],75),30)]
+            #     color = ((0,160,0) if percentchange >= 0 else (160,0,0)) if percentchange != 0 else (160,160,160)
+            #     colors = [asset[0].color,(190,190,190),color]
 
+            #     finaldict = {}
+            #     for ind,text in enumerate(texts):
+            #         finaldict[text] = (coords[ind][0],coords[ind][1],[50,30,45][ind],colors[ind])
 
-                # screen.blit(s_render(s,45,(255,255,255)),(1470,200+(i*100)))
-                # screen.blit(s_render(s2,20,(255,255,255)),(1490,245+(i*100)))
-                # screen.blit(s_render(s3,20,(255,255,255)),(1490,275+(i*100)))
-
-
-        
+            #     self.latterscroll.storeTextsVariable(resetlist=(i == 0),extraspace=20,**finaldict)
+                
+            # self.selected_stock = self.latterscroll.draw_polys(screen,(1475,245),790,115,mousebuttons,None,showbottom=False)
         
     def draw_time(self,screen,gametime):
         texts = gametime.getrenders(50,50,50,105,50,50)# month,day,year,timerender,dayname,monthname

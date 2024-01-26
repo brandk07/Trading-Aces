@@ -166,7 +166,7 @@ class StockEvents():
         for i,(stock,event) in enumerate(list(self.stockevents.items())):
             (namestr,eventstr), duration = event
             if duration > 0:
-                percent = ((stock.price/stock.graphrangelists["1D"][0])-1)
+                percent = ((stock.price/stock.graphs["1D"][0])-1)
                 nametext = s_render(namestr,30,(stock.color))
                 eventtext = s_render(eventstr,30,(200,200,200))
                 pcolor = ((0,180,0) if percent > 0 else (180,0,0)) if percent != 0 else (200,200,200)
