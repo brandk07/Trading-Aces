@@ -35,6 +35,14 @@ class Portfolio(Menu):
         # self.latterScrollsurf = pygame.Surface((730,730))
         self.latterscroll = PortfolioLatter()
 
+        self.prerenders = [
+                s_render('Profit',45,(190,190,190)),# text for the profit/loss
+                s_render('Lost',45,(190,190,190)),# text for the profit/loss
+                s_render('Bought at $',45,(190,190,190)),
+                s_render('per share',45,(190,190,190)),
+                s_render('Current Price $',45,(190,190,190)),
+            ]
+
         
     def getpoints(self, w1, w2, w3, x, y):
         """returns the points for the polygon of the portfolio menu""" 
@@ -109,16 +117,18 @@ class Portfolio(Menu):
             polytexts = []# temporary list to store the text info for each stock
             polytexts.append([text[0],50,stock[0].color])
             polytexts.append([text[1],35,(190,190,190)])
-            polytexts.append([text[2],45,(190,190,190)])
+            polytexts.append([text[2],50,(190,190,190)])
             textinfo.append(polytexts)
             coords[i].append(((text[1],50),30))
 
         self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
         self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
         # Does most of the work for the latter scroll, renders the text and finds all the coords
-        self.latterscroll.store_rendercoords((1500, 105), (380,975),140,0,0)
+        self.latterscroll.store_rendercoords((1500, 105), (380,950),135,0,0,updatefreq=20)
         # drawing the latter scroll and assigning the selected stock
         self.selected_stock = sortedstocks[self.latterscroll.draw_polys(screen, (1500, 105), mousebuttons, sortedstocks.index(self.selected_stock), *sortedstocks)]
+        if len(sortedstocks)/135 > 950-105:# if there is more stocks than the screen can fit
+            screen.blit(s_render("Scroll to see more", 35, (190, 190, 190)), (1600, 950))
 
     def drawSelected(self, screen, mousebuttons, player):
         if self.selected_stock != None:
@@ -138,15 +148,15 @@ class Portfolio(Menu):
 
             # pricetext = s_render(f'${limit_digits(self.selected_stock[0].price*self.selected_stock[2],15)}',45,(190,190,190))
             # screen.blit(pricetext,(1480-pricetext.get_width(),110))# display the portfolio text
-
+            
             texts = [
-                s_render('Profit' if percent >= 0 else 'Lost',45,(190,190,190)),# text for the profit/loss
+                self.prerenders[0] if percent >= 0 else self.prerenders[1],# text for the profit/loss
                 s_render(f'${limit_digits(percent,15)}%',45,(190,190,190)),# text for the percent
                 s_render(f'${limit_digits(self.selected_stock[1]*self.selected_stock[2],15)}',45,(190,190,190)),# text for the total paid
-                s_render('Bought at $',45,(190,190,190)),
+                self.prerenders[2],# text for the "bought at" text
                 s_render(str(limit_digits(self.selected_stock[1],15)),45,(190,190,190)),
-                s_render('per share',45,(190,190,190)),
-                s_render('Current Price $',45,(190,190,190)),
+                self.prerenders[3],# text for the "per share" text
+                self.prerenders[4],# text for the "current price" text
                 s_render(str(limit_digits(self.selected_stock[0].price,15)),45,(190,190,190)),
             ]
             coords = [

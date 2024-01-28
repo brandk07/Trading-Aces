@@ -94,9 +94,10 @@ if __name__ == "__main__":
             #     player.update_price(1)
 
         if gametime.isOpen()[0]:
-            for stock in stocklist:
-                stock.update_price(ui_controls.gameplay_speed)
-            player.update_price(ui_controls.gameplay_speed)
+            if ui_controls.gameplay_speed > 0:
+                for stock in stocklist:
+                    stock.update_price(ui_controls.gameplay_speed)
+                player.update_price(ui_controls.gameplay_speed)
 
         
         # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)

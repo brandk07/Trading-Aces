@@ -215,7 +215,7 @@ class UI_Controls():
             self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
             self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
             # Does most of the work for the latter scroll, renders the text and finds all the coords
-            self.latterscroll.store_rendercoords((1475,205), (420,700),125,0,0)
+            self.latterscroll.store_rendercoords((1475,205), (420,700),125,0,0,updatefreq=5)
             # drawing the latter scroll and assigning the selected stock
             self.latterscroll.draw_polys(screen, (1475,205), mousebuttons, None, None)
             
@@ -286,7 +286,7 @@ class UI_Controls():
         pygame.draw.polygon(screen,(0,0,0),points,5)
 
         
-        self.draw_stockbar(screen,stocklist)# draws the stock graph bar
+        # self.draw_stockbar(screen,stocklist)# draws the stock graph bar
         self.draw_accbar_middle(screen,stocklist,mousebuttons,player)# draws the stock events (On the right of the portfolio)
         self.draw_accbar_right(screen,stocklist,player,mousebuttons)# draws the stock events (On the very right of the screen)
         self.newsobj.draw(screen)

@@ -138,12 +138,12 @@ class GameTime:
     def isOpen(self):
         """Checks if the market is open or not
         returns a tuple of (bool,reason)"""
-        if (self.month,self.day) in HOLIDAYS:
-            return False, 'Holiday'
-        if self.get_day_name() in ['Saturday','Sunday']:
-            return False, 'Weekend'
-        if not(((self.hour == 9 and self.minute >= 30) or self.hour > 9) and self.hour < 16):
-            return False, 'Off Hours'
+        # if (self.month,self.day) in HOLIDAYS:
+        #     return False, 'Holiday'
+        # if self.get_day_name() in ['Saturday','Sunday']:
+        #     return False, 'Weekend'
+        # if not(((self.hour == 9 and self.minute >= 30) or self.hour > 9) and self.hour < 16):
+        #     return False, 'Off Hours'
         return True, 'Open'
     
 

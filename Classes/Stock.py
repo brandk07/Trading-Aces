@@ -26,7 +26,7 @@ class Stock():
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
         self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":489_450,"3M":1_468_350,"1Y":5_873_400}
-        
+        self.condensefacs = {key:value/POINTSPERGRAPH for key,value in self.graphrangeoptions.items()}#the amount of points that each index of the graph has
         self.graphrange = '1H' # H, D, W, M, 3M, Y
         self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
@@ -158,8 +158,7 @@ class Stock():
                 # the line below figures out if the amount of points made is greater than the amount of points that the graph can have
                 if (diff:=self.graphrangeoptions["1Y"]-self.graphrangeoptions[name]) <= pointsmade:
                     # figuring out the amount of points that each index of the graph has
-                    condensefactor = self.graphrangeoptions[name]/POINTSPERGRAPH
-                    # print(condensefactor,pointsmade-diff,condensefactor*len(points),name)
+                    condensefactor = self.condensefacs[name]
                     # if the amount of points made is greater than or equal to the amount of points that the graph can have
                     if pointsmade-diff >= condensefactor*len(points):
                         return name
@@ -168,47 +167,55 @@ class Stock():
 
         lastgraphed = ""
         pointsmade = 0
-        # self.graphs['1Y'] = np.array([self.price],dtype=object)
         while len(self.graphs['1H']) < POINTSPERGRAPH:
-            # print(pointsmade,lastgraphed,'points,lastgraphed')
-            newgraphed = get_lowestgraph(pointsmade)
-            if newgraphed == None:
-                pointsmade += 1
+
+            newgraphed = get_lowestgraph(pointsmade)# gets the name of the lowest graph that should get points added to it
+            if newgraphed == None:# if there is no graph that needs points added to it for the amount of points made
+                pointsmade += 1# advance pointsmade until there is a graph that needs points added to it
                 continue
-            if self.graphs[newgraphed].size == 0:
-                if lastgraphed == "":
+            if self.graphs[newgraphed].size == 0:# if the graph is empty
+                if lastgraphed == "":# if there is no last graphed (Only used for the year graph)
                     self.graphs[newgraphed] = np.array([self.price],dtype=object)
-                else:
-                    # print('appending',self.graphs[lastgraphed][-1],'to',newgraphed)
+                else:# this is when the first point is added to a graph after the year graph
                     self.graphs[newgraphed] = np.append(self.graphs[newgraphed],self.graphs[lastgraphed][-1])
-                    # print(self.graphs[newgraphed])
-                
-            # print(self.graphs['1Y'])
+
             lastgraphed = newgraphed
             multiplier = int(self.graphrangeoptions[lastgraphed]/POINTSPERGRAPH)
             
             newpoint = self.addpoint(self.graphs[lastgraphed][-1],multiplier)
-            # print(multiplier,'multiplier',newpoint,'newpoint',lastgraphed,'lastgraphed',self.graphs[lastgraphed][-1],'lastpoint')
-            for name,points in self.graphs.items():
-                if (diff:=self.graphrangeoptions["1Y"]-self.graphrangeoptions[name]) <= pointsmade:#if the points made is less then the amount of points in the graph
-                    condensefactor = self.graphrangeoptions[name]/POINTSPERGRAPH
+
+            for name,points in self.graphs.items():# for each graph
+                if (diff:=self.graphrangeoptions["1Y"]-self.graphrangeoptions[name]) <= pointsmade:# figures out if the amount of pointsmade is greater than the amount of points that the graph can have
+                    condensefactor = self.condensefacs[name]
                     if pointsmade-diff >= condensefactor*len(points):
                         self.graphs[name] = np.append(self.graphs[name],newpoint)
-                        # print(name,'appended',newpoint,self.graphs[name] )
-            
+
             pointsmade += multiplier
-            # print(len(self.graphs['1Y']),pointsmade)
         self.price = self.graphs['1H'][-1]
-        # print(self.graphs['1H'])
-        # print(len(self.graphs["1H"]))
+
+    def update_range_graphs(self,stockvalues=0):
         
+        for key in self.graphrangeoptions:
+            condensefactor = self.condensefacs[key]
+            self.graphfillvar[key] += 1
+            if self.graphfillvar[key] == int(condensefactor):#if enough points have passed to add a point to the graph (condensefactor is how many points must go by to add 1 point to the graph)
+                #add the last point to the list
+                self.graphfillvar[key] = 0
+                if type(self) == Stock:
+                    self.graphs[key] = np.append(self.graphs[key],self.price)
+                else:
+                    self.graphs[key] = np.append(self.graphs[key],stockvalues)
+            
+            if len(self.graphs[key]) > POINTSPERGRAPH:
+                # print('deleting',key,len(self.graphs[key]))
+                self.graphs[key] = np.delete(self.graphs[key],0)
 
     def update_price(self,gamespeed):
         if self.bankrupcy(False):#if stock is not bankrupt
             pass
         
         if type(self) == Stock:#making sure that it is a Stock object and that update is true
-            self.price = self.addpoint(self.price,multiplier=gamespeed,maxstep=2)#updates the price of the stock
+            self.price = self.addpoint(self.price,multiplier=gamespeed,maxstep=5)#updates the price of the stock
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             for _ in range(gamespeed):
                 self.update_range_graphs()
@@ -216,6 +223,10 @@ class Stock():
             # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
             self.update_range_graphs(self.get_Networth())#updates the range graphs
 
+    def draw_priceChanges(self,screen:pygame.Surface,coords,wh):
+        """Draws the price changes of the stock"""
+        nametexts = [s_render(name,30,(255,255,255)) for name in self.graphrangeoptions.keys()]
+        
 
     def rangecontrols(self,screen:pygame.Surface,Mousebuttons,blnkspacey,coords,wh):
         """draws the range controls and checks for clicks"""
@@ -244,24 +255,6 @@ class Stock():
                 if percentchange == 0: color = (205,205,205)
                 screen.blit(fontlist[30].render(f'{percentchange:,.2f}%',color)[0], (mousex,graphpoints[int(pos)]+text1.get_height()+5))
                 gfxdraw.line(screen,mousex,coords[1]+wh[1]-blnkspacey,mousex,coords[1],(255,255,255))
-
-
-    def update_range_graphs(self,stockvalues=0):
-
-        for key,value in self.graphrangeoptions.items():
-            condensefactor = value/POINTSPERGRAPH
-            self.graphfillvar[key] += 1
-            if self.graphfillvar[key] == int(condensefactor):#if enough points have passed to add a point to the graph (condensefactor is how many points must go by to add 1 point to the graph)
-                #add the last point to the list
-                self.graphfillvar[key] = 0
-                if type(self) == Stock:
-                    self.graphs[key] = np.append(self.graphs[key],self.price)
-                else:
-                    self.graphs[key] = np.append(self.graphs[key],stockvalues)
-            
-            if len(self.graphs[key]) > POINTSPERGRAPH:
-                # print('deleting',key,len(self.graphs[key]))
-                self.graphs[key] = np.delete(self.graphs[key],0)
 
     def baredraw(self,screen,coords,wh,graphrange,mouseover=False):
         """Draws only the graph of the stock - uses the graphrange,startpos, and endpos parameter, not self.graphrange,(coords[0]+wh[0],coords[1]), and (coords[0],coords[1]+wh[1])"""
