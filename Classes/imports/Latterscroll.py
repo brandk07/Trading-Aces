@@ -56,19 +56,20 @@ class LatterScroll():
             ty = coords[1]
             for i in range(len(renderedtexts[-1])-1,-1,-1):
                 if y+textcoords[ndrawn][i][1] < coords[1]:
-                    # print(renderedtexts[-1])
-                    if len(renderedtexts[ndrawn]) > i:
-                        renderedtexts[ndrawn].remove(renderedtexts[ndrawn][i])
+                    # renderedtexts[ndrawn].remove(renderedtexts[ndrawn][i])
+                    renderedtexts[ndrawn] = renderedtexts[ndrawn][:i] + renderedtexts[ndrawn][i+1:]
                     textcoords[ndrawn].remove(textcoords[ndrawn][i])
                 else:
                     textcoords[ndrawn][i] = (textcoords[ndrawn][i][0],textcoords[ndrawn][i][1]-(coords[1]-y))
+
         by = y# bottom y adjustment - if it is partially off the screen, it will be adjusted
         if y+polyheight > maxcoords[1]:
             by = maxcoords[1]-polyheight
             for i in range(len(renderedtexts[-1])-1,-1,-1):
                 if y > maxcoords[1]-polyheight+textcoords[ndrawn][i][1]:
-                    if len(renderedtexts[ndrawn]) > i:
-                        renderedtexts[ndrawn].remove(renderedtexts[ndrawn][i])
+                    # Suppose i is the index of the element you want to remove
+                    renderedtexts[ndrawn] = renderedtexts[ndrawn][:i] + renderedtexts[ndrawn][i+1:]
+                    # renderedtexts[ndrawn] = renderedtexts[ndrawn][:-1]
                     textcoords[ndrawn].remove(textcoords[ndrawn][i])
                 else:
                     textcoords[ndrawn][i] = (textcoords[ndrawn][i][0],textcoords[ndrawn][i][1]-(y+polyheight-maxcoords[1]))
@@ -78,15 +79,13 @@ class LatterScroll():
     def store_rendercoords(self,coords:tuple,maxcoords:tuple,polyheight:tuple,xcoordshift:int,polyshift:int,updatefreq=0) -> None:
         """Stores the coords for the polygons and the texts, and stores the rendered texts"""	
         if self.updatetexts <= 0:# if the texts should be updated
-            print('updating texts',self.updatetexts)
             self.lasttexts = []
-
             self.updatetexts = updatefreq
 
         else:# if the texts shouldn't be updated
-            print('not updating texts',self.updatetexts)
             self.updatetexts -= 1
-        self.renderedtexts = [t.copy() for t in self.lasttexts]
+        # self.renderedtexts = [t.copy() for t in self.lasttexts]
+        self.renderedtexts = self.lasttexts.copy()
 
         self.polycoords = []
         self.polyheight = polyheight
@@ -101,32 +100,16 @@ class LatterScroll():
                 if ndrawn == 0:
                     self.omittedstocks = (i,self.omittedstocks[1])
                     self.textcoords = self.textcoords[i:]
-                print(text)
 
                 if self.updatetexts == updatefreq:# If it is at zero that means that it got reset because it hit the updatefreq, so the texts need to be updated
-                    print('/'*20)
-                    for i,r in enumerate(text):
-                        print(r,f'is {i} text')
-                        print('/'*20)
-                    render = [s_render(info[0],info[1],info[2]) for info in text]
-                    self.renderedtexts.append(render.copy())
-                    self.lasttexts.append(render.copy())
-                    print('Appending',render)
-                    print('/'*20)
-                    for i,r in enumerate(self.lasttexts):
-                        print(r,f'is {i} brender')
-                    
-                
+                    render = tuple(s_render(info[0],info[1],info[2]) for info in text)
+                    self.renderedtexts.append(render)
+                    self.lasttexts.append(render)
 
-                # print(self.renderedtexts,self.lasttexts)
-                print(ndrawn,'ndrawn',len(self.renderedtexts),len(self.lasttexts))
-                print(self.lasttexts[ndrawn],self.renderedtexts[ndrawn])
-                print(len(self.renderedtexts),ndrawn,'len and ndrawn')
-                self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn].copy(),[(t[0]) for t in text],self.renderedtexts[ndrawn].copy())   
-                
-                # self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn],[text[i][0] for i in range(len(self.renderedtexts))],self.renderedtexts[-1])      
+
+                self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn].copy(),[(t[0]) for t in text],self.renderedtexts[ndrawn])         
                        
-                ty,by,self.textcoords,self.renderedtexts = self.trim_poly(y,polyheight,maxcoords,coords,ndrawn,self.textcoords.copy(),self.renderedtexts.copy())
+                ty,by,self.textcoords,self.renderedtexts = self.trim_poly(y,polyheight,maxcoords,coords,ndrawn,self.textcoords.copy(),self.renderedtexts)
 
                 self.polycoords.append([(x, ty), (x + polyshift, by + height), (x + polyshift + maxcoords[0] -10, by + height), (x + maxcoords[0]-10, ty)])
                 
@@ -137,10 +120,6 @@ class LatterScroll():
                     self.omittedstocks = (self.omittedstocks[0],i)
 
             y += polyheight   
-            # print(self.renderedtexts,self.lasttexts,'rendered texts and textcoords')
-        print('/Very End render/'*10)
-        for i,r in enumerate(self.lasttexts):
-            print(r,f'is {i} last render')
     
     def get_bottompoints(self,points:list):
          return [

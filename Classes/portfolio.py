@@ -124,7 +124,7 @@ class Portfolio(Menu):
         self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
         self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
         # Does most of the work for the latter scroll, renders the text and finds all the coords
-        self.latterscroll.store_rendercoords((1500, 105), (380,950),135,0,0,updatefreq=20)
+        self.latterscroll.store_rendercoords((1500, 105), (380,950),135,0,0,updatefreq=60)
         # drawing the latter scroll and assigning the selected stock
         self.selected_stock = sortedstocks[self.latterscroll.draw_polys(screen, (1500, 105), mousebuttons, sortedstocks.index(self.selected_stock), *sortedstocks)]
         if len(sortedstocks)/135 > 950-105:# if there is more stocks than the screen can fit
