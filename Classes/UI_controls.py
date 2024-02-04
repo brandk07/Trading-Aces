@@ -292,7 +292,7 @@ class UI_Controls():
         self.newsobj.draw(screen)
         
 
-    def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist):
+    def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist,tmarket):
         if self.drawIcon(screen,mousebuttons):
             for i in range(len(menulist)):menulist[i].menudrawn = False
         if not any(menu.menudrawn for menu in menulist):# if any of the menus are drawn, then don't draw
@@ -302,7 +302,8 @@ class UI_Controls():
                 
                 self.draw_home(screen,stocklist,gametime,player,mousebuttons)            
 
-                player.draw(screen,player,(250,160),(680,540),mousebuttons,stocklist,True)
+                # player.draw(screen,player,(250,160),(680,540),mousebuttons,stocklist,True)
+                tmarket.draw(screen,(250,160),(680,540),mousebuttons,stocklist,True)
                 # self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
                 
                 screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(830,20))

@@ -12,7 +12,7 @@ from Classes.imports.Graph import Graph
 POINTSPERGRAPH = 200
 
 class Stock():
-    def __init__(self,name,startingvalue_range,volatility,Playerclass,stocknames,color) -> None:
+    def __init__(self,name,startingvalue_range,volatility,color,Playerclass=None,stocknames=None) -> None:
         self.color = color
         # (coords[0]+wh[0],coords[1]),(coords[0],coords[1]+wh[1]) = (0,0),(0,0)
         # self.coords,self.wh = (0,0),(0,0)
@@ -54,41 +54,72 @@ class Stock():
     
     def reset_graphs(self):
         """resets the graphs to be empty"""
-        for i in ["1H","1D","1W","1M","3M","1Y","trends"]:
-            file_path = f"Assets/Stockdata/{self}/{i}.json"
-            with open(file_path, "w+") as f:
-                json.dump([], f)
+        # for i in ["1H","1D","1W","1M","3M","1Y","trends"]:
+        file_path = f"Assets/Stockdata/{self}/pricepoints.json"
+        with open(file_path, "w+") as f:
+            json.dump([], f)
         newprice = randint(*self.starting_value_range)
         for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"], assign the new price to each graph
             self.graphs[grange] = np.array([newprice])
     def datafromfile(self):
         """gets the data from each file and puts it into the graphlist"""
-        for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
-            with open(f'Assets/Stockdata/{self.name}/{grange}.json','r') as file:
-                file.seek(0)# go to the start of the file
-                contents = json.load(file)# load the contents of the file
-                if contents:# if the file is not empty
-                    self.graphs[grange] = np.array(contents)# add the contents to the graphs
+        # for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
+        #     with open(f'Assets/Stockdata/{self.name}/{grange}.json','r') as file:
+        #         file.seek(0)# go to the start of the file
+        #         contents = json.load(file)# load the contents of the file
+                # if contents:# if the file is not empty
+                #     self.graphs[grange] = np.array(contents)# add the contents to the graphs
+                # else:
+                #     self.graphs[grange] = np.array([self.price])# if the file is empty then make the only data the current price
+        # self.graphs = {}
+        # for grange in self.graphs.keys():
+        with open(f'Assets/Stockdata/{self.name}/data.json', 'r')as f:
+            data = [json.loads(line) for line in f]
+
+            for i,grange in enumerate(self.graphs.keys()):
+                if data[i]:# if the file is not empty
+                    self.graphs[grange] = np.array(data[i])# add the contents to the graphs
                 else:
-                    self.graphs[grange] = np.array([self.price])# if the file is empty then make the only data the current price
-        with open(f'Assets/Stockdata/{self.name}/trends.json','r') as file:#get the trends from the trend file
-            file.seek(0)
-            contents = json.load(file)
-            if contents:
-                self.bonustrends = contents
+                    self.graphs[grange] = np.array([self.price])# if the file is empty then
+            # self.graphs[grange] = [json.loads(line) for line in file]
+            print(data[-1],'data',len(data[-1]),self.name)
+            if len(data[-1]) > 0:
+                self.bonustrends = data[-1]
             else:
+                print('resetting trends')
                 self.reset_trends()
+            print(self.bonustrends,'bonustrends')
+
+        # with open(f'Assets/Stockdata/{self.name}/trends.json','r') as file:#get the trends from the trend file
+        #     file.seek(0)
+        #     contents = json.load(file)
+        #     if contents:
+        #         self.bonustrends = contents
+        #     else:
+        #         self.reset_trends()
+
     def save_data(self):
-        for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
-            with open(f'Assets/Stockdata/{self.name}/{grange}.json','w') as file:
-                file.seek(0)# go to the start of the file
-                file.truncate()# clear the file
-                json.dump(self.graphs[grange].tolist(),file)# write the new data to the file
+        # for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
+            # with open(f'Assets/Stockdata/{self.name}/pricepoints.json','w') as file:
+            #     file.seek(0)# go to the start of the file
+            #     file.truncate()# clear the file
+            #     json.dump(self.graphs[grange].tolist(),file)# write the new data to the file
+        # for grange in self.graphs.keys():
+        with open(f'Assets/Stockdata/{self.name}/data.json','w') as file:
+            file.seek(0)  # go to the start of the file
+            file.truncate()  # clear the file
+            for item in list(self.graphs.values()):
+                json_item = json.dumps(item.tolist())  # Convert the list to a JSON string
+                file.write(json_item + '\n')  # Write the JSON string to the file with a newline character
+                
+            # file.write(json_item + '\n')
+            
+            file.write(json.dumps(self.bonustrends))
         
-        with open(f'Assets/Stockdata/{self.name}/trends.json','w') as file:
-            file.seek(0)
-            file.truncate()
-            json.dump(self.bonustrends,file)
+        # with open(f'Assets/Stockdata/{self.name}/dar.json','w') as file:
+        #     file.seek(0)
+        #     file.truncate()
+        #     json.dump(self.bonustrends,file)
 
 
 
@@ -221,7 +252,8 @@ class Stock():
                 self.update_range_graphs()
         else:
             # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
-            self.update_range_graphs(self.get_Networth())#updates the range graphs
+            for _ in range(gamespeed):
+                self.update_range_graphs(self.get_Networth())#updates the range graphs
 
     def draw_priceChanges(self,screen:pygame.Surface,coords,wh):
         """Draws the price changes of the stock"""

@@ -6,6 +6,7 @@ from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 from Classes.imports.Latterscroll import *
 from Classes.Stockbook import quantityControls
+from Classes.imports.Numpad import Numpad
 import math
 
 DX = 300# default x
@@ -27,22 +28,30 @@ class Portfolio(Menu):
         self.sharebackground.set_alpha(150)
 
         self.portfoliotext = fontlist[65].render('Owned Shares',(220,220,220))[0]
-        self.showingtext = fontlist[45].render('Showing ',(220,220,220))[0]
-        self.menudrawn = True
+        self.showingtext = fontlist[35].render('Showing ',(220,220,220))[0]
+        self.menudrawn = False
         self.allrenders = []
         self.selected_stock = None
 
         # self.latterScrollsurf = pygame.Surface((730,730))
         self.latterscroll = PortfolioLatter()
+        self.numpad = Numpad()
 
-        self.prerenders = [
-                s_render('Profit',45,(190,190,190)),# text for the profit/loss
-                s_render('Lost',45,(190,190,190)),# text for the profit/loss
-                s_render('Bought at $',45,(190,190,190)),
-                s_render('per share',45,(190,190,190)),
-                s_render('Current Price $',45,(190,190,190)),
-            ]
-
+        presize = 35
+        self.prerenders = {
+            'Profit': s_render('Profit',presize,(190,190,190)),# text for the profit/loss
+            'Lost': s_render('Lost',presize,(190,190,190)),# text for the profit/loss
+            'Bought at $': s_render('Bought at $',presize,(190,190,190)),
+            'per share': s_render('per share',presize,(190,190,190)),
+            'Current Price $': s_render('Current Price $',presize,(190,190,190)),
+            'Price': s_render('Price',presize,(190,190,190)),
+            '(Per Share)': s_render('(Per Share)',presize,(190,190,190)),
+            'Shares': s_render('Shares',presize,(190,190,190)),
+            'Paid': s_render('Paid',presize,(190,190,190)),
+            'Net Gain': s_render('Net Gain',presize,(190,190,190)),
+            'Net Loss': s_render('Net Loss',presize,(190,190,190)),
+        }
+ 
         
     def getpoints(self, w1, w2, w3, x, y):
         """returns the points for the polygon of the portfolio menu""" 
@@ -124,18 +133,29 @@ class Portfolio(Menu):
         self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
         self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
         # Does most of the work for the latter scroll, renders the text and finds all the coords
-        self.latterscroll.store_rendercoords((1500, 105), (380,950),135,0,0,updatefreq=60)
+        scrollmaxcoords = (400,950)
+        ommitted = self.latterscroll.store_rendercoords((1500, 105), scrollmaxcoords,135,0,0,updatefreq=60)
         # drawing the latter scroll and assigning the selected stock
         self.selected_stock = sortedstocks[self.latterscroll.draw_polys(screen, (1500, 105), mousebuttons, sortedstocks.index(self.selected_stock), *sortedstocks)]
-        if len(sortedstocks)/135 > 950-105:# if there is more stocks than the screen can fit
-            screen.blit(s_render("Scroll to see more", 35, (190, 190, 190)), (1600, 950))
 
+        # make a text saying showing # out of # stocks
+        screen.blit(self.showingtext,(1560,950))
+        currenttext = s_render(f'{ommitted[0]} - {ommitted[1]}',35,(220,220,220))
+        outoftext = s_render(f' out of {len(sortedstocks)} stocks',35,(220,220,220))
+
+        screen.blit(currenttext,(1560+self.showingtext.get_width(),950))
+
+        screen.blit(outoftext,(1560+self.showingtext.get_width()+currenttext.get_width(),950))
+
+
+        # screen.blit(s_render("Scroll to see more", 35, (190, 190, 190)), (1600, 950))
+    
     def drawSelected(self, screen, mousebuttons, player):
         if self.selected_stock != None:
             mousex, mousey = pygame.mouse.get_pos()
             #  draw a polygon from 815,110 to 1480,960
             points = [(810, 105), (1490, 105), (1490, 960), (810, 960)]
-            gfxdraw.filled_polygon(screen, points, (20, 20, 20, 190))
+            # gfxdraw.filled_polygon(screen, points, (20, 20, 20, 190))
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
 
@@ -150,13 +170,13 @@ class Portfolio(Menu):
             # screen.blit(pricetext,(1480-pricetext.get_width(),110))# display the portfolio text
             
             texts = [
-                self.prerenders[0] if percent >= 0 else self.prerenders[1],# text for the profit/loss
+                self.prerenders['Profit'] if percent >= 0 else self.prerenders['Lost'],# text for the profit/loss
                 s_render(f'${limit_digits(percent,15)}%',45,(190,190,190)),# text for the percent
                 s_render(f'${limit_digits(self.selected_stock[1]*self.selected_stock[2],15)}',45,(190,190,190)),# text for the total paid
-                self.prerenders[2],# text for the "bought at" text
+                self.prerenders["Bought at $"],# text for the "bought at" text
                 s_render(str(limit_digits(self.selected_stock[1],15)),45,(190,190,190)),
-                self.prerenders[3],# text for the "per share" text
-                self.prerenders[4],# text for the "current price" text
+                self.prerenders["per share"],# text for the "per share" text
+                self.prerenders["Current Price $"],# text for the "current price" text
                 s_render(str(limit_digits(self.selected_stock[0].price,15)),45,(190,190,190)),
             ]
             coords = [
@@ -174,6 +194,61 @@ class Portfolio(Menu):
 
 
             self.selected_stock[0].baredraw(screen,(820,155),(660,295),'1M',True)
+
+            self.numpad.draw(screen,(820,675),(300,275),'SHARE' if self.numpad.value == 1 else 'SHARES',mousebuttons,self.selected_stock[2])
+            self.draw_selectedpriceInfo(screen,player)
+
+    def draw_selectedpriceInfo(self,screen,player):
+        """All the price info next to the numpad for the selected stock"""
+        # (820,675),(300,275)
+        # draw the stock name
+
+        # screen.blit(s_render(f'{stock[0]} X {limit_digits(stock[2],10,False)}', 50, (190, 190, 190)), (1040, 435))
+        h1 = self.prerenders["Price"].get_height()
+        h2 = self.prerenders["(Per Share)"].get_height()
+        coords = [
+            (1130, 680),# coords for the Price text
+            (1145, 690+h1),# coords for the "(per share)" text
+            (1130, 705+h1+h2)# coords for the "Shares x" text
+            # (1130, 860)# coords for the "Paid" text
+        ]
+
+        totalheight = h1+h2+self.prerenders["Shares"].get_height()+15
+        # paidvalue = s_render(f'${limit_digits(self.selected_stock[1]*self.numpad.get_value(),15)}', 45, (190, 190, 190))
+        value = s_render(f'${limit_digits(self.selected_stock[0].price*self.numpad.get_value(),15)}', 45, (190, 190, 190))
+
+        points = [(1125, 675), (1125, 715+totalheight+value.get_height()), (1480, 715+totalheight+value.get_height()), (1480, 675)]
+        # gfxdraw.filled_polygon(screen, points, (80,80,80,120))# background for the value info
+        pygame.draw.polygon(screen, (0, 0, 0), points, 3)
+
+        for i,text in enumerate(["Price","(Per Share)","Shares"]):
+            screen.blit(self.prerenders[text],coords[i])
+        
+        gfxdraw.line(screen, 1130, 705+totalheight, 1475, 705+totalheight, (190,190,190))
+
+        # draw the price of the stock
+        price = s_render(f'${limit_digits(self.selected_stock[0].price,15)}', 45, (190, 190, 190)) 
+        screen.blit(price, (1475-price.get_width(),680))
+
+        # draw the amount of shares
+        shares = s_render(f'{self.numpad.get_value():,.0f}', 45, (190, 190, 190))
+        screen.blit(shares, (1475-shares.get_width(),695+h1+h2))
+
+        # draw the total value
+        screen.blit(value, (1475-value.get_width(),715+totalheight))
+
+        strtext = "Net Gain" if self.selected_stock[0].price > self.selected_stock[1] else "Net Loss"
+        screen.blit(self.prerenders[strtext],(1130, 860))
+        color = ((0,200,0) if self.selected_stock[0].price > self.selected_stock[1] else (200,0,0)) if self.selected_stock[0].price != self.selected_stock[1] else (190,190,190)
+        netchange = s_render(f'${limit_digits((self.selected_stock[0].price - self.selected_stock[1])*self.numpad.get_value(),15)}', 45, color)
+        screen.blit(netchange, (1475-netchange.get_width(),860))
+
+
+            
+
+
+        # self.prerenders["Price"]
+
 
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player):
         """Draws all of the things in the portfolio menu"""
@@ -196,9 +271,6 @@ class Portfolio(Menu):
 
             # draws the selected stock information in the middle of the screen
             self.drawSelected(screen, mousebuttons, player)
-
-     
-            
 
         values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
         names = set([stock[0].name for stock in player.stocks])

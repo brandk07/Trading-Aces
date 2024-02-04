@@ -86,30 +86,42 @@ import json
 import numpy as np
 import timeit
 import os
+import shutil
 # data = [[100, [0,0,0,0,0,0,0]]]*10
 data = []
-stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth']
+stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth',"Total Market"]
 stockdict = {name:np.array(data,dtype=object) for name in stocknames}
 
 start_time = timeit.default_timer()
 # create folders for each stockname in the directory if they don't already exist
 
 
+# # Delete every file in the directory
+# for filename in os.listdir(directory):
+#     file_path = os.path.join(directory, filename)
+#     try:
+#         if os.path.isfile(file_path) or os.path.islink(file_path):
+#             os.unlink(file_path)
+#         elif os.path.isdir(file_path):
+#             shutil.rmtree(file_path)
+#     except Exception as e:
+#         print(f'Failed to delete {file_path}. Reason: {e}')
+
+# Now create the new files
 for name in stocknames:
-    for i in ["1H","1D","1W","1M","3M","1Y",'trends']:
-        file_path = f"{directory}/{name}/{i}.json"
-        if os.path.exists(file_path):
-            with open(file_path, "w+") as f:
-                # f.write("[]")
-                json.dump([], f)
-        else:
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            with open(file_path, "w+") as f:
-                # f.write("[]")
-                json.dump([], f)
-# for name in stocknames:
-#     file_path = f"{directory}/{name}/trend.json"
-#     os.remove(file_path)
+    # for i in ["1H","1D","1W","1M","3M","1Y",'trends']:
+    # for i in ["pricepoints","trends"]:
+    file_path = f"{directory}/{name}/data.json"
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    with open(file_path, "w+") as f:
+        # json.dump([], f)
+        f.seek(0)  # go to the start of the file
+        f.truncate()  # clear the file
+        for i in range(len(["1H","1D","1W","1M","3M","1Y",'trends'])):
+            json_item = json.dumps([])  # Convert the list to a JSON string
+            f.write(json_item + '\n') 
+
 with open(f"{directory}/extradata.json", "w+") as f:
     json.dump([], f)
 

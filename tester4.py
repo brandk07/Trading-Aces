@@ -51,6 +51,8 @@ from Classes.imports.Latterscroll import LatterScroll
 multiplier = 7
 
 print(multiplier % 10 if multiplier < 10 else 10)
+
+print(3//2)
 # start = timeit.default_timer()
 # for i in range(1000000):
 #     d = {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}

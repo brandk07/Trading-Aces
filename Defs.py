@@ -34,10 +34,13 @@ fontlistpix = [pixfonts(num) for num in range(0,201)]#list of fonts from 0-100
 font45 = fonts(45)
 
 @lru_cache(maxsize=100)
-def s_render(string:str, size, color) -> pygame.Surface:
+def s_render(string:str, size, color,font='reg') -> pygame.Surface:
     """Caches the renders of the strings, and returns the rendered surface"""
     # print(f"Caching arguments: {string}, {size}, {color}")
-    text = fontlist[size].render(string, (color))[0]
+    if font == 'reg':
+        text = fontlist[size].render(string, (color))[0]
+    elif font == 'cry':
+        text = fontlistcry[size].render(string, (color))[0]
     return text
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -206,10 +209,12 @@ def Getfromfile(stockdict:dict,player):
             return musicdata
         return [0,0,0]# time, volume, songindex
 
-def Writetofile(stocklist,player,data):
+def Writetofile(stocklist,player,data,tmarket):
     for stock in stocklist:
         stock.save_data()
     player.save_data()
+    tmarket.save_data()
+    
     with open('Assets/Stockdata/extradata.json','w') as file:
         file.seek(0)# go to the start of the file
         file.truncate()# clear the file

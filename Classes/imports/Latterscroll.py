@@ -30,7 +30,18 @@ class LatterScroll():
 
     def storetextinfo(self,textinfo):
         """textinfo is a list of lists, each list is (text,size,color)"""
-        if len(textinfo) != len(self.texts):
+        print((textinfo) != (self.texts))
+        for t in textinfo:
+            print(t,'textinfo')
+        for t in self.texts:
+            print(t,'self')
+        for t in textinfo:
+            if t not in self.texts:
+                print(t,'not in textinfo')
+        print('/'*20)
+
+            
+        if (textinfo) != (self.texts):
             self.updatetexts = 0
         if self.updatetexts <= 0:
             self.texts = textinfo
@@ -41,6 +52,7 @@ class LatterScroll():
         for i in range(len(textcoord)):
             x,y = textcoord[i]
             if len(rendertexts) < i:break# if only some of the text is on the screen (partially off the screen)
+
             if type(x) == tuple:# if the x is ('text',offset) it is a variable width
                 x = rendertexts[strtexts.index(x[0])].get_width()+x[1]# the width of the text + the offset
             if type(y) == tuple:
@@ -119,7 +131,8 @@ class LatterScroll():
                 if ndrawn > 0:# Stocks that are too far down to be drawn
                     self.omittedstocks = (self.omittedstocks[0],i)
 
-            y += polyheight   
+            y += polyheight  
+        return self.omittedstocks[0]+1,self.omittedstocks[0]+ndrawn+1
     
     def get_bottompoints(self,points:list):
          return [
@@ -152,7 +165,7 @@ class LatterScroll():
                     soundEffects['clickbutton2'].play()
             
             # draw the polygon
-            gfxdraw.filled_polygon(screen, points, (60,60,60,150) if hover or numdrawn == selected_value else (25,25,25,150 ))
+            # gfxdraw.filled_polygon(screen, points, (60,60,60,150) if hover or numdrawn == selected_value else (25,25,25,150 ))
 
             # get bottom coords
             bottom_polygon = self.get_bottompoints(points)

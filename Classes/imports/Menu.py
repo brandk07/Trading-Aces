@@ -1,6 +1,6 @@
 import pygame
 from Defs import *
-
+from Classes.UI_controls import UI_Controls
 class Menu():
     def __init__(self,iconimage) -> None:
         surface = pygame.Surface((140,115))
@@ -34,7 +34,7 @@ class Menu():
                     for menu in menulist:
                         if menu != self: menu.menudrawn = False
         else:# if the mouse is not colliding with the icon
-            fullmenu = [(self.menupoints[0][0],self.menupoints[0][1]),(self.menupoints[1][0]+300,self.menupoints[1][1]),(self.menupoints[2][0]+300,self.menupoints[2][1]),(self.menupoints[3][0],self.menupoints[3][1])]
+            fullmenu = [(self.menupoints[0][0],self.menupoints[0][1]),(self.menupoints[1][0]+300,self.menupoints[1][1]),(self.menupoints[2][0]+300,1080),(self.menupoints[3][0],1080)]
             if mousebuttons == 1 and not point_in_polygon(pygame.mouse.get_pos(),fullmenu):# if the mouse is clicked outside of the menu, then set the menu to not drawn
                 self.menudrawn = False
         
@@ -80,12 +80,19 @@ class Menu():
 
         # gfxdraw.filled_polygon(screen, ((1150,40),(1900,40),(1900,975),(1150,975)),(40,40,40))
         # pygame.draw.polygon(screen, (0,0,0), ((1150,40),(1900,40),(1900,975),(1150,975)),10)
+    def drawbottombar(self,screen,ui_controls:UI_Controls,gametime):
+        """Draws the bottom bar of the screen"""
+        ui_controls.gameplay_speed = ui_controls.bar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True)
+
+        # draws the time in the top left corner
+        # texts = gametime.getrenders(50,50,50,105,50,50)
 
     def draw_menu(self,screen,mousebuttons:int,stocklist:list,player,ui_controls,gametime):
-        gfxdraw.filled_polygon(screen, self.menupoints,(40,40,40,200))
+        gfxdraw.filled_polygon(screen, self.menupoints,(50,50,50,200))
         pygame.draw.polygon(screen, (0,0,0), self.menupoints,5)
 
-        gfxdraw.filled_polygon(screen, self.topbarpoints,(80,80,80,200))
+        gfxdraw.filled_polygon(screen, self.topbarpoints,(85,85,85))
         pygame.draw.polygon(screen, (0,0,0), self.topbarpoints,5)
+        self.drawbottombar(screen,ui_controls,gametime)
         self.draw_menu_content(screen,stocklist,mousebuttons,player)#draws the content of the menu, defined in the child classes
 

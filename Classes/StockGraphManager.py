@@ -8,11 +8,13 @@ class StockGraphManager:
         self.graph_config = {
             'single': (1,1),
             'quad': (2,2),
+            'six' : (3,2),
             'nona': (3,3),
         }
         self.images = {
             'single': pygame.image.load('Assets/graph manager/single.png').convert_alpha(),
             'quad': pygame.image.load('Assets/graph manager/quad.png').convert_alpha(),
+            'six' : pygame.image.load('Assets/graph manager/six.png').convert_alpha(),
             'nona': pygame.image.load('Assets/graph manager/nona.png').convert_alpha(),
         }
         
@@ -28,28 +30,33 @@ class StockGraphManager:
             self.hoverimages[key] = surface
 
         self.ui_rects = [pygame.Rect(745+(i*66),990,56,56) for i in range(len(self.images))]
+        self.wh = [1400,880]# the start coords of the graph
 
         self.current_config = 'nona'
         self.allstocks = stocknames
+
         self.picked_stocks = [stock for stock in self.allstocks]
         self.mousehovering = None
-        self.pickedstockconfig = {#the stock that is picked for each config
+        self.pickedstockconfig = {#the stocks that are picked for each config
             'single': [self.allstocks[i] for i in range(1)],
             'quad': [self.allstocks[i] for i in range(4)],
+            'six': [self.allstocks[i] for i in range(6)],
             'nona': [self.allstocks[i] for i in range(9)],
         }
         # self.mcontrolstext = [[fontlist[45].render(text,(220,220,220))[0],text.lower()] for text in ["1H","1D","1W","1M","3M","1Y","Custom"]]
         self.renderedstocknames = {name:fontlist[25].render(name,(255,255,255))[0] for name in self.allstocks}
         self.masterrange = "1H"
         self.dragstock = [None,None,None]# [stock object, xoffset, yoffset]
+
     def draw_ui(self,screen,mousebuttons:int,stocklist:list):
-        gfxdraw.filled_polygon(screen,[(710,90),(740,10),(1050,10),(1015,90)],(50,50,50))#polygon at top of screen behind ui controls
+        # gfxdraw.filled_polygon(screen,[(710,90),(740,10),(1050,10),(1015,90)],(50,50,50))#polygon at top of screen behind ui controls
         mousex,mousey = pygame.mouse.get_pos()
         collide = None
         for i,rect in enumerate(self.ui_rects):#draws the ui controls to the screen, and senses for clicks
             if rect.collidepoint(mousex,mousey):
                 collide = i
                 if mousebuttons == 1:
+                    self.pickedstockconfig[self.current_config] = self.picked_stocks.copy()#saves the current stock config
                     self.current_config = list(self.images.keys())[i]
                     self.picked_stocks.clear()#reset stock list and repopulate it with the correct amount of stocks (using math.prod which is a little unnecessary) in allstocks list
                     self.picked_stocks = self.pickedstockconfig[self.current_config].copy()#uses the pickedstockconfig dict to see which stocks it needs to use
@@ -64,64 +71,73 @@ class StockGraphManager:
             elif name == self.current_config or collide == i:
                 screen.blit(self.hoverimages[name],(745+(i*66),990))
     
-    def changestockbutton(self,screen:pygame.Surface,startpos,endpos,mousebuttons:int,stockname:str,stocklist:list):
-        mousex,mousey = pygame.mouse.get_pos()
-        #polygon at the top of each stock graph
-        gfxdraw.filled_polygon(screen,[(startpos[0]-140,startpos[1]+30),(startpos[0]-130,startpos[1]+5),(startpos[0]-5,startpos[1]+5),(startpos[0]-15,startpos[1]+30)],(180,180,180))
-        #Smaller polgyon on top of the first one to make it look like a button
-        gfxdraw.filled_polygon(screen,[(startpos[0]-135,startpos[1]+27),(startpos[0]-130,startpos[1]+7),(startpos[0]-10,startpos[1]+7),(startpos[0]-17,startpos[1]+27)],(110,110,110))
-        screen.blit(fontlist[25].render('SWAP STOCK',(0,0,0))[0],(startpos[0]-120,startpos[1]+10))
-        #seeing if the mouse is hovering over the button
-        if pygame.Rect(startpos[0]-140,startpos[1]+5,135,25).collidepoint(mousex,mousey) or self.mousehovering == stockname:
+    # def changestockbutton(self,screen:pygame.Surface,startpos,endpos,mousebuttons:int,stockname:str,stocklist:list):
+    #     mousex,mousey = pygame.mouse.get_pos()
+    #     #polygon at the top of each stock graph
+    #     gfxdraw.filled_polygon(screen,[(startpos[0]-140,startpos[1]+30),(startpos[0]-130,startpos[1]+5),(startpos[0]-5,startpos[1]+5),(startpos[0]-15,startpos[1]+30)],(180,180,180))
+    #     #Smaller polgyon on top of the first one to make it look like a button
+    #     gfxdraw.filled_polygon(screen,[(startpos[0]-135,startpos[1]+27),(startpos[0]-130,startpos[1]+7),(startpos[0]-10,startpos[1]+7),(startpos[0]-17,startpos[1]+27)],(110,110,110))
+    #     screen.blit(fontlist[25].render('SWAP STOCK',(0,0,0))[0],(startpos[0]-120,startpos[1]+10))
+    #     #seeing if the mouse is hovering over the button
+    #     if pygame.Rect(startpos[0]-140,startpos[1]+5,135,25).collidepoint(mousex,mousey) or self.mousehovering == stockname:
 
-            if pygame.Rect(startpos[0]-140,startpos[1]+5,135,245).collidepoint(mousex,mousey):#if the mouse is hovering over the button or the list of stocks below it
-                self.mousehovering = stockname
+    #         if pygame.Rect(startpos[0]-140,startpos[1]+5,135,245).collidepoint(mousex,mousey):#if the mouse is hovering over the button or the list of stocks below it
+    #             self.mousehovering = stockname
 
-            for stock in self.allstocks:#draws the list of stocks below the button
-                if stock != stockname and stock not in self.picked_stocks:#if the stock is not the current stock
-                    index_place = len([used_stock for used_stock in self.allstocks if used_stock in self.picked_stocks and self.allstocks.index(used_stock) < self.allstocks.index(stock)])-1
+    #         for stock in self.allstocks:#draws the list of stocks below the button
+    #             if stock != stockname and stock not in self.picked_stocks:#if the stock is not the current stock
+    #                 index_place = len([used_stock for used_stock in self.allstocks if used_stock in self.picked_stocks and self.allstocks.index(used_stock) < self.allstocks.index(stock)])-1
                     
-                    yadj = ((self.allstocks.index(stock)-index_place)*30)
+    #                 yadj = ((self.allstocks.index(stock)-index_place)*30)
 
-                    color = (0,0,180)#default color
-                    if pygame.Rect(startpos[0]-140,startpos[1]+5+yadj,135,25).collidepoint(mousex,mousey):#if the mouse is hovering over the stock button
-                        color = (0,180,180)
-                        if mousebuttons == 1:
-                            mousebuttons = 0
-                            # oldstockobj = [stockobj for stockobj in stocklist if stockobj.name == stockname][0]#finds the stock object of the stock that is being replaced
-                            # stockobj = [stockobj for stockobj in stocklist if stockobj.name == stock][0]#finds the stock object of the stock that is replacing the old stock
-                            self.picked_stocks[self.picked_stocks.index(stockname)] = stock#replaces the old stock with the new stock in the picked_stocks list
-                            self.pickedstockconfig[self.current_config][self.pickedstockconfig[self.current_config].index(stockname)] = stock#replaces the old stock with the new stock in the pickedstockconfig dict
-                            self.mousehovering = None
-                    #draws the stock button, and the name of the stock
-                    # gfxdraw.filled_polygon(screen,[(startpos[0]-140,startpos[1]+30+yadj),(startpos[0]-130,startpos[1]+5+yadj),(startpos[0]-55,startpos[1]+5+yadj),(startpos[0]-60,startpos[1]+30+yadj)],color)
-                    gfxdraw.filled_polygon(screen,[(startpos[0]-113,startpos[1]+30+yadj),(startpos[0]-103,startpos[1]+5+yadj),(startpos[0]-32,startpos[1]+5+yadj),(startpos[0]-37,startpos[1]+30+yadj)],color)
-                    screen.blit(fontlist[25].render(stock,(255,255,255))[0],(startpos[0]-92,startpos[1]+yadj+10))
+    #                 color = (0,0,180)#default color
+    #                 if pygame.Rect(startpos[0]-140,startpos[1]+5+yadj,135,25).collidepoint(mousex,mousey):#if the mouse is hovering over the stock button
+    #                     color = (0,180,180)
+    #                     if mousebuttons == 1:
+    #                         mousebuttons = 0
+    #                         # oldstockobj = [stockobj for stockobj in stocklist if stockobj.name == stockname][0]#finds the stock object of the stock that is being replaced
+    #                         # stockobj = [stockobj for stockobj in stocklist if stockobj.name == stock][0]#finds the stock object of the stock that is replacing the old stock
+    #                         self.picked_stocks[self.picked_stocks.index(stockname)] = stock#replaces the old stock with the new stock in the picked_stocks list
+    #                         self.pickedstockconfig[self.current_config][self.pickedstockconfig[self.current_config].index(stockname)] = stock#replaces the old stock with the new stock in the pickedstockconfig dict
+    #                         self.mousehovering = None
+    #                 #draws the stock button, and the name of the stock
+    #                 # gfxdraw.filled_polygon(screen,[(startpos[0]-140,startpos[1]+30+yadj),(startpos[0]-130,startpos[1]+5+yadj),(startpos[0]-55,startpos[1]+5+yadj),(startpos[0]-60,startpos[1]+30+yadj)],color)
+    #                 gfxdraw.filled_polygon(screen,[(startpos[0]-113,startpos[1]+30+yadj),(startpos[0]-103,startpos[1]+5+yadj),(startpos[0]-32,startpos[1]+5+yadj),(startpos[0]-37,startpos[1]+30+yadj)],color)
+    #                 screen.blit(fontlist[25].render(stock,(255,255,255))[0],(startpos[0]-92,startpos[1]+yadj+10))
                     
 
-        if stockname == self.mousehovering and not pygame.Rect(startpos[0]-140,startpos[1]+5,135,250).collidepoint(mousex,mousey):
-            self.mousehovering = None
+    #     if stockname == self.mousehovering and not pygame.Rect(startpos[0]-140,startpos[1]+5,135,250).collidepoint(mousex,mousey):
+    #         self.mousehovering = None
     
     def stockBar(self, screen: pygame.Surface, stocklist: list):
 
-        def stockOver(stock, mousex, mousey, picked_stocks, draggedstock):
-            stocknames = [stock.name for stock in stocklist]
+        def stockOver(mousex, mousey, picked_stocks, draggedstock):
+            # stocknames = [stock.name for stock in stocklist]
             for i, selected in enumerate(picked_stocks):
-                stock = stocklist[stocknames.index(selected)]
-                if mousex >= stock.endpos[0] and mousex <= stock.startpos[0]:
-                    if mousey >= stock.startpos[1] and mousey <= stock.endpos[1]:
+                # stock = stocklist[stocknames.index(selected)]
+                xlength = self.wh[0]/self.graph_config[self.current_config][0]
+                ylength = self.wh[1]/self.graph_config[self.current_config][1]
+
+                yind = i//self.graph_config[self.current_config][0]
+                xind = i-(yind*self.graph_config[self.current_config][0])
+                stockcoords = (xind*xlength+200, yind*ylength+100)
+                stockwh = (xlength, ylength)
+
+                if mousex >= stockcoords[0] and mousex <= stockcoords[0] + stockwh[0]:
+                    if mousey >= stockcoords[1] and mousey <= stockcoords[1] + stockwh[1]:
                         picked_stocks.remove(selected)
                         picked_stocks.insert(i, draggedstock.name)
             return picked_stocks
+
                             
         if len(self.picked_stocks) < len(stocklist):
             newlist = [stock for stock in stocklist if stock.name not in self.picked_stocks]
             mousex, mousey = pygame.mouse.get_pos()
             width = 1400 / len(newlist)
 
-            if self.dragstock[0] == None:
-                if pygame.mouse.get_pressed()[0]:
-                    for i, stock in enumerate(newlist):
+            if self.dragstock[0] == None:# if the stock is not being dragged
+                if pygame.mouse.get_pressed()[0]:# if the mouse is being pressed
+                    for i, stock in enumerate(newlist):# for each stock in the list of stocks
                         x = int(200 + (i * width))
                         y = 10
                         # if pygame.Rect(x + 5, y + 10, 1400 / len(newlist), 80).collidepoint(mousex, mousey):
@@ -130,8 +146,10 @@ class StockGraphManager:
                             if mousey > y and mousey <= y+80:
                                 self.dragstock = [stock, mousex - x, mousey - y]
             else:                
-                if not pygame.mouse.get_pressed()[0]:
-                    self.picked_stocks = stockOver(self.dragstock[0], mousex, mousey, self.picked_stocks, self.dragstock[0])
+                if not pygame.mouse.get_pressed()[0]:# if the mouse is not being pressed
+                    # coords = (mousex - self.dragstock[1], mousey - self.dragstock[2])
+                    # wh = (int(width), 80)
+                    self.picked_stocks = stockOver(mousex, mousey, self.picked_stocks, self.dragstock[0])
                     self.dragstock = [None, None, None]
 
             for i, stock in enumerate(newlist):
@@ -179,10 +197,10 @@ class StockGraphManager:
         self.draw_ui(screen,mousebuttons,stocklist)
         
         
-        for i in range(self.graph_config[self.current_config][1]):
-            for ii in range(self.graph_config[self.current_config][0]):
-                xlength = int(1400/self.graph_config[self.current_config][0])
-                ylength = int(880/self.graph_config[self.current_config][1])
+        for i in range(self.graph_config[self.current_config][1]):# for each row
+            for ii in range(self.graph_config[self.current_config][0]):# for each column
+                xlength = int(self.wh[0]/self.graph_config[self.current_config][0])# the length of the x axis
+                ylength = int(self.wh[1]/self.graph_config[self.current_config][1])# the length of the y axis
                 # print(xlength,ylength,'xlength,ylength')
                 
                 # startpos = ((ii+1)*xlength+200,i*ylength+100)

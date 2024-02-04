@@ -12,6 +12,7 @@ from Classes.Stockbook import Stockbook
 from Classes.portfolio import Portfolio
 from Classes.OptionMenu import Optiontrade
 from collections import deque
+from Classes.smallClasses.TotalMarket import TotalMarket
 import timeit
 GAMESPEED = 100
 FASTFORWARDSPEED = 2500
@@ -36,12 +37,12 @@ stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0)
 stockgraphmanager = StockGraphManager(stocknames)
 stockbook = Stockbook(stocknames)
 player = Player(stocknames,stockcolors[-1])
-stockdict = {name:Stock(name,(20,400),10,Player,stocknames,stockcolors[i]) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 portfolio = Portfolio()
 optiontrade = Optiontrade(stocklist)
 ui_controls = UI_Controls(stocklist,GAMESPEED)
-
+tmarket = TotalMarket()
 
 # VARS FROM SETTINGS
 autofastforward = True
@@ -67,15 +68,17 @@ lastfps = deque(maxlen=300)
 mousebuttons = 0
 # for stock in stocklist:
 #     stock.fill_graphs()
+screen.fill((50,50,50))
+screen.blit(background,(0,0))
+s = screen.copy()
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
-        screen.fill((50,50,50))
-        screen.blit(background,(0,0))
+        screen.blit(s,(0,0))
         # screen.blit(polybackground,(0,0))# the background is 1152x896, tile it to fill the screen
         
         # print(mousex,mousey)
-        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist)#draws the ui controls to the screen, and senses for clicks
+        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist,tmarket)#draws the ui controls to the screen, and senses for clicks
         
         if autofastforward:
             if (marketopen:=not gametime.isOpen()[0]):
@@ -98,6 +101,8 @@ if __name__ == "__main__":
                 for stock in stocklist:
                     stock.update_price(ui_controls.gameplay_speed)
                 player.update_price(ui_controls.gameplay_speed)
+                tmarket.updategraphs(stocklist,ui_controls.gameplay_speed)
+
 
         
         # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
@@ -139,7 +144,7 @@ if __name__ == "__main__":
                 data = [str(gametime),stockdata,optiondata,player.graphrange,int(player.cash),musicdata]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
-                Writetofile(stocklist,player,data)
+                Writetofile(stocklist,player,data,tmarket)
                 pygame.quit()
                 quit()
 

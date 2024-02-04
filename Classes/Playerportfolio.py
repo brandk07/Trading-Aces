@@ -11,7 +11,7 @@ class Player(Stock):
 
     def __init__(self,stocknames,color) -> None:
         name = 'Net Worth'
-        super().__init__(name,(2500,2500),0,Player,stocknames,color)
+        super().__init__(name,(2500,2500),0,color,Player,stocknames)
         self.name = name
         self.cash = 25000
         self.stocks = []# list of lists containing the [stock object, the price bought at, and the quantity]
