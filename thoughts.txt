@@ -67,6 +67,8 @@ options should disappear from available when purchased (1/10/2024)
 
 the graph in the home view should be the total market view, not the portfolio (1/14/2024)
 
+Add quarterly reports from each stock where they can meet/miss expectations (2/4/2024)
+
 //////////////////////////////////////////----URGENT----/////////////////////////////////////////////////////////////////////////////
 PROBLEM WITH THE quantityControls LOOK AT VIXEL AND TRY TO PUT IT BETWEEN 3 AND 6 (1/1/24)
 

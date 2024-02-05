@@ -171,13 +171,13 @@ class Portfolio(Menu):
             
             texts = [
                 self.prerenders['Profit'] if percent >= 0 else self.prerenders['Lost'],# text for the profit/loss
-                s_render(f'${limit_digits(percent,15)}%',45,(190,190,190)),# text for the percent
+                s_render(f'${limit_digits(percent,15)}%',35,(190,190,190)),# text for the percent
                 s_render(f'${limit_digits(self.selected_stock[1]*self.selected_stock[2],15)}',45,(190,190,190)),# text for the total paid
                 self.prerenders["Bought at $"],# text for the "bought at" text
-                s_render(str(limit_digits(self.selected_stock[1],15)),45,(190,190,190)),
+                s_render(str(limit_digits(self.selected_stock[1],15)),35,(190,190,190)),
                 self.prerenders["per share"],# text for the "per share" text
                 self.prerenders["Current Price $"],# text for the "current price" text
-                s_render(str(limit_digits(self.selected_stock[0].price,15)),45,(190,190,190)),
+                s_render(str(limit_digits(self.selected_stock[0].price,15)),35,(190,190,190)),
             ]
             coords = [
                 (815,110),# coords for the profit/loss

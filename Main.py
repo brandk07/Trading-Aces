@@ -56,7 +56,7 @@ menulist = [stockbook,portfolio,optiontrade]
 musicdata = Getfromfile(stockdict,player)# muiscdata = [time, volume, songindex]
 
 pygame.mixer.music.set_endevent(pygame.USEREVENT)  # Set custom event when music ends
-
+ 
 musicnames = list(musicThemes)
 pygame.mixer.music.load(musicThemes[musicnames[musicdata[2]]] if musicdata[2] < len(musicnames) else musicThemes[musicnames[0]])
 pygame.mixer.music.play()

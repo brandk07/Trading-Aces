@@ -88,7 +88,7 @@ class Menu():
         # texts = gametime.getrenders(50,50,50,105,50,50)
 
     def draw_menu(self,screen,mousebuttons:int,stocklist:list,player,ui_controls,gametime):
-        gfxdraw.filled_polygon(screen, self.menupoints,(50,50,50,200))
+        gfxdraw.filled_polygon(screen, self.menupoints,(40,40,40,200))
         pygame.draw.polygon(screen, (0,0,0), self.menupoints,5)
 
         gfxdraw.filled_polygon(screen, self.topbarpoints,(85,85,85))
