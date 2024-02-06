@@ -69,6 +69,8 @@ the graph in the home view should be the total market view, not the portfolio (1
 
 Add quarterly reports from each stock where they can meet/miss expectations (2/4/2024)
 
+Acually fix the problem with the bar class where if it is reversedscroll it will not snap right (2/5/2024)
+
 //////////////////////////////////////////----URGENT----/////////////////////////////////////////////////////////////////////////////
 PROBLEM WITH THE quantityControls LOOK AT VIXEL AND TRY TO PUT IT BETWEEN 3 AND 6 (1/1/24)
 

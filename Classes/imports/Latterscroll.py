@@ -102,7 +102,7 @@ class LatterScroll():
 
         self.polycoords = []
         self.polyheight = polyheight
-        x,y = coords[0]+5,0+coords[1]-self.scrollvalue+5
+        x,y = coords[0]+5,0+coords[1]-self.scrollvalue
         ndrawn = 0
         height = polyheight*.9
         maxwidth = 0
@@ -159,17 +159,17 @@ class LatterScroll():
             self.scrollvalue += 30
         if self.scrollvalue < 0:# if the scroll value is less than 0
             self.scrollvalue = 0
-        elif self.scrollvalue > len(self.texts)*self.polyheight - self.polyheight*2:# if the scroll value is greater than the most it should be
-            self.scrollvalue = len(self.texts)*self.polyheight - self.polyheight*2# set it to the most it should be
+        elif self.scrollvalue > len(self.texts)*self.polyheight - self.polyheight:# if the scroll value is greater than the most it should be
+            self.scrollvalue = len(self.texts)*self.polyheight - self.polyheight# set it to the most it should be
         if self.scrollvalue != svalue:# if the scroll value changed
             self.updatetexts = 0# update the texts next frame
 
     def draw_polys(self,screen,coords,mousebuttons,selected_value,*args):
         """Draws the polygons to the screen, and returns the value of the polygon that is selected"""
         # Selected value is a index
+
         self.scrollcontrols(mousebuttons)
         for numdrawn,(text_renders,points) in enumerate(zip(self.renderedtexts,self.polycoords)):
-            
             
             # check if the mouse is hovering over the polygon
             if (hover:=point_in_polygon(pygame.mouse.get_pos(),points)):

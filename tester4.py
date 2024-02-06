@@ -39,7 +39,7 @@ from Classes.imports.Latterscroll import LatterScroll
 #         print(arg)
 # import numpy as np
 mylist = [3, 4, 5, 6, 7, 8, 9, 10]
-print(mylist[:2])
+print(mylist[0:])
 # mylist = np.array(mylist,dtype=object)
 # print(mylist-1)
 # # sdf(22,23,c=24,*mylist)

@@ -5,30 +5,9 @@
 # SNTOK (SNT) has announced that they have made a new product that will be released in 2 months
 import pygame
 from pygame import gfxdraw
-from Defs import fontlist,fontlistcry
+from Defs import *
 from random import randint
-def separate_strings(textlist:list,lines:int) -> list:
-    """Returnes separated list of strings from textlist into (int lines) equal parts"""
-    separated_strings = {}
-    totallength = lambda stringlist: sum([len(string) for string in stringlist])
-    for stock, events in textlist.items(): # stock is the stock name, events is a list of events
-        separated_strings[stock] = []
-        for event in events: # each event is a string
-            separated_events = []
-            sub_length = len(event) // lines# approximate length of each string
-            words = event.split(' ')
-            for i in range(lines):
-                removedwords = []
-                if i >= lines-1:# last string
-                    separated_events.append(' '.join(words))
-                else:# not last strings
-                    while totallength(removedwords) < sub_length*.9:# add words until the length of the string is greater than the sub_length
-                        if not words:
-                            break
-                        removedwords.append(words.pop(0))
-                    separated_events.append(' '.join(removedwords))
-            separated_strings[stock].append(separated_events)
-    return separated_strings
+
 class News():
     def __init__(self):
         self.eventlist = []

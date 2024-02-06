@@ -64,16 +64,6 @@ class Stock():
             self.graphs[grange] = np.array([newprice])
     def datafromfile(self):
         """gets the data from each file and puts it into the graphlist"""
-        # for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
-        #     with open(f'Assets/Stockdata/{self.name}/{grange}.json','r') as file:
-        #         file.seek(0)# go to the start of the file
-        #         contents = json.load(file)# load the contents of the file
-                # if contents:# if the file is not empty
-                #     self.graphs[grange] = np.array(contents)# add the contents to the graphs
-                # else:
-                #     self.graphs[grange] = np.array([self.price])# if the file is empty then make the only data the current price
-        # self.graphs = {}
-        # for grange in self.graphs.keys():
         with open(f'Assets/Stockdata/{self.name}/data.json', 'r')as f:
             data = [json.loads(line) for line in f]
 
@@ -82,47 +72,20 @@ class Stock():
                     self.graphs[grange] = np.array(data[i])# add the contents to the graphs
                 else:
                     self.graphs[grange] = np.array([self.price])# if the file is empty then
-            # self.graphs[grange] = [json.loads(line) for line in file]
-            print(data[-1],'data',len(data[-1]),self.name)
             if len(data[-1]) > 0:
                 self.bonustrends = data[-1]
             else:
-                print('resetting trends')
                 self.reset_trends()
-            print(self.bonustrends,'bonustrends')
-
-        # with open(f'Assets/Stockdata/{self.name}/trends.json','r') as file:#get the trends from the trend file
-        #     file.seek(0)
-        #     contents = json.load(file)
-        #     if contents:
-        #         self.bonustrends = contents
-        #     else:
-        #         self.reset_trends()
 
     def save_data(self):
-        # for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
-            # with open(f'Assets/Stockdata/{self.name}/pricepoints.json','w') as file:
-            #     file.seek(0)# go to the start of the file
-            #     file.truncate()# clear the file
-            #     json.dump(self.graphs[grange].tolist(),file)# write the new data to the file
-        # for grange in self.graphs.keys():
         with open(f'Assets/Stockdata/{self.name}/data.json','w') as file:
             file.seek(0)  # go to the start of the file
             file.truncate()  # clear the file
             for item in list(self.graphs.values()):
                 json_item = json.dumps(item.tolist())  # Convert the list to a JSON string
                 file.write(json_item + '\n')  # Write the JSON string to the file with a newline character
-                
-            # file.write(json_item + '\n')
             
             file.write(json.dumps(self.bonustrends))
-        
-        # with open(f'Assets/Stockdata/{self.name}/dar.json','w') as file:
-        #     file.seek(0)
-        #     file.truncate()
-        #     json.dump(self.bonustrends,file)
-
-
 
     def bankrupcy(self,drawn,coords=None,wh=None,screen:pygame.Surface=None):
         """returns False if stock is not bankrupt,don't need screen if drawn is False"""	
@@ -310,11 +273,6 @@ class Stock():
 
     def draw(self,screen:pygame.Surface,player:object,coords,wh,Mousebuttons,stocklist=None,rangecontrols=True,graphrange=None):
         """Draws the graph of the stock along with the range controls, price lines, and the name"""
-        # if coords != (coords[0]+wh[0],coords[1]) or wh != (coords[0],coords[1]+wh[1]):#if the starting or ending positions have changed
-        #     #setting the starting and ending positions - where the graphs are located is constantly changing
-        #     # startingpos is the top right corner of the graph, endingpos is the bottom left corner of the graph
-        #     self.coords = coords
-        #     self.wh = wh
         
         if type(self) == self.Playerclass:#if it is a Player object
             # self.graph(stocklist)#graph the player networth
