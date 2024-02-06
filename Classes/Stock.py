@@ -47,7 +47,8 @@ class Stock():
 
     def __str__(self) -> str:
         return f'{self.name}'
-    
+    def get_value(self):
+        return self.price
     def reset_trends(self):
         """Sets/resets the trends for the stock"""
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]#resets the trends for each bonus trend

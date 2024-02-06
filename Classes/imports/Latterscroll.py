@@ -30,18 +30,19 @@ class LatterScroll():
 
     def storetextinfo(self,textinfo):
         """textinfo is a list of lists, each list is (text,size,color)"""
-        print((textinfo) != (self.texts))
-        for t in textinfo:
-            print(t,'textinfo')
-        for t in self.texts:
-            print(t,'self')
-        for t in textinfo:
-            if t not in self.texts:
-                print(t,'not in textinfo')
-        print('/'*20)
+        # print([t[0] for t in textinfo] != [t[0] for t in self.texts])
+        # for t in textinfo:
+        #     print(t,'textinfo')
+        # for t in self.texts:
+        #     print(t,'self')
+        # for t in textinfo:
+        #     if t not in self.texts:
+        #         print(t,'not in textinfo')
+        # print('/'*20)
 
             
-        if (textinfo) != (self.texts):
+        # if len(textinfo) != len(self.texts):
+        if [t[0] for t in textinfo] != [t[0] for t in self.texts]:
             self.updatetexts = 0
         if self.updatetexts <= 0:
             self.texts = textinfo
@@ -143,12 +144,24 @@ class LatterScroll():
                 (points[1][0],points[1][1]),]
     
 
-    def scrollcontrols(self,mousebuttons):
+    # def scrollcontrols(self,mousebuttons):
+    #     if mousebuttons == 4 and self.scrollvalue > 0:
+    #         self.scrollvalue -= 20
+    #         self.updatetexts = 0# update the texts next frame
+    #     elif mousebuttons == 5 and self.scrollvalue < len(self.polycoords)*self.polyheight-self.polyheight:
+    #         self.scrollvalue += 20
+    #         self.updatetexts = 0# update the texts next frame
+    def scrollcontrols(self, mousebuttons):
+        svalue = self.scrollvalue# the scroll value before it changes
         if mousebuttons == 4 and self.scrollvalue > 0:
-            self.scrollvalue -= 20
-            self.updatetexts = 0# update the texts next frame
-        elif mousebuttons == 5 and self.scrollvalue < len(self.polycoords)*self.polyheight-self.polyheight:
-            self.scrollvalue += 20
+            self.scrollvalue -= 30
+        elif mousebuttons == 5 and self.scrollvalue < len(self.texts)*self.polyheight - self.polyheight*2:
+            self.scrollvalue += 30
+        if self.scrollvalue < 0:# if the scroll value is less than 0
+            self.scrollvalue = 0
+        elif self.scrollvalue > len(self.texts)*self.polyheight - self.polyheight*2:# if the scroll value is greater than the most it should be
+            self.scrollvalue = len(self.texts)*self.polyheight - self.polyheight*2# set it to the most it should be
+        if self.scrollvalue != svalue:# if the scroll value changed
             self.updatetexts = 0# update the texts next frame
 
     def draw_polys(self,screen,coords,mousebuttons,selected_value,*args):
@@ -161,7 +174,10 @@ class LatterScroll():
             # check if the mouse is hovering over the polygon
             if (hover:=point_in_polygon(pygame.mouse.get_pos(),points)):
                 if mousebuttons == 1:
-                    selected_value = numdrawn+self.omittedstocks[0]
+                    if numdrawn+self.omittedstocks[0] == selected_value:
+                        selected_value = None
+                    else:
+                        selected_value = numdrawn+self.omittedstocks[0]
                     soundEffects['clickbutton2'].play()
             
             # draw the polygon
@@ -195,8 +211,8 @@ class PortfolioLatter(LatterScroll):
             addedx = self.texts[i][list(self.texts[i])[0]].get_width()+45
             stock[0].baredraw(screen, (x+130+addedx, y), (x+addedx, y+height-9), '1D')
 
-    def decidebottomcolor(self,hover,selected_value,numdrawn,stock):
-        percentchange = ((stock[0].price - stock[1]) / stock[1]) * 100
+    def decidebottomcolor(self,hover,selected_value,numdrawn,percent):
+        percentchange = percent
 
         bright,dull = 175,100
         if hover or selected_value == numdrawn:

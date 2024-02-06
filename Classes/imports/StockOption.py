@@ -42,14 +42,17 @@ class StockOption:
 
         self.lastvalue = [self.stockobj.price*100,self.get_value(True)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
     
-    def __eq__(self,other):
-        return [self.stockobj,self.strike_price,self.option_type,self.expiration_date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date]
+    def __str__(self) -> str:
+        return f'{self.name}'
     
-    def __iadd__(self,other):
-        if self == other:
+    # def __eq__(self,other):
+    #     return [self.stockobj,self.strike_price,self.option_type,self.expiration_date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date]
+    
+    # def __iadd__(self,other):
+    #     if self == other:
             
-            return self
-        raise ValueError('The options must be the same')
+    #         return self
+    #     raise ValueError('The options must be the same')
     
     def self_volatility(self):
         """returns the volatility of the option"""
@@ -79,7 +82,7 @@ class StockOption:
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="BSM",iteration=1)]
             return self.lastvalue[1]
-        if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.005 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.995:# if the stock price has changed by more than 2%
+        if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.002 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.998:# if the stock price has changed by more than 2%
             # print('recalculating option value',bypass)
             self.option.s0 = float(self.stockobj.price)*100
             self.option.k = self.strike_price*100
