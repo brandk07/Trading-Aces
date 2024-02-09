@@ -102,12 +102,11 @@ class LatterScroll():
 
         self.polycoords = []
         self.polyheight = polyheight
+
         x,y = coords[0]+5,0+coords[1]-self.scrollvalue
         ndrawn = 0
         height = polyheight*.9
         maxwidth = 0
-
-        
         for i,text in enumerate(self.texts):
             if y+polyheight-30 >= coords[1] and y < maxcoords[1]-40:
                 if ndrawn == 0:
@@ -143,20 +142,15 @@ class LatterScroll():
                 (points[2][0],points[2][1]),
                 (points[1][0],points[1][1]),]
     
-
-    # def scrollcontrols(self,mousebuttons):
-    #     if mousebuttons == 4 and self.scrollvalue > 0:
-    #         self.scrollvalue -= 20
-    #         self.updatetexts = 0# update the texts next frame
-    #     elif mousebuttons == 5 and self.scrollvalue < len(self.polycoords)*self.polyheight-self.polyheight:
-    #         self.scrollvalue += 20
-    #         self.updatetexts = 0# update the texts next frame
-    def scrollcontrols(self, mousebuttons):
+    def scrollcontrols(self, mousebuttons, coords, wh):
+        mousex,mousey = pygame.mouse.get_pos()
         svalue = self.scrollvalue# the scroll value before it changes
-        if mousebuttons == 4 and self.scrollvalue > 0:
-            self.scrollvalue -= 30
-        elif mousebuttons == 5 and self.scrollvalue < len(self.texts)*self.polyheight - self.polyheight*2:
-            self.scrollvalue += 30
+        if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]),mousex,mousey):
+            if mousebuttons == 4 and self.scrollvalue > 0:
+                self.scrollvalue -= 30
+            elif mousebuttons == 5 and self.scrollvalue < len(self.texts)*self.polyheight - self.polyheight*2:
+                self.scrollvalue += 30
+        # checking if the scroll value is out of bounds
         if self.scrollvalue < 0:# if the scroll value is less than 0
             self.scrollvalue = 0
         elif self.scrollvalue > len(self.texts)*self.polyheight - self.polyheight:# if the scroll value is greater than the most it should be
@@ -164,11 +158,11 @@ class LatterScroll():
         if self.scrollvalue != svalue:# if the scroll value changed
             self.updatetexts = 0# update the texts next frame
 
-    def draw_polys(self,screen,coords,mousebuttons,selected_value,*args):
+    def draw_polys(self,screen,coords,wh,mousebuttons,selected_value,drawbottom,*args):
         """Draws the polygons to the screen, and returns the value of the polygon that is selected"""
         # Selected value is a index
 
-        self.scrollcontrols(mousebuttons)
+        self.scrollcontrols(mousebuttons,coords,wh)
         for numdrawn,(text_renders,points) in enumerate(zip(self.renderedtexts,self.polycoords)):
             
             # check if the mouse is hovering over the polygon
@@ -184,11 +178,12 @@ class LatterScroll():
             # gfxdraw.filled_polygon(screen, points, (60,60,60,150) if hover or numdrawn == selected_value else (25,25,25,150 ))
 
             # get bottom coords
-            bottom_polygon = self.get_bottompoints(points)
-            # draw the bottom of the polygon
-            bottomargument = None if len(args) <= numdrawn else args[numdrawn]
-            bottomcolor = self.decidebottomcolor(hover,selected_value,numdrawn+self.omittedstocks[0],bottomargument)       
-            gfxdraw.filled_polygon(screen,bottom_polygon,bottomcolor)  
+            if drawbottom:
+                bottom_polygon = self.get_bottompoints(points)
+                # draw the bottom of the polygon
+                bottomargument = None if len(args) <= numdrawn else args[numdrawn]
+                bottomcolor = self.decidebottomcolor(hover,selected_value,numdrawn+self.omittedstocks[0],bottomargument)       
+                gfxdraw.filled_polygon(screen,bottom_polygon,bottomcolor)  
 
              # draw all the texts for each polygon
             for i,render in enumerate(text_renders):

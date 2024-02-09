@@ -215,9 +215,10 @@ class UI_Controls():
             self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
             self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
             # Does most of the work for the latter scroll, renders the text and finds all the coords
-            self.latterscroll.store_rendercoords((1475,205), (420,700),125,0,0,updatefreq=5)
+            maxwh = (420,700)
+            self.latterscroll.store_rendercoords((1475,205), maxwh,125,0,0,updatefreq=5)
             # drawing the latter scroll and assigning the selected stock
-            self.latterscroll.draw_polys(screen, (1475,205), mousebuttons, None, None)
+            self.latterscroll.draw_polys(screen, (1475,205), maxwh, mousebuttons, None, True)
             
             # for i,asset in enumerate(assets):
             #     #all the texts to be rendered

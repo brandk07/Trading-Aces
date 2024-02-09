@@ -2,7 +2,6 @@ import pygame
 from random import randint
 import time
 from Defs import *
-# from Classes.Stockprice import Stock
 from Classes.Stock import Stock
 from Classes.UI_controls import UI_Controls
 from Classes.Gametime import GameTime
@@ -14,6 +13,7 @@ from Classes.OptionMenu import Optiontrade
 from collections import deque
 from Classes.smallClasses.TotalMarket import TotalMarket
 import timeit
+from Classes.imports.Transactions import Transactions
 GAMESPEED = 100
 FASTFORWARDSPEED = 2500
 pygame.init()
@@ -39,11 +39,10 @@ stockbook = Stockbook(stocknames)
 player = Player(stocknames,stockcolors[-1])
 stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
-portfolio = Portfolio()
+portfolio = Portfolio(stocknames)
 optiontrade = Optiontrade(stocklist)
 ui_controls = UI_Controls(stocklist,GAMESPEED)
 tmarket = TotalMarket()
-
 # VARS FROM SETTINGS
 autofastforward = True
 
@@ -70,7 +69,8 @@ mousebuttons = 0
 #     stock.fill_graphs()
 screen.fill((50,50,50))
 screen.blit(background,(0,0))
-s = screen.copy()
+s = screen.copy()# makes way better performance
+
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
@@ -92,7 +92,7 @@ if __name__ == "__main__":
                 break
             gametime.increase_time(1,autofastforward)
             # if gametime.isOpen()[0]:
-            #     for stock in stocklist:
+            #     for stock in stockl   ist:
             #         stock.update_price(1)
             #     player.update_price(1)
 
@@ -103,6 +103,7 @@ if __name__ == "__main__":
                 player.update_price(ui_controls.gameplay_speed)
                 tmarket.updategraphs(stocklist,ui_controls.gameplay_speed)
 
+        
 
         
         # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
@@ -166,6 +167,6 @@ if __name__ == "__main__":
         
         pygame.display.update()
 
-        clock.tick(60)
+        clock.tick(600)
 
 

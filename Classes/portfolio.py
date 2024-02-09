@@ -9,15 +9,14 @@ from Classes.Stockbook import quantityControls
 from Classes.imports.Numpad import Numpad
 from Classes.Stock import Stock
 from Classes.imports.StockOption import StockOption
-
-
+from Classes.imports.Transactions import Transactions
 import math
 
 DX = 300# default x
 DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
-    def __init__(self):
+    def __init__(self,stocknames) -> None:
         self.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
         self.icon = pygame.transform.scale(self.icon,(140,100))
         self.icon.set_colorkey((255,255,255))
@@ -46,21 +45,26 @@ class Portfolio(Menu):
         # self.latterScrollsurf = pygame.Surface((730,730))
         self.latterscroll = PortfolioLatter()
         self.numpad = Numpad()
+        self.transact = Transactions((500,150))
 
-        presize = 35
-        self.prerenders = {
-            'Profit': s_render('Profit',presize,(190,190,190)),# text for the profit/loss
-            'Lost': s_render('Lost',presize,(190,190,190)),# text for the profit/loss
-            'Bought at $': s_render('Bought at $',presize,(190,190,190)),
-            'per share': s_render('per share',presize,(190,190,190)),
-            'Current Price $': s_render('Current Price $',presize,(190,190,190)),
-            'Price': s_render('Price',presize,(190,190,190)),
-            '(Per Share)': s_render('(Per Share)',presize,(190,190,190)),
-            'Shares': s_render('Shares',presize,(190,190,190)),
-            'Paid': s_render('Paid',presize,(190,190,190)),
-            'Net Gain': s_render('Net Gain',presize,(190,190,190)),
-            'Net Loss': s_render('Net Loss',presize,(190,190,190)),
-        }
+        self.stocktext = {name:[] for name in stocknames}# the list has [fullstockname,stockdescription1,stockdescription etc...]
+        with open(r'Assets\newstockdes.txt','r') as descriptions:
+            filecontents = descriptions.readlines()
+            for i,line in enumerate(filecontents):
+                for stockname in stocknames:
+                    if line.replace('\n','') == stockname:
+                        self.stocktext[stockname].append(filecontents[i+1].replace('\n',''))# Full stock name Ex. "Kyronix Solutions Inc. (KSTON)"
+                        seperatatedstrings = separate_strings((filecontents[i+2].replace('\n','')),8)
+                        for string in seperatatedstrings:# a list containing 4 strings 
+                            self.stocktext[stockname].append(string)
+
+        self.renderedstocknames = {name:fontlist[90].render(name,(150,150,150))[0] for name in stocknames}
+        for key,lines in self.stocktext.items():#rendering the text that displays info about the stocks
+            for i,line in enumerate(lines):
+                if i == 0:#if its the first line, render it with a larger font and grey color
+                    self.stocktext[key][i] = fontlist[50].render(line,(190, 190, 190))[0]
+                else:#else render it with a smaller font and orange color
+                    self.stocktext[key][i] = fontlist[28].render(line,(140, 140, 140))[0]
  
         
     def getpoints(self, w1, w2, w3, x, y):
@@ -151,7 +155,7 @@ class Portfolio(Menu):
 
         # drawing the latter scroll and assigning the selected asset
         selectedindex = None if self.selected_asset == None else [asset[:2] for asset in sortedassets].index(self.selected_asset)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
-        newselected = self.latterscroll.draw_polys(screen, (875, 200), mousebuttons, selectedindex, *[asset[4] for asset in sortedassets[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.latterscroll.draw_polys(screen, (875, 200), scrollmaxcoords, mousebuttons, selectedindex, True, *[asset[4] for asset in sortedassets[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         if newselected == None:
             self.selected_asset = None
         else:# if the selected asset is not None
@@ -178,6 +182,7 @@ class Portfolio(Menu):
             if rect.collidepoint(pygame.mouse.get_pos()):
                 color = (160,160,160)
                 if mousebuttons == 1:
+                    soundEffects['clickbutton2'].play()
                     if option in self.displayed_asset_type:
                         self.displayed_asset_type.remove(option)
                     else:
@@ -229,17 +234,38 @@ class Portfolio(Menu):
         self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
         # Does most of the work for the latter scroll, renders the text and finds all the coords
         scrollmaxcoords = (750,335)
-        self.latterscroll.store_rendercoords((875, 200), scrollmaxcoords,135,0,0,updatefreq=60)
+        self.latterscroll.store_rendercoords((875, 200), scrollmaxcoords,135,0,0)
 
         # drawing the latter scroll and assigning the selected asset
-        newselected = self.latterscroll.draw_polys(screen, (875, 200), mousebuttons, 0, *[percent])# draws the latter scroll and returns the selected asset
+        newselected = self.latterscroll.draw_polys(screen, (875, 200), scrollmaxcoords, mousebuttons, 0, True, *[percent])# draws the latter scroll and returns the selected asset
         if newselected == None:
             self.selected_asset = None
         
     def draw_selected_description(self,screen,asset):
         """Draws the description of the selected asset"""
         classobj,ogvalue,secondtext,value,percent = asset
-        
+        mousex, mousey = pygame.mouse.get_pos()
+
+        color = (200,200,200)
+        if pygame.Rect(1450,115,300,50).collidepoint(mousex,mousey):
+            color = (200,10,10)
+            if pygame.mouse.get_pressed()[0]:
+                self.selected_asset = None
+        screen.blit(s_render("Deselect Asset", 70, color), (1450, 115))
+        # Draws the information about the stock on the right side of the screen
+        # info = [f'Paid Price: ${limit_digits(ogvalue,12)}',f'Paid ${limit_digits(ogvalue,12)} | Current ${limit_digits(value,12)}',f'{"Profit" if (value - ogvalue) > 0 else "Loss"}: ${limit_digits((value - ogvalue),15)}',f'Change %: {limit_digits(percent,15)}%']
+        # 200,650 to 850,960
+        points = [(200, 650), (850, 650), (850, 960), (200, 960)]
+        gfxdraw.filled_polygon(screen, points, (30, 30, 30))
+        pygame.draw.polygon(screen, (0, 0, 0), points, 5)
+
+        for i,txt in enumerate(self.stocktext[classobj.name]):
+            if i == 0:# blits the full name of the stock 
+                screen.blit(txt,(210,605))
+            else:
+                screen.blit(txt,(210,660+((i-1)*30)))
+
+
 
         
 
@@ -269,8 +295,11 @@ class Portfolio(Menu):
             values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
             names = set([stock[0].name for stock in player.stocks])
             values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
-
             draw_pie_chart(screen, values, 150,(200, 650))
+
+
+            self.transact.draw(screen,mousebuttons,(1400,105),(500,960))
+
         
         else:# if the selected asset is NOT None
             if isinstance(self.selected_asset[0],Stock): stockgraph = self.selected_asset[0]

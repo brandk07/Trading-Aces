@@ -82,7 +82,7 @@ class News():
         # I wanted to separate the strings by their len, but not split words in half
         # This makes it much more challenging to code, but only took 35 minutes of work - Ai wans't very helpful
         
-        self.newstext = separate_strings(self.newstext, 3)
+        self.newstext = separate_stringsdict(self.newstext, 3)
        
 
     def addNews(self,event:str,duration,color,eventname):

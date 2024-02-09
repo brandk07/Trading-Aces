@@ -38,8 +38,30 @@ from Classes.imports.Latterscroll import LatterScroll
         
 #         print(arg)
 # import numpy as np
-mylist = [3, 4, 5, 6, 7, 8, 9, 10]
-print(mylist[0:])
+# mylist = [3, 4, 5, 6, 7, 8, 9, 10]
+# print(mylist[0:])
+from decimal import Decimal, getcontext
+import math
+# Set the precision.
+getcontext().prec = 50
+
+# num1 = Decimal('10.123456789123456789123456789123456789123456789123456789')
+# num2 = Decimal('20.123456789123456789123456789123456789123456789123456789')
+
+# result = num1 + num2
+
+# print(result)  # Outputs: 30.246913578246913578246913578246913578246913578246913578
+num = Decimal(str(1106.330826943))*Decimal(str(1.52))
+print(num)
+
+num *= Decimal(str((10**22)))
+print(format(num, '.5e'))
+print(format(num, '.10f'))
+
+num = (num/Decimal(str(0.041666666666666664)))
+print(format(num, '.5e'))
+print(format(num, ',.10f'))
+
 # mylist = np.array(mylist,dtype=object)
 # print(mylist-1)
 # # sdf(22,23,c=24,*mylist)

@@ -351,12 +351,49 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords):
         totaltext = fontlist[45].render(f'${total:,.2f}', (0, 0, 0))[0]
         renderedtext.append([totaltext,f'${total:,.2f}'])
         screen.blit(totaltext, (corners[0][0]+radius-(totaltext.get_width()/2), corners[0][1]+radius-(totaltext.get_height()/2)))
+        
+def separate_strings(text:str, lines:int) -> list:
+    """Returns list of lines number of equal strings - based on # of chars not words"""
+    separated_events = []
+    sub_length = len(text) // lines  # approximate length of each string
 
-def separate_strings(textlist:list,lines:int) -> list:
-    """Returns separated list of strings from textlist into (int lines) equal parts"""
+    for i in range(lines):
+        if i >= lines - 1:  # last string
+            separated_events.append(text)
+        else:  # not last strings
+            char_count = 0
+            for j, char in enumerate(text):
+                char_count += 1
+                if char_count >= sub_length and char == ' ':  # don't split words
+                    break
+            separated_events.append(text[:j])
+            text = text[j+1:]  # remove the part of the text that has been separated
+
+    return separated_events
+# def separate_strings(text:str,lines:int) -> list:
+#     """Returns list of lines number of equal strings - based on # of words not chars"""
+#     totallength = lambda stringlist: sum([len(string) for string in stringlist])
+
+#     separated_events = []
+#     sub_length = len(text) // lines# approximate length of each string
+#     words = text.split(' ')
+#     for i in range(lines):
+#         removedwords = []
+#         if i >= lines-1:# last string
+#             separated_events.append(' '.join(words))
+#         else:# not last strings
+#             while totallength(removedwords) < sub_length*.9:# add words until the length of the string is greater than the sub_length
+#                 if not words:
+#                     break
+#                 removedwords.append(words.pop(0))
+#             separated_events.append(' '.join(removedwords))
+#     return separated_events
+
+def separate_stringsdict(textdict:dict,lines:int) -> list:
+    """Returns separated dict of strings from textlist into (int lines) equal parts"""
     separated_strings = {}
     totallength = lambda stringlist: sum([len(string) for string in stringlist])
-    for stock, events in textlist.items(): # stock is the stock name, events is a list of events
+    for stock, events in textdict.items(): # stock is the stock name, events is a list of events
         separated_strings[stock] = []
         for event in events: # each event is a string
             separated_events = []

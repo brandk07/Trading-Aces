@@ -89,13 +89,17 @@ class Stockbook(Menu):
         self.menudrawn = False
         self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
         self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
-        with open(r'Assets\stockdescriptions.txt','r') as descriptions:
+        
+
+        with open(r'Assets\newstockdes.txt','r') as descriptions:
             filecontents = descriptions.readlines()
             for i,line in enumerate(filecontents):
                 for stockname in stocknames:
                     if line.replace('\n','') == stockname:
-                        for x in range(1,5):
-                            self.stocktext[stockname].append(filecontents[i+x].replace('\n',''))
+                        self.stocktext[stockname].append(filecontents[i+1].replace('\n',''))# Full stock name Ex. "Kyronix Solutions Inc. (KSTON)"
+                        seperatatedstrings = separate_strings((filecontents[i+2].replace('\n','')),4)
+                        for string in seperatatedstrings:# a list containing 4 strings 
+                            self.stocktext[stockname].append(string)
 
         self.renderedstocknames = {name:fontlist[90].render(name,(150,150,150))[0] for name in stocknames}
         for key,lines in self.stocktext.items():#rendering the text that displays info about the stocks
@@ -104,22 +108,6 @@ class Stockbook(Menu):
                     self.stocktext[key][i] = fontlist[40].render(line,(120, 120, 120))[0]
                 else:#else render it with a smaller font and orange color
                     self.stocktext[key][i] = fontlist[30].render(line,(225, 130, 0))[0]
-        # with open(r'Assets\newstockdes.txt','r') as descriptions:
-        #     filecontents = descriptions.readlines()
-        #     for i,line in enumerate(filecontents):
-        #         for stockname in stocknames:
-        #             if line.replace('\n','') == stockname:
-        #                 for x in range(1,5):
-        #                     self.stocktext[stockname].append(filecontents[i+x].replace('\n',''))
-
-        # self.renderedstocknames = {name:fontlist[90].render(name,(150,150,150))[0] for name in stocknames}
-        # for key,lines in self.stocktext.items():#rendering the text that displays info about the stocks
-        #     for i,line in enumerate(lines):
-        #         if i == 0:#if its the first line, render it with a larger font and grey color
-        #             self.stocktext[key][i] = fontlist[40].render(line,(120, 120, 120))[0]
-        #         else:#else render it with a smaller font and orange color
-        #             self.stocktext[key][i] = fontlist[30].render(line,(225, 130, 0))[0]
-
         
     def draw_menu_content(self,screen:pygame.Surface,stocklist:list,mousebuttons:int,player):
         """Draws all the main content for the stockbook menu (the stocks on the left side of the screen)"""
