@@ -3,6 +3,7 @@ from pygame import gfxdraw,freetype
 import os,re,random,json,math,timeit
 from collections import deque
 from Classes.imports.StockOption import StockOption
+import numpy as np
 from functools import lru_cache 
 pygame.font.init()
 pygame.mixer.init()
@@ -351,7 +352,7 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords):
         totaltext = fontlist[45].render(f'${total:,.2f}', (0, 0, 0))[0]
         renderedtext.append([totaltext,f'${total:,.2f}'])
         screen.blit(totaltext, (corners[0][0]+radius-(totaltext.get_width()/2), corners[0][1]+radius-(totaltext.get_height()/2)))
-        
+
 def separate_strings(text:str, lines:int) -> list:
     """Returns list of lines number of equal strings - based on # of chars not words"""
     separated_events = []
@@ -370,24 +371,6 @@ def separate_strings(text:str, lines:int) -> list:
             text = text[j+1:]  # remove the part of the text that has been separated
 
     return separated_events
-# def separate_strings(text:str,lines:int) -> list:
-#     """Returns list of lines number of equal strings - based on # of words not chars"""
-#     totallength = lambda stringlist: sum([len(string) for string in stringlist])
-
-#     separated_events = []
-#     sub_length = len(text) // lines# approximate length of each string
-#     words = text.split(' ')
-#     for i in range(lines):
-#         removedwords = []
-#         if i >= lines-1:# last string
-#             separated_events.append(' '.join(words))
-#         else:# not last strings
-#             while totallength(removedwords) < sub_length*.9:# add words until the length of the string is greater than the sub_length
-#                 if not words:
-#                     break
-#                 removedwords.append(words.pop(0))
-#             separated_events.append(' '.join(removedwords))
-#     return separated_events
 
 def separate_stringsdict(textdict:dict,lines:int) -> list:
     """Returns separated dict of strings from textlist into (int lines) equal parts"""
@@ -420,3 +403,16 @@ def drawgametime(currenttime,screen:pygame.Surface):
     pygame.draw.polygon(screen, (255, 255, 255), polygon_points, 5)
     pygame.draw.polygon(screen, (0, 0, 0), polygon_points, 1)
     screen.blit(numtime_text, numtime_rect)
+
+def getcolorgrad(percent):
+    
+    gradpercent = abs(50/(25/percent))# when perecent is at 25, it will have max color
+    if gradpercent > 50:
+        gradpercent = 50
+
+    if percent < 0:
+        return (50+gradpercent,50-gradpercent,50-gradpercent)
+    elif percent > 0:
+        return (50-gradpercent,50+gradpercent,50-gradpercent)
+    else:
+        return (50,50,50)

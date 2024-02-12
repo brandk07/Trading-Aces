@@ -18,6 +18,7 @@ class Player(Stock):
         self.options = []#list of option objects
         self.stockvalues = []
         self.messagedict = {}
+        self.taxrate = 0.15
 
         self.optioncolors = [(211, 160, 147),(147, 196, 125),(227, 192, 198),(248, 150, 143),(252, 216, 60), (128, 189, 152),(162, 195, 243),(143, 134, 130),(248, 185, 173),(202, 80, 30),  (128, 128, 0),  (135, 206, 235),(145, 184, 106),(200, 162, 200),(255, 213, 148),(242, 201, 76), (112, 161, 151),(156, 51, 66),  (51, 51, 191),   (194, 178, 169)]
 
@@ -49,7 +50,7 @@ class Player(Stock):
             print('stocks are',self.stocks)
             print('/'*20)
 
-    def sell(self,obj,ogprice,quantity:int=1):
+    def sellStock(self,obj,ogprice,quantity:int=1):
         
         stockindex = [(stock[0],stock[1]) for stock in self.stocks].index((obj,ogprice))# finds the index of the stock in the self.stocks list
 
@@ -73,7 +74,10 @@ class Player(Stock):
         if self.cash >= optionobj.get_value(bypass=True):
             
             self.cash -= optionobj.get_value(True)
-
+            for option in self.options:
+                if option == optionobj:
+                    option += optionobj
+                    return
             self.options.append(optionobj)
             optionobj.color = self.optioncolors[len(self.options)-1 if len(self.options)-1 < len(self.optioncolors) else randint(0,len(self.optioncolors)-1)]
 
@@ -82,10 +86,17 @@ class Player(Stock):
             print('options are',self.options)
             print('/'*20)
 
-    def sellOption(self,optionobj):
+    def sellOption(self,optionobj,quanity):
         # optionindex = self.options.index(optionobj)
-        self.cash += optionobj.get_value(True)
-        self.options.remove(optionobj)
+        if quanity > (quant:=self.options[self.options.index(optionobj)].quanity):
+            quanity = quant
+    
+        self.cash += optionobj.get_value(bypass=True)*quanity
+
+        self.options[self.options.index(optionobj)].quanity -= quanity
+        if self.options[self.options.index(optionobj)].quanity <= 0:
+            self.options.remove(optionobj)
+        
         print(f'selling {optionobj} for {optionobj.get_value(True):.2f}')
         print('cash is',self.cash)
         

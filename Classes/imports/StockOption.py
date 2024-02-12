@@ -5,7 +5,7 @@ from numpy import array_equal
 from functools import lru_cache
 # ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
 
-@lru_cache(maxsize=1000)
+@lru_cache(maxsize=20)
 def calculate_volatility(points) -> float:
     """Calculate the volatility of a stock, points must be a tuple"""
 
@@ -33,6 +33,7 @@ class StockOption:
         self.option_type = str(option_type)
         self.color = (0,0,0)
         self.name = f'{self.stockobj.name} {self.option_type}'
+        self.quanity = 1
 
         self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=calculate_volatility(tuple(self.stockobj.graphs['1Y'])),r=0.05)
         if ogprice:
@@ -45,14 +46,19 @@ class StockOption:
     def __str__(self) -> str:
         return f'{self.name}'
     
-    # def __eq__(self,other):
-    #     return [self.stockobj,self.strike_price,self.option_type,self.expiration_date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date]
+    def __eq__(self,other):
+        if not isinstance(other,StockOption):
+            return False
+        return [self.stockobj,self.strike_price,self.option_type,self.expiration_date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date]
     
-    # def __iadd__(self,other):
-    #     if self == other:
-            
-    #         return self
-    #     raise ValueError('The options must be the same')
+    def __iadd__(self,other):
+        
+        if self == other:
+            self.quanity += other.quanity
+            self.ogvalue += other.ogvalue
+            return self
+        raise ValueError('StockOption objects must be the same to add them together')
+
     
     def self_volatility(self):
         """returns the volatility of the option"""
@@ -72,25 +78,30 @@ class StockOption:
     def advance_time(self):
         self.expiration_date -= 1
         self.option.t = self.expiration_date
+    def sell(self,player,_,quanity):
+        """sells the option, need this so I can call a generic .sell for each asset in portfolio"""
+        print(self.get_value())
+        player.sellOption(self,quanity)
 
-    def get_value(self,bypass=False):
-        """""Bypass is used to force a recalculation of the option value"""
+    def get_value(self,bypass=False,fullvalue=True):
+        """""Bypass is used to force a recalculation of the option value
+        Full value is value*quantity otherwise it is just the value of the option"""
         if bypass:
             self.option.s0 = float(self.stockobj.price)*100
             self.option.k = self.strike_price*100
             self.option.sigma = calculate_volatility(tuple(self.stockobj.graphs['1Y']))
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="BSM",iteration=1)]
-            return self.lastvalue[1]
-        if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.002 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.998:# if the stock price has changed by more than 2%
+            return (self.lastvalue[1] * self.quanity) if fullvalue else self.lastvalue[1]
+        if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.001 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.999:# if the stock price has changed by more than 2%
             # print('recalculating option value',bypass)
             self.option.s0 = float(self.stockobj.price)*100
             self.option.k = self.strike_price*100
             self.option.sigma = calculate_volatility(tuple(self.stockobj.graphs['1Y']))
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="MC",iteration=200)]
-            return self.lastvalue[1]
-        return self.lastvalue[1]
+            return (self.lastvalue[1] * self.quanity) if fullvalue else self.lastvalue[1]
+        return (self.lastvalue[1] * self.quanity) if fullvalue else self.lastvalue[1]
     
 
 # Option prices are impacted by 4 major elements i.e. delta, gamma, theta, vega.

@@ -2,9 +2,9 @@ import pygame
 from Defs import *
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
-from Classes.imports.stockeventspos import StockEvents
+# from Classes.imports.stockeventspos import StockEvents
 from Classes.imports.Latterscroll import LatterScroll
-from Classes.imports.Newsbar import News
+# from Classes.imports.Newsbar import News
 from Classes.Stock import Stock
 
 # [20,60] [60,20]
@@ -13,13 +13,13 @@ from Classes.Stock import Stock
 class UI_Controls():
     def __init__(self,stocklist,gamespeed) -> None:
         self.gameplay_speed = gamespeed
-        self.stockevent = StockEvents()# the stock events
+        # self.stockevent = StockEvents()# the stock events
         self.bar = SliderBar(100,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
-        self.newsobj = News()
+        # self.newsobj = News()
         self.latterscroll = LatterScroll(5)
-        for i in range(10):
-            for stock in stocklist:
-                self.newsobj.addStockNews(stock.name)
+        # for i in range(10):
+        #     for stock in stocklist:
+        #         self.newsobj.addStockNews(stock.name)
 
         self.view = "stock"# home or stock
         self.accbar_middle = "move"# move, stock, pie
@@ -145,9 +145,9 @@ class UI_Controls():
             minmove = min([stock for stock in stocklist],key=self.get_percent)
             maxmove = max([stock for stock in stocklist],key=self.get_percent)
 
-            self.stockevent.addStockEvent(minmove,1600,False)
-            self.stockevent.addStockEvent(maxmove,1600,)
-            self.stockevent.draw(screen)
+            # self.stockevent.addStockEvent(minmove,1600,False)
+            # self.stockevent.addStockEvent(maxmove,1600,)
+            # self.stockevent.draw(screen)
         elif self.accbar_middle == "pie":
 
             values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
@@ -290,7 +290,7 @@ class UI_Controls():
         # self.draw_stockbar(screen,stocklist)# draws the stock graph bar
         self.draw_accbar_middle(screen,stocklist,mousebuttons,player)# draws the stock events (On the right of the portfolio)
         self.draw_accbar_right(screen,stocklist,player,mousebuttons)# draws the stock events (On the very right of the screen)
-        self.newsobj.draw(screen)
+        # self.newsobj.draw(screen)
         
 
     def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist,tmarket):

@@ -89,7 +89,8 @@ import os
 import shutil
 # data = [[100, [0,0,0,0,0,0,0]]]*10
 data = []
-stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth',"Total Market"]
+# stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth',"Total Market"]
+stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR','Net Worth',"Total Market"]
 stockdict = {name:np.array(data,dtype=object) for name in stocknames}
 
 start_time = timeit.default_timer()

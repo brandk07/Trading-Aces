@@ -40,9 +40,9 @@ class LatterScroll():
         #         print(t,'not in textinfo')
         # print('/'*20)
 
-            
+        # print([t[0] for t in textinfo]) # [['Sold 39 Shares of', 40, (190, 190, 190)]
         # if len(textinfo) != len(self.texts):
-        if [t[0] for t in textinfo] != [t[0] for t in self.texts]:
+        if [[t[0][0],t[1][0]] for t in textinfo] != [[t[0][0],t[1][0]] for t in self.texts]:
             self.updatetexts = 0
         if self.updatetexts <= 0:
             self.texts = textinfo

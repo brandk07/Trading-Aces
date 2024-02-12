@@ -8,7 +8,7 @@ from Classes.imports.Latterscroll import *
 from Classes.Stockbook import quantityControls
 from Classes.imports.Numpad import Numpad
 from Classes.Stock import Stock
-from Classes.imports.StockOption import StockOption
+from Classes.imports.StockOption import StockOption, calculate_volatility
 from Classes.imports.Transactions import Transactions
 import math
 
@@ -43,7 +43,8 @@ class Portfolio(Menu):
 
 
         # self.latterScrollsurf = pygame.Surface((730,730))
-        self.latterscroll = PortfolioLatter()
+        self.latterscrollnorm = PortfolioLatter()
+        self.latterscrollselect = PortfolioLatter()
         self.numpad = Numpad()
         self.transact = Transactions((500,150))
 
@@ -54,7 +55,7 @@ class Portfolio(Menu):
                 for stockname in stocknames:
                     if line.replace('\n','') == stockname:
                         self.stocktext[stockname].append(filecontents[i+1].replace('\n',''))# Full stock name Ex. "Kyronix Solutions Inc. (KSTON)"
-                        seperatatedstrings = separate_strings((filecontents[i+2].replace('\n','')),8)
+                        seperatatedstrings = separate_strings((filecontents[i+2].replace('\n','')),5)
                         for string in seperatatedstrings:# a list containing 4 strings 
                             self.stocktext[stockname].append(string)
 
@@ -62,9 +63,9 @@ class Portfolio(Menu):
         for key,lines in self.stocktext.items():#rendering the text that displays info about the stocks
             for i,line in enumerate(lines):
                 if i == 0:#if its the first line, render it with a larger font and grey color
-                    self.stocktext[key][i] = fontlist[50].render(line,(190, 190, 190))[0]
+                    self.stocktext[key][i] = fontlist[55].render(line,(190, 190, 190))[0]
                 else:#else render it with a smaller font and orange color
-                    self.stocktext[key][i] = fontlist[28].render(line,(140, 140, 140))[0]
+                    self.stocktext[key][i] = fontlist[35].render(line,(140, 140, 140))[0]
  
         
     def getpoints(self, w1, w2, w3, x, y):
@@ -134,12 +135,12 @@ class Portfolio(Menu):
                                     secondtext,
                                     f'${limit_digits(value,15)}',]
         # getting the text for each asset
-        textlist = [get_text(classobj,secondtext,value) for [classobj,ogvalue,secondtext,value,percent] in sortedassets]# stores 3 texts for each asset in the sortedassets list
+        textlist = [get_text(classobj,secondtext,value) for [classobj,ogvalue,quantity,secondtext,value,percent] in sortedassets]# stores 3 texts for each asset in the sortedassets list
 
         textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
         coords = [[(20,15),(25,60)] for i in range(len(textlist))]
         # loop through the textlist and store the text info in the textinfo list
-        for i,(text,[classobj,ogvalue,secondtext,value,percent]) in enumerate(zip(textlist,sortedassets)):
+        for i,(text,[classobj,ogvalue,quantity,secondtext,value,percent]) in enumerate(zip(textlist,sortedassets)):
             polytexts = []# temporary list to store the text info for each asset
             polytexts.append([text[0],50,classobj.color])
             polytexts.append([text[1],35,(190,190,190)])
@@ -147,15 +148,15 @@ class Portfolio(Menu):
             textinfo.append(polytexts)
             coords[i].append(((text[1],100),30))
 
-        self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
-        self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
+        self.latterscrollnorm.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
+        self.latterscrollnorm.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
         # Does most of the work for the latter scroll, renders the text and finds all the coords
-        scrollmaxcoords = (500,960)
-        ommitted = self.latterscroll.store_rendercoords((875, 200), scrollmaxcoords,135,0,0,updatefreq=60)
+        scrollmaxcoords = (535,960)
+        ommitted = self.latterscrollnorm.store_rendercoords((855, 200), scrollmaxcoords,135,0,0,updatefreq=60)
 
         # drawing the latter scroll and assigning the selected asset
         selectedindex = None if self.selected_asset == None else [asset[:2] for asset in sortedassets].index(self.selected_asset)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
-        newselected = self.latterscroll.draw_polys(screen, (875, 200), scrollmaxcoords, mousebuttons, selectedindex, True, *[asset[4] for asset in sortedassets[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.latterscrollnorm.draw_polys(screen, (855, 200), scrollmaxcoords, mousebuttons, selectedindex, True, *[asset[5] for asset in sortedassets[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         if newselected == None:
             self.selected_asset = None
         else:# if the selected asset is not None
@@ -200,28 +201,27 @@ class Portfolio(Menu):
         """returns a sorted list of the currently displayed assets of the player"""
         def get_second(asset):
             if isinstance(asset,list) and isinstance(asset[0],Stock):# needed stock to be list to include the # of shares, didn't make sense [to include] for options
-                return f"{limit_digits(asset[1],10,False)} Share{'' if asset[1] == 1 else 's'}"
+                return f"{limit_digits(asset[2],10,False)} Share{'' if asset[2] == 1 else 's'}"
             elif isinstance(asset,StockOption):
-                return f"{asset} Option"
+                return f"{asset.quanity} Option{'' if asset.quanity == 1 else 's'}"
         def get_percent(asset):
             if isinstance(asset,list) and isinstance(asset[0],Stock):
                 return ((asset[0].price - asset[1]) / asset[1]) * 100
             elif isinstance(asset,StockOption):
                 return ((asset.get_value() - asset.ogvalue) / asset.ogvalue) * 100
             
-        # asset is [class, ogvalue:float, secondary text:str, value:float, percent:float]
+        # asset is [class, ogvalue:float, quantity:int, secondary text:str, value:float, percent:float]
         stockassets,optionassets = [],[]
         if "Stocks" in self.displayed_asset_type:
-            stockassets = [[stock[0],stock[1] ,get_second(stock),stock[0].price*stock[2],get_percent(stock)] for stock in player.stocks]
+            stockassets = [[stock[0],stock[1], stock[2], get_second(stock),stock[0].price*stock[2],get_percent(stock)] for stock in player.stocks]
         if "Options" in self.displayed_asset_type:
-            optionassets = [[option, option.ogvalue, get_second(option),option.get_value(),get_percent(option)] for option in player.options]
+            optionassets = [[option, option.ogvalue, option.quanity, get_second(option),option.get_value(),get_percent(option)] for option in player.options]
         allassets = stockassets + optionassets 
         # sortedstocks = sorted(player.stocks,key=lambda stock: stock[0].price*stock[2],reverse=True)
-        return sorted(allassets,key=lambda asset: asset[3],reverse=True)
+        return sorted(allassets,key=lambda asset: asset[4],reverse=True)
     def drawselectedScroll(self,screen,asset,mousebuttons):
         """Draws the selected asset scroll"""
-        classobj,ogvalue,secondtext,value,percent = asset
-
+        classobj,ogvalue,quantity,secondtext,value,percent = asset
         text = [f'{classobj} ',secondtext,f'${limit_digits(value,15)}',]
         polytexts = []# temporary list to store the text info for each asset
         polytexts.append([text[0],50,classobj.color])
@@ -230,20 +230,25 @@ class Portfolio(Menu):
         textinfo = [polytexts]
         coords = [[(20,15),(25,60),((text[1],100),30)]]
 
-        self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
-        self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
+        self.latterscrollselect.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
+        self.latterscrollselect.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
         # Does most of the work for the latter scroll, renders the text and finds all the coords
-        scrollmaxcoords = (750,335)
-        self.latterscroll.store_rendercoords((875, 200), scrollmaxcoords,135,0,0)
+        scrollmaxcoords = (770,335)
+        self.latterscrollselect.store_rendercoords((855, 200), scrollmaxcoords,135,0,0)
 
         # drawing the latter scroll and assigning the selected asset
-        newselected = self.latterscroll.draw_polys(screen, (875, 200), scrollmaxcoords, mousebuttons, 0, True, *[percent])# draws the latter scroll and returns the selected asset
+        newselected = self.latterscrollselect.draw_polys(screen, (875, 200), scrollmaxcoords, mousebuttons, 0, True, *[percent])# draws the latter scroll and returns the selected asset
         if newselected == None:
             self.selected_asset = None
         
-    def draw_selected_description(self,screen,asset):
+    def draw_selected_description(self,screen,asset,mousebuttons,player):
         """Draws the description of the selected asset"""
-        classobj,ogvalue,secondtext,value,percent = asset
+        classobj,ogvalue,totalquantity,secondtext,totalvalue,percent = asset
+        if isinstance(classobj,StockOption):# for option objects
+            stockobj = classobj.stockobj
+            classobj.get_value(bypass=True)
+        else:
+            stockobj = classobj
         mousex, mousey = pygame.mouse.get_pos()
 
         color = (200,200,200)
@@ -252,21 +257,70 @@ class Portfolio(Menu):
             if pygame.mouse.get_pressed()[0]:
                 self.selected_asset = None
         screen.blit(s_render("Deselect Asset", 70, color), (1450, 115))
-        # Draws the information about the stock on the right side of the screen
-        # info = [f'Paid Price: ${limit_digits(ogvalue,12)}',f'Paid ${limit_digits(ogvalue,12)} | Current ${limit_digits(value,12)}',f'{"Profit" if (value - ogvalue) > 0 else "Loss"}: ${limit_digits((value - ogvalue),15)}',f'Change %: {limit_digits(percent,15)}%']
-        # 200,650 to 850,960
-        points = [(200, 650), (850, 650), (850, 960), (200, 960)]
+
+        # Draws the description about the stock on the left side of the screen
+        points = [(200, 660), (850, 660), (850, 960), (200, 960)]
         gfxdraw.filled_polygon(screen, points, (30, 30, 30))
         pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
-        for i,txt in enumerate(self.stocktext[classobj.name]):
-            if i == 0:# blits the full name of the stock 
-                screen.blit(txt,(210,605))
+        for i,txt in enumerate(self.stocktext[stockobj.name]):
+            if i == 0:# the first line is the name of the stock
+                screen.blit(txt,(210,605))# blits the full name of the stock 
             else:
-                screen.blit(txt,(210,660+((i-1)*30)))
+                screen.blit(txt,(210,670+((i-1)*35)))# blits the other lines of the stock description
+        vol = calculate_volatility(tuple(stockobj.graphs['1Y']))*100
+        text = s_render(f"Annualized Volatility: {vol:,.2f}%", 40, (190, 190, 190))
+        screen.blit(text, (210, 845))
+        text = s_render("Annual Dividend: $0.00", 40, (190, 190, 190))
+        screen.blit(text, (210, 890))
+
+        # draws the information about the stock in the middle of the screen
+        points = [(860, 330), (1620, 330), (1620, 960), (860, 960)]
+        
+        # gfxdraw.filled_polygon(screen, points, (50,50,50))
+        pygame.draw.polygon(screen, (0, 0, 0), points, 5)
+
+        # draws the calculator
+        if isinstance(stockobj,Stock):
+            extratext = "SHARE"
+        elif isinstance(stockobj,StockOption):
+            extratext = "OPTIONS"
+        self.numpad.draw(screen,(870,620),(300,330),extratext,mousebuttons,totalquantity)
+        
+        for i,graphname in enumerate(stockobj.graphrangeoptions):# 1H, 1D, etc...
+            stockobj.baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
+            text = s_render(graphname, 40, (230, 230, 230))
+            screen.blit(text, (1640, 325+(i*125)-text.get_height()-20))
+
+        color = ((200,0,0) if percent < 0 else (0,200,0)) if percent != 0 else (200,200,200)
+
+        quantity = self.numpad.get_value()
+
+        screen.blit(s_render("Net Gain" if percent > 0 else "Net Loss", 25, (230,230,230)), (1180, 620))
+        netgl = (classobj.get_value() - ogvalue)*quantity
+        screen.blit(s_render(f"${limit_digits(netgl,10)}", 70, color), (1190, 645))
+        
+        taxedamt = netgl*player.taxrate
+        if taxedamt < 0:
+            taxedamt = 0
+        screen.blit(s_render(f"Taxes ({player.taxrate*100}%)", 25, (230, 230, 230)), (1180, 705))
+        screen.blit(s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, (180, 50, 50)), (1180, 730))
+
+        screen.blit(s_render("Final Value (After Tax)", 25, (230, 230, 230)), (1180, 795))
+        screen.blit(s_render(f"${limit_digits((classobj.get_value()*quantity)-taxedamt,15)}", 70, (190, 190, 190)), (1190, 820))
+
+        rect = pygame.Rect(1180, 875, 425, 75)
+        pygame.draw.rect(screen, (0, 0, 0), rect, 5,border_radius=10)
+        color = (190,190,190)
+        if rect.collidepoint(mousex,mousey):
+            color = (0,190,0)
+            if mousebuttons == 1 and quantity > 0:
+                classobj.sell(player,ogvalue,quantity)
+                self.selected_asset = None
+        screen.blit(s_render("TRADE ASSET", 65, color), (1275, 890))
 
 
-
+        # need to fix teh option.add method - when you add the og value doesn't change
         
 
         
@@ -310,7 +364,7 @@ class Portfolio(Menu):
             selectedindex = [asset[:2] for asset in sortedassets].index(self.selected_asset)
             self.drawselectedScroll(screen,sortedassets[selectedindex],mousebuttons)# draws the selected asset scroll on the right
 
-            self.draw_selected_description(screen,sortedassets[selectedindex])# draws the description of the selected asset
+            self.draw_selected_description(screen,sortedassets[selectedindex],mousebuttons,player)# draws the description of the selected asset
         self.assetscroll_controls(screen,mousebuttons)
 
         

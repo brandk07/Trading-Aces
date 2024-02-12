@@ -52,7 +52,9 @@ class Stock():
     def reset_trends(self):
         """Sets/resets the trends for the stock"""
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]#resets the trends for each bonus trend
-    
+    def sell(self,player,ogprice,quantity):
+        """sells the stock, need this so I can call a generic .sell for each asset in portfolio"""
+        player.sellStock(self,ogprice,quantity)
     def reset_graphs(self):
         """resets the graphs to be empty"""
         # for i in ["1H","1D","1W","1M","3M","1Y","trends"]:
@@ -344,5 +346,5 @@ class Stock():
         screen.blit(change_text_rendered, (coords[0]+10, coords[1]+50))
         
         self.mouseover(screen,graphingpoints,spacing,blnkspacey,coords,wh)#displays the price of the stock when the mouse is over the graph
-                
+        
         

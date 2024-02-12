@@ -72,6 +72,11 @@ Add quarterly reports from each stock where they can meet/miss expectations (2/4
 Acually fix the problem with the bar class where if it is reversedscroll it will not snap right (2/5/2024)
 
 Need to include the amount it cost for the option in portfolio so someone can see loss/gain (2/7/2024)
+
+make it so option expirationdate decreases with time (2/9/2024)
+
+Option combining still doesn't compute correctly, if two have differnt buy ins, it needs to adjust (2/11/2024)
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am
