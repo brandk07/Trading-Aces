@@ -6,9 +6,9 @@ from datetime import datetime,timedelta
 
 
 mytime = datetime(2023, 1, 1, 0, 0)
-deltadsf = timedelta(seconds=1)
+deltadsf = timedelta(hours=1)
 start_time = timeit.timeit()
-for i in range(900000):
+for i in range(6):
     mytime += deltadsf
 
 # Stop the timer
@@ -19,6 +19,17 @@ print("Elapsed time: ", elapsed_time, "seconds")
 
 
 print(mytime)
+print(mytime.weekday())
+print(mytime.month)
+
+import Classes.Gametime as gt
+
+mytime = gt.GameTime((2023, 7, 4, 9, 40))
+mytime.add_time(1)
+print(mytime)
+print(mytime.isOpen())
+print(mytime.get_time())
+
 
 # https://docs.python.org/3/library/datetime.html
 

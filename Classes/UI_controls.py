@@ -246,7 +246,7 @@ class UI_Controls():
             # self.selected_stock = self.latterscroll.draw_polys(screen,(1475,245),790,115,mousebuttons,None,showbottom=False)
         
     def draw_time(self,screen,gametime):
-        texts = gametime.getrenders(50,50,50,105,50,50)# month,day,year,timerender,dayname,monthname
+        texts = gametime.getrenders( 50,50,50,105,50,50)# year,month,day,year,timerender,dayname,monthname
         month,day,year,timerender,dayname,monthname = texts
 
         screen.blit(timerender,(260,20))

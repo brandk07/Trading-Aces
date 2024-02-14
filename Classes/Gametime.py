@@ -1,12 +1,50 @@
 from Defs import fontlist
 import pygame
-import datetime
+from datetime import datetime, timedelta
 
+WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+          "November", "December"]
+HOLIDAYS = [(1,1),(1,15),(2,19),(3,29),(5,27),(6,19),(7,4),(9,2),(11,28),(12,25)]
 class GameTime:
-    def __init__(self) -> None:
-        self.time = datetime(2030,0,0,9,30,0)
+    def __init__(self,time) -> None:
+        self.time = datetime(*time)
+        print(self.time)
+    def __str__(self) -> str:
+        return str(self.time)
+    def add_time(self,seconds:int):
+        self.time += timedelta(seconds=seconds)
+        return self.time
 
     def get_time(self):
+        return self.time
+
+    def isOpen(self):
+        """Checks if the market is open or not
+        returns a tuple of (bool,reason)"""
+        if (self.time.month,self.time.day) in HOLIDAYS:
+            return False, 'Holiday'
+        if WEEKDAYS[self.time.day] in ['Saturday','Sunday']:
+            return False, 'Weekend'
+        if not(((self.time.hour == 9 and self.time.minute >= 30) or self.time.hour > 9) and self.time.hour < 16):
+            return False, 'Off Hours'
+        return True, 'Open'
+    
+    def timeAt(self,secondsago):
+        """returns the time at a certain amount of seconds ago"""
+        return self.time - timedelta(seconds=secondsago)
+
+    def getRenders(self,sizes):
+        """Sizes is (yearsize,monthsize,daysize,timesize,daynamesize,monthnamesize)"""
+        year = fontlist[sizes[0]].render(str(self.time.year),(255,255,255))[0]
+        month = fontlist[sizes[1]].render(MONTHS[self.time.month-1],(255,255,255))[0]
+        day = fontlist[sizes[2]].render(str(self.time.day),(255,255,255))[0]
+        time = fontlist[sizes[3]].render(f'{self.time.hour}:{self.time.minute:02d}',(255,255,255))[0]
+        dayname = fontlist[sizes[4]].render(WEEKDAYS[self.time.weekday()],(255,255,255))[0]
+        monthname = fontlist[sizes[5]].render(MONTHS[self.time.month-1],(255,255,255))[0]
+        return [year,month,day,time,dayname,monthname]
+
+
 
 
 
@@ -147,16 +185,16 @@ class GameTime:
 
 #         return [month,day,year[0],time_render,dayname,monthname]
 
-#     def isOpen(self):
-#         """Checks if the market is open or not
-#         returns a tuple of (bool,reason)"""
-#         # if (self.month,self.day) in HOLIDAYS:
-#         #     return False, 'Holiday'
-#         # if self.get_day_name() in ['Saturday','Sunday']:
-#         #     return False, 'Weekend'
-#         # if not(((self.hour == 9 and self.minute >= 30) or self.hour > 9) and self.hour < 16):
-#         #     return False, 'Off Hours'
-#         return True, 'Open'
+    # def isOpen(self):
+    #     """Checks if the market is open or not
+    #     returns a tuple of (bool,reason)"""
+    #     # if (self.month,self.day) in HOLIDAYS:
+    #     #     return False, 'Holiday'
+    #     # if self.get_day_name() in ['Saturday','Sunday']:
+    #     #     return False, 'Weekend'
+    #     # if not(((self.hour == 9 and self.minute >= 30) or self.hour > 9) and self.hour < 16):
+    #     #     return False, 'Off Hours'
+    #     return True, 'Open'
 #     def timeAt(self,secondsago):
 #         """returns the time at a certain amount of seconds ago"""
 #         year = self.year
