@@ -222,13 +222,15 @@ class Portfolio(Menu):
     def drawselectedScroll(self,screen,asset,mousebuttons):
         """Draws the selected asset scroll"""
         classobj,ogvalue,quantity,secondtext,value,percent = asset
-        text = [f'{classobj} ',secondtext,f'${limit_digits(value,15)}',]
+        text = [f'{classobj} ',secondtext,f'${limit_digits(value,15)}',f'{"+" if percent > 0 else ""}{limit_digits(percent,15)}%']
         polytexts = []# temporary list to store the text info for each asset
         polytexts.append([text[0],50,classobj.color])
         polytexts.append([text[1],35,(190,190,190)])
         polytexts.append([text[2],60,(190,190,190)])
+        color = ((190,0,0) if percent < 0 else (0,190,0)) if percent != 0 else (190,190,190)
+        polytexts.append([text[3],60,color])
         textinfo = [polytexts]
-        coords = [[(20,15),(25,60),((text[1],100),30)]]
+        coords = [[(20,15),(25,60),((text[1],100),30),((text[1],text[2],150),30)]]
 
         self.latterscrollselect.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
         self.latterscrollselect.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
@@ -276,8 +278,6 @@ class Portfolio(Menu):
 
         # draws the information about the stock in the middle of the screen
         points = [(860, 330), (1620, 330), (1620, 960), (860, 960)]
-        
-        # gfxdraw.filled_polygon(screen, points, (50,50,50))
         pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
         # draws the calculator
@@ -293,34 +293,42 @@ class Portfolio(Menu):
             screen.blit(text, (1640, 325+(i*125)-text.get_height()-20))
 
         color = ((200,0,0) if percent < 0 else (0,200,0)) if percent != 0 else (200,200,200)
+        quantity = self.numpad.get_value()# gets the quantity from the numpad
+        netgl = (classobj.get_value() - ogvalue)*quantity# net gain/loss
+        taxedamt = 0 if netgl <= 0 else netgl*player.taxrate# the amount taxed
 
-        quantity = self.numpad.get_value()
-
-        screen.blit(s_render("Net Gain" if percent > 0 else "Net Loss", 25, (230,230,230)), (1180, 620))
-        netgl = (classobj.get_value() - ogvalue)*quantity
-        screen.blit(s_render(f"${limit_digits(netgl,10)}", 70, color), (1190, 645))
+        descriptions = [s_render("Net Gain" if percent > 0 else "Net Loss", 25, (230,230,230)),
+            s_render(f"Taxes ({player.taxrate*100}%)", 25, (230, 230, 230)),
+            s_render("Final Value (After Tax)", 25, (230, 230, 230)),]
+        texts = [s_render(f"${limit_digits(netgl,10)}", 70, color),
+            s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, (180, 50, 50)),
+            s_render(f"${limit_digits((classobj.get_value()*quantity)-taxedamt,15)}", 70, (190, 190, 190)),]
         
-        taxedamt = netgl*player.taxrate
-        if taxedamt < 0:
-            taxedamt = 0
-        screen.blit(s_render(f"Taxes ({player.taxrate*100}%)", 25, (230, 230, 230)), (1180, 705))
-        screen.blit(s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, (180, 50, 50)), (1180, 730))
+        if self.drawSellingInfo(screen,descriptions,texts,mousebuttons,quantity):# if the asset should be sold, and drawing the selling info
+            classobj.sell(player,ogvalue,quantity)
+            self.selected_asset = None
+        # need to fix teh option.add method - when you add the og value doesn't change
 
-        screen.blit(s_render("Final Value (After Tax)", 25, (230, 230, 230)), (1180, 795))
-        screen.blit(s_render(f"${limit_digits((classobj.get_value()*quantity)-taxedamt,15)}", 70, (190, 190, 190)), (1190, 820))
+    def drawSellingInfo(self,screen,descriptions,values,mousebuttons,quantity) -> bool:
+        """Draws the selling info above the trade asset button and the button itself"""
+        mousex, mousey = pygame.mouse.get_pos()
+
+        for i,(dtxt,vtxt) in enumerate(zip(descriptions,values)):
+            screen.blit(dtxt,(1180,620+(i*85)))
+            screen.blit(vtxt,(1190,645+(i*85))) 
 
         rect = pygame.Rect(1180, 875, 425, 75)
         pygame.draw.rect(screen, (0, 0, 0), rect, 5,border_radius=10)
         color = (190,190,190)
         if rect.collidepoint(mousex,mousey):
             color = (0,190,0)
-            if mousebuttons == 1 and quantity > 0:
-                classobj.sell(player,ogvalue,quantity)
-                self.selected_asset = None
+            if mousebuttons == 1 and quantity > 0:# if the asset should be sold
+                return True
         screen.blit(s_render("TRADE ASSET", 65, color), (1275, 890))
+        return False    
 
 
-        # need to fix teh option.add method - when you add the og value doesn't change
+        
         
 
         

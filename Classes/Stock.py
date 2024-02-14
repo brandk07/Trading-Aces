@@ -240,18 +240,21 @@ class Stock():
 
 
 
-    def mouseover(self,screen:pygame.Surface,graphpoints,spacing,blnkspacey,coords,wh):
+    def mouseover(self,screen:pygame.Surface,graphpoints,spacing,blnkspacey,coords,wh,gametime=False):
         """displays the price of the stock when the mouse is over the graph"""
         mousex,mousey = pygame.mouse.get_pos()
         if pygame.Rect(coords[0],coords[1],(coords[0]+wh[0]-coords[0]),(coords[1]+wh[1]-coords[1])).collidepoint(mousex,mousey):
             pos = (mousex-coords[0])//spacing
             if pos < len(self.graphs[self.graphrange]):
-                text1 = fontlist[30].render(f'${self.graphs[self.graphrange][int(pos)]:,.2f}',(255,255,255))[0]
-                screen.blit(text1,(mousex,graphpoints[int(pos)]))
+                text1 = s_render(f'${self.graphs[self.graphrange][int(pos)]:,.2f}',30,(255,255,255))# the value of the stock
+                screen.blit(text1,(mousex,graphpoints[int(pos)]-text1.get_height()-5))# the value of the stock
+                text2 = s_render()
+
                 percentchange = round(((self.graphs[self.graphrange][int(pos)]/self.graphs[self.graphrange][0])-1)*100,2)
                 color = (0,205,0) if percentchange >= 0 else (205,0,0)
                 if percentchange == 0: color = (205,205,205)
-                screen.blit(fontlist[30].render(f'{percentchange:,.2f}%',color)[0], (mousex,graphpoints[int(pos)]+text1.get_height()+5))
+                screen.blit(s_render(f'{percentchange:,.2f}%',30,color),(mousex,graphpoints[int(pos)]+text1.get_height()+5))# the percent change of the stock
+                # screen.blit(fontlist[30].render(f'{percentchange:,.2f}%',color)[0], (mousex,graphpoints[int(pos)]+text1.get_height()+5))
                 gfxdraw.line(screen,mousex,coords[1]+wh[1]-blnkspacey,mousex,coords[1],(255,255,255))
 
     def baredraw(self,screen,coords,wh,graphrange,mouseover=False):
@@ -273,7 +276,7 @@ class Stock():
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0],coords[1],graphwidth,graphheight), 5)
         
 
-    def draw(self,screen:pygame.Surface,player:object,coords,wh,Mousebuttons,stocklist=None,rangecontrols=True,graphrange=None):
+    def draw(self,screen:pygame.Surface,player:object,coords,wh,Mousebuttons,gametime,stocklist=None,rangecontrols=True,graphrange=None):
         """Draws the graph of the stock along with the range controls, price lines, and the name"""
         
         if type(self) == self.Playerclass:#if it is a Player object

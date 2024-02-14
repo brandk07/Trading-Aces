@@ -1,20 +1,42 @@
-from datetime import datetime
 
-# Define the target date and time
+import timeit
+from datetime import datetime,timedelta
 
-# target_date = datetime(2007, 4, 19, 10, 43)
-target_date = datetime(2023, 10, 27, 11, 15)
+# Start the timer
 
-current_date = datetime(2023, 10, 24, 14, 50)
-# Get the current date and time
-current_date = datetime.now()
 
-# Calculate the time difference
-time_difference = target_date - current_date
-# time_difference = target_date - target_date2
+mytime = datetime(2023, 1, 1, 0, 0)
+deltadsf = timedelta(seconds=1)
+start_time = timeit.timeit()
+for i in range(900000):
+    mytime += deltadsf
 
-# Calculate the hours difference
-hours_difference = time_difference.total_seconds() / 3600
+# Stop the timer
+end_time = timeit.timeit()
+# Calculate and print the elapsed time
+elapsed_time = end_time - start_time
+print("Elapsed time: ", elapsed_time, "seconds")
 
-# Print the result
-print(f'You are {(hours_difference):.2f} hours away from October 27, 11:15 AM.')
+
+print(mytime)
+
+# https://docs.python.org/3/library/datetime.html
+
+# # Define the target date and time
+
+# # target_date = datetime(2007, 4, 19, 10, 43)
+# target_date = datetime(2023, 10, 27, 11, 15)
+
+# current_date = datetime(2023, 10, 24, 14, 50)
+# # Get the current date and time
+# current_date = datetime.now()
+
+# # Calculate the time difference
+# time_difference = target_date - current_date
+# # time_difference = target_date - target_date2
+
+# # Calculate the hours difference
+# hours_difference = time_difference.total_seconds() / 3600
+
+# # Print the result
+# print(f'You are {(hours_difference):.2f} hours away from October 27, 11:15 AM.')

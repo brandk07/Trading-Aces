@@ -55,7 +55,12 @@ class LatterScroll():
             if len(rendertexts) < i:break# if only some of the text is on the screen (partially off the screen)
 
             if type(x) == tuple:# if the x is ('text',offset) it is a variable width
-                x = rendertexts[strtexts.index(x[0])].get_width()+x[1]# the width of the text + the offset
+                width = 0 
+                for ii in range(len(x)-1):
+                    width += rendertexts[strtexts.index(x[ii])].get_width()
+                x = width+x[-1]# the width of the text + the offset
+
+                # x = rendertexts[strtexts.index(x[0])].get_width()+x[1]# the width of the text + the offset
             if type(y) == tuple:
                 y = rendertexts[strtexts.index(y[0])].get_height()+y[1]
             
@@ -187,6 +192,7 @@ class LatterScroll():
 
              # draw all the texts for each polygon
             for i,render in enumerate(text_renders):
+
                 # self.get_textcoord(self.textcoords[i],points[0],self.texts[numdrawn])
                 screen.blit(render,(points[0][0]+self.textcoords[numdrawn][i][0],points[0][1]+self.textcoords[numdrawn][i][1]))
             pygame.draw.polygon(screen, (0, 0, 1), points, 5)

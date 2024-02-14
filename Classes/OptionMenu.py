@@ -76,7 +76,7 @@ class Optiontrade(Menu):
             if point_in_polygon((mousex,mousey),[(1110,805),(1125,875),(1465,875),(1450,805)]):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
-                    player.sellOption(option)
+                    player.sellOption(option,1)
                     self.selected_option = None
             else:
                 sellcolor = (225,225,225)
@@ -130,8 +130,8 @@ class Optiontrade(Menu):
         barheight = (520//len(player.options)) if len(player.options) > 0 else 1
 
         self.barowned.draw_bar(screen, [225, DY], [45, DY + (yshift*4) - 80], 'vertical', barwh=[43, barheight], shift=85, reversedscroll=True, text=False)
-
-        self.SelectedPlayerOption(screen, self.selected_option, mousebuttons, player)# draws the additional stock info
+        if len(player.options) > 0:
+            self.SelectedPlayerOption(screen, self.selected_option, mousebuttons, player)# draws the additional stock info
 
         percents = []; alltexts = []
         for i, option in enumerate(player.options[self.barowned.value:self.barowned.value+5]):

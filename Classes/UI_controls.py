@@ -12,7 +12,7 @@ from Classes.Stock import Stock
 
 class UI_Controls():
     def __init__(self,stocklist,gamespeed) -> None:
-        self.gameplay_speed = gamespeed
+        self.gameplay_speed = 0
         # self.stockevent = StockEvents()# the stock events
         self.bar = SliderBar(100,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
         # self.newsobj = News()
