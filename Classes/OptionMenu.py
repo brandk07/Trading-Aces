@@ -14,7 +14,7 @@ DY = 200
 DH = 120
 
 class Optiontrade(Menu):
-    def __init__(self,stocklist:list):
+    def __init__(self,stocklist:list,gametime):
         # self.icon = pygame.image.load(r'Assets\Portfolio\portfolio2.png').convert_alpha()
 
         self.icon = pygame.image.load(r'Assets\Menu_Icons\noblack_option3.png').convert_alpha()
@@ -42,7 +42,7 @@ class Optiontrade(Menu):
         self.selected_option = None
         self.view = "Owned"# Owned or Available or Custom
         self.selected_avalaible = None
-        self.refreshOptions(stocklist)
+        self.refreshOptions(stocklist,gametime)
 
     
         
@@ -160,16 +160,17 @@ class Optiontrade(Menu):
             percents.append(percentchange); alltexts.append(texts)
 
         self.allrenders,self.selected_option = drawLatterScroll(screen,player.options,self.allrenders,self.barowned.value,self.getpoints,(xshift,yshift),self.selected_option,mousebuttons,DH,alltexts,percents)
-    def refreshOptions(self,stocklist:list):
+    def refreshOptions(self,stocklist:list,gametime):
         self.calloptions = []; self.putoptions = []
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.95)*100,math.ceil(stock.price*1.2)*100)/100
-            self.putoptions.append(StockOption(stock,strikeprice,random.randint(3,25),'put'))
+            self.putoptions.append(StockOption(stock,strikeprice,random.randint(3,25),'put',str(gametime)))
+
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
-            self.calloptions.append(StockOption(stock,strikeprice,random.randint(3,25),'call'))
+            self.calloptions.append(StockOption(stock,strikeprice,random.randint(3,25),'call',str(gametime)))
 
     def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player):
          if optionindex != None:
@@ -206,7 +207,7 @@ class Optiontrade(Menu):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
                     if player.cash > (option.get_value(True)):
-                        player.buyOption(option.get_copy())
+                        player.buyOption(option.copy())
             else:
                 sellcolor = (225,225,225)
             # gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total value button
@@ -225,7 +226,7 @@ class Optiontrade(Menu):
             buy_text_rect = buy_text.get_rect(center=(1280, 840))
             screen.blit(buy_text, buy_text_rect)
 
-    def draw_Available(self,screen,mousebuttons,player,stocklist):
+    def draw_Available(self,screen,mousebuttons,player,stocklist,gametime):
         mousex, mousey = pygame.mouse.get_pos()
         xshift = 15
         yshift = 150    
@@ -253,7 +254,7 @@ class Optiontrade(Menu):
         if point_in_polygon((mousex,mousey),[(1000,120),(1015,190),(1455,190),(1440,120)]):
             if mousebuttons == 1:
                 soundEffects['clickbutton2'].play()
-                self.refreshOptions(stocklist)
+                self.refreshOptions(stocklist,gametime)
 
         percents = []; alltexts = []
         for i, option in enumerate(alloptions[self.baravailable.value:self.baravailable.value+5]):
@@ -277,7 +278,7 @@ class Optiontrade(Menu):
         pass
 
 
-    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player):
+    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player, gametime):
         """Draws all of the things in the option menu"""
         screen.blit(self.optiontext,(220,120))# display the option text
         # draw a polygon from 400,120 to 750,160
@@ -317,6 +318,6 @@ class Optiontrade(Menu):
         if self.view == "Owned":
             self.draw_Owned(screen,mousebuttons,player)
         elif self.view == "Available":
-            self.draw_Available(screen,mousebuttons,player,stocklist)
+            self.draw_Available(screen,mousebuttons,player,stocklist,gametime)
         elif self.view == "Custom":
             self.draw_Custom(screen,mousebuttons,player)

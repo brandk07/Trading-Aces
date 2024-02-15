@@ -194,13 +194,14 @@ def time_loop(loop):
         return result
     return wrapper
 
-def Getfromfile(stockdict:dict,player):
+def Getfromfile(stockdict:dict,player,gametime):
     with open('Assets/Stockdata/extradata.json','r') as file:
         data = json.load(file)
         print(data)
         if data:
+            gametime.setTimeStr(data[0])
             player.stocks = [[stockdict[stock[0]],stock[1],stock[2]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
-            player.options = [StockOption(stockdict[option[0]],option[1],option[2],option[3],ogprice=option[4]) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
+            player.options = [StockOption(stockdict[option[0]],option[1],option[2],option[3],option[4],quantity=option[5],ogprice=option[6]) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity,ogprice]
             player.giveoptioncolor(player.options)
             player.graphrange = data[3]
             player.cash = data[4] if data[4] != 0 else 2500

@@ -14,7 +14,7 @@ class UI_Controls():
     def __init__(self,stocklist,gamespeed) -> None:
         self.gameplay_speed = 0
         # self.stockevent = StockEvents()# the stock events
-        self.bar = SliderBar(100,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
+        self.bar = SliderBar(gamespeed,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
         # self.newsobj = News()
         self.latterscroll = LatterScroll(5)
         # for i in range(10):
@@ -246,14 +246,16 @@ class UI_Controls():
             # self.selected_stock = self.latterscroll.draw_polys(screen,(1475,245),790,115,mousebuttons,None,showbottom=False)
         
     def draw_time(self,screen,gametime):
-        texts = gametime.getrenders( 50,50,50,105,50,50)# year,month,day,year,timerender,dayname,monthname
-        month,day,year,timerender,dayname,monthname = texts
+        texts = gametime.getRenders((50,50,50,105,50,50))# year,month,day,minute,dayname,monthname,am/pm
+        year,month,day,minute,dayname,monthname,ampm = texts
 
-        screen.blit(timerender,(260,20))
+        screen.blit(minute,(260,20))
+        screen.blit(ampm,(260+minute.get_width()+20,20))
         screen.blit(dayname,(260,105))
         screen.blit(monthname,(260+dayname.get_width()+10,105))
         screen.blit(day,(260+dayname.get_width()+monthname.get_width()+20,105))
         screen.blit(year,(260+dayname.get_width()+monthname.get_width()+day.get_width()+30,105))
+        
 
     def marketStatus(self,screen,gametime):
         color = (0,150,0) if gametime.isOpen()[0] else (150,0,0)
@@ -304,18 +306,18 @@ class UI_Controls():
                 self.draw_home(screen,stocklist,gametime,player,mousebuttons)            
 
                 # player.draw(screen,player,(250,160),(680,540),mousebuttons,stocklist,True)
-                tmarket.draw(screen,(250,160),(680,540),mousebuttons,stocklist,True)
+                tmarket.draw(screen,(250,160),(680,540),mousebuttons,gametime)
                 # self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
                 
                 screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(830,20))
 
-                self.gameplay_speed = self.bar.draw_bar(screen,[740,75],[450,65],'horizontal',reversedscroll=True,text='SKIPPING' if gametime.fastforward else True)
+                self.gameplay_speed = self.bar.draw_bar(screen,[740,75],[450,65],'horizontal',reversedscroll=True,text=gametime.skipText())
 
 
             elif self.view == "stock":
-                stockgraphmanager.draw_graphs(screen,stocklist,player,mousebuttons)
+                stockgraphmanager.draw_graphs(screen,stocklist,player,mousebuttons,gametime)
                 # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
-                self.gameplay_speed = self.bar.draw_bar(screen,[1620,575],[125,400],'vertical',text='SKIPPING' if gametime.fastforward else True)
+                self.gameplay_speed = self.bar.draw_bar(screen,[1620,575],[125,400],'vertical',text=gametime.skipText())
 
             
 

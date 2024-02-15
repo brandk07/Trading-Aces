@@ -109,7 +109,7 @@ class Stockbook(Menu):
                 else:#else render it with a smaller font and orange color
                     self.stocktext[key][i] = fontlist[30].render(line,(225, 130, 0))[0]
         
-    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,mousebuttons:int,player):
+    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,mousebuttons:int,player,gametime):
         """Draws all the main content for the stockbook menu (the stocks on the left side of the screen)"""
         mousex,mousey = pygame.mouse.get_pos()
         for i,stock in enumerate(stocklist):
@@ -134,15 +134,15 @@ class Stockbook(Menu):
 
             screen.blit(fontlist[36].render(f'{stock.name} ${limit_digits(stock.price,12)}',(255,255,255))[0],(230+(i*8),130+(i*65)))
             if self.selectedstock == i:
-                self.selected_stock(screen,stocklist,player,mousebuttons)
+                self.selected_stock(screen,stocklist,player,mousebuttons,gametime)
 
-    def draw_descriptions(self,screen:pygame.Surface,stocklist:list,player,mousebuttons):
+    def draw_descriptions(self,screen:pygame.Surface,stocklist:list,player,mousebuttons,gametime):
         """Draws the stock descriptions and the stock graph for the selected stock"""
         gfxdraw.filled_polygon(screen,((290,700),(320,955),(1570,955),(1535,700)),(60,60,60))#  polygon for the stock description
         screen.blit(self.renderedstocknames[stocklist[self.selectedstock].name],(300,710))# blits the stock name to the screen
 
         # stocklist[self.selectedstock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
-        stocklist[self.selectedstock].draw(screen,player,(550,130),(550,550),stocklist,mousebuttons)
+        stocklist[self.selectedstock].draw(screen,player,(550,130),(550,550),mousebuttons,gametime)
         for i,line in enumerate(self.stocktext[stocklist[self.selectedstock].name]):
             x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))
@@ -175,9 +175,9 @@ class Stockbook(Menu):
         
 
 
-    def selected_stock(self,screen,stocklist:list,player,mousebuttons:int):
+    def selected_stock(self,screen,stocklist:list,player,mousebuttons:int,gametime):
         """This function is called for the selected stock in the stockbook menu"""
-        self.draw_descriptions(screen,stocklist,player,mousebuttons)
+        self.draw_descriptions(screen,stocklist,player,mousebuttons,gametime)
         # self.quantitycontrols(screen,mousebuttons,player,stocklist)
         stock = stocklist[self.selectedstock]
         # self.quantity = quantityControls(screen,mousebuttons,int(player.cash/stock.price),self.quantity,(1105,110))

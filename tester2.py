@@ -1,34 +1,60 @@
 
-import timeit
-from datetime import datetime,timedelta
+# from datetime import datetime, timedelta
 
-# Start the timer
+# ytime = datetime(2023, 1, 1, 17, 30, 0)
+# mytime2 = datetime(2023, 1, 2, 9, 30, 0)
+
+# difference = mytime2 - ytime
+# difference_in_seconds = difference.total_seconds()
+
+# print(difference_in_seconds)
+# deltad = timedelta(seconds=difference_in_seconds)
+# ytime += deltad
+# print(ytime,mytime2)
+
+from datetime import datetime, timedelta
+
+def secsTo930(dt):
+    hour = dt.hour
+    minute = dt.minute
+    hour_diff = (9 - hour) % 24
+    combined_minutes = (hour_diff * 60) + (30 - minute)
+    if combined_minutes > 0:
+        seconds = combined_minutes * 60
+    else:
+        seconds = (combined_minutes + 1440) * 60  # Add 1 day and adjust minutes
+
+    return seconds
+
+# Example usage:
+dt = datetime(2023, 1, 1, 17, 30, 0)
+seconds = secsTo930(dt)
+print(f"Time until 9:30 AM on the next day in seconds: {seconds}")
+dt += timedelta(seconds=seconds)
+print(dt)
 
 
-mytime = datetime(2023, 1, 1, 0, 0)
-deltadsf = timedelta(hours=1)
-start_time = timeit.timeit()
-for i in range(6):
-    mytime += deltadsf
-
-# Stop the timer
-end_time = timeit.timeit()
-# Calculate and print the elapsed time
-elapsed_time = end_time - start_time
-print("Elapsed time: ", elapsed_time, "seconds")
 
 
-print(mytime)
-print(mytime.weekday())
-print(mytime.month)
+# start_time = timeit.timeit()
+# for i in range(6):
+#     mytime += deltadsf
 
-import Classes.Gametime as gt
+# # Stop the timer
+# end_time = timeit.timeit()
+# # Calculate and print the elapsed time
+# elapsed_time = end_time - start_time
+# print("Elapsed time: ", elapsed_time, "seconds")
 
-mytime = gt.GameTime((2023, 7, 4, 9, 40))
-mytime.add_time(1)
-print(mytime)
-print(mytime.isOpen())
-print(mytime.get_time())
+
+
+# import Classes.Gametime as gt
+
+# mytime = gt.GameTime((2023, 7, 4, 9, 40))
+# mytime.add_time(1)
+# print(mytime)
+# print(mytime.isOpen())
+# print(mytime.get_time())
 
 
 # https://docs.python.org/3/library/datetime.html

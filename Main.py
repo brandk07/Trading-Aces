@@ -14,8 +14,8 @@ from collections import deque
 from Classes.smallClasses.TotalMarket import TotalMarket
 import timeit
 from Classes.imports.Transactions import Transactions
-GAMESPEED = 100
-FASTFORWARDSPEED = 2500
+GAMESPEED = 50
+FASTFORWARDSPEED = 500
 pygame.init()
 pygame.mixer.init()
 
@@ -34,14 +34,20 @@ stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
 # stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
 stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(218, 112, 214),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 
-# CREATING OBJECTS
-stockgraphmanager = StockGraphManager(stocknames)
-stockbook = Stockbook(stocknames)
+# CREATING OBJECTS NEEDED FOR FILE DATA
 player = Player(stocknames,stockcolors[-1])
 stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
+
+# GETTING DATA FROM FILE
+gametime = GameTime((2030,1,1,0,0,0))
+musicdata = Getfromfile(stockdict,player,gametime)# muiscdata = [time, volume, songindex]
+
+# CREATING OBJECTS
+stockgraphmanager = StockGraphManager(stocknames)
+stockbook = Stockbook(stocknames)
 portfolio = Portfolio(stocknames)
-optiontrade = Optiontrade(stocklist)
+optiontrade = Optiontrade(stocklist,gametime)
 ui_controls = UI_Controls(stocklist,GAMESPEED)
 tmarket = TotalMarket()
 # VARS FROM SETTINGS
@@ -51,9 +57,8 @@ autofastforward = True
 background = pygame.image.load(r'Assets\backgrounds\Background (9).png').convert_alpha()
 background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
 
-gametime = GameTime(0,5,15,10,12,'Monday')
 menulist = [stockbook,portfolio,optiontrade]
-musicdata = Getfromfile(stockdict,player)# muiscdata = [time, volume, songindex]
+
 
 pygame.mixer.music.set_endevent(pygame.USEREVENT)  # Set custom event when music ends
  
@@ -81,21 +86,19 @@ if __name__ == "__main__":
         # print(mousex,mousey)
         ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist,tmarket)#draws the ui controls to the screen, and senses for clicks
         
-        if autofastforward:
-            if (marketopen:=not gametime.isOpen()[0]):
+        # if autofastforward:
+        #     if (marketopen:=not gametime.isOpen()[0]):
 
-                ui_controls.bar.set_currentvalue(FASTFORWARDSPEED)
-            gametime.fastforward = marketopen
+        #         ui_controls.bar.set_currentvalue(FASTFORWARDSPEED)
+        #     gametime.fastforward = marketopen
 
-        for i in range(ui_controls.gameplay_speed):
-            if gametime.isOpen()[0] and ui_controls.gameplay_speed > GAMESPEED:
-                ui_controls.bar.changemaxvalue(GAMESPEED)
-                break
-            gametime.increase_time(1,autofastforward)
-            # if gametime.isOpen()[0]:
-            #     for stock in stockl   ist:
-            #         stock.update_price(1)
-            #     player.update_price(1)
+        # for i in range(ui_controls.gameplay_speed):
+        #     if gametime.isOpen()[0] and ui_controls.gameplay_speed > GAMESPEED:
+        #         ui_controls.bar.changemaxvalue(GAMESPEED)
+        #         break
+        #     gametime.advanceTime(1)\
+        gametime.advanceTime(ui_controls.gameplay_speed,autofastforward,FASTFORWARDSPEED)
+
 
         if gametime.isOpen()[0]:
             if ui_controls.gameplay_speed > 0:
@@ -139,9 +142,7 @@ if __name__ == "__main__":
                 musicdata = [pygame.mixer.music.get_pos()/1000+musicdata[0],pygame.mixer.music.get_volume(),musicdata[2]]
                 
                 stockdata = [[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks]
-                optiondata = [[option.stockobj.name,option.strike_price,option.expiration_date,option.option_type,option.ogvalue] for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
-                for option in optiondata:
-                    print(type(option))
+                optiondata = [[option.stockobj.name,option.strike_price,option.expiration_date,option.option_type,option.date,option.quantity,option.ogvalue] for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
 
                 data = [str(gametime),stockdata,optiondata,player.graphrange,int(player.cash),musicdata]
                 data.extend([stockobj.graphrange for stockobj in stocklist])

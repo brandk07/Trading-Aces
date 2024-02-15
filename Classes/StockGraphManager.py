@@ -193,7 +193,7 @@ class StockGraphManager:
                             stock.graphrange = self.masterrange
 
 
-    def draw_graphs(self, screen, stocklist:list, player, mousebuttons):
+    def draw_graphs(self, screen, stocklist:list, player, mousebuttons, gametime):
         self.draw_ui(screen,mousebuttons,stocklist)
         
         
@@ -214,7 +214,7 @@ class StockGraphManager:
                 # if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
                 #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
 
-                stock.draw(screen,player,coords,wh,mousebuttons,stocklist,True if self.masterrange == 'Custom' else False)
+                stock.draw(screen,player,coords,wh,mousebuttons,gametime,rangecontroldisp=(True if self.masterrange == 'Custom' else False))
                     
                 # if self.current_config != 'nona':#if no menus are drawn and the current config is not nona
                 #     self.changestockbutton(screen,startpos,endpos,mousebuttons,stockname,stocklist)#  ------------------------Used for changing stocks, don't want right now

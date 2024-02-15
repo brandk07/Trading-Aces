@@ -47,7 +47,8 @@ class Stock():
 
     def __str__(self) -> str:
         return f'{self.name}'
-    def get_value(self):
+    def get_value(self,fullvalue=None):
+        """Full value is just there becuase the option class uses it"""
         return self.price
     def reset_trends(self):
         """Sets/resets the trends for the stock"""
@@ -248,7 +249,14 @@ class Stock():
             if pos < len(self.graphs[self.graphrange]):
                 text1 = s_render(f'${self.graphs[self.graphrange][int(pos)]:,.2f}',30,(255,255,255))# the value of the stock
                 screen.blit(text1,(mousex,graphpoints[int(pos)]-text1.get_height()-5))# the value of the stock
-                text2 = s_render()
+                # text2 = s_render()
+                if gametime:
+                    secondsago = int((len(self.graphs[self.graphrange])-pos)*self.graphrangeoptions[self.graphrange])
+                    print(secondsago)
+                    print(gametime.timeAt(len(self.graphs[self.graphrange])-(self.graphrangeoptions[self.graphrange]*pos)))
+                    # gametime.timeAt(self.graphrangeoptions[self.graphrange]*pos)
+                    text2 = s_render(f'{gametime.timeAt(secondsago)}',30,(255,255,255))
+                    screen.blit(text2,(mousex,graphpoints[int(pos)]))# the time of the stock
 
                 percentchange = round(((self.graphs[self.graphrange][int(pos)]/self.graphs[self.graphrange][0])-1)*100,2)
                 color = (0,205,0) if percentchange >= 0 else (205,0,0)
@@ -276,7 +284,7 @@ class Stock():
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0],coords[1],graphwidth,graphheight), 5)
         
 
-    def draw(self,screen:pygame.Surface,player:object,coords,wh,Mousebuttons,gametime,stocklist=None,rangecontrols=True,graphrange=None):
+    def draw(self,screen:pygame.Surface,player:object,coords,wh,Mousebuttons,gametime,rangecontroldisp=True,graphrange=None):
         """Draws the graph of the stock along with the range controls, price lines, and the name"""
         
         if type(self) == self.Playerclass:#if it is a Player object
@@ -295,7 +303,7 @@ class Stock():
             gfxdraw.filled_polygon(screen, [(coords[0], coords[1]), (coords[0],coords[1]+wh[1]), (coords[0]+wh[0], coords[1]+wh[1]), (coords[0]+wh[0],coords[1])],color)  # draws the perimeter around graphed values
             gfxdraw.filled_polygon(screen,[(coords[0],coords[1]),(coords[0],coords[1]+wh[1]-blnkspacey),(coords[0]+wh[0]-blnkspacex,coords[1]+wh[1]-blnkspacey),(coords[0]+wh[0]-blnkspacex,coords[1])],(15,15,15))#draws the background of the graph
         
-        if rangecontrols:# if the range controls are drawn
+        if rangecontroldisp:# if the range controls are drawn
             self.rangecontrols(screen,Mousebuttons,blnkspacey,coords,wh)#draws the range controls
 
         # using the graph class to graph the points
@@ -348,6 +356,6 @@ class Stock():
         change_text_rendered = s_render(change_text, 40, color)
         screen.blit(change_text_rendered, (coords[0]+10, coords[1]+50))
         
-        self.mouseover(screen,graphingpoints,spacing,blnkspacey,coords,wh)#displays the price of the stock when the mouse is over the graph
+        self.mouseover(screen,graphingpoints,spacing,blnkspacey,coords,wh,gametime=gametime)#displays the price of the stock when the mouse is over the graph
         
         

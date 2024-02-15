@@ -40,7 +40,7 @@ class TotalMarket(Stock):
 
             self.update_range_graphs(value)
     
-    def draw(self,screen:pygame.Surface,coords,wh,Mousebuttons,stocklist=None,rangecontrols=True,graphrange=None):
+    def draw(self,screen:pygame.Surface,coords,wh,Mousebuttons,gametime,rangecontrols=True,graphrange=None):
         blnkspacex = (coords[0]+wh[0]-coords[0])//10#the amount of blank space to be left on the right side of the graph for x
         blnkspacey = (coords[1]+wh[1]-coords[1])//10#the amount of blank space to be left on the right side of the graph for y
 
@@ -97,4 +97,4 @@ class TotalMarket(Stock):
         change_text_rendered = s_render(change_text, 40, color)
         screen.blit(change_text_rendered, (coords[0]+10, coords[1]+50))
         
-        self.mouseover(screen,graphingpoints,spacing,blnkspacey,coords,wh)#displays the price of the stock when the mouse is over the graph
+        self.mouseover(screen,graphingpoints,spacing,blnkspacey,coords,wh,gametime)#displays the price of the stock when the mouse is over the graph

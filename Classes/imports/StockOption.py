@@ -25,23 +25,24 @@ def calculate_volatility(points) -> float:
     
 
 class StockOption:
-    def __init__(self,stockobj,strike_price,expiration_date,option_type,ogprice=None) -> None:
+    def __init__(self,stockobj,strike_price,expiration_date,option_type,creationdate,quantity=1,ogprice=None) -> None:
         """Option is controls 100 shares of a stock, so quantity is controlling 100*quantity shares"""
         self.stockobj = stockobj
+        self.date = creationdate
         self.strike_price = strike_price
         self.expiration_date = int(expiration_date)
         self.option_type = str(option_type)
         self.color = (0,0,0)
         self.name = f'{self.stockobj.name} {self.option_type}'
-        self.quanity = 1
+        self.quantity = quantity
 
         self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=calculate_volatility(tuple(self.stockobj.graphs['1Y'])),r=0.05)
         if ogprice:
             self.ogvalue = ogprice
         else:
-            self.ogvalue = self.option.getPrice(method="MC",iteration=200)
+            self.ogvalue = self.option.getPrice(method="BSM",iteration=1)
 
-        self.lastvalue = [self.stockobj.price*100,self.get_value(True)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
+        self.lastvalue = [self.stockobj.price*100,self.get_value(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
     
     def __str__(self) -> str:
         return f'{self.name}'
@@ -49,12 +50,12 @@ class StockOption:
     def __eq__(self,other):
         if not isinstance(other,StockOption):
             return False
-        return [self.stockobj,self.strike_price,self.option_type,self.expiration_date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date]
+        return [self.stockobj,self.strike_price,self.option_type,self.expiration_date,self.date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date,other.date]
     
     def __iadd__(self,other):
         
         if self == other:
-            self.quanity += other.quanity
+            self.quantity += other.quantity
             self.ogvalue += other.ogvalue
             return self
         raise ValueError('StockOption objects must be the same to add them together')
@@ -71,17 +72,16 @@ class StockOption:
         return (self.option_type,self.stockobj.price,self.strike_price,self.expiration_date,calculate_volatility(tuple(self.stockobj.graphs['1Y'])),0.05,)
     
     # create a method to return an exact copy of the object
-    def get_copy(self) -> 'StockOption':        
-            return StockOption(self.stockobj,self.strike_price,self.expiration_date,self.option_type,self.get_value(True))
+    def copy(self) -> 'StockOption':        
+            return StockOption(self.stockobj,self.strike_price,self.expiration_date,self.option_type,self.date,quantity=self.quantity,ogprice=self.get_value(bypass=True))
     def resetOgValue(self):
         self.ogvalue = self.get_value(True)
     def advance_time(self):
         self.expiration_date -= 1
         self.option.t = self.expiration_date
-    def sell(self,player,_,quanity):
+    def sell(self,player,_,quantity):
         """sells the option, need this so I can call a generic .sell for each asset in portfolio"""
-        print(self.get_value())
-        player.sellOption(self,quanity)
+        player.sellOption(self,quantity)
 
     def get_value(self,bypass=False,fullvalue=True):
         """""Bypass is used to force a recalculation of the option value
@@ -92,7 +92,7 @@ class StockOption:
             self.option.sigma = calculate_volatility(tuple(self.stockobj.graphs['1Y']))
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="BSM",iteration=1)]
-            return (self.lastvalue[1] * self.quanity) if fullvalue else self.lastvalue[1]
+            return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
         if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.001 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.999:# if the stock price has changed by more than 2%
             # print('recalculating option value',bypass)
             self.option.s0 = float(self.stockobj.price)*100
@@ -100,8 +100,8 @@ class StockOption:
             self.option.sigma = calculate_volatility(tuple(self.stockobj.graphs['1Y']))
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="MC",iteration=200)]
-            return (self.lastvalue[1] * self.quanity) if fullvalue else self.lastvalue[1]
-        return (self.lastvalue[1] * self.quanity) if fullvalue else self.lastvalue[1]
+            return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
+        return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
     
 
 # Option prices are impacted by 4 major elements i.e. delta, gamma, theta, vega.

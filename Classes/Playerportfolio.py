@@ -86,15 +86,15 @@ class Player(Stock):
             print('options are',self.options)
             print('/'*20)
 
-    def sellOption(self,optionobj,quanity):
+    def sellOption(self,optionobj,quantity):
         # optionindex = self.options.index(optionobj)
-        if quanity > (quant:=self.options[self.options.index(optionobj)].quanity):
-            quanity = quant
+        if quantity > (quant:=self.options[self.options.index(optionobj)].quantity):
+            quantity = quant
     
-        self.cash += optionobj.get_value(bypass=True)*quanity
+        self.cash += optionobj.get_value(bypass=True,fullvalue=False)*quantity
 
-        self.options[self.options.index(optionobj)].quanity -= quanity
-        if self.options[self.options.index(optionobj)].quanity <= 0:
+        self.options[self.options.index(optionobj)].quantity -= quantity
+        if self.options[self.options.index(optionobj)].quantity <= 0:
             self.options.remove(optionobj)
         
         print(f'selling {optionobj} for {optionobj.get_value(True):.2f}')

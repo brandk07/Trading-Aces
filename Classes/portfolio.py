@@ -203,7 +203,7 @@ class Portfolio(Menu):
             if isinstance(asset,list) and isinstance(asset[0],Stock):# needed stock to be list to include the # of shares, didn't make sense [to include] for options
                 return f"{limit_digits(asset[2],10,False)} Share{'' if asset[2] == 1 else 's'}"
             elif isinstance(asset,StockOption):
-                return f"{asset.quanity} Option{'' if asset.quanity == 1 else 's'}"
+                return f"{asset.quantity} Option{'' if asset.quantity == 1 else 's'}"
         def get_percent(asset):
             if isinstance(asset,list) and isinstance(asset[0],Stock):
                 return ((asset[0].price - asset[1]) / asset[1]) * 100
@@ -215,10 +215,11 @@ class Portfolio(Menu):
         if "Stocks" in self.displayed_asset_type:
             stockassets = [[stock[0],stock[1], stock[2], get_second(stock),stock[0].price*stock[2],get_percent(stock)] for stock in player.stocks]
         if "Options" in self.displayed_asset_type:
-            optionassets = [[option, option.ogvalue, option.quanity, get_second(option),option.get_value(),get_percent(option)] for option in player.options]
+            optionassets = [[option, option.ogvalue, option.quantity, get_second(option),option.get_value(),get_percent(option)] for option in player.options]
         allassets = stockassets + optionassets 
         # sortedstocks = sorted(player.stocks,key=lambda stock: stock[0].price*stock[2],reverse=True)
         return sorted(allassets,key=lambda asset: asset[4],reverse=True)
+    
     def drawselectedScroll(self,screen,asset,mousebuttons):
         """Draws the selected asset scroll"""
         classobj,ogvalue,quantity,secondtext,value,percent = asset
@@ -302,7 +303,7 @@ class Portfolio(Menu):
             s_render("Final Value (After Tax)", 25, (230, 230, 230)),]
         texts = [s_render(f"${limit_digits(netgl,10)}", 70, color),
             s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, (180, 50, 50)),
-            s_render(f"${limit_digits((classobj.get_value()*quantity)-taxedamt,15)}", 70, (190, 190, 190)),]
+            s_render(f"${limit_digits((classobj.get_value(fullvalue=False)*quantity)-taxedamt,15)}", 70, (190, 190, 190)),]
         
         if self.drawSellingInfo(screen,descriptions,texts,mousebuttons,quantity):# if the asset should be sold, and drawing the selling info
             classobj.sell(player,ogvalue,quantity)
@@ -334,7 +335,7 @@ class Portfolio(Menu):
         
 
         
-    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player):
+    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player, gametime):
         """Draws all of the things in the portfolio menu"""
         mousex, mousey = pygame.mouse.get_pos()
         
@@ -347,7 +348,7 @@ class Portfolio(Menu):
 
         
         if self.selected_asset == None:# if the selected asset is None
-            player.draw(screen,player,(200,100),(650,500),mousebuttons,stocklist,True)
+            player.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)
 
             if len(sortedassets) > 0:
                 # draws the stocks on the right of the screen
@@ -356,7 +357,11 @@ class Portfolio(Menu):
             # Pie chart
             values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
             names = set([stock[0].name for stock in player.stocks])
+
             values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
+            values.append([player.cash, "Cash",player.color])
+            for option in player.options:
+                values.append([option.get_value(),option.name,option.color])
             draw_pie_chart(screen, values, 150,(200, 650))
 
 
@@ -367,7 +372,7 @@ class Portfolio(Menu):
             if isinstance(self.selected_asset[0],Stock): stockgraph = self.selected_asset[0]
             elif isinstance(self.selected_asset[0],StockOption): stockgraph = self.selected_asset[0].stockobj
 
-            stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,stocklist,True)# draws the selected stock graph on the left
+            stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
 
             selectedindex = [asset[:2] for asset in sortedassets].index(self.selected_asset)
             self.drawselectedScroll(screen,sortedassets[selectedindex],mousebuttons)# draws the selected asset scroll on the right

@@ -6,13 +6,39 @@ WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", 
 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
           "November", "December"]
 HOLIDAYS = [(1,1),(1,15),(2,19),(3,29),(5,27),(6,19),(7,4),(9,2),(11,28),(12,25)]
+def secsTo930(dt):
+    hour = dt.hour
+    minute = dt.minute
+    hour_diff = (9 - hour) % 24
+    combined_minutes = (hour_diff * 60) + (30 - minute)
+    if combined_minutes > 0:
+        seconds = combined_minutes * 60
+    else:
+        seconds = (combined_minutes + 1440) * 60  # Add 1 day and adjust minutes
+
+    return seconds
+
 class GameTime:
     def __init__(self,time) -> None:
         self.time = datetime(*time)
-        print(self.time)
+        self.fastforwarding = False# used for refrence in other classes
+
     def __str__(self) -> str:
         return str(self.time)
-    def add_time(self,seconds:int):
+    
+    def setTimeStr(self,time:str):
+        self.time = datetime.strptime(time,'%Y-%m-%d %H:%M:%S')
+    
+    def advanceTime(self,speed:int,autoFastForward:bool,fastforwardspeed:int):
+        if autoFastForward and not self.isOpen()[0]:
+            if (secs:=secsTo930(self.time)) < fastforwardspeed:
+                seconds = secs
+            else:
+                seconds = fastforwardspeed
+            self.fastforwarding = True
+        else:
+            seconds = speed
+            self.fastforwarding = False
         self.time += timedelta(seconds=seconds)
         return self.time
 
@@ -22,9 +48,10 @@ class GameTime:
     def isOpen(self):
         """Checks if the market is open or not
         returns a tuple of (bool,reason)"""
+
         if (self.time.month,self.time.day) in HOLIDAYS:
             return False, 'Holiday'
-        if WEEKDAYS[self.time.day] in ['Saturday','Sunday']:
+        if WEEKDAYS[self.time.weekday()] in ['Saturday','Sunday']:
             return False, 'Weekend'
         if not(((self.time.hour == 9 and self.time.minute >= 30) or self.time.hour > 9) and self.time.hour < 16):
             return False, 'Off Hours'
@@ -36,14 +63,19 @@ class GameTime:
 
     def getRenders(self,sizes):
         """Sizes is (yearsize,monthsize,daysize,timesize,daynamesize,monthnamesize)"""
-        year = fontlist[sizes[0]].render(str(self.time.year),(255,255,255))[0]
-        month = fontlist[sizes[1]].render(MONTHS[self.time.month-1],(255,255,255))[0]
-        day = fontlist[sizes[2]].render(str(self.time.day),(255,255,255))[0]
-        time = fontlist[sizes[3]].render(f'{self.time.hour}:{self.time.minute:02d}',(255,255,255))[0]
-        dayname = fontlist[sizes[4]].render(WEEKDAYS[self.time.weekday()],(255,255,255))[0]
-        monthname = fontlist[sizes[5]].render(MONTHS[self.time.month-1],(255,255,255))[0]
-        return [year,month,day,time,dayname,monthname]
+        year = fontlist[sizes[0]].render(str(self.time.year),(200,200,200))[0]
+        month = fontlist[sizes[1]].render(MONTHS[self.time.month-1],(200,200,200))[0]
+        day = fontlist[sizes[2]].render(str(self.time.day)+',',(200,200,200))[0]
+        minute = fontlist[sizes[3]].render(f'{self.time.hour if self.time.hour <= 12 else self.time.hour-12}:{self.time.minute:02d}',(200,200,200))[0]
+        dayname = fontlist[sizes[4]].render(WEEKDAYS[self.time.weekday()]+',',(200,200,200))[0]
+        monthname = fontlist[sizes[5]].render(MONTHS[self.time.month-1],(200,200,200))[0]
+        ampm = fontlist[sizes[3]].render('AM' if self.time.hour < 12 else 'PM',(200,200,200))[0]
 
+        return [year,month,day,minute,dayname,monthname,ampm]
+
+    def skipText(self):
+        """Used for drawing the bar for the game speed"""
+        return "SKIPPING" if self.fastforwarding else True
 
 
 
@@ -75,7 +107,7 @@ class GameTime:
 #         self.hour = hour
 #         self.minute = minute
 #         self.second = 0
-#         self.colonrenders = [fontlist[i].render(':',(255,255,255))[0] for i in range(1,200)]
+#         self.colonrenders = [fontlist[i].render(':',(200,200,200))[0] for i in range(1,200)]
 
 #         self.mdhfunc = lambda size,color : [fontlist[size].render(str(i)+',',color)[0] for i in range(1,32)]
 #         self.numfunc = lambda size,color : [fontlist[size].render("0"+str(i) if i < 10 else str(i),color)[0] for i in range(0,60)]
@@ -123,10 +155,10 @@ class GameTime:
 
     
 #     def increase_time(self,seconds:int,autofastforward):
-#         for i in range(seconds):
-#             self.add_second()
-#         if not self.isOpen()[0] and autofastforward:
-#             self.fastforward = True
+        # for i in range(seconds):
+        #     self.add_second()
+        # if not self.isOpen()[0] and autofastforward:
+        #     self.fastforward = True
         
 #         return self.year, self.month, self.day, self.hour, self.minute, self.second
 

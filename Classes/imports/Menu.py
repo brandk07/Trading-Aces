@@ -82,7 +82,7 @@ class Menu():
         # pygame.draw.polygon(screen, (0,0,0), ((1150,40),(1900,40),(1900,975),(1150,975)),10)
     def drawbottombar(self,screen,ui_controls:UI_Controls,gametime):
         """Draws the bottom bar of the screen"""
-        ui_controls.gameplay_speed = ui_controls.bar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True)
+        ui_controls.gameplay_speed = ui_controls.bar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True,text=gametime.skipText())
 
         # draws the time in the top left corner
         # texts = gametime.getrenders(50,50,50,105,50,50)
@@ -98,5 +98,5 @@ class Menu():
         pygame.draw.polygon(screen, (0,0,0), self.topbarpoints,5)
         self.topbar(screen,gametime,player)
         self.drawbottombar(screen,ui_controls,gametime)
-        self.draw_menu_content(screen,stocklist,mousebuttons,player)#draws the content of the menu, defined in the child classes
+        self.draw_menu_content(screen,stocklist,mousebuttons,player,gametime)#draws the content of the menu, defined in the child classes
 
