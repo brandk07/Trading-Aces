@@ -254,6 +254,8 @@ class Stock():
                     secondsago = int((len(self.graphs[self.graphrange])-pos)*self.graphrangeoptions[self.graphrange])
                     print(secondsago)
                     print(gametime.timeAt(len(self.graphs[self.graphrange])-(self.graphrangeoptions[self.graphrange]*pos)))
+                    reversepos = (len(self.graphs[self.graphrange])-pos)# Reversepos
+                    seconds = reversepos*(self.graphrangeoptions[self.graphrange]/200)
                     # gametime.timeAt(self.graphrangeoptions[self.graphrange]*pos)
                     text2 = s_render(f'{gametime.timeAt(secondsago)}',30,(255,255,255))
                     screen.blit(text2,(mousex,graphpoints[int(pos)]))# the time of the stock
