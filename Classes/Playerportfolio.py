@@ -23,7 +23,9 @@ class Player(Stock):
 
         # self.recent_movementvar = (None,None,(180,180,180))
     def buyAsset(self,asset):
-        if isinstance(asset,Stock):
+        if asset.quantity <= 0:
+            return
+        if isinstance(asset,StockAsset):
             assetlist = self.stocks 
         elif isinstance(asset,OptionAsset):
             assetlist = self.options
@@ -36,7 +38,11 @@ class Player(Stock):
                     return# return if the asset is already in the list
                 
             assetlist.append(asset)# if the asset is not in the list, add it to the list
+            # print(asset.quantity)
+            # print(asset.get_value())
+            # print(f'buying {asset} for {asset.get_value(True):.2f}')
 
+            print('cash is',self.cash)
 
     def sellAsset(self,asset,quantity):
         """sells the quantity number of the asset object given

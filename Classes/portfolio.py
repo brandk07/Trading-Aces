@@ -375,8 +375,7 @@ class Portfolio(Menu):
 
         
         else:# if the selected asset is NOT None
-            if isinstance(self.selected_asset[0],Stock): stockgraph = self.selected_asset[0]
-            elif isinstance(self.selected_asset[0],OptionAsset): stockgraph = self.selected_asset[0].stockobj
+            stockgraph = self.selected_asset[0].stockobj
 
             stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
 
