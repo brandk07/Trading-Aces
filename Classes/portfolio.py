@@ -8,7 +8,7 @@ from Classes.imports.Latterscroll import *
 from Classes.Stockbook import quantityControls
 from Classes.imports.Numpad import Numpad
 from Classes.Stock import Stock
-from Classes.imports.StockOption import StockOption, calculate_volatility
+from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.imports.Transactions import Transactions
 import math
 
@@ -32,7 +32,7 @@ class Portfolio(Menu):
 
         self.portfoliotext = fontlist[65].render('Owned Shares',(220,220,220))[0]
         self.displayingtext = fontlist[35].render('Displaying ',(220,220,220))[0]
-        self.menudrawn = True
+        self.menudrawn = False
         # self.allrenders = []
         self.selected_asset = None
 
@@ -202,12 +202,12 @@ class Portfolio(Menu):
         def get_second(asset):
             if isinstance(asset,list) and isinstance(asset[0],Stock):# needed stock to be list to include the # of shares, didn't make sense [to include] for options
                 return f"{limit_digits(asset[2],10,False)} Share{'' if asset[2] == 1 else 's'}"
-            elif isinstance(asset,StockOption):
+            elif isinstance(asset,OptionAsset):
                 return f"{asset.quantity} Option{'' if asset.quantity == 1 else 's'}"
         def get_percent(asset):
             if isinstance(asset,list) and isinstance(asset[0],Stock):
                 return ((asset[0].price - asset[1]) / asset[1]) * 100
-            elif isinstance(asset,StockOption):
+            elif isinstance(asset,OptionAsset):
                 return ((asset.get_value() - asset.ogvalue) / asset.ogvalue) * 100
             
         # asset is [class, ogvalue:float, quantity:int, secondary text:str, value:float, percent:float]
@@ -247,7 +247,7 @@ class Portfolio(Menu):
     def draw_selected_description(self,screen,asset,mousebuttons,player):
         """Draws the description of the selected asset"""
         classobj,ogvalue,totalquantity,secondtext,totalvalue,percent = asset
-        if isinstance(classobj,StockOption):# for option objects
+        if isinstance(classobj,OptionAsset):# for option objects
             stockobj = classobj.stockobj
             classobj.get_value(bypass=True)
         else:
@@ -271,7 +271,8 @@ class Portfolio(Menu):
                 screen.blit(txt,(210,605))# blits the full name of the stock 
             else:
                 screen.blit(txt,(210,670+((i-1)*35)))# blits the other lines of the stock description
-        vol = calculate_volatility(tuple(stockobj.graphs['1Y']))*100
+
+        vol = classobj.getVolatility()
         text = s_render(f"Annualized Volatility: {vol:,.2f}%", 40, (190, 190, 190))
         screen.blit(text, (210, 845))
         text = s_render("Annual Dividend: $0.00", 40, (190, 190, 190))
@@ -284,7 +285,7 @@ class Portfolio(Menu):
         # draws the calculator
         if isinstance(stockobj,Stock):
             extratext = "SHARE"
-        elif isinstance(stockobj,StockOption):
+        elif isinstance(stockobj,OptionAsset):
             extratext = "OPTIONS"
         self.numpad.draw(screen,(870,620),(300,330),extratext,mousebuttons,totalquantity)
         
@@ -304,11 +305,16 @@ class Portfolio(Menu):
         texts = [s_render(f"${limit_digits(netgl,10)}", 70, color),
             s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, (180, 50, 50)),
             s_render(f"${limit_digits((classobj.get_value(fullvalue=False)*quantity)-taxedamt,15)}", 70, (190, 190, 190)),]
+
+
         
         if self.drawSellingInfo(screen,descriptions,texts,mousebuttons,quantity):# if the asset should be sold, and drawing the selling info
             classobj.sell(player,ogvalue,quantity)
             self.selected_asset = None
         # need to fix teh option.add method - when you add the og value doesn't change
+    def drawAssetInfo(self,screen,):
+        """Draws the info above the sell info"""
+        # screen.blit(s_render(f"Purchased At {}"))
 
     def drawSellingInfo(self,screen,descriptions,values,mousebuttons,quantity) -> bool:
         """Draws the selling info above the trade asset button and the button itself"""
@@ -370,7 +376,7 @@ class Portfolio(Menu):
         
         else:# if the selected asset is NOT None
             if isinstance(self.selected_asset[0],Stock): stockgraph = self.selected_asset[0]
-            elif isinstance(self.selected_asset[0],StockOption): stockgraph = self.selected_asset[0].stockobj
+            elif isinstance(self.selected_asset[0],OptionAsset): stockgraph = self.selected_asset[0].stockobj
 
             stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
 

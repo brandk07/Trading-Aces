@@ -81,47 +81,24 @@ if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
         screen.blit(s,(0,0))
-        # screen.blit(polybackground,(0,0))# the background is 1152x896, tile it to fill the screen
-        
-        # print(mousex,mousey)
+
         ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist,tmarket)#draws the ui controls to the screen, and senses for clicks
         
-        # if autofastforward:
-        #     if (marketopen:=not gametime.isOpen()[0]):
-
-        #         ui_controls.bar.set_currentvalue(FASTFORWARDSPEED)
-        #     gametime.fastforward = marketopen
-
-        # for i in range(ui_controls.gameplay_speed):
-        #     if gametime.isOpen()[0] and ui_controls.gameplay_speed > GAMESPEED:
-        #         ui_controls.bar.changemaxvalue(GAMESPEED)
-        #         break
-        #     gametime.advanceTime(1)\
         gametime.advanceTime(ui_controls.gameplay_speed,autofastforward,FASTFORWARDSPEED)
 
 
-        if gametime.isOpen()[0]:
-            if ui_controls.gameplay_speed > 0:
+        if gametime.isOpen()[0]:# if the market is open
+            if ui_controls.gameplay_speed > 0:# if the game is not paused
                 for stock in stocklist:
                     stock.update_price(ui_controls.gameplay_speed)
                 player.update_price(ui_controls.gameplay_speed)
                 tmarket.updategraphs(stocklist,ui_controls.gameplay_speed)
 
-        
 
-        
-        # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
-        # break
-
-        # optiontrade.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,515),ui_controls)
         
         for i,menu in enumerate(menulist):
             menu.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,165+(i*175)),ui_controls,gametime)
 
-
-        # stockbook.draw_icon(screen,mousebuttons,stocklist,player,menulist)
-        # portfolio.draw_icon(screen,mousebuttons,stocklist,player,menulist)
-        # optiontrade.draw_icon(screen,mousebuttons,stocklist,player,menulist)
  
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
 
@@ -141,8 +118,8 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 musicdata = [pygame.mixer.music.get_pos()/1000+musicdata[0],pygame.mixer.music.get_volume(),musicdata[2]]
                 
-                stockdata = [[stock[0].name,int(stock[1]),stock[2]] for stock in player.stocks]
-                optiondata = [[option.stockobj.name,option.strike_price,option.expiration_date,option.option_type,option.date,option.quantity,option.ogvalue] for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
+                stockdata = [[stock.savingInputs] for stock in player.stocks]
+                optiondata = [[option.savingInputs] for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
 
                 data = [str(gametime),stockdata,optiondata,player.graphrange,int(player.cash),musicdata]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
@@ -156,15 +133,6 @@ if __name__ == "__main__":
                 mousebuttons = event.button
                 if mousebuttons == 1:
                     print(mousex,mousey)
-                # if event.button == 4:
-                #     print('Scroll wheel scrolled up')
-                # elif event.button == 5:
-                #     print('Scroll wheel scrolled down')
-                # if mousebuttons == 1:
-                    # print(stock1.pricepoints)
-            # elif event.type == pygame.MOUSEBUTTONUP:
-            #     mousebuttons = 0
-            #     print('mouse up')
 
         
         pygame.display.update()

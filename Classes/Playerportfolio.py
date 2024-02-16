@@ -20,89 +20,117 @@ class Player(Stock):
         self.messagedict = {}
         self.taxrate = 0.15
 
-        self.optioncolors = [(211, 160, 147),(147, 196, 125),(227, 192, 198),(248, 150, 143),(252, 216, 60), (128, 189, 152),(162, 195, 243),(143, 134, 130),(248, 185, 173),(202, 80, 30),  (128, 128, 0),  (135, 206, 235),(145, 184, 106),(200, 162, 200),(255, 213, 148),(242, 201, 76), (112, 161, 151),(156, 51, 66),  (51, 51, 191),   (194, 178, 169)]
-
 
         # self.recent_movementvar = (None,None,(180,180,180))
-        
-    def buy(self,obj,price:int,quantity:int=1):
-        """will add stocks until out of cash"""
-        if quantity > 0:
-            quant = 0
-            for _ in range(quantity):
-                if self.cash >= price:
-                    self.cash -= price
-                    quant += 1
-            quantity = quant# the quantity of stocks that were bought
+    def buyAsset(self,asset):
+        if isinstance(asset,Stock):
+            assetlist = self.stocks 
+        elif isinstance(asset,OptionAsset):
+            assetlist = self.options
 
-            # check if the stock is already in the list
-            if [obj,price] in [[stock[0],stock[1]] for stock in self.stocks]:
-                for stock in self.stocks:
-                    if stock[0] == obj and stock[1] == price:
-                        stock[2] += quantity
-                        break
-            else:     
-                self.stocks.append([obj,price,quantity])
+        if self.cash >= asset.get_value(bypass=True):
+            self.cash -= asset.get_value()# fullvalue is True by default
+            for asset in assetlist:# if the asset is already in the list, add the new asset to the old one
+                if asset == asset:# use the __eq__ method to compare the assets
+                    asset += asset# use the __iadd__ method to add the assets together
+                    return# return if the asset is already in the list
+                
+            assetlist.append(asset)# if the asset is not in the list, add it to the list
 
-            # self.messagedict[f'Purchased {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
-            print(f'buying {obj} for {price}')
-            print('cash is',self.cash)
-            print('stocks are',self.stocks)
-            print('/'*20)
 
-    def sellStock(self,obj,ogprice,quantity:int=1):
-        
-        stockindex = [(stock[0],stock[1]) for stock in self.stocks].index((obj,ogprice))# finds the index of the stock in the self.stocks list
+    def sellAsset(self,asset,quantity):
+        """sells the quantity number of the asset object given
+        won't sell more than the quantity of the asset"""
+        if isinstance(asset,Stock):
+            assetlist = self.stocks 
+        elif isinstance(asset,OptionAsset):
+            assetlist = self.options
 
-        if quantity > (quant:=self.stocks[stockindex][2]):
-            quantity = quant
-        
-        self.cash += obj.price*quantity
-        if quantity == self.stocks[stockindex][2]:
-            self.stocks.remove(self.stocks[stockindex])
-        else:
-            self.stocks[stockindex][2] -= quantity
-                        
-        print(f'selling {obj} for {obj.price}')
-        print(f"Profited ${(ogprice)-obj.price:.2f} per share")
-        print(f"Total profit: ${(ogprice-obj.price)*quantity:.2f}")
-        print('cash is',self.cash)
-        print('stocks are',self.stocks)
-        print('/'*20)
-
-    def buyOption(self,optionobj):
-        if self.cash >= optionobj.get_value(bypass=True):
-            
-            self.cash -= optionobj.get_value(True)
-            for option in self.options:
-                if option == optionobj:
-                    option += optionobj
-                    return
-            self.options.append(optionobj)
-            optionobj.color = self.optioncolors[len(self.options)-1 if len(self.options)-1 < len(self.optioncolors) else randint(0,len(self.optioncolors)-1)]
-
-            print(f'buying {optionobj} for {optionobj.get_value(True):.2f}')
-            print('cash is',self.cash)
-            print('options are',self.options)
-            print('/'*20)
-
-    def sellOption(self,optionobj,quantity):
-        # optionindex = self.options.index(optionobj)
-        if quantity > (quant:=self.options[self.options.index(optionobj)].quantity):
+        if quantity > (quant:=assetlist[assetlist.index(asset)].quantity):# if the quantity is greater than the quantity of the asset
             quantity = quant
     
-        self.cash += optionobj.get_value(bypass=True,fullvalue=False)*quantity
+        self.cash += asset.get_value(bypass=True,fullvalue=False)*quantity# add the value of the asset to the cash
 
-        self.options[self.options.index(optionobj)].quantity -= quantity
-        if self.options[self.options.index(optionobj)].quantity <= 0:
-            self.options.remove(optionobj)
+        assetlist[assetlist.index(asset)].quantity -= quantity# subtract the quantity from the asset
+
+        if assetlist[assetlist.index(asset)].quantity <= 0:# if the quantity of the asset is 0 or less, remove the asset from the list
+            assetlist.remove(asset)
         
-        print(f'selling {optionobj} for {optionobj.get_value(True):.2f}')
-        print('cash is',self.cash)
+    # def buy(self,obj,price:int,quantity:int=1):
+    #     """will add stocks until out of cash"""
+    #     if quantity > 0:
+    #         quant = 0
+    #         for _ in range(quantity):
+    #             if self.cash >= price:
+    #                 self.cash -= price
+    #                 quant += 1
+    #         quantity = quant# the quantity of stocks that were bought
+
+    #         # check if the stock is already in the list
+    #         if [obj,price] in [[stock[0],stock[1]] for stock in self.stocks]:
+    #             for stock in self.stocks:
+    #                 if stock[0] == obj and stock[1] == price:
+    #                     stock[2] += quantity
+    #                     break
+    #         else:     
+    #             self.stocks.append([obj,price,quantity])
+
+    #         # self.messagedict[f'Purchased {quantity} shares of {name} for {round(price*quantity,2)}'] = (time.time(),(0,200,0))
+    #         print(f'buying {obj} for {price}')
+    #         print('cash is',self.cash)
+    #         print('stocks are',self.stocks)
+    #         print('/'*20)
+
+    # def sellStock(self,obj,ogprice,quantity:int=1):
         
-    def giveoptioncolor(self,optionlist):
-        for i,option in enumerate(optionlist):
-            option.color = self.optioncolors[i if i < len(self.optioncolors) else randint(0,len(self.optioncolors)-1)]
+    #     stockindex = [(stock[0],stock[1]) for stock in self.stocks].index((obj,ogprice))# finds the index of the stock in the self.stocks list
+
+    #     if quantity > (quant:=self.stocks[stockindex][2]):
+    #         quantity = quant
+        
+    #     self.cash += obj.price*quantity
+    #     if quantity == self.stocks[stockindex][2]:
+    #         self.stocks.remove(self.stocks[stockindex])
+    #     else:
+    #         self.stocks[stockindex][2] -= quantity
+                        
+    #     print(f'selling {obj} for {obj.price}')
+    #     print(f"Profited ${(ogprice)-obj.price:.2f} per share")
+    #     print(f"Total profit: ${(ogprice-obj.price)*quantity:.2f}")
+    #     print('cash is',self.cash)
+    #     print('stocks are',self.stocks)
+    #     print('/'*20)
+
+    # def buyOption(self,optionobj):
+        # if self.cash >= optionobj.get_value(bypass=True):
+            
+        #     self.cash -= optionobj.get_value(True)
+        #     for option in self.options:
+        #         if option == optionobj:
+        #             option += optionobj
+        #             return
+        #     self.options.append(optionobj)
+    #         optionobj.color = self.optioncolors[len(self.options)-1 if len(self.options)-1 < len(self.optioncolors) else randint(0,len(self.optioncolors)-1)]
+
+    #         print(f'buying {optionobj} for {optionobj.get_value(True):.2f}')
+    #         print('cash is',self.cash)
+    #         print('options are',self.options)
+    #         print('/'*20)
+
+    # def sellOption(self,optionobj,quantity):
+    #     # optionindex = self.options.index(optionobj)
+    #     if quantity > (quant:=self.options[self.options.index(optionobj)].quantity):
+    #         quantity = quant
+    
+    #     self.cash += optionobj.get_value(bypass=True,fullvalue=False)*quantity
+
+    #     self.options[self.options.index(optionobj)].quantity -= quantity
+    #     if self.options[self.options.index(optionobj)].quantity <= 0:
+    #         self.options.remove(optionobj)
+        
+    #     print(f'selling {optionobj} for {optionobj.get_value(True):.2f}')
+    #     print('cash is',self.cash)
+        
     def get_Networth(self):
         """returns the networth of the player"""
         return self.cash + sum([stock[0].price*stock[2] for stock in self.stocks]) + sum([option.get_value() for option in self.options])

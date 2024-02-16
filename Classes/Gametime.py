@@ -42,8 +42,9 @@ class GameTime:
         self.time += timedelta(seconds=seconds)
         return self.time
 
-    def get_time(self):
+    def getTime(self):
         return self.time
+        # return self.time
 
     def isOpen(self):
         """Checks if the market is open or not
@@ -59,7 +60,7 @@ class GameTime:
     
     def timeAt(self,secondsago):
         """returns the time at a certain amount of seconds ago"""
-        return self.time - timedelta(seconds=secondsago)
+        return (self.time - timedelta(seconds=secondsago))
 
     def getRenders(self,sizes):
         """Sizes is (yearsize,monthsize,daysize,timesize,daynamesize,monthnamesize)"""

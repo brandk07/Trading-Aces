@@ -1,0 +1,72 @@
+from optionprice import Option as Op
+import numpy as np
+from collections import deque    
+from random import randint
+from functools import lru_cache
+
+@lru_cache(maxsize=20)
+def calculate_volatility(points) -> float:
+    """Calculate the volatility of a stock, points must be a tuple"""
+
+    if len(points) < 2:
+        return .1
+    
+    # Calculate daily returns
+    returns = np.diff(points) / points[:-1]
+
+    # Calculate standard deviation of daily returns
+    daily_volatility = np.std(returns)
+
+    # Annualize volatility
+    annualized_volatility = np.sqrt(252) * daily_volatility
+
+    return annualized_volatility
+
+class Asset:
+    def __init__(self,stockobj,creationdate,nametext,ogvalue,quantity,color=None) -> None:
+        """Parent class for all assets"""
+        self.stockobj = stockobj
+        self.date = creationdate
+        self.ogvalue = ogvalue
+        self.color = (randint(50,255),randint(50,255),randint(50,255)) if color == None else color
+        self.name = f'{self.stockobj.name} {nametext}'# nametext for options is the option type
+        self.quantity = quantity
+
+    def __str__(self) -> str:
+        return f'{self.name}'
+    
+    def __eq__(self,other):
+        raise NotImplementedError('This method must be implemented in the child class')
+    
+    def __iadd__(self,other):
+        if self == other:
+            self.quantity += other.quantity
+            self.ogvalue += other.ogvalue
+            return self
+        raise ValueError(f'{type(self).__name__} objects must be the same to add them together')
+        
+    def percent_change(self):
+        """returns the percent change of the option"""
+        return ((self.get_value() - (self.ogvalue)) / (self.ogvalue)) * 100
+    
+    def getVolatility(self):
+        """returns the volatility of the asset's stock"""
+        return calculate_volatility(tuple(self.stockobj.graphs['1Y']))
+    
+    def savingInputs(self):
+        """returns the all the inputs needed to construct a new object"""
+        raise NotImplementedError('This method must be implemented in the child class')
+
+    def copy(self):    
+       """Method returns an exact copy of the object"""    
+       raise NotImplementedError('This method must be implemented in the child class')
+
+    def sell(self,player,quantity):
+        """sells the Asset"""
+        player.sellAsset(self,quantity)
+
+    def get_value(self,bypass=False,fullvalue=True):
+        """""Bypass is used to force a recalculation of the asset value (used for options since it is compute intensive)
+        Full value is value*quantity otherwise it is just the value of the asset"""
+        raise NotImplementedError('This method must be implemented in the child class')
+    

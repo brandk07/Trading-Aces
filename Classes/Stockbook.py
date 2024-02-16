@@ -4,6 +4,7 @@ from pygame import gfxdraw
 from Classes.imports.Menu import Menu
 import numpy as np
 from Classes.imports.Bar import SliderBar
+from Classes.AssetTypes.StockAsset import StockAsset
 def quantityControls(screen, mousebuttons:int, maxpurchase, quantity, coords):
     """This function is called for the buy and sell controls in the stockbook menu"""
     mousex, mousey = pygame.mouse.get_pos()
@@ -147,7 +148,7 @@ class Stockbook(Menu):
             x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))
             
-    def draw_costpurchase(self,screen,mousebuttons:int,player,stocklist:list,abletobuy:bool):
+    def draw_costpurchase(self,screen,mousebuttons:int,player,stocklist:list,abletobuy:bool,gametime):
         """This function is called for the cost and purchase buttons in the stockbook menu"""
         mousex,mousey = pygame.mouse.get_pos()
         # Cost button polygon and outline
@@ -160,7 +161,7 @@ class Stockbook(Menu):
         if abletobuy and point_in_polygon((mousex,mousey),[(1110,265),(1125,335),(1465,335),(1450,265)]):
             purchasecolor = (0,150,0)
             if mousebuttons == 1:
-                player.buy(stocklist[self.selectedstock],stocklist[self.selectedstock].price,int(self.quantity))
+                player.buyAsset(StockAsset(stocklist[self.selectedstock],gametime.getTime(),stocklist[self.selectedstock].price,self.quantity))
                 self.quantity = 0
         elif not abletobuy:
             purchasecolor = (150,0,0)
@@ -189,7 +190,7 @@ class Stockbook(Menu):
         else:
             self.quantity = 0
             
-        self.draw_costpurchase(screen,mousebuttons,player,stocklist,abletobuy)
+        self.draw_costpurchase(screen,mousebuttons,player,stocklist,abletobuy,gametime)
 
     
     

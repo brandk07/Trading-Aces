@@ -5,7 +5,7 @@ from Classes.imports.Menu import Menu
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 from Classes.Stockbook import quantityControls
-from Classes.imports.StockOption import StockOption
+from Classes.AssetTypes.OptionAsset import OptionAsset
 import math
 
 #used for the Owned options
@@ -90,7 +90,7 @@ class Optiontrade(Menu):
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
             # Draws the information about the option on the right side of the screen
-            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.self_volatility()*100,15)}%']
+            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
             for i,txt in enumerate(info):
                 screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),280+(i*50)))
 
@@ -165,12 +165,12 @@ class Optiontrade(Menu):
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.95)*100,math.ceil(stock.price*1.2)*100)/100
-            self.putoptions.append(StockOption(stock,strikeprice,random.randint(3,25),'put',str(gametime)))
+            self.putoptions.append(OptionAsset(stock,strikeprice,random.randint(3,25),'put',str(gametime),1))
 
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
-            self.calloptions.append(StockOption(stock,strikeprice,random.randint(3,25),'call',str(gametime)))
+            self.calloptions.append(OptionAsset(stock,strikeprice,random.randint(3,25),'call',str(gametime),1))
 
     def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player):
          if optionindex != None:
@@ -198,7 +198,7 @@ class Optiontrade(Menu):
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
             # Draws the information about the option on the right side of the screen
-            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.self_volatility()*100,15)}%']
+            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
             for i,txt in enumerate(info):
                 screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),280+(i*50)))
             

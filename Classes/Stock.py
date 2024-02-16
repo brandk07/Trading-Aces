@@ -251,13 +251,13 @@ class Stock():
                 screen.blit(text1,(mousex,graphpoints[int(pos)]-text1.get_height()-5))# the value of the stock
                 # text2 = s_render()
                 if gametime:
-                    secondsago = int((len(self.graphs[self.graphrange])-pos)*self.graphrangeoptions[self.graphrange])
-                    print(secondsago)
-                    print(gametime.timeAt(len(self.graphs[self.graphrange])-(self.graphrangeoptions[self.graphrange]*pos)))
+                    # secondsago = int((len(self.graphs[self.graphrange])-pos)*self.graphrangeoptions[self.graphrange])
+                    # print(secondsago)
+                    # print(gametime.timeAt(len(self.graphs[self.graphrange])-(self.graphrangeoptions[self.graphrange]*pos)))
                     reversepos = (len(self.graphs[self.graphrange])-pos)# Reversepos
-                    seconds = reversepos*(self.graphrangeoptions[self.graphrange]/200)
+                    seconds = reversepos*(self.graphrangeoptions[self.graphrange]/POINTSPERGRAPH)
                     # gametime.timeAt(self.graphrangeoptions[self.graphrange]*pos)
-                    text2 = s_render(f'{gametime.timeAt(secondsago)}',30,(255,255,255))
+                    text2 = s_render(f'{gametime.timeAt(seconds)}',30,(255,255,255))
                     screen.blit(text2,(mousex,graphpoints[int(pos)]))# the time of the stock
 
                 percentchange = round(((self.graphs[self.graphrange][int(pos)]/self.graphs[self.graphrange][0])-1)*100,2)
