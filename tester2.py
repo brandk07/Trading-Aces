@@ -13,25 +13,40 @@
 # print(ytime,mytime2)
 
 from datetime import datetime, timedelta
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
-def secsTo930(dt):
-    hour = dt.hour
-    minute = dt.minute
-    hour_diff = (9 - hour) % 24
-    combined_minutes = (hour_diff * 60) + (30 - minute)
-    if combined_minutes > 0:
-        seconds = combined_minutes * 60
-    else:
-        seconds = (combined_minutes + 1440) * 60  # Add 1 day and adjust minutes
+# def secsTo930(dt):
+#     hour = dt.hour
+#     minute = dt.minute
+#     hour_diff = (9 - hour) % 24
+#     combined_minutes = (hour_diff * 60) + (30 - minute)
+#     if combined_minutes > 0:
+#         seconds = combined_minutes * 60
+#     else:
+#         seconds = (combined_minutes + 1440) * 60  # Add 1 day and adjust minutes
 
-    return seconds
+#     return seconds
 
-# Example usage:
+# # Example usage:
+# dt = datetime(2023, 1, 1, 17, 30, 0)
+# seconds = secsTo930(dt)
+# print(f"Time until 9:30 AM on the next day in seconds: {seconds}")
+# dt += timedelta(seconds=seconds)
+# print(dt)
 dt = datetime(2023, 1, 1, 17, 30, 0)
-seconds = secsTo930(dt)
-print(f"Time until 9:30 AM on the next day in seconds: {seconds}")
-dt += timedelta(seconds=seconds)
-print(dt)
+dt2 = datetime(2023, 1, 5, 9, 30, 0)
+
+difference = dt2 - dt
+# dt1 = datetime(2023, 1, 1, 17, 30, 0)
+# dt2 = datetime(2023, 1, 5, 9, 30, 0)
+
+# difference = relativedelta(dt2, dt1)
+# difference_in_years = difference.days/365
+difference = difference.days/365
+print(difference)
+print(difference*365)
+print(7/(difference))
 
 
 

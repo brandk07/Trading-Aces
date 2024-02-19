@@ -43,7 +43,7 @@ class GameTime:
         return self.time
 
     def getTime(self):
-        return self.time
+        return str(self.time)
         # return self.time
 
     def isOpen(self):

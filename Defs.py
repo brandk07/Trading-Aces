@@ -202,6 +202,7 @@ def Getfromfile(stockdict:dict,player,gametime):
         if data:
             gametime.setTimeStr(data[0])
             # player.stocks = [[stockdict[stock[0]],stock[1],stock[2]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
+            # print(data[1])
             player.stocks = [StockAsset(stockdict[stock[0]],stock[1],stock[2],stock[3]) for stock in data[1]]# [stockobj,creationdate,ogprice,quantity]
             player.options = [OptionAsset(stockdict[option[0]],option[1],option[2],option[3],option[4],quantity=option[5],ogprice=option[6]) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity,ogprice]
             player.graphrange = data[3]

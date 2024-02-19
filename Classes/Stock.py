@@ -19,8 +19,8 @@ class Stock():
         self.Playerclass = Playerclass
         self.starting_value_range = startingvalue_range
         self.name = name
+        self.price = 100
         # self.price = randint(*self.starting_value_range)#not used if there are points in any graph
-        self.price = 100#not used if there are points in any graph
         self.pricereset_time = None
         self.stocknames = stocknames
         #variables for graphing the stock 
@@ -35,7 +35,8 @@ class Stock():
         self.bonustrendranges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]
         self.datafromfile()
-        self.price = self.graphs['1H'][-1]
+
+        # self.price = self.graphs['1H'][-1]
         
         #variables for the stock price+
         self.volatility = volatility
@@ -47,9 +48,6 @@ class Stock():
 
     def __str__(self) -> str:
         return f'{self.name}'
-    def get_value(self,fullvalue=None):
-        """Full value is just there becuase the option class uses it"""
-        return self.price
     def reset_trends(self):
         """Sets/resets the trends for the stock"""
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]#resets the trends for each bonus trend
@@ -73,8 +71,9 @@ class Stock():
             for i,grange in enumerate(self.graphs.keys()):
                 if data[i]:# if the file is not empty
                     self.graphs[grange] = np.array(data[i])# add the contents to the graphs
+                    self.price = self.graphs[grange][-1]# set the price to the last value in the graph
                 else:
-                    self.graphs[grange] = np.array([self.price])# if the file is empty then
+                    self.graphs[grange] = np.array([100])# if the file is empty then set the graph to 100
             if len(data[-1]) > 0:
                 self.bonustrends = data[-1]
             else:
@@ -220,7 +219,7 @@ class Stock():
         else:
             # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
             for _ in range(gamespeed):
-                self.update_range_graphs(self.get_Networth())#updates the range graphs
+                self.update_range_graphs(self.getNetworth())#updates the range graphs
 
     def draw_priceChanges(self,screen:pygame.Surface,coords,wh):
         """Draws the price changes of the stock"""
@@ -344,7 +343,7 @@ class Stock():
                     
         else:
             # goes off the current price of the stock, not the original value stored in the stock object
-            screen.blit(s_render(f' Net Worth ${player.get_Networth():,.2f}',40,(255,255,255)),(coords[0]+10,coords[1]+wh[1]-40)) 
+            screen.blit(s_render(f' Net Worth ${player.getNetworth():,.2f}',40,(255,255,255)),(coords[0]+10,coords[1]+wh[1]-40)) 
             
 
         screen.blit(s_render(f"{self.name if type(self) == Stock else 'Portfolio'}",50,self.color),(coords[0]+10,coords[1]+10))#draws the text that displays the name of the stock or the player

@@ -59,7 +59,7 @@ class Optiontrade(Menu):
     def SelectedPlayerOption(self, screen, optionindex, mousebuttons, player):
         if optionindex != None:
             option = player.options[optionindex]
-            option.get_value(True)# force updates the price of the option (since it is selected)
+            option.getValue(True)# force updates the price of the option (since it is selected)
 
             mousex, mousey = pygame.mouse.get_pos()
             
@@ -102,7 +102,7 @@ class Optiontrade(Menu):
             # gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total value button
             # pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total value button polygon
 
-            value = option.get_value()
+            value = option.getValue()
             text = fontlist[45].render(f'Value: ${limit_digits(value,15)}', (190, 190, 190))[0]
             gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total value button
             pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total value button polygon
@@ -136,7 +136,7 @@ class Optiontrade(Menu):
         percents = []; alltexts = []
         for i, option in enumerate(player.options[self.barowned.value:self.barowned.value+5]):
             if option.ogvalue == 0: percentchange = 0
-            else:percentchange = option.percent_change()
+            else:percentchange = option.getPercent()
             
             if percentchange > 0:
                 grcolor = (0, 200, 0); profittext = "Profit"
@@ -148,12 +148,12 @@ class Optiontrade(Menu):
 
             textinfo = [[(190, 190, 190), 45],[(190, 190, 190), 35],[grcolor, 35],[grcolor, 35],[grcolor, 35]]
 
-            inputs = option.get_inputs()# [type,stock price,strike price,expiration date,volatility,risk free rate]
 
-            texts = [f'{option.stockobj.name} {inputs[0]}',
+
+            texts = [f'{option.stockobj.name} {option.option_type}',
                      f'Initial: ${limit_digits(option.ogvalue,15)}',
-                     f'Current: ${limit_digits(option.get_value(),15)}',
-                     f'{profittext}: ${limit_digits((option.get_value() - (option.ogvalue)),15)}',
+                     f'Current: ${limit_digits(option.getValue(),15)}',
+                     f'{profittext}: ${limit_digits((option.getValue() - (option.ogvalue)),15)}',
                      f'Change %: {limit_digits(percentchange,15)}%'
                     ]
             self.allrenders = reuserenders(self.allrenders, texts, textinfo, i)
@@ -175,7 +175,7 @@ class Optiontrade(Menu):
     def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player):
          if optionindex != None:
             option = (self.putoptions+self.calloptions)[optionindex]
-            option.get_value(True)# force updates the price of the option (since it is selected)
+            option.getValue(True)# force updates the price of the option (since it is selected)
 
             mousex, mousey = pygame.mouse.get_pos()
            
@@ -206,14 +206,15 @@ class Optiontrade(Menu):
             if point_in_polygon((mousex,mousey),[(1110,805),(1125,875),(1465,875),(1450,805)]):
                 sellcolor = (150,0,0)
                 if mousebuttons == 1:
-                    if player.cash > (option.get_value(True)):
-                        player.buyOption(option.copy())
+                    if player.cash > (option.getValue(True)):
+                        # player.buyOption(option.copy())
+                        player.buyAsset(option.copy())
             else:
                 sellcolor = (225,225,225)
             # gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total value button
             # pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total value button polygon
 
-            value = option.get_value()
+            value = option.getValue()
             text = fontlist[45].render(f'Cost: ${limit_digits(value,15)}', (190, 190, 190))[0]
             gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total cost button
             pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total cost button polygon
@@ -258,7 +259,7 @@ class Optiontrade(Menu):
 
         percents = []; alltexts = []
         for i, option in enumerate(alloptions[self.baravailable.value:self.baravailable.value+5]):
-            # percentchange = ((option.get_value() - option.ogvalue) / option.ogvalue) * 100
+            # percentchange = ((option.getValue() - option.ogvalue) / option.ogvalue) * 100
         
             grcolor = (200, 200, 200)
 
@@ -266,7 +267,7 @@ class Optiontrade(Menu):
 
             texts = [f'{option.stockobj.name} {option.option_type}',
                      f'Expiration: {option.expiration_date} days',
-                     f'Cost: ${limit_digits(option.get_value(),15)}',
+                     f'Cost: ${limit_digits(option.getValue(),15)}',
                      f'Stock Price : ${limit_digits(option.stockobj.price,15)}',
                      f'Strike Price: ${option.strike_price}'
                     ]
@@ -304,12 +305,12 @@ class Optiontrade(Menu):
             if mousebuttons == 1:
                 soundEffects['clickbutton2'].play()
                 self.view = "Owned"
-                for option in player.options:option.get_value()# recalculate the option values
+                for option in player.options:option.getValue()# recalculate the option values
         elif point_in_polygon(pygame.mouse.get_pos(),availablePoints):
             if mousebuttons == 1:
                 soundEffects['clickbutton2'].play()
                 self.view = "Available"
-                for option in (self.putoptions+self.calloptions):option.get_value()# recalculate the option values
+                for option in (self.putoptions+self.calloptions):option.getValue()# recalculate the option values
         elif point_in_polygon(pygame.mouse.get_pos(),customPoints):
             if mousebuttons == 1:
                 soundEffects['clickbutton2'].play()

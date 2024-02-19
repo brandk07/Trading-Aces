@@ -150,13 +150,14 @@ class UI_Controls():
             # self.stockevent.draw(screen)
         elif self.accbar_middle == "pie":
 
-            values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
-            names = set([stock[0].name for stock in player.stocks])
+            # values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
+            values = [(stock.getValue(),stock.name) for stock in player.stocks]
+            names = set([stock.name for stock in player.stocks])
 
             values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
             values.append([player.cash, "Cash",player.color])
             for option in player.options:
-                values.append([option.get_value(),option.name,option.color])
+                values.append([option.getValue(),option.name,option.color])
             draw_pie_chart(screen, values, 190, (935, 235))
 
         elif self.accbar_middle == "stock":    
@@ -182,21 +183,24 @@ class UI_Controls():
         
         if self.accbar_right == "topAsset":
             
-            assets = player.get_Assets(5)
+            assets = player.getAssets(5)
 
             #     # function to get the text for each stock
             # get_text = lambda stock : [f'{stock[0]} ',
             #                             f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}",
             #                             f'${limit_digits(stock[0].price*stock[2],15)}',]
             def get_text(asset):
-                if isinstance(asset[0],Stock):
-                    percentchange = ((asset[0].price - asset[1]) / asset[1]) * 100
-                    c = '+' if percentchange > 0 else ''
-                    return [f'${limit_digits(asset[0].price*asset[2],10)}',f'{asset[2]} shares of {asset[0].name}',f'{c}{limit_digits(percentchange,6)}%',]
-                elif isinstance(asset[0],OptionAsset):
-                    percentchange = asset[0].percent_change()
-                    c = '+' if percentchange > 0 else ''
-                    return [f'${limit_digits(asset[0].get_value(),10)}',f'{asset[0].name} option',f'{c}{limit_digits(percentchange,6)}%',]
+                percentchange = asset.getPercent()
+                c = '+' if percentchange > 0 else ''
+                if isinstance(asset,StockAsset):
+                    return [f'${limit_digits(asset.getValue(),10)}',f'{asset.name} shares of {asset.stockobj.name}',f'{c}{limit_digits(percentchange,8)}%',]
+                elif isinstance(asset,OptionAsset):
+                    return [f'${limit_digits(asset.getValue(),10)}',f'{asset.name} option',f'{c}{limit_digits(percentchange,8)}%',]
+                #     percentchange = ((asset[0].price - asset[1]) / asset[1]) * 100
+                #     c = '+' if percentchange > 0 else ''
+                #     return [f'${limit_digits(asset[0].price*asset[2],10)}',f'{asset[2]} shares of {asset[0].name}',f'{c}{limit_digits(percentchange,6)}%',]
+                # elif isinstance(asset[0],OptionAsset):
+                #   return [f'${limit_digits(asset[0].get_value(),10)}',f'{asset[0].name} option',f'{c}{limit_digits(percentchange,6)}%',]
 
             # getting the text for each stock
             textlist = [get_text(asset) for asset in assets]# stores 3 texts for each stock in the sortedstocks list
@@ -206,11 +210,11 @@ class UI_Controls():
             # loop through the textlist and store the text info in the textinfo list
             for i,(text,asset) in enumerate(zip(textlist,assets)):
                 polytexts = []# temporary list to store the text info for each stock
-                polytexts.append([text[0],50,asset[0].color])
+                polytexts.append([text[0],50,asset.color])
                 polytexts.append([text[1],35,(190,190,190)])
                 polytexts.append([text[2],50,(190,190,190)])
                 textinfo.append(polytexts)
-                coords[i].append(((text[1],75),30))
+                coords[i].append(((text[1],50),30))
 
             self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
             self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
@@ -275,13 +279,13 @@ class UI_Controls():
         self.draw_time(screen,gametime)
 
 
-        gfxdraw.filled_polygon(screen,[(250,800),(275,1050),(1475,1050),(1450,800)],(10,10,10,175))# the News bar at the bottom
-        pygame.draw.polygon(screen,(0,0,0),[(250,800),(275,1050),(1475,1050),(1450,800)],5)# the News bar at the bottom Outline
+        gfxdraw.filled_polygon(screen,[(250,705),(275,1050),(1475,1050),(1450,705)],(10,10,10,175))# the News bar at the bottom
+        pygame.draw.polygon(screen,(0,0,0),[(250,705),(275,1050),(1475,1050),(1450,705)],5)# the News bar at the bottom Outline
         
         
-        gfxdraw.filled_polygon(screen,[(930,160),(930,700),(1450,700),(1450,160)],(40,40,40,175))# Movements bar (right of the portfolio)
+        gfxdraw.filled_polygon(screen,[(930,160),(930,695),(1450,695),(1450,160)],(40,40,40,175))# Movements bar (right of the portfolio)
         gfxdraw.box(screen,pygame.Rect(930,160,520,40),(30,30,30))# Top part of the announce (right of the portfolio)
-        pygame.draw.polygon(screen,(0,0,0),[(930,160),(930,700),(1450,700),(1450,160)],5)# Movements bar (right of the portfolio) Outline
+        pygame.draw.polygon(screen,(0,0,0),[(930,160),(930,695),(1450,695),(1450,160)],5)# Movements bar (right of the portfolio) Outline
 
         points = [(1460,160),(1460,700),(1910,700),(1910,160)]
         gfxdraw.filled_polygon(screen,points,(30,30,30,175))

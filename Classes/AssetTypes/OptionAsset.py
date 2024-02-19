@@ -9,27 +9,29 @@ from collections import deque
 class OptionAsset(Asset):
     def __init__(self,stockobj,strike_price:int,expiration_date:int,option_type:str,creationdate:str,quantity:int,ogprice=None) -> None:
         
-        super().__init__(stockobj, creationdate, option_type, ogprice, quantity, color=None)
+        super().__init__(stockobj, creationdate, " "+option_type, ogprice, quantity, color=None)
         
         self.strike_price = strike_price
         self.expiration_date = expiration_date
         self.option_type = option_type
         self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=self.getVolatility(),r=0.05)
-        ogprice = ogprice if ogprice else self.get_value(bypass=True,fullvalue=False)
-        self.lastvalue = [self.stockobj.price*100,self.get_value(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
+        ogprice = ogprice if ogprice else self.getValue(bypass=True,fullvalue=False)
+        self.lastvalue = [self.stockobj.price*100,self.getValue(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
     
     def __eq__(self,other):
         if not isinstance(other,OptionAsset):
             return False
-        return [self.stockobj,self.strike_price,self.option_type,self.expiration_date,self.date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date,other.date]
+        return [self.stockobj,self.strike_price,self.option_type,self.expiration_date,self.date,self.ogvalue] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date,other.date,other.ogvalue]
 
     def savingInputs(self):
         return (self.stockobj.name,self.strike_price,self.expiration_date,self.option_type,self.date,self.quantity,self.ogvalue)
 
-    def copy(self):
-        return OptionAsset(self.stockobj,self.strike_price,self.expiration_date,self.option_type,self.date,self.quantity,self.get_value(bypass=True))
 
-    def get_value(self,bypass=False,fullvalue=True):
+
+    def copy(self):
+        return OptionAsset(self.stockobj,self.strike_price,self.expiration_date,self.option_type,str(self.date),self.quantity,self.getValue(bypass=True))
+
+    def getValue(self,bypass=False,fullvalue=True):
         """""Bypass is used to force a recalculation of the option value
         Full value is value*quantity otherwise it is just the value of the option"""
         if bypass:
@@ -67,7 +69,7 @@ class OptionAsset(Asset):
         # else:
         #     self.ogvalue = self.option.getPrice(method="BSM",iteration=1)
 
-#         self.lastvalue = [self.stockobj.price*100,self.get_value(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
+#         self.lastvalue = [self.stockobj.price*100,self.getValue(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
     
 #     def __str__(self) -> str:
 #         return f'{self.name}'
@@ -92,15 +94,15 @@ class OptionAsset(Asset):
         
 #     def percent_change(self):
 #         """returns the percent change of the option"""
-#         return ((self.get_value() - (self.ogvalue)) / (self.ogvalue)) * 100
+#         return ((self.getValue() - (self.ogvalue)) / (self.ogvalue)) * 100
 #     def get_inputs(self):
 #         return (self.option_type,self.stockobj.price,self.strike_price,self.expiration_date,calculate_volatility(tuple(self.stockobj.graphs['1Y'])),0.05,)
     
 #     # create a method to return an exact copy of the object
 #     def copy(self) -> 'OptionAsset':        
-#             return OptionAsset(self.stockobj,self.strike_price,self.expiration_date,self.option_type,self.date,quantity=self.quantity,ogprice=self.get_value(bypass=True))
+#             return OptionAsset(self.stockobj,self.strike_price,self.expiration_date,self.option_type,self.date,quantity=self.quantity,ogprice=self.getValue(bypass=True))
 #     def resetOgValue(self):
-#         self.ogvalue = self.get_value(True)
+#         self.ogvalue = self.getValue(True)
 #     def advance_time(self):
 #         self.expiration_date -= 1
 #         self.option.t = self.expiration_date
@@ -108,7 +110,7 @@ class OptionAsset(Asset):
 #         """sells the option, need this so I can call a generic .sell for each asset in portfolio"""
 #         player.sellOption(self,quantity)
 
-    # def get_value(self,bypass=False,fullvalue=True):
+    # def getValue(self,bypass=False,fullvalue=True):
     #     """""Bypass is used to force a recalculation of the option value
     #     Full value is value*quantity otherwise it is just the value of the option"""
     #     if bypass:

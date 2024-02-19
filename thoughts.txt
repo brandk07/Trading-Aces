@@ -77,6 +77,10 @@ make it so option expirationdate decreases with time (2/9/2024)
 
 Option combining still doesn't compute correctly, if two have differnt buy ins, it needs to adjust (2/11/2024)
 
+anything over an hour doesn't work because the stocks don't always graph points, either calculate it or store the date with new points (2/18/2024)
+
+make the total market acually take the poitns of the other stocks after fill points (2/18/2024)
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am

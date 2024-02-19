@@ -35,7 +35,8 @@ stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
 stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(218, 112, 214),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 
 # CREATING OBJECTS NEEDED FOR FILE DATA
-player = Player(stocknames,stockcolors[-1])
+transact = Transactions()
+player = Player(stocknames,stockcolors[-1],transact)
 stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 
@@ -46,7 +47,7 @@ musicdata = Getfromfile(stockdict,player,gametime)# muiscdata = [time, volume, s
 # CREATING OBJECTS
 stockgraphmanager = StockGraphManager(stocknames)
 stockbook = Stockbook(stocknames)
-portfolio = Portfolio(stocknames)
+portfolio = Portfolio(stocknames,transact)
 optiontrade = Optiontrade(stocklist,gametime)
 ui_controls = UI_Controls(stocklist,GAMESPEED)
 tmarket = TotalMarket()
@@ -118,13 +119,14 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 musicdata = [pygame.mixer.music.get_pos()/1000+musicdata[0],pygame.mixer.music.get_volume(),musicdata[2]]
                 
-                stockdata = [[stock.savingInputs] for stock in player.stocks]
-                optiondata = [[option.savingInputs] for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
+                stockdata = [stock.savingInputs() for stock in player.stocks]
+                optiondata = [option.savingInputs() for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
 
                 data = [str(gametime),stockdata,optiondata,player.graphrange,int(player.cash),musicdata]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data,tmarket)
+                transact.storeTransactions()
                 pygame.quit()
                 quit()
 

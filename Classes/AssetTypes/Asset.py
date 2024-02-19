@@ -3,6 +3,7 @@ import numpy as np
 from collections import deque    
 from random import randint
 from functools import lru_cache
+import datetime
 
 @lru_cache(maxsize=20)
 def calculate_volatility(points) -> float:
@@ -27,10 +28,12 @@ class Asset:
         """Parent class for all assets"""
         self.stockobj = stockobj
         self.date = creationdate
-        self.ogvalue = ogvalue
+        self.ogvalue = ogvalue# ogvalue is the value the asset orginally had, just for 1 asset
         self.color = (randint(50,255),randint(50,255),randint(50,255)) if color == None else color
-        self.name = f'{self.stockobj.name} {nametext}'# nametext for options is the option type
+        self.name = f'{self.stockobj.name}{nametext}'# nametext for options is the option type
         self.quantity = quantity
+        self.dateobj = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S')
+        
 
     def __str__(self) -> str:
         return f'{self.name}'
@@ -41,13 +44,12 @@ class Asset:
     def __iadd__(self,other):
         if self == other:
             self.quantity += other.quantity
-            self.ogvalue += other.ogvalue
             return self
         raise ValueError(f'{type(self).__name__} objects must be the same to add them together')
         
-    def percent_change(self):
+    def getPercent(self):
         """returns the percent change of the option"""
-        return ((self.get_value() - (self.ogvalue)) / (self.ogvalue)) * 100
+        return ((self.getValue(fullvalue=False) - (self.ogvalue)) / (self.ogvalue)) * 100
     
     def getVolatility(self):
         """returns the volatility of the asset's stock"""
@@ -65,7 +67,7 @@ class Asset:
         """sells the Asset"""
         player.sellAsset(self,quantity)
 
-    def get_value(self,bypass=False,fullvalue=True):
+    def getValue(self,bypass=False,fullvalue=True):
         """""Bypass is used to force a recalculation of the asset value (used for options since it is compute intensive)
         Full value is value*quantity otherwise it is just the value of the asset"""
         raise NotImplementedError('This method must be implemented in the child class')
