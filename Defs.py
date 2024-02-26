@@ -180,7 +180,7 @@ def time_it(func):
         print(f"{func.__name__} took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-def limit_digits(num, max_digits,floater=True) -> str:
+def limit_digits(num, max_digits, floater=True) -> str:
     if len("{:,.2f}".format(num)) > max_digits:
         return "{:,.2e}".format(num)    
     else:
@@ -204,7 +204,7 @@ def Getfromfile(stockdict:dict,player,gametime):
             # player.stocks = [[stockdict[stock[0]],stock[1],stock[2]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
             # print(data[1])
             player.stocks = [StockAsset(stockdict[stock[0]],stock[1],stock[2],stock[3]) for stock in data[1]]# [stockobj,creationdate,ogprice,quantity]
-            player.options = [OptionAsset(stockdict[option[0]],option[1],option[2],option[3],option[4],quantity=option[5],ogprice=option[6]) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity,ogprice]
+            player.options = [OptionAsset(stockdict[option[0]],option[1],option[2],option[3],option[4],quantity=option[5],ogprice=option[6],color=tuple(option[7])) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity,ogprice]
             player.graphrange = data[3]
             player.cash = data[4] if data[4] != 0 else 2500
             musicdata = (data[5])
@@ -213,11 +213,10 @@ def Getfromfile(stockdict:dict,player,gametime):
             return musicdata
         return [0,0,0]# time, volume, songindex
 
-def Writetofile(stocklist,player,data,tmarket):
+def Writetofile(stocklist,player,data):
     for stock in stocklist:
         stock.save_data()
     player.save_data()
-    tmarket.save_data()
     
     with open('Assets/Stockdata/extradata.json','w') as file:
         file.seek(0)# go to the start of the file

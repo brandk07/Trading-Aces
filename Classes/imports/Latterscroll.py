@@ -62,8 +62,18 @@ class LatterScroll():
 
                 # x = rendertexts[strtexts.index(x[0])].get_width()+x[1]# the width of the text + the offset
             if type(y) == tuple:
-                y = rendertexts[strtexts.index(y[0])].get_height()+y[1]
-            
+                height = 0 
+                for ii in range(len(y)-1):
+                    height += rendertexts[strtexts.index(y[ii])].get_height()
+                y = height+y[-1]# the width of the text + the offset
+
+                # y = rendertexts[strtexts.index(y[0])].get_height()+y[1]
+
+            # if the coords are negative, make them positive, this is used so you can have text
+            # that can be on the right side of the screen based on the length
+            # you can do this by setting the x to ('currenttext',-polywidth)
+            x = x*-1 if x < 0 else x
+            y = y*-1 if y < 0 else y
             textcoord[i] = (x,y)
 
         return textcoord
@@ -122,7 +132,6 @@ class LatterScroll():
                     render = tuple(s_render(info[0],info[1],info[2]) for info in text)
                     self.renderedtexts.append(render)
                     self.lasttexts.append(render)
-
 
                 self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn].copy(),[(t[0]) for t in text],self.renderedtexts[ndrawn])         
                        

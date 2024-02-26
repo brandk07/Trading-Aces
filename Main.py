@@ -36,12 +36,13 @@ stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0)
 
 # CREATING OBJECTS NEEDED FOR FILE DATA
 transact = Transactions()
-player = Player(stocknames,stockcolors[-1],transact)
+gametime = GameTime("01/01/2030 00:00:00")
+player = Player(stocknames,stockcolors[-1],transact,gametime)
 stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 
 # GETTING DATA FROM FILE
-gametime = GameTime((2030,1,1,0,0,0))
+
 musicdata = Getfromfile(stockdict,player,gametime)# muiscdata = [time, volume, songindex]
 
 # CREATING OBJECTS
@@ -72,8 +73,13 @@ pygame.mixer.music.set_volume(musicdata[1])
 # LAST DECLARATIONS
 lastfps = deque(maxlen=300)
 mousebuttons = 0
+# timer = timeit.default_timer()
 # for stock in stocklist:
 #     stock.fill_graphs()
+# print('time to fill graphs',timeit.default_timer()-timer)
+tmarket.fill_graphs(stocklist)
+
+
 screen.fill((50,50,50))
 screen.blit(background,(0,0))
 s = screen.copy()# makes way better performance
@@ -122,10 +128,10 @@ if __name__ == "__main__":
                 stockdata = [stock.savingInputs() for stock in player.stocks]
                 optiondata = [option.savingInputs() for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
 
-                data = [str(gametime),stockdata,optiondata,player.graphrange,int(player.cash),musicdata]
+                data = [str(gametime),stockdata,optiondata,player.graphrange,float(player.cash),musicdata]
                 data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
-                Writetofile(stocklist,player,data,tmarket)
+                Writetofile(stocklist,player,data)
                 transact.storeTransactions()
                 pygame.quit()
                 quit()

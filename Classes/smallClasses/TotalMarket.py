@@ -11,6 +11,19 @@ class TotalMarket(Stock):
         super().__init__('Total Market',(0,0),0,(213, 219, 44))
 
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+    def datafromfile(self):
+        # this child class does not need to read data from a file
+        self.graphs = {key:np.array([100],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+    def fill_graphs(self,stocklist):
+        """Fills the graphs with the stock's prices"""
+        # equivalent to the datafromfile method, but it wasn't necessary to store stuff in a file since it can be loaded fast 
+        for key in self.graphrangeoptions:
+            self.graphs[key] = np.array([],dtype=object)
+            for point in range(POINTSPERGRAPH):
+                value = sum([stock.graphs[key][point] for stock in stocklist])/9
+                self.graphs[key] = np.append(self.graphs[key],value)
+        self.price = self.graphs["1H"][-1]
+            
 
     def update_range_graphs(self,value):
         

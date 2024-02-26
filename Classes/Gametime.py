@@ -1,6 +1,7 @@
 from Defs import fontlist
 import pygame
 from datetime import datetime, timedelta
+from dateutil import parser
 
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
@@ -17,17 +18,20 @@ def secsTo930(dt):
         seconds = (combined_minutes + 1440) * 60  # Add 1 day and adjust minutes
 
     return seconds
-
+DFORMAT = "%m/%d/%Y %I:%M:%S %p"
 class GameTime:
-    def __init__(self,time) -> None:
-        self.time = datetime(*time)
+    def __init__(self,time:str) -> None:
+        # self.time = datetime.strptime(time,DFORMAT)
+        self.time = parser.parse(time)
         self.fastforwarding = False# used for refrence in other classes
 
     def __str__(self) -> str:
-        return str(self.time)
-    
+        return self.time.strftime(DFORMAT)
+    def getDate(self):
+        return self.time.strftime("%m/%d/%Y")
+
     def setTimeStr(self,time:str):
-        self.time = datetime.strptime(time,'%Y-%m-%d %H:%M:%S')
+        self.time = datetime.strptime(time,DFORMAT)
     
     def advanceTime(self,speed:int,autoFastForward:bool,fastforwardspeed:int):
         if autoFastForward and not self.isOpen()[0]:
@@ -43,24 +47,25 @@ class GameTime:
         return self.time
 
     def getTime(self):
-        return str(self.time)
+        return self.time.strftime(DFORMAT)
         # return self.time
 
-    def isOpen(self):
+    def isOpen(self,time:datetime=None):
         """Checks if the market is open or not
         returns a tuple of (bool,reason)"""
-
-        if (self.time.month,self.time.day) in HOLIDAYS:
+        if time == None:
+            time = self.time
+        if (time.month,time.day) in HOLIDAYS:
             return False, 'Holiday'
-        if WEEKDAYS[self.time.weekday()] in ['Saturday','Sunday']:
+        if WEEKDAYS[time.weekday()] in ['Saturday','Sunday']:
             return False, 'Weekend'
-        if not(((self.time.hour == 9 and self.time.minute >= 30) or self.time.hour > 9) and self.time.hour < 16):
+        if not(((time.hour == 9 and time.minute >= 30) or time.hour > 9) and time.hour < 16):
             return False, 'Off Hours'
         return True, 'Open'
     
     def timeAt(self,secondsago):
         """returns the time at a certain amount of seconds ago"""
-        return (self.time - timedelta(seconds=secondsago))
+        return (self.time - timedelta(seconds=secondsago)).strftime(DFORMAT)
 
     def getRenders(self,sizes):
         """Sizes is (yearsize,monthsize,daysize,timesize,daynamesize,monthnamesize)"""

@@ -9,6 +9,7 @@ import os
 import timeit
 import json
 from Classes.imports.Graph import Graph
+from datetime import datetime,timedelta
 POINTSPERGRAPH = 200
 
 class Stock():
@@ -36,7 +37,7 @@ class Stock():
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]
         self.datafromfile()
 
-        # self.price = self.graphs['1H'][-1]
+        self.price = self.graphs['1H'][-1]
         
         #variables for the stock price+
         self.volatility = volatility
@@ -71,7 +72,6 @@ class Stock():
             for i,grange in enumerate(self.graphs.keys()):
                 if data[i]:# if the file is not empty
                     self.graphs[grange] = np.array(data[i])# add the contents to the graphs
-                    self.price = self.graphs[grange][-1]# set the price to the last value in the graph
                 else:
                     self.graphs[grange] = np.array([100])# if the file is empty then set the graph to 100
             if len(data[-1]) > 0:
@@ -84,10 +84,13 @@ class Stock():
             file.seek(0)  # go to the start of the file
             file.truncate()  # clear the file
             for item in list(self.graphs.values()):
+                for i in range(len(item)):
+                    item[i] = float(item[i])
                 json_item = json.dumps(item.tolist())  # Convert the list to a JSON string
                 file.write(json_item + '\n')  # Write the JSON string to the file with a newline character
             
             file.write(json.dumps(self.bonustrends))
+        
 
     def bankrupcy(self,drawn,coords=None,wh=None,screen:pygame.Surface=None):
         """returns False if stock is not bankrupt,don't need screen if drawn is False"""	
@@ -165,7 +168,6 @@ class Stock():
         lastgraphed = ""
         pointsmade = 0
         while len(self.graphs['1H']) < POINTSPERGRAPH:
-
             newgraphed = get_lowestgraph(pointsmade)# gets the name of the lowest graph that should get points added to it
             if newgraphed == None:# if there is no graph that needs points added to it for the amount of points made
                 pointsmade += 1# advance pointsmade until there is a graph that needs points added to it
@@ -250,20 +252,40 @@ class Stock():
                 screen.blit(text1,(mousex,graphpoints[int(pos)]-text1.get_height()-5))# the value of the stock
                 # text2 = s_render()
                 if gametime:
-                    # secondsago = int((len(self.graphs[self.graphrange])-pos)*self.graphrangeoptions[self.graphrange])
-                    # print(secondsago)
-                    # print(gametime.timeAt(len(self.graphs[self.graphrange])-(self.graphrangeoptions[self.graphrange]*pos)))
-                    reversepos = (len(self.graphs[self.graphrange])-pos)# Reversepos
-                    seconds = reversepos*(self.graphrangeoptions[self.graphrange]/POINTSPERGRAPH)
-                    # gametime.timeAt(self.graphrangeoptions[self.graphrange]*pos)
-                    text2 = s_render(f'{gametime.timeAt(seconds)}',30,(255,255,255))
+                    mousepoint = (len(self.graphs[self.graphrange])-pos)
+
+                    graphed_seconds = mousepoint*(self.graphrangeoptions[self.graphrange]/POINTSPERGRAPH)# the amount of seconds that the stock has been graphed
+                    grapheddays = graphed_seconds//self.graphrangeoptions["1D"]# the amount of days that the stock has been graphed
+                    seconds = graphed_seconds%self.graphrangeoptions["1D"]# the amount of seconds that the stock has been graphed
+                    time_offset = gametime.time#time offset
+                    if gametime.isOpen(time_offset)[0] == False:
+                        time_offset = time_offset.replace(hour=15,minute=59,second=0)# set the time to 3:59 PM
+                    dayscount = 0
+
+                    while dayscount < grapheddays:
+                        time_offset -= timedelta(days=1)# add a day to the time offset
+                        if gametime.isOpen(time_offset)[0]:# if that is a day that was open for trading
+                            dayscount += 1# add 1 to the days count
+
+                    secondsleft = (time_offset - time_offset.replace(hour=9,minute=30,second=0)).seconds# the amount of seconds left in the day
+                    if seconds > secondsleft:# if the amount of seconds needed to minus is greater than the seconds left in the day
+                        seconds -= secondsleft
+                        time_offset -= timedelta(days=1)# add a day to the time offset
+                        while gametime.isOpen(time_offset)[0] == False:
+                            time_offset -= timedelta(days=1)
+                        
+                        time_offset = time_offset.replace(hour=15,minute=59,second=0)# set the time to 3:59 PM
+                        
+                    time_offset -= timedelta(seconds=seconds)# add a day to the time offset
+
+                    text2 = s_render(f'{time_offset.strftime("%m/%d/%Y %I:%M %p")}',30,(255,255,255))
                     screen.blit(text2,(mousex,graphpoints[int(pos)]))# the time of the stock
 
                 percentchange = round(((self.graphs[self.graphrange][int(pos)]/self.graphs[self.graphrange][0])-1)*100,2)
                 color = (0,205,0) if percentchange >= 0 else (205,0,0)
                 if percentchange == 0: color = (205,205,205)
                 screen.blit(s_render(f'{percentchange:,.2f}%',30,color),(mousex,graphpoints[int(pos)]+text1.get_height()+5))# the percent change of the stock
-                # screen.blit(fontlist[30].render(f'{percentchange:,.2f}%',color)[0], (mousex,graphpoints[int(pos)]+text1.get_height()+5))
+
                 gfxdraw.line(screen,mousex,coords[1]+wh[1]-blnkspacey,mousex,coords[1],(255,255,255))
 
     def baredraw(self,screen,coords,wh,graphrange,mouseover=False):
@@ -291,6 +313,8 @@ class Stock():
         if type(self) == self.Playerclass:#if it is a Player object
             # self.graph(stocklist)#graph the player networth
             self.message(screen)#display the messages
+        
+        self.price = self.graphs["1H"][-1]
         
         blnkspacex = (coords[0]+wh[0]-coords[0])//10#the amount of blank space to be left on the right side of the graph for x
         blnkspacey = (coords[1]+wh[1]-coords[1])//10#the amount of blank space to be left on the right side of the graph for y

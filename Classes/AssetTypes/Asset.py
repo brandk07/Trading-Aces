@@ -32,7 +32,7 @@ class Asset:
         self.color = (randint(50,255),randint(50,255),randint(50,255)) if color == None else color
         self.name = f'{self.stockobj.name}{nametext}'# nametext for options is the option type
         self.quantity = quantity
-        self.dateobj = datetime.datetime.strptime(creationdate, '%Y-%m-%d %H:%M:%S')
+        self.dateobj = datetime.datetime.strptime(creationdate, "%m/%d/%Y %I:%M:%S %p")
         
 
     def __str__(self) -> str:

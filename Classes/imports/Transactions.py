@@ -25,20 +25,28 @@ class Transactions:
                 f.write(json.dumps(line)+'\n')
         
 
-
     def drawscroll(self,screen,coords:tuple,wholewh:tuple,polywh,mousebuttons:int):
         """Wholewh is the wh of the whole element
         polywh is the wh of each transaction displayed"""
         textlist = self.transactlog
         
         textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
-        textcoords = [[(10,10),(10,10+int(polywh[1]/4)),(10,10+int(polywh[1]/4)*2)] for i in range(len(textlist))]
+        textcoords = [[(10,10),
+                       (10,(textlist[i][0],20)),
+                    #    (10,10+int(polywh[1]/4)*2),
+                        ((textlist[i][2],-polywh[0]+40),(textlist[i][0],20)),
+                       (10,(textlist[i][0],textlist[i][1],35)),
+                       ((textlist[i][4],-polywh[0]+40),(textlist[i][0],textlist[i][1],35)),
+                       ] for i in range(len(textlist))]
+        sizes = [50,40,40,40,40]
+        # text example = ["Sold 1 STAR call Option", "02/15/2030", "Profited $160.69", "Value +$714.81", "Balance $852.82"]
+        # ["Added 1 BOTS put Option", "02/15/2030", "", "Cost -$121.00", "Balance $760.17"]
+
         # loop through the textlist and store the text info in the textinfo list
         for i,text in enumerate(textlist):
-            polytexts = []# temporary list to store the text info for each asset
-            polytexts.append([text[0],40,(180,10,10)])
-            polytexts.append([text[1],40,(10,230,10)])
-            polytexts.append([text[2],40,(190,190,190)])
+            adjcolor = (230,10,10) if 'Lost' in textlist[i][2] or '-' in textlist[i][3] else (10,230,10)
+            colors = [(190,190,190),(190,190,190),adjcolor,adjcolor,(190,190,190)]
+            polytexts = [[text[ii],sizes[ii],colors[ii]] for ii in range(len(text))]# temporary list to store the text info for each asset
             textinfo.append(polytexts)
 
         self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
@@ -53,8 +61,8 @@ class Transactions:
 
 
 
-    def addTransaction(self,texts1:list,texts2:list,texts3:list):
-        self.transactlog.insert(0,[texts1,texts2,texts3])
+    def addTransaction(self,texts1:list,texts2:list,texts3:list,texts4:list,texts5:list):
+        self.transactlog.insert(0,[texts1,texts2,texts3,texts4,texts5])
 
     def draw(self,screen,mousebuttons,coords:tuple,wh:tuple,polywh):
         if self.transactlog:

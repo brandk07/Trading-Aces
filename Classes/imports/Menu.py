@@ -86,10 +86,12 @@ class Menu():
 
         # draws the time in the top left corner
         # texts = gametime.getrenders(50,50,50,105,50,50)
-    def topbar(self,screen,gamtime,player):
+    def topbar(self,screen,gametime,player):
         """Draws the top bar of the screen"""
-        screen.blit(s_render(f"Cash ${player.cash:.2f}",50,(200,200,200)),(1150,1010))
-
+        screen.blit(s_render(f"Cash ${limit_digits(player.cash,150)}",50,(200,200,200)),(1150,1010))
+        gametimetext = s_render(f"{str(gametime)}",50,(200,200,200))
+        screen.blit(gametimetext,(750-gametimetext.get_width(),1010))
+        
     def draw_menu(self,screen,mousebuttons:int,stocklist:list,player,ui_controls,gametime):
         gfxdraw.filled_polygon(screen, self.menupoints,(40,40,40,200))
         pygame.draw.polygon(screen, (0,0,0), self.menupoints,5)

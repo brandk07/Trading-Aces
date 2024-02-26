@@ -7,9 +7,9 @@ from collections import deque
 
     
 class OptionAsset(Asset):
-    def __init__(self,stockobj,strike_price:int,expiration_date:int,option_type:str,creationdate:str,quantity:int,ogprice=None) -> None:
+    def __init__(self,stockobj,strike_price:int,expiration_date:int,option_type:str,creationdate:str,quantity:int,ogprice=None,color=None) -> None:
         
-        super().__init__(stockobj, creationdate, " "+option_type, ogprice, quantity, color=None)
+        super().__init__(stockobj, creationdate, " "+option_type, ogprice, quantity, color=color)
         
         self.strike_price = strike_price
         self.expiration_date = expiration_date
@@ -24,8 +24,7 @@ class OptionAsset(Asset):
         return [self.stockobj,self.strike_price,self.option_type,self.expiration_date,self.date,self.ogvalue] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date,other.date,other.ogvalue]
 
     def savingInputs(self):
-        return (self.stockobj.name,self.strike_price,self.expiration_date,self.option_type,self.date,self.quantity,self.ogvalue)
-
+        return (self.stockobj.name,self.strike_price,self.expiration_date,self.option_type,self.date,self.quantity,self.ogvalue,self.color)
 
 
     def copy(self):

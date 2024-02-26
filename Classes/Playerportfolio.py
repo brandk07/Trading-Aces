@@ -9,11 +9,15 @@ import numpy as np
 class Player(Stock):
     
 
-    def __init__(self,stocknames,color,transact) -> None:
+    def __init__(self,stocknames,color,transact,gametime) -> None:
         name = 'Net Worth'
         super().__init__(name,(2500,2500),0,color,Player,stocknames)
+        
         self.name = name
         self.cash = 25000
+
+        if self.graphs["1H"].size == 1:
+            self.graphs = {key:np.array([self.cash],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.stocks = []# list of lists containing the [stock object, the price bought at, and the quantity]
         self.options = []#list of option objects
         self.stockvalues = []
@@ -24,8 +28,10 @@ class Player(Stock):
             StockAsset:'Share',
             OptionAsset:'Option'
         }
+        self.gametime = gametime
 
-        # self.recent_movementvar = (None,None,(180,180,180))
+        # self.recent_movementvar = (None,None,(180,180,180)
+
     def buyAsset(self,newasset):
         if newasset.quantity <= 0:
             return
@@ -36,10 +42,14 @@ class Player(Stock):
 
         if self.cash >= newasset.getValue(bypass=True):
             # ["Sold 39 Shares of","KSTON for $5,056.93","Balance $26,103.18"]
-    
-            self.transact.addTransaction(f"Bought {newasset.quantity} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')} of",
-                                        f"{newasset.stockobj.name} for ${limit_digits(newasset.getValue(bypass=True),12)}",
-                                        f"Balance ${limit_digits(self.cash-newasset.getValue(bypass=True),12)}")
+            text = [
+                f"Added {newasset.quantity} {newasset.stockobj.name} {'' if type(newasset) == StockAsset else newasset.option_type} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
+                f"{self.gametime.getDate()}",
+                f"${limit_digits(newasset.getValue(bypass=True,fullvalue=False),12)} Per Share",
+                f"Cost -${limit_digits(newasset.getValue(bypass=True),12)}",
+                f"Balance ${limit_digits(self.cash-newasset.getValue(bypass=True),12)}"
+            ]
+            self.transact.addTransaction(*text)
             self.cash -= newasset.getValue()# fullvalue is True by default
             for a in assetlist:# if the asset is already in the list, add the new asset to the old one
                 if newasset == a:# use the __eq__ method to compare the assets
@@ -63,10 +73,21 @@ class Player(Stock):
 
         if quantity > (quant:=assetlist[assetlist.index(asset)].quantity):# if the quantity is greater than the quantity of the asset
             quantity = quant
+        # text = [
+        #     f"Sold {quantity} {self.assetText[type(asset)]+('s' if quantity > 1 else '')} of",
+        #     f"{asset.stockobj.name} for ${limit_digits(asset.getValue(bypass=True,fullvalue=False),12)}",
+        #     f"Balance ${limit_digits(self.cash+asset.getValue(bypass=True,fullvalue=False),12)}"
+        # ]
+        loss_gain = asset.getValue(bypass=True,fullvalue=False)*quantity-asset.ogvalue*quantity
+        taxes = loss_gain*self.taxrate if loss_gain > 0 else 0
+        loss_gain = loss_gain if loss_gain <= 0 else loss_gain*(1-self.taxrate)
+        value = (asset.getValue(bypass=True,fullvalue=False)*quantity)-taxes
         text = [
-            f"Sold {quantity} {self.assetText[type(asset)]+('s' if quantity > 1 else '')} of",
-            f"{asset.stockobj.name} for ${limit_digits(asset.getValue(bypass=True,fullvalue=False),12)}",
-            f"Balance ${limit_digits(self.cash+asset.getValue(bypass=True,fullvalue=False),12)}"
+            f"Sold {quantity} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
+            f"{self.gametime.getDate()}",
+            f"{'Lost' if loss_gain < 0 else 'Profited'} ${limit_digits(abs(loss_gain),12) if loss_gain != 0 else '0'}",
+            f"Value +${limit_digits(value,12)}",
+            f"Balance ${limit_digits(self.cash+value,12)}"
         ]
         self.transact.addTransaction(*text)
         

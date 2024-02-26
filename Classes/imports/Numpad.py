@@ -16,8 +16,9 @@ class Numpad:
         return int(self.numstr)
     
     def draw(self,screen,coords,wh,extratext,mousebuttons,maxvalue):
-        gfxdraw.box(screen,pygame.Rect(coords,wh),(50,50,50))
-        pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,wh),5)
+        # gfxdraw.box(screen,pygame.Rect(coords,wh),(50,50,50))
+        # pygame.draw.rect(screen,(50,50,50),pygame.Rect(coords,wh),)
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,wh),5,10)
         extratext = s_render(f"{int(self.numstr):,.0f} "+extratext+("S" if int(self.numstr) != 1 else ""),45,(255,255,255),font='cry')
         topheight = extratext.get_height()*1.8
         gfxdraw.box(screen,pygame.Rect((coords[0]+5,coords[1]+5),(wh[0]-10,topheight)),(35,35,35))
@@ -36,7 +37,7 @@ class Numpad:
         righttripoints = [(coords[0]+wh[0]-15,coords[1]+topheight/2),(coords[0]+wh[0]-40,coords[1]+12),(coords[0]+wh[0]-40,coords[1]+topheight-12)]
         gfxdraw.filled_polygon(screen,lefttripoints,(150,150,150))
         gfxdraw.filled_polygon(screen,righttripoints,(150,150,150))
-        
+
         if point_in_polygon(pygame.mouse.get_pos(),leftboxpoints):
             if mousebuttons == 1 and int(self.numstr) > 0: self.numstr = str(int(self.numstr)-1)
         if point_in_polygon(pygame.mouse.get_pos(),rightboxpoints):
@@ -55,10 +56,10 @@ class Numpad:
                 h = ((wh[1]-topheight)*.9)/4 - 10 
 
                 rect = pygame.Rect(x,y,w,h)
-                color = (60,60,60)
+                color = (80,80,80)
 
                 if rect.collidepoint(pygame.mouse.get_pos()):
-                    color = (120,120,120)
+                    color = (135,135,135)
                     if mousebuttons == 1:
                         if self.nums[ind] == 'DEL' and len(self.numstr) > 1:
                             self.numstr = self.numstr[:-1]
@@ -75,7 +76,8 @@ class Numpad:
                         if int(self.numstr) > maxvalue:
                             self.numstr = str(maxvalue)
 
-                gfxdraw.box(screen,rect,color)
+                # gfxdraw.box(screen,rect,color)
+                pygame.draw.rect(screen,color,rect,5,10)
                 
                 pos_x = x + w/2 - self.widths[ind]/2
                 pos_y = y + h/2 - self.heights[ind]/2

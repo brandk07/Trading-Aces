@@ -34,8 +34,10 @@ from dateutil.relativedelta import relativedelta
 # print(f"Time until 9:30 AM on the next day in seconds: {seconds}")
 # dt += timedelta(seconds=seconds)
 # print(dt)
-dt = datetime(2023, 1, 1, 17, 30, 0)
+dt = datetime(2023, 1, 1, 10, 30, 0)
 dt2 = datetime(2023, 1, 5, 9, 30, 0)
+
+print((dt - dt.replace(hour=9, minute=30, second=0, microsecond=0)).seconds)
 
 difference = dt2 - dt
 # dt1 = datetime(2023, 1, 1, 17, 30, 0)
