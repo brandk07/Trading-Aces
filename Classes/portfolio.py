@@ -16,7 +16,7 @@ DX = 300# default x
 DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
-    def __init__(self,stocknames,transact) -> None:
+    def __init__(self,stocklist) -> None:
         self.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
         self.icon = pygame.transform.scale(self.icon,(140,100))
         self.icon.set_colorkey((255,255,255))
@@ -34,7 +34,7 @@ class Portfolio(Menu):
         self.menudrawn = True
         # self.allrenders = []
         self.selected_asset = None
-        self.transact = transact
+        self.displayedStocks = [stocklist[0],stocklist[1],stocklist[2]]
 
         # for the asset type selection which sorts the latterscroll
         # self.assetoptions = ["Stocks","Options","Other"]# future, Crypto, bonds, minerals, real estate, etc
@@ -47,7 +47,7 @@ class Portfolio(Menu):
         self.latterscrollnorm = PortfolioLatter()
         self.latterscrollselect = PortfolioLatter()
         self.numpad = Numpad()
-
+        stocknames = [stock.name for stock in stocklist]
         self.stocktext = {name:[] for name in stocknames}# the list has [fullstockname,stockdescription1,stockdescription etc...]
         with open(r'Assets\newstockdes.txt','r') as descriptions:
             filecontents = descriptions.readlines()
@@ -209,7 +209,7 @@ class Portfolio(Menu):
 
         # Draws the description about the stock on the left side of the screen
         points = [(200, 605), (850, 605), (850, 960), (200, 960)]
-        gfxdraw.filled_polygon(screen, points, (30, 30, 30))
+        # gfxdraw.filled_polygon(screen, points, (30, 30, 30))
         pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
         self.drawAssetInfo(screen,asset,gametime,player)# draws the Asset Analytics underneath the stock graph on the left side of the screen
@@ -380,7 +380,14 @@ class Portfolio(Menu):
         # screen.blit(s_render("TRADE ASSET", 65, color), (1275, 890))
         return False    
 
+    def drawStockGraphs(self,screen,stocklist,mousebuttons):
+        """Draws the stock graphs on the right side of the screen"""
+        for i,stock in enumerate(self.displayedStocks):
+            if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),mousebuttons,0,rangecontroldisp=False,graphrange="1D") and mousebuttons == 1:# if the stock name is clicked
+                print(stock.name)
+
         
+
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player, gametime):
         """Draws all of the things in the portfolio menu"""
         mousex, mousey = pygame.mouse.get_pos()
@@ -409,10 +416,16 @@ class Portfolio(Menu):
             values.append([player.cash, "Cash",player.color])
             for option in player.options:
                 values.append([option.getValue(),option.name,option.color])
-            draw_pie_chart(screen, values, 150,(200, 650))
-
-
-            self.transact.draw(screen,mousebuttons,(1400,105),(500,960),(500,150))
+            draw_pie_chart(screen, values, 150,(200, 650))  
+            
+            self.drawStockGraphs(screen,stocklist,mousebuttons)# draws the stock graphs on the right side of the screen
+            # for stock in self.displayedStocks:
+            #     stock.draw(screen,player,(1400,stock.y),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
+                
+            # stocklist[0].draw(screen,player,(1400,200),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
+            # stocklist[1].draw(screen,player,(1400,455),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
+            # stocklist[2].draw(screen,player,(1400,710),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
+            # self.transact.draw(screen,mousebuttons,(1400,105),(500,960),(500,1
 
         
         else:# if the selected asset is NOT None

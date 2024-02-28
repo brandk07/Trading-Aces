@@ -15,6 +15,34 @@ use :=
 dictionary.get(key,default value) - avoids errors
 dict.setdefault(key,default value) - will set a value if not found
 
+text = 'Heloo'
+rev = slice(None,None,-1)
+print(text[rev])
+// ooleH
+
+def __format__(self, format_spec) -> str:
+    match format_spec:
+        case 'time':
+            return f"dklf"
+        case 'case':
+            return f"this"
+        case _:
+            return ValueError(f"Unknown specifier for object") 
+then you can do f"{object:caps}"
+
+currying-
+def multiply_setup(a):
+    def multiply(b):
+        return a * b 
+    return multiply
+
+double = multiply_setup(2)
+triple = multiply_setup(3)
+
+double(5)# 10
+triple(7)# 21
+
+
 
 ------------------Eventually ----------------------
  
@@ -29,7 +57,9 @@ Make a progression where you have to get enough money to unlock certain features
     amount of stocks/options you can hold
     how fast you can warp time
 
-Add crypto (1/12/2024)
+Add crypto/gold (1/12/2024)
+
+Ablility to create your own stocks with custom stock name color volatility etc (2/8/2024)
 
 -----------------Small things-------------------
 -----------------Things to do-------------------
@@ -51,13 +81,7 @@ The message board with the stock increases and decreases should Have the option 
 
 Customization screen in OptionTrade (12/29/23)
 
-
-
 Add the banking and loans (12/29/23)
-
-create a point in pie for mouseover the pie chart (1/2/2024)
-
-Add a extra text parameter to the num_renderer so that more text can be rendered in the same thing (1/8/2024)
 
 options should disappear from available when purchased (1/10/2024)
 
@@ -70,6 +94,17 @@ Acually fix the problem with the bar class where if it is reversedscroll it will
 make it so option expirationdate decreases with time (2/9/2024)
 
 make class for drawing the pie chart (2/28/2024)
+create a point in pie for mouseover the pie chart (1/2/2024)
+
+Save all the year graphs, use the year graphs to make an all time graph (2/14/2024)
+
+Add a mark on the stock graphs in portfolio where it would mark where you bought the stock (1/22/2024)
+
+Add a buy animation (1/9/2024)
+
+Add comparison between the total market and your portfolio (12/21/24)
+
+Make performance better in menu by saving the screen with the backdrop drawn similar to the background is (2/26/2024)
 
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am

@@ -218,6 +218,7 @@ class Stock():
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             for _ in range(gamespeed):
                 self.update_range_graphs()
+            self.price = self.graphs["1H"][-1]
         else:
             # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
             for _ in range(gamespeed):
@@ -306,8 +307,10 @@ class Stock():
 
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0],coords[1],graphwidth,graphheight), 5)
         
-
-    def draw(self,screen:pygame.Surface,player:object,coords,wh,Mousebuttons,gametime,rangecontroldisp=True,graphrange=None):
+    def getPercent(self,graphrange):
+        """Returns the percent change of the stock"""
+        return ((self.graphs[graphrange][-1]/self.graphs[graphrange][0])-1)*100
+    def draw(self,screen:pygame.Surface,player:object,coords,wh,Mousebuttons,gametime,rangecontroldisp=True,graphrange=None) -> bool:
         """Draws the graph of the stock along with the range controls, price lines, and the name"""
         
         if type(self) == self.Playerclass:#if it is a Player object
@@ -315,6 +318,8 @@ class Stock():
             self.message(screen)#display the messages
         
         self.price = self.graphs["1H"][-1]
+        self.graphrange = graphrange if graphrange != None else self.graphrange
+
         
         blnkspacex = (coords[0]+wh[0]-coords[0])//10#the amount of blank space to be left on the right side of the graph for x
         blnkspacey = (coords[1]+wh[1]-coords[1])//10#the amount of blank space to be left on the right side of the graph for y
@@ -333,7 +338,8 @@ class Stock():
 
         # using the graph class to graph the points
         self.graph.setPoints(self.graphs[self.graphrange])# set the list of points
-        color = (30,30,30) if percentchange == 0 else (0,30,0) if percentchange > 0 else (30,0,0)
+        # color = (30,30,30) if percentchange == 0 else (0,30,0) if percentchange > 0 else (30,0,0)
+        color = percentColor((30,0,0),(0,30,0),(30,30,30),self.getPercent(self.graphrange))
         graphheight = (coords[1]+wh[1]-coords[1])-blnkspacey
         graphwidth = (coords[0]+wh[0]-coords[0])-blnkspacex
 
@@ -369,9 +375,8 @@ class Stock():
             # goes off the current price of the stock, not the original value stored in the stock object
             screen.blit(s_render(f' Net Worth ${player.getNetworth():,.2f}',40,(255,255,255)),(coords[0]+10,coords[1]+wh[1]-40)) 
             
-
-        screen.blit(s_render(f"{self.name if type(self) == Stock else 'Portfolio'}",50,self.color),(coords[0]+10,coords[1]+10))#draws the text that displays the name of the stock or the player
-
+        
+        
         #Below is the price change text
         color = (0,175,0) if percentchange >= 0 else (175,0,0)
         
@@ -383,4 +388,12 @@ class Stock():
         
         self.mouseover(screen,graphingpoints,spacing,blnkspacey,coords,wh,gametime=gametime)#displays the price of the stock when the mouse is over the graph
         
-        
+        nametext = s_render(f"{self.name if type(self) == Stock else 'Portfolio'}",50,self.color)
+
+        if pygame.Rect(coords[0]+10,coords[1]+10,nametext.get_width(),nametext.get_height()).collidepoint(pygame.mouse.get_pos()):#if the mouse is over the name of the stock
+            nametext = s_render(f"{self.name if type(self) == Stock else 'Portfolio'}",50,(230,230,230))    
+            screen.blit(nametext,(coords[0]+10,coords[1]+10))#draws the text that displays the name of the stock or the player
+            return True   
+        screen.blit(nametext,(coords[0]+10,coords[1]+10))#draws the text that displays the name of the stock or the player
+        return False
+    

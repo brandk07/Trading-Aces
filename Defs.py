@@ -67,7 +67,7 @@ def playmusic(musicdata):
     
     return musicdata
 
-
+percentColor = lambda negative, positive, zero, change : negative if change < 0 else positive if change > 0 else zero
 
 def reuserenders(renderlist,texts,textinfo,position) -> list:
     """renderlist is a list of dicts, 

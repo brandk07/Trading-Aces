@@ -7,14 +7,14 @@ class Graph:
     def __init__(self) -> None:
         self.graphpoints = np.array([],dtype=object)
 
-    def setPoints(self, points):
+    def setPoints(self, points,):
         """Points can be a list or a numpy array"""
         if type(points) == list:
             points = np.array(points,dtype=object)
 
         self.graphpoints = points
 
-    def draw_graph(self,screen,coords,wh,graphcolor,lines):
+    def draw_graph(self,screen,coords,wh,graphcolor):
         """Draws the graph to the screen"""
         x,y = coords[0],coords[1]+15
         width,height = wh[0],wh[1]-30

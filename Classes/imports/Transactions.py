@@ -36,8 +36,8 @@ class Transactions:
                     #    (10,10+int(polywh[1]/4)*2),
                         ((textlist[i][2],-polywh[0]+40),(textlist[i][0],20)),
                        (10,(textlist[i][0],textlist[i][1],35)),
-                       ((textlist[i][4],-polywh[0]+40),(textlist[i][0],textlist[i][1],35)),
-                       ] for i in range(len(textlist))]
+                       ((textlist[i][4],-polywh[0]+40),(textlist[i][0],textlist[i][1],35)),] for i in range(len(textlist))]
+
         sizes = [50,40,40,40,40]
         # text example = ["Sold 1 STAR call Option", "02/15/2030", "Profited $160.69", "Value +$714.81", "Balance $852.82"]
         # ["Added 1 BOTS put Option", "02/15/2030", "", "Cost -$121.00", "Balance $760.17"]
