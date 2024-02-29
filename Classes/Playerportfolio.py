@@ -11,7 +11,7 @@ class Player(Stock):
 
     def __init__(self,stocknames,color,transact,gametime) -> None:
         name = 'Net Worth'
-        super().__init__(name,(2500,2500),0,color,Player,stocknames)
+        super().__init__(name,0,color,gametime)
         
         self.name = name
         self.cash = 25000

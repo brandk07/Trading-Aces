@@ -310,7 +310,8 @@ class UI_Controls():
                 self.draw_home(screen,stocklist,gametime,player,mousebuttons)            
 
                 # player.draw(screen,player,(250,160),(680,540),mousebuttons,stocklist,True)
-                tmarket.draw(screen,(250,160),(680,540),mousebuttons,gametime)
+                # tmarket.draw(screen,(250,160),(680,540),mousebuttons,gametime)
+                tmarket.drawFull(screen,(250,160),(680,540),"1D",True,"Normal")
                 # self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
                 
                 screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(830,20))

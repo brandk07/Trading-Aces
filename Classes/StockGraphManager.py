@@ -3,6 +3,7 @@ from pygame import gfxdraw
 import math
 from Defs import *
 import timeit
+
 class StockGraphManager:
     def __init__(self,stocknames):
         self.graph_config = {
@@ -45,7 +46,7 @@ class StockGraphManager:
         }
         # self.mcontrolstext = [[fontlist[45].render(text,(220,220,220))[0],text.lower()] for text in ["1H","1D","1W","1M","3M","1Y","Custom"]]
         self.renderedstocknames = {name:fontlist[25].render(name,(255,255,255))[0] for name in self.allstocks}
-        self.masterrange = "1H"
+        self.masterRange = "1H"
         self.dragstock = [None,None,None]# [stock object, xoffset, yoffset]
 
     def draw_ui(self,screen,mousebuttons:int,stocklist:list):
@@ -159,8 +160,9 @@ class StockGraphManager:
                 else:
                     x = int(200 + (i * width))
                     y = 10
-                stock.baredraw(screen, (x + 5, y), (int(width), 80), self.masterrange if self.masterrange != 'Custom' else '1H')
-
+                # stock.baredraw(screen, (x + 5, y), (int(width), 80), self.masterRange if self.masterRange != 'Custom' else '1H')
+                self.masterRange = self.masterRange if self.masterRange != 'Custom' else '1H'
+                stock.drawBare(screen, (x + 5, y), (int(width), 80), self.masterRange, True, "None")
                 pchange = round(((stock.graphs[stock.graphrange][-1] / stock.graphs[stock.graphrange][0]) - 1) * 100, 2)
                 color = (0, 200, 0) if pchange >= 0 else (200, 0, 0)
                 if pchange == 0:
@@ -178,7 +180,7 @@ class StockGraphManager:
             x = 1620
             y = 100+(i*height)
                     
-            color = (30,30,30) if text != self.masterrange else (140,0,0)
+            color = (30,30,30) if text != self.masterRange else (140,0,0)
             gfxdraw.filled_polygon(screen,[(x-10,y+55),(x-10,y+5),(x+width,y+5),(x+width,y+55)],color)# polygon behind the text (the graph range)
             pygame.draw.polygon(screen,(0,0,0),[(x-10,y+55),(x-10,y+5),(x+width,y+5),(x+width,y+55)],4)# outline
             trender = s_render(text,45,(220,220,220))
@@ -187,10 +189,10 @@ class StockGraphManager:
             if pygame.Rect(x-10,y+10,width,height).collidepoint(mousex,mousey):
                 if mousebuttons == 1:
                     mousebuttons = 0
-                    self.masterrange = text
-                    if self.masterrange != 'Custom':
+                    self.masterRange = text
+                    if self.masterRange != 'Custom':
                         for stock in stocklist:
-                            stock.graphrange = self.masterrange
+                            stock.graphrange = self.masterRange
 
 
     def draw_graphs(self, screen, stocklist:list, player, mousebuttons, gametime):
@@ -214,8 +216,9 @@ class StockGraphManager:
                 # if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
                 #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
 
-                stock.draw(screen,player,coords,wh,mousebuttons,gametime,rangecontroldisp=(True if self.masterrange == 'Custom' else False))
-                    
+                # stock.draw(screen,player,coords,wh,mousebuttons,gametime,rangecontroldisp=(True if self.masterRange == 'Custom' else False))
+                self.masterRange = self.masterRange if self.masterRange != 'Custom' else '1H'
+                stock.drawFull(screen,coords,wh,self.masterRange,True,"Normal")
                 # if self.current_config != 'nona':#if no menus are drawn and the current config is not nona
                 #     self.changestockbutton(screen,startpos,endpos,mousebuttons,stockname,stocklist)#  ------------------------Used for changing stocks, don't want right now
         self.stockBar(screen,stocklist)

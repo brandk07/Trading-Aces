@@ -38,7 +38,8 @@ stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0)
 transact = Transactions()
 gametime = GameTime("01/01/2030 00:00:00")
 player = Player(stocknames,stockcolors[-1],transact,gametime)
-stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+# stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+stockdict = {name:Stock(name,10,stockcolors[i],gametime) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 
 # GETTING DATA FROM FILE

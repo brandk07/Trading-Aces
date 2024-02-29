@@ -237,7 +237,8 @@ class Portfolio(Menu):
         # self.numpad.draw(screen,(870,620),(300,330),extratext,mousebuttons,asset.quantity)
         
         for i,graphname in enumerate(asset.stockobj.graphrangeoptions):# 1H, 1D, etc...
-            asset.stockobj.baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
+            # asset.stockobj.baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
+            asset.stockobj.drawBare(screen,(1630,200+(i*125)),(270,115),graphname,False,"None")
             text = s_render(graphname, 40, (230, 230, 230))
             screen.blit(text, (1640, 325+(i*125)-text.get_height()-20))
 
@@ -382,8 +383,11 @@ class Portfolio(Menu):
 
     def drawStockGraphs(self,screen,stocklist,mousebuttons):
         """Draws the stock graphs on the right side of the screen"""
+        wh = (500,245)
         for i,stock in enumerate(self.displayedStocks):
-            if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),mousebuttons,0,rangecontroldisp=False,graphrange="1D") and mousebuttons == 1:# if the stock name is clicked
+            # if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),mousebuttons,0,rangecontroldisp=False,graphrange="1D") and mousebuttons == 1:# if the stock name is clicked
+            coords = (1400,200+(i*255))
+            if stock.drawFull(screen,coords,wh,"1D",True,"hoverName"):
                 print(stock.name)
 
         
@@ -401,7 +405,8 @@ class Portfolio(Menu):
 
         
         if self.selected_asset == None:# if the selected asset is None
-            player.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)
+            # player.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)
+            player.drawFull(screen,(200,100),(650,500),"1D",True,"Normal")
 
             if len(sortedassets) > 0:
                 # draws the stocks on the right of the screen
@@ -431,7 +436,8 @@ class Portfolio(Menu):
         else:# if the selected asset is NOT None
             stockgraph = self.selected_asset[0].stockobj
 
-            stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
+            # stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
+            stockgraph.drawFull(screen,(200,100),(650,500),"1D",True,"Normal")# draws the selected stock graph on the left
 
             selectedindex = sortedassets.index(self.selected_asset)
             self.drawselectedScroll(screen,sortedassets[selectedindex],mousebuttons)# draws the selected asset scroll on the right
