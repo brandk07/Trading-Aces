@@ -10,14 +10,15 @@ class Player(Stock):
     
 
     def __init__(self,stocknames,color,transact,gametime) -> None:
+        """Player class is a child of the Stock class price is the networth of the player"""
         name = 'Net Worth'
         super().__init__(name,0,color,gametime)
         
         self.name = name
+        
         self.cash = 25000
-
         if self.graphs["1H"].size == 1:
-            self.graphs = {key:np.array([self.cash],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+            self.graphs = {key:np.array([self.price],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.stocks = []# list of lists containing the [stock object, the price bought at, and the quantity]
         self.options = []#list of option objects
         self.stockvalues = []
@@ -29,6 +30,7 @@ class Player(Stock):
             OptionAsset:'Option'
         }
         self.gametime = gametime
+        
 
         # self.recent_movementvar = (None,None,(180,180,180)
 
@@ -103,9 +105,9 @@ class Player(Stock):
         """returns the networth of the player"""
         allassets = self.stocks + self.options
         return self.cash + sum([asset.getValue() for asset in allassets])
-        # return self.cash + sum([stock[0].price*stock[2] for stock in self.stocks]) + sum([option.get_value() for option in self.options])
+        # return self.cash + sum([stock[0].cash*stock[2] for stock in self.stocks]) + sum([option.get_value() for option in self.options])
     def getAssets(self,amount:int=0):
-        """returns the assets of the player, returns all of them if amount is 0 else returns the top amount assets"""
+        """returns the assets of the player, returns all of them if amount is 0 else returns the top [amount] assets"""
         if amount == 0:
             return self.stocks + self.options
 
@@ -115,20 +117,21 @@ class Player(Stock):
         return allassets[:amount]
         
     
-    def message(self,screen:pygame.Surface):
-        """displays everything in the self.messagedict, key is the text, value is (time,color))]"""
-        keys_to_delete = []
-        for i,(text,(starttime,color)) in enumerate(self.messagedict.items()):
-            if i < 8 and time.time() < starttime+15:
-                #draw a box around the text using gfxdraw filled polygon
-                gfxdraw.filled_polygon(screen,[(self.endpos[0],self.endpos[1]+35+(i*40)),(self.startpos[0],self.endpos[1]+35+(i*40)),(self.startpos[0]+10,self.endpos[1]+65+(i*40)),(self.endpos[0]+10,self.endpos[1]+65+(i*40))],color)
-                screen.blit(fontlist[25].render(text,(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]+40+(i*40)))
-            else:
-                if list(self.messagedict.keys())[0] not in keys_to_delete:
-                    keys_to_delete.append(list(self.messagedict.keys())[0])
+    # def message(self,screen:pygame.Surface):
+    #     """displays everything in the self.messagedict, key is the text, value is (time,color))]"""
+    #     keys_to_delete = []
+    #     for i,(text,(starttime,color)) in enumerate(self.messagedict.items()):
+    #         if i < 8 and time.time() < starttime+15:
+    #             #draw a box around the text using gfxdraw filled polygon
+    #             gfxdraw.filled_polygon(screen,[(self.endpos[0],self.endpos[1]+35+(i*40)),(self.startpos[0],self.endpos[1]+35+(i*40)),(self.startpos[0]+10,self.endpos[1]+65+(i*40)),(self.endpos[0]+10,self.endpos[1]+65+(i*40))],color)
+    #             screen.blit(fontlist[25].render(text,(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]+40+(i*40)))
+    #         else:
+    #             if list(self.messagedict.keys())[0] not in keys_to_delete:
+    #                 keys_to_delete.append(list(self.messagedict.keys())[0])
 
-        for key in keys_to_delete:
-            del self.messagedict[key]
+    #     for key in keys_to_delete:
+    #         del self.messagedict[key]
+
 
     # def graph(self,stocklist:list):
     #     # print(self.cash,'cash')

@@ -144,7 +144,7 @@ class Stockbook(Menu):
 
         # stocklist[self.selectedstock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
         # stocklist[self.selectedstock].draw(screen,player,(550,130),(550,550),mousebuttons,gametime)
-        stocklist[self.selectedstock].drawFull(screen,(550,130),(550,550),"1D",True,"Normal")
+        stocklist[self.selectedstock].drawFull(screen,(550,130),(550,550),"Stockbook Graph",True,"Normal")
         for i,line in enumerate(self.stocktext[stocklist[self.selectedstock].name]):
             x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))

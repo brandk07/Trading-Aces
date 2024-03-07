@@ -14,7 +14,7 @@ from collections import deque
 from Classes.smallClasses.TotalMarket import TotalMarket
 import timeit
 from Classes.imports.Transactions import Transactions
-GAMESPEED = 50
+GAMESPEED = 250
 FASTFORWARDSPEED = 500
 pygame.init()
 pygame.mixer.init()
@@ -52,7 +52,7 @@ stockbook = Stockbook(stocknames)
 portfolio = Portfolio(stocklist)
 optiontrade = Optiontrade(stocklist,gametime)
 ui_controls = UI_Controls(stocklist,GAMESPEED)
-tmarket = TotalMarket()
+tmarket = TotalMarket(gametime)
 # VARS FROM SETTINGS
 autofastforward = True
 
@@ -98,8 +98,8 @@ if __name__ == "__main__":
         if gametime.isOpen()[0]:# if the market is open
             if ui_controls.gameplay_speed > 0:# if the game is not paused
                 for stock in stocklist:
-                    stock.update_price(ui_controls.gameplay_speed)
-                player.update_price(ui_controls.gameplay_speed)
+                    stock.update_price(ui_controls.gameplay_speed,Player)
+                player.update_price(ui_controls.gameplay_speed,Player)
                 tmarket.updategraphs(stocklist,ui_controls.gameplay_speed)
 
 

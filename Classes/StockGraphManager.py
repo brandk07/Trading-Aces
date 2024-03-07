@@ -161,8 +161,9 @@ class StockGraphManager:
                     x = int(200 + (i * width))
                     y = 10
                 # stock.baredraw(screen, (x + 5, y), (int(width), 80), self.masterRange if self.masterRange != 'Custom' else '1H')
-                self.masterRange = self.masterRange if self.masterRange != 'Custom' else '1H'
-                stock.drawBare(screen, (x + 5, y), (int(width), 80), self.masterRange, True, "None")
+                graphrange = self.masterRange if self.masterRange != 'Custom' else '1D'
+                stock.drawBare(screen, (x + 5, y), (int(width), 80), graphrange, False, "None")
+
                 pchange = round(((stock.graphs[stock.graphrange][-1] / stock.graphs[stock.graphrange][0]) - 1) * 100, 2)
                 color = (0, 200, 0) if pchange >= 0 else (200, 0, 0)
                 if pchange == 0:
@@ -174,7 +175,7 @@ class StockGraphManager:
     def masterControls(self,screen,mousebuttons:int,stocklist:list):
         mousex,mousey = pygame.mouse.get_pos()
 
-        for i,text in enumerate(["1H","1D","1W","1M","3M","1Y","Custom"]): 
+        for i,text in enumerate(GRAPHRANGES+['Custom']): 
             width = 150    
             height = 60
             x = 1620
@@ -190,9 +191,6 @@ class StockGraphManager:
                 if mousebuttons == 1:
                     mousebuttons = 0
                     self.masterRange = text
-                    if self.masterRange != 'Custom':
-                        for stock in stocklist:
-                            stock.graphrange = self.masterRange
 
 
     def draw_graphs(self, screen, stocklist:list, player, mousebuttons, gametime):
@@ -217,8 +215,9 @@ class StockGraphManager:
                 #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
 
                 # stock.draw(screen,player,coords,wh,mousebuttons,gametime,rangecontroldisp=(True if self.masterRange == 'Custom' else False))
-                self.masterRange = self.masterRange if self.masterRange != 'Custom' else '1H'
-                stock.drawFull(screen,coords,wh,self.masterRange,True,"Normal")
+
+                graphrange = self.masterRange if self.masterRange != 'Custom' else f'Graph Manager {stockname}'
+                stock.drawFull(screen,coords,wh,graphrange,True,"Normal",False if graphrange in GRAPHRANGES else True)
                 # if self.current_config != 'nona':#if no menus are drawn and the current config is not nona
                 #     self.changestockbutton(screen,startpos,endpos,mousebuttons,stockname,stocklist)#  ------------------------Used for changing stocks, don't want right now
         self.stockBar(screen,stocklist)

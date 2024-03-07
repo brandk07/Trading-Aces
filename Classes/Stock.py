@@ -1,12 +1,8 @@
 import pygame
 from random import randint
-import statistics
 from pygame import gfxdraw
-import time
 from Defs import *
 import numpy as np
-import os
-import timeit
 import json
 from Classes.imports.Graph import Graph
 from datetime import datetime,timedelta
@@ -25,7 +21,7 @@ class Stock(StockVisualizer):
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
         self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":489_450,"3M":1_468_350,"1Y":5_873_400}
         self.condensefacs = {key:value/POINTSPERGRAPH for key,value in self.graphrangeoptions.items()}#the amount of points that each index of the graph has
-        self.graphrange = '1H' # H, D, W, M, 3M, Y
+        # self.graphrange = '1H' # H, D, W, M, 3M, Y
         self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
         
@@ -205,7 +201,7 @@ class Stock(StockVisualizer):
                 # print('deleting',key,len(self.graphs[key]))
                 self.graphs[key] = np.delete(self.graphs[key],0)
 
-    def update_price(self,gamespeed):
+    def update_price(self,gamespeed,PlayerClass):
         # if self.bankrupcy(False):#if stock is not bankrupt
         #     pass
         
@@ -215,23 +211,25 @@ class Stock(StockVisualizer):
             for _ in range(gamespeed):
                 self.update_range_graphs()
             self.price = self.graphs["1H"][-1]
-        else:
+        elif type(self) == PlayerClass:# if Player object
+
             # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
+            self.price = self.getNetworth()
             for _ in range(gamespeed):
                 self.update_range_graphs(self.getNetworth())#updates the range graphs
         
 
-    def rangecontrols(self,screen:pygame.Surface,Mousebuttons,blnkspacey,coords,wh):
-        """draws the range controls and checks for clicks"""
-        x,y = coords[0]+wh[0]-int((coords[1]+wh[1]-coords[1])/20),coords[1]+wh[1]-blnkspacey*.75
-        for i in range(len(self.graphrangeoptions),0,-1):
-            name = list(self.graphrangeoptions)[i-1]
-            text = s_render(name,int((coords[1]+wh[1]-coords[1])/15),(255,255,255) if self.graphrange == name else (120,120,120))
-            screen.blit(text,(x-(text.get_width()/2),y))
-            if pygame.Rect(x - text.get_width() / 2 - 2, y - 2, text.get_width() + 10, text.get_height() + 10).collidepoint(pygame.mouse.get_pos()):
-                if Mousebuttons == 1:
-                    self.graphrange = name
-            x -= text.get_width()+int((coords[1]+wh[1]-coords[1])/40)
+    # def rangecontrols(self,screen:pygame.Surface,Mousebuttons,blnkspacey,coords,wh):
+    #     """draws the range controls and checks for clicks"""
+    #     x,y = coords[0]+wh[0]-int((coords[1]+wh[1]-coords[1])/20),coords[1]+wh[1]-blnkspacey*.75
+    #     for i in range(len(self.graphrangeoptions),0,-1):
+    #         name = list(self.graphrangeoptions)[i-1]
+    #         text = s_render(name,int((coords[1]+wh[1]-coords[1])/15),(255,255,255) if self.graphrange == name else (120,120,120))
+    #         screen.blit(text,(x-(text.get_width()/2),y))
+    #         if pygame.Rect(x - text.get_width() / 2 - 2, y - 2, text.get_width() + 10, text.get_height() + 10).collidepoint(pygame.mouse.get_pos()):
+    #             if Mousebuttons == 1:
+    #                 self.graphrange = name
+    #         x -= text.get_width()+int((coords[1]+wh[1]-coords[1])/40)
 
 
 

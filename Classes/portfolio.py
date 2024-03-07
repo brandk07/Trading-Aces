@@ -188,7 +188,6 @@ class Portfolio(Menu):
         # Does most of the work for the latter scroll, renders the text and finds all the coords
         scrollmaxcoords = (770,335)
         self.latterscrollselect.store_rendercoords((855, 200), scrollmaxcoords,135,0,0)
-
         # drawing the latter scroll and assigning the selected asset
         newselected = self.latterscrollselect.draw_polys(screen, (875, 200), scrollmaxcoords, mousebuttons, 0, True, *[asset.getPercent()])# draws the latter scroll and returns the selected asset
         if newselected == None:
@@ -210,21 +209,9 @@ class Portfolio(Menu):
         # Draws the description about the stock on the left side of the screen
         points = [(200, 605), (850, 605), (850, 960), (200, 960)]
         # gfxdraw.filled_polygon(screen, points, (30, 30, 30))
-        pygame.draw.polygon(screen, (0, 0, 0), points, 5)
+        # pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
         self.drawAssetInfo(screen,asset,gametime,player)# draws the Asset Analytics underneath the stock graph on the left side of the screen
-
-        # for i,txt in enumerate(self.stocktext[asset.stockobj.name]):# draws the description of the stock
-        #     if i == 0:# the first line is the name of the stock
-        #         screen.blit(txt,(210,605))# blits the full name of the stock 
-        #     else:
-        #         screen.blit(txt,(210,670+((i-1)*35)))# blits the other lines of the stock description
-
-        # vol = asset.getVolatility()
-        # text = s_render(f"Annualized Volatility: {vol:,.2f}%", 40, (190, 190, 190))
-        # screen.blit(text, (210, 845))
-        # text = s_render("Annual Dividend: $0.00", 40, (190, 190, 190))
-        # screen.blit(text, (210, 890))
 
         # draws the information about the stock in the middle of the screen
         points = [(860, 330), (1620, 330), (1620, 960), (860, 960)]
@@ -238,20 +225,22 @@ class Portfolio(Menu):
         
         for i,graphname in enumerate(asset.stockobj.graphrangeoptions):# 1H, 1D, etc...
             # asset.stockobj.baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
-            asset.stockobj.drawBare(screen,(1630,200+(i*125)),(270,115),graphname,False,"None")
+            asset.stockobj.drawBare(screen,(1630,200+(i*125)),(270,115),graphname,True,"None")
             text = s_render(graphname, 40, (230, 230, 230))
             screen.blit(text, (1640, 325+(i*125)-text.get_height()-20))
 
-        color = ((200,0,0) if asset.getPercent() < 0 else (0,200,0)) if asset.getPercent() != 0 else (200,200,200)
+        # color = ((200,0,0) if asset.getPercent() < 0 else (0,200,0)) if asset.getPercent() != 0 else (200,200,200)
         quantity = self.numpad.get_value()# gets the quantity from the numpad
         netgl = (asset.getValue(bypass=True,fullvalue=False) - asset.ogvalue)*quantity# net gain/loss
         taxedamt = 0 if netgl <= 0 else netgl*player.taxrate# the amount taxed
-
-        descriptions = [s_render("Net Gain" if asset.getPercent() > 0 else "Net Loss", 25, (230,230,230)),
+        percent = asset.getPercent()
+        # descriptions = [s_render("Net Gain" if asset.getPercent() > 0 else "Net Loss", 25, (230,230,230)),
+        descriptions = [s_render(p3choice("Net Loss","Net Gain", "",percent), 25, (230,230,230)),
             s_render(f"Taxes ({player.taxrate*100}%)", 25, (230, 230, 230)),
             s_render("Final Value (After Tax)", 25, (230, 230, 230)),]
-        texts = [s_render(f"${limit_digits(netgl,10)}", 70, color),
-            s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, (180, 50, 50)),
+        
+        texts = [s_render(f"${limit_digits(netgl,10)}", 70, p3choice((200, 0, 0),(0,200,0),(200,200,200),percent)),
+            s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, p3choice((200, 0, 0),(0,0,0),(200,200,200),-taxedamt)),
             s_render(f"${limit_digits((asset.getValue(fullvalue=False)*quantity)-taxedamt,15)}", 70, (190, 190, 190)),]
 
         
@@ -282,7 +271,8 @@ class Portfolio(Menu):
             f"${limit_digits(asset.ogvalue*asset.quantity,12)}",
             f"{limit_digits(getYearlyReturn(asset,gametime),12)}%",
             f"{limit_digits((asset.getValue()/player.getNetworth())*100,12)}%"]
-        colors = [(190, 0, 0) if getYearlyReturn(asset,gametime) < 0 else (0, 190, 0),(190, 190, 190)]
+        # colors = [(190, 0, 0) if getYearlyReturn(asset,gametime) < 0 else (0, 190, 0),(190, 190, 190)]
+        colors = [p3choice((190,0,0),(0,190,0),(190,190,190),getYearlyReturn(asset,gametime)),(190, 190, 190)]
 
         if isinstance(asset,OptionAsset):
             descriptexts.append(s_render("Expiration", 25, (190, 190, 190)))
@@ -383,12 +373,12 @@ class Portfolio(Menu):
 
     def drawStockGraphs(self,screen,stocklist,mousebuttons):
         """Draws the stock graphs on the right side of the screen"""
-        wh = (500,245)
+        wh = (500,285)
         for i,stock in enumerate(self.displayedStocks):
+            # 870/3 = 290
             # if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),mousebuttons,0,rangecontroldisp=False,graphrange="1D") and mousebuttons == 1:# if the stock name is clicked
-            coords = (1400,200+(i*255))
-            if stock.drawFull(screen,coords,wh,"1D",True,"hoverName"):
-                print(stock.name)
+            coords = (1400,100+(i*290))
+            stock.drawFull(screen,coords,wh,f"PortfolioExtra{i}",True,"hoverName")
 
         
 
@@ -406,7 +396,7 @@ class Portfolio(Menu):
         
         if self.selected_asset == None:# if the selected asset is None
             # player.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)
-            player.drawFull(screen,(200,100),(650,500),"1D",True,"Normal")
+            player.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")
 
             if len(sortedassets) > 0:
                 # draws the stocks on the right of the screen
@@ -437,7 +427,7 @@ class Portfolio(Menu):
             stockgraph = self.selected_asset[0].stockobj
 
             # stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
-            stockgraph.drawFull(screen,(200,100),(650,500),"1D",True,"Normal")# draws the selected stock graph on the left
+            stockgraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
 
             selectedindex = sortedassets.index(self.selected_asset)
             self.drawselectedScroll(screen,sortedassets[selectedindex],mousebuttons)# draws the selected asset scroll on the right

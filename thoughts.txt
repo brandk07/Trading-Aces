@@ -42,6 +42,14 @@ triple = multiply_setup(3)
 double(5)# 10
 triple(7)# 21
 
+Never use a mutable type as a default parameter (it will always use the same list otherwise) ie..
+def appendtolist(elements,target=[]):
+    ....
+set none then check instead
+def appendtolist(elements,target=None):
+    if target is None:
+        target = []
+
 
 
 ------------------Eventually ----------------------
@@ -106,11 +114,11 @@ Add comparison between the total market and your portfolio (12/21/24)
 
 Make performance better in menu by saving the screen with the backdrop drawn similar to the background is (2/26/2024)
 
-Need to add back range controls to stock StockVisualizer or somewhere (2/28/2024)
+Add swap stock (3/3/2024)
 
-Make it so player.price is equal to its networth (2/28/2024)
-    May be used somewhere else where it is meant to be used as cash - just change that
-    the portfolio graph doesn't work rn because of this
+get option menu switched to new LatterScroll class (3/3/2024)
+
+Make the mouseover look better and add the hold feature (3/3/2024)
 
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
@@ -157,3 +165,7 @@ Need to include the amount it cost for the option in portfolio so someone can se
 the graph in the home view should be the total market view, not the portfolio (1/14/2024)
 Include the date when the stock was purchased (1/10/2024)
 make it easier to see how much cash you have, especially in option trade menu (12/29/23)
+Make it so player.price is equal to its networth (2/28/2024)
+    May be used somewhere else where it is meant to be used as cash - just change that
+    the portfolio graph doesn't work rn because of this
+Need to add back range controls to stock StockVisualizer or somewhere (2/28/2024)

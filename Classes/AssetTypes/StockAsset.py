@@ -19,7 +19,7 @@ class StockAsset(Asset):
     def getValue(self,bypass=False,fullvalue=True):
         """returns the value of the stock"""
         # print(self.stockobj.price)
-        return int((self.stockobj.price) * self.quantity) if fullvalue else self.stockobj.price
+        return ((self.stockobj.price) * self.quantity) if fullvalue else self.stockobj.price
 
     def giveDividend(self,transact):
         """gives the stock asset a dividend"""
