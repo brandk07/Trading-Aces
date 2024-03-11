@@ -5,18 +5,21 @@ from datetime import datetime,timedelta
 
 POINTSPERGRAPH = 200
 class StockVisualizer:
-    """Stocks will inherit this class and use the methods to draw the stock to the screen"""
+    """Anytime a Stock needs to be drawn to screen an instance of this class can be used,
+    should be used for one specific graph on the screen, can switch stock classes and has multiple drawing options"""
     def __init__(self,gametime,stockobj,stocklist):
         self.gametime : GameTime = gametime
         self.graph : Graph = Graph()
-        self.stockObj = stockobj
+        self.stockObj = stockobj#stock object it will start with
         self.storedRanges = {}# all the ranges that different places need, different key for each range
         self.stocklist = stocklist
 
         # Used since when calling a draw function you can give a key rather than a graphrange and then that key will be stored in this class
         # if a parameter is truegraphrange then it has used the getVaildRange function to get the true graphrange
         self.getValidRange = lambda graphrange: graphrange if graphrange in GRAPHRANGES else self.storedRanges.setdefault(graphrange,"1D")
-
+    def setStockObj(self,stockobj):
+        """Changes the stock object that the visualizer is using"""
+        self.stockObj = stockobj
     def calculateTime(self,truegraphrange,mousepoint:int):
         graphed_seconds = mousepoint*(self.stockObj.graphrangeoptions[truegraphrange]/POINTSPERGRAPH)# the amount of seconds that the stock has been graphed
         grapheddays = graphed_seconds//self.stockObj.graphrangeoptions["1D"]# the amount of days that the stock has been graphed
@@ -171,7 +174,9 @@ class StockVisualizer:
     def swapGraph(self,screen,coords,wh):
         
         for i,stock in enumerate([s for s in self.stocklist if s != self.stockObj]):
-            pygame.draw.rect(screen,(0,0,0),pygame.Rect(0,0,1920,1080))
+            pygame.draw.rect(screen,(200,200,200),pygame.Rect(coords[0],coords[1],50,25))
+            name = s_render(f"{stock.name}",30,stock.color)
+            screen.blit(name,(coords[0]+10,coords[1]+10+(i*30)))
 
 
     def drawNamePreset(self,screen:pygame.Surface,coords,wh,graphrange,preset) -> bool:
@@ -191,7 +196,7 @@ class StockVisualizer:
 
         if swappable and pygame.Rect(coords[0]+10,coords[1]+10,nametext.get_width(),nametext.get_height()).collidepoint(pygame.mouse.get_pos()):#if the mouse is over the name of the stock
             nametext = s_render(f"{self.stockObj.name}",50,(230,230,230))# change the color of the name
-            self.swapGraph()
+            self.swapGraph(screen,coords,wh)
         # match preset:
         #     case "Normal":#no special things, just drawing the name and percent change
                 # pricetext = s_render(f"${limit_digits(self.stockObj.price,15)}", 45 if 45 > int((coords[1]+wh[1]-coords[1])/12.5) else int((coords[1]+wh[1]-coords[1])/12.5), (200,200,200))

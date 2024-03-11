@@ -5,6 +5,8 @@ from Classes.imports.Menu import Menu
 import numpy as np
 from Classes.imports.Bar import SliderBar
 from Classes.AssetTypes.StockAsset import StockAsset
+from Classes.StockVisualizer import StockVisualizer
+
 def quantityControls(screen, mousebuttons:int, maxpurchase, quantity, coords):
     """This function is called for the buy and sell controls in the stockbook menu"""
     mousex, mousey = pygame.mouse.get_pos()
@@ -80,16 +82,18 @@ def quantityControls(screen, mousebuttons:int, maxpurchase, quantity, coords):
     return quantity
 
 class Stockbook(Menu):
-    def __init__(self,stocknames:list) -> None:
+    def __init__(self,stocklist,gametime) -> None:
         self.icon = pygame.image.load(r'Assets\Menu_Icons\stockbook.png').convert_alpha()
         self.icon = pygame.transform.scale(self.icon,(140,100))
         super().__init__(self.icon)
         self.quantity = 0
+        stocknames = [stock.name for stock in stocklist]
         self.stocktext = {name:[] for name in stocknames}
         self.selectedstock = 0
         self.menudrawn = False
         self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
         self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
+        self.stockGraph = StockVisualizer(gametime,stocklist[0],stocklist)
         
 
         with open(r'Assets\newstockdes.txt','r') as descriptions:
@@ -118,6 +122,7 @@ class Stockbook(Menu):
             if (hover:=point_in_polygon((mousex,mousey),points)):#if the mouse is hovering over the stock name
                 if mousebuttons == 1:#if the mouse is hovering over the stock
                     self.selectedstock = i
+                    self.stockGraph.setStockObj(stocklist[self.selectedstock])# change the stock object in the stock graph
                     soundEffects['clickbutton2'].play()
                     self.quantity = 0
 
@@ -144,7 +149,8 @@ class Stockbook(Menu):
 
         # stocklist[self.selectedstock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
         # stocklist[self.selectedstock].draw(screen,player,(550,130),(550,550),mousebuttons,gametime)
-        stocklist[self.selectedstock].drawFull(screen,(550,130),(550,550),"Stockbook Graph",True,"Normal")
+        # stocklist[self.selectedstock].drawFull(screen,(550,130),(550,550),"Stockbook Graph",True,"Normal")
+        self.stockGraph.drawFull(screen,(550,130),(550,550),f"Stockbook Graph",True,"Normal")
         for i,line in enumerate(self.stocktext[stocklist[self.selectedstock].name]):
             x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))

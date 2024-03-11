@@ -9,12 +9,10 @@ from datetime import datetime,timedelta
 from Classes.StockVisualizer import StockVisualizer,POINTSPERGRAPH
 
 
-class Stock(StockVisualizer):
-    """Class contains the points and ability to modify the points of the stock
-        Inherits the ability to draw the points into graphs from the StockVisualizer class"""
+class Stock():
+    """Class contains the points and ability to modify the points of the stock"""
 
-    def __init__(self,name,volatility,color,gametime) -> None:
-        super().__init__(gametime,self)
+    def __init__(self,name,volatility,color) -> None:
         self.color,self.name = color,name
 
         #variables for graphing the stock 

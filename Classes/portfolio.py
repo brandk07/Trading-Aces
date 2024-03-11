@@ -10,13 +10,14 @@ from Classes.imports.Numpad import Numpad
 # from Classes.Stock import Stock
 from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.imports.Transactions import Transactions
+from Classes.StockVisualizer import StockVisualizer
 import math
 
 DX = 300# default x
 DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
-    def __init__(self,stocklist) -> None:
+    def __init__(self,stocklist,player,gametime) -> None:
         self.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
         self.icon = pygame.transform.scale(self.icon,(140,100))
         self.icon.set_colorkey((255,255,255))
@@ -34,12 +35,16 @@ class Portfolio(Menu):
         self.menudrawn = True
         # self.allrenders = []
         self.selected_asset = None
-        self.displayedStocks = [stocklist[0],stocklist[1],stocklist[2]]
+        self.displayedStocks = [StockVisualizer(gametime,stocklist[i],stocklist) for i in range(3)]# the stock visualizers for the stocks that are displayed
+        self.networthGraph = StockVisualizer(gametime,player,stocklist)
+        self.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
 
         # for the asset type selection which sorts the latterscroll
         # self.assetoptions = ["Stocks","Options","Other"]# future, Crypto, bonds, minerals, real estate, etc
         self.assetoptions = ["Stocks","Options","Other"]
         self.displayed_asset_type = ["Stocks","Options","Other"]
+
+        
 
         self.classtext = {StockAsset:"Share",OptionAsset:"Option"}# Used quite a bit and saves an if statement every time I need class specific text
 
@@ -225,7 +230,7 @@ class Portfolio(Menu):
         
         for i,graphname in enumerate(asset.stockobj.graphrangeoptions):# 1H, 1D, etc...
             # asset.stockobj.baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
-            asset.stockobj.drawBare(screen,(1630,200+(i*125)),(270,115),graphname,True,"None")
+            self.selectedGraph.drawBare(screen,(1630,200+(i*125)),(270,115),graphname,True,"None")
             text = s_render(graphname, 40, (230, 230, 230))
             screen.blit(text, (1640, 325+(i*125)-text.get_height()-20))
 
@@ -263,16 +268,24 @@ class Portfolio(Menu):
             diff = gametime.time-asset.dateobj
             if diff.days <= 365:
                 return asset.getPercent()
-            return asset.getPercent()/(diff.days/365)
+            extra = 100 if asset.getPercent() > 0 else -100
+            percent = abs(asset.getPercent())
+            days = 1/(diff.days/365)
+            num = (((1+(percent/100)) ** days)-1) * extra
+            if len(f"{num:,.4f}".format(num)) > 12:
+                return "{:,.2e}".format(num)    
+            else:
+                return f"{num:,.4f}"
+
         
         getCorrrectSize = lambda strlen: int(-85*math.log10(strlen))+155
         valstrings = [# the strings that will be displayed
             f"${limit_digits(asset.ogvalue,12)}",
             f"${limit_digits(asset.ogvalue*asset.quantity,12)}",
-            f"{limit_digits(getYearlyReturn(asset,gametime),12)}%",
+            f"{getYearlyReturn(asset,gametime)}%",
             f"{limit_digits((asset.getValue()/player.getNetworth())*100,12)}%"]
         # colors = [(190, 0, 0) if getYearlyReturn(asset,gametime) < 0 else (0, 190, 0),(190, 190, 190)]
-        colors = [p3choice((190,0,0),(0,190,0),(190,190,190),getYearlyReturn(asset,gametime)),(190, 190, 190)]
+        colors = [p3choice((190,0,0),(0,190,0),(190,190,190),float(getYearlyReturn(asset,gametime))),(190, 190, 190)]
 
         if isinstance(asset,OptionAsset):
             descriptexts.append(s_render("Expiration", 25, (190, 190, 190)))
@@ -304,49 +317,6 @@ class Portfolio(Menu):
         anatext, datetext = s_render(f"Original Asset Analytics", 55, (190, 190, 190)), s_render(f"{asset.date}", 45, (190, 190, 190))
         screen.blit(anatext, (205+(650-anatext.get_width())/2, 610))
         screen.blit(datetext, (210+(650-datetext.get_width())/2, 918))# blits the date of the asset
-
-        # # screen.blit(s_render(f"Purchased At {}"))
-        # def getYearlyReturn(asset,gametime):
-        #     """returns the yearly return of the asset"""
-        #     diff = gametime.time-asset.dateobj
-        #     if diff.days <= 365:
-        #         return asset.getPercent()
-        #     return asset.getPercent()/(diff.days/365)
-        # color = (200,200,200)
-        # descriptions = [
-        #     [s_render("Time Of", 25, color),
-        #         s_render("Inital Share", 25, color),
-        #         s_render("Inital", 25, color),
-        #         s_render("Avg Yearly", 25, color),
-        #         s_render("Portfolio", 25, color),],
-        #     [s_render("Purchase", 25, color),
-        #         s_render("Value", 25, color),
-        #         s_render("Value", 25, color),
-        #         s_render("Return", 25, color),
-        #         s_render("Percentage", 25, color),]
-        # ]
-        # values = [
-        #     s_render(f"{asset.date}", 40, (190, 190, 190)),
-        #     s_render(f"${limit_digits(asset.ogvalue,12)}", 40, (190, 190, 190)),
-        #     s_render(f"${limit_digits(asset.ogvalue*asset.quantity,12)}", 40, (190, 190, 190)),
-        #     s_render(f"{limit_digits(getYearlyReturn(asset,gametime),12)}%", 40, (190, 0, 0) if getYearlyReturn(asset,gametime) < 0 else (0, 190, 0)),
-        #     s_render(f"{limit_digits((asset.getValue()/player.getNetworth())*100,12)}%", 40, (190, 190, 190)),
-        # ]
-        # for i,(dtxt1,dtxt2,vtxt) in enumerate(zip(descriptions[0],descriptions[1],values)):
-        #     screen.blit(dtxt1,(865,335+(i*50)))
-        #     screen.blit(dtxt2,(875,355+(i*50)))
-        #     screen.blit(vtxt, (965,340+(i*50)))
-        # text = [
-        #     f"Time Of Purchase: {asset.date}",
-        #     f"Original Per Share Value: ${asset.ogvalue}",
-        #     f"Yearly Return: {getYearlyReturn(asset,gametime)}%",
-        #     f"% Of Portfolio: {asset.getValue()/player.getNetworth():.3f}%"
-        # ]
-        # 866 336
-        # for i,txt in enumerate(text):
-        #     screen.blit(descriptions[i],(866,336+(i*50)))
-        #     screen.blit(txt, (866, 336+(i*50)))
-
 
 
     def drawSellingInfo(self,screen,descriptions,values,mousebuttons,quantity) -> bool:
@@ -396,7 +366,8 @@ class Portfolio(Menu):
         
         if self.selected_asset == None:# if the selected asset is None
             # player.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)
-            player.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")
+            # player.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")
+            self.networthGraph.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")
 
             if len(sortedassets) > 0:
                 # draws the stocks on the right of the screen
@@ -424,10 +395,12 @@ class Portfolio(Menu):
 
         
         else:# if the selected asset is NOT None
-            stockgraph = self.selected_asset[0].stockobj
+            # stockgraph = self.selected_asset[0].stockobj
+            self.selectedGraph.setStockObj(self.selected_asset[0].stockobj)
 
             # stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
-            stockgraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
+            # stockgraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
+            self.selectedGraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
 
             selectedindex = sortedassets.index(self.selected_asset)
             self.drawselectedScroll(screen,sortedassets[selectedindex],mousebuttons)# draws the selected asset scroll on the right

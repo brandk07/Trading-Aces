@@ -6,12 +6,13 @@ from Classes.imports.Bar import SliderBar
 from Classes.imports.Latterscroll import LatterScroll
 # from Classes.imports.Newsbar import News
 from Classes.Stock import Stock
+from Classes.StockVisualizer import StockVisualizer
 
 # [20,60] [60,20]
 # [700,1000] [1000,650]
 
 class UI_Controls():
-    def __init__(self,stocklist,gamespeed) -> None:
+    def __init__(self,stocklist,gamespeed,gametime,tmarket,player) -> None:
         self.gameplay_speed = 0
         # self.stockevent = StockEvents()# the stock events
         self.bar = SliderBar(gamespeed,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
@@ -20,6 +21,7 @@ class UI_Controls():
         # for i in range(10):
         #     for stock in stocklist:
         #         self.newsobj.addStockNews(stock.name)
+        self.totalMarketGraph = StockVisualizer(gametime,tmarket,[tmarket,player])
 
         self.view = "stock"# home or stock
         self.accbar_middle = "move"# move, stock, pie
@@ -311,7 +313,8 @@ class UI_Controls():
 
                 # player.draw(screen,player,(250,160),(680,540),mousebuttons,stocklist,True)
                 # tmarket.draw(screen,(250,160),(680,540),mousebuttons,gametime)
-                tmarket.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"Normal")
+                # tmarket.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"Normal")
+                self.totalMarketGraph.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"hoverName")
                 # self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
                 
                 screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(830,20))

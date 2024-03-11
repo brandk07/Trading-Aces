@@ -12,7 +12,7 @@ class Player(Stock):
     def __init__(self,stocknames,color,transact,gametime) -> None:
         """Player class is a child of the Stock class price is the networth of the player"""
         name = 'Net Worth'
-        super().__init__(name,0,color,gametime)
+        super().__init__(name,0,color)
         
         self.name = name
         

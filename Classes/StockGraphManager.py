@@ -3,9 +3,10 @@ from pygame import gfxdraw
 import math
 from Defs import *
 import timeit
+from Classes.StockVisualizer import StockVisualizer
 
 class StockGraphManager:
-    def __init__(self,stocknames):
+    def __init__(self,stocklist,gametime):
         self.graph_config = {
             'single': (1,1),
             'quad': (2,2),
@@ -18,7 +19,8 @@ class StockGraphManager:
             'six' : pygame.image.load('Assets/graph manager/six.png').convert_alpha(),
             'nona': pygame.image.load('Assets/graph manager/nona.png').convert_alpha(),
         }
-        
+        self.stockGraphs = {stock.name:StockVisualizer(gametime,stock,stocklist) for stock in stocklist}
+
         self.hoverimages = {name:image for name,image in self.images.items()}
         for key,image in self.images.items():# makes the hover images for the ui controls (the images that appear brighter when you hover over them)
             image = pygame.transform.scale(image,(50,50))
@@ -34,7 +36,7 @@ class StockGraphManager:
         self.wh = [1400,880]# the start coords of the graph
 
         self.current_config = 'nona'
-        self.allstocks = stocknames
+        self.allstocks = [stock.name for stock in stocklist]
 
         self.picked_stocks = [stock for stock in self.allstocks]
         self.mousehovering = None
@@ -162,7 +164,8 @@ class StockGraphManager:
                     y = 10
                 # stock.baredraw(screen, (x + 5, y), (int(width), 80), self.masterRange if self.masterRange != 'Custom' else '1H')
                 graphrange = self.masterRange if self.masterRange != 'Custom' else '1D'
-                stock.drawBare(screen, (x + 5, y), (int(width), 80), graphrange, False, "None")
+                # stock.drawBare(screen, (x + 5, y), (int(width), 80), graphrange, False, "None")
+                self.stockGraphs[stock.name].drawBare(screen, (x + 5, y), (int(width), 80), graphrange, False, "None")
 
                 pchange = round(((stock.graphs[stock.graphrange][-1] / stock.graphs[stock.graphrange][0]) - 1) * 100, 2)
                 color = (0, 200, 0) if pchange >= 0 else (200, 0, 0)
@@ -217,7 +220,8 @@ class StockGraphManager:
                 # stock.draw(screen,player,coords,wh,mousebuttons,gametime,rangecontroldisp=(True if self.masterRange == 'Custom' else False))
 
                 graphrange = self.masterRange if self.masterRange != 'Custom' else f'Graph Manager {stockname}'
-                stock.drawFull(screen,coords,wh,graphrange,True,"Normal",False if graphrange in GRAPHRANGES else True)
+                # stock.drawFull(screen,coords,wh,graphrange,True,"Normal",False if graphrange in GRAPHRANGES else True)
+                self.stockGraphs[stockname].drawFull(screen,coords,wh,graphrange,True,"Normal",False if graphrange in GRAPHRANGES else True)
                 # if self.current_config != 'nona':#if no menus are drawn and the current config is not nona
                 #     self.changestockbutton(screen,startpos,endpos,mousebuttons,stockname,stocklist)#  ------------------------Used for changing stocks, don't want right now
         self.stockBar(screen,stocklist)

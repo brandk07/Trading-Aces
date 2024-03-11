@@ -13,8 +13,15 @@ from Classes.imports.Latterscroll import LatterScroll
 mydict = {'a': 1, 'b': 2, 'c': 3, 'd': 4}
 print(mydict.setdefault('b', 5))
 print(mydict)
+def getAvgReturn(percent,days):
+    neg = 1 if percent > 0 else -1
+    percent = abs(percent)
+    days = 1/(days/365)
+    return ((1+(percent/100)) ** days )* neg
 
+# avgreturn =  lambda percent,days : ((1+(abs(percent)/100)) ** (1/(days/365)))*100
 
+print(str(getAvgReturn(-75,1095))+"%")
 # from decimal import Decimal, getcontext
 # import math
 # # Set the precision.

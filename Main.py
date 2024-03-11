@@ -39,7 +39,7 @@ transact = Transactions()
 gametime = GameTime("01/01/2030 00:00:00")
 player = Player(stocknames,stockcolors[-1],transact,gametime)
 # stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
-stockdict = {name:Stock(name,10,stockcolors[i],gametime) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+stockdict = {name:Stock(name,10,stockcolors[i]) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 
 # GETTING DATA FROM FILE
@@ -47,12 +47,13 @@ stocklist = [stockdict[name] for name in stocknames]
 musicdata = Getfromfile(stockdict,player,gametime)# muiscdata = [time, volume, songindex]
 
 # CREATING OBJECTS
-stockgraphmanager = StockGraphManager(stocknames)
-stockbook = Stockbook(stocknames)
-portfolio = Portfolio(stocklist)
+stockgraphmanager = StockGraphManager(stocklist,gametime)
+stockbook = Stockbook(stocklist,gametime)
+portfolio = Portfolio(stocklist,player,gametime)
 optiontrade = Optiontrade(stocklist,gametime)
-ui_controls = UI_Controls(stocklist,GAMESPEED)
 tmarket = TotalMarket(gametime)
+ui_controls = UI_Controls(stocklist,GAMESPEED,gametime,tmarket,player)
+
 # VARS FROM SETTINGS
 autofastforward = True
 
