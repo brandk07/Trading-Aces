@@ -30,9 +30,18 @@ class Player(Stock):
             OptionAsset:'Option'
         }
         self.gametime = gametime
-        
+        self.updateOptions = 0# used to update the options every 120 frames
 
         # self.recent_movementvar = (None,None,(180,180,180)
+    def gameTick(self,gamespeed:int):
+        """Used to update the options every 120 frames"""
+        self.updateOptions += gamespeed
+        if self.updateOptions >= 512:
+            self.updateOptions = 0
+            for option in self.options:
+                option.getValue(bypass=True)
+
+        self.update_price(gamespeed,Player)
 
     def buyAsset(self,newasset):
         if newasset.quantity <= 0:

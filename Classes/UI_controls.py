@@ -41,6 +41,7 @@ class UI_Controls():
         self.stockbarsurf = pygame.Surface((1200,80))
         
         
+        
     def drawIcon(self, screen: pygame.Surface,mousebuttons) -> bool:
         """Draws the home/stock icon in the top left corner, returns True if the icon is clicked"""
         # Draw the triangles to form a square in the top left corner

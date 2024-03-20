@@ -86,6 +86,7 @@ screen.fill((50,50,50))
 screen.blit(background,(0,0))
 s = screen.copy()# makes way better performance
 
+
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
@@ -100,8 +101,10 @@ if __name__ == "__main__":
             if ui_controls.gameplay_speed > 0:# if the game is not paused
                 for stock in stocklist:
                     stock.update_price(ui_controls.gameplay_speed,Player)
-                player.update_price(ui_controls.gameplay_speed,Player)
+                # player.update_price(ui_controls.gameplay_speed,Player)
+                player.gameTick(ui_controls.gameplay_speed)
                 tmarket.updategraphs(stocklist,ui_controls.gameplay_speed)
+
 
 
         

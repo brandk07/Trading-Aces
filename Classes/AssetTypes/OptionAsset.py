@@ -17,7 +17,8 @@ class OptionAsset(Asset):
         self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=self.getVolatility(),r=0.05)
         ogprice = ogprice if ogprice else self.getValue(bypass=True,fullvalue=False)
         self.lastvalue = [self.stockobj.price*100,self.getValue(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
-    
+        self.updateCount = 0
+
     def __eq__(self,other):
         if not isinstance(other,OptionAsset):
             return False
@@ -40,14 +41,17 @@ class OptionAsset(Asset):
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="BSM",iteration=1)]
             return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
-        if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.001 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.999:# if the stock price has changed by more than 2%
-            # print('recalculating option value',bypass)
-            self.option.s0 = float(self.stockobj.price)*100
-            self.option.k = self.strike_price*100
-            self.option.sigma = self.getVolatility()
+        # if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.001 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.999:# if the stock price has changed by more than 2%
+        # print("percent",abs((self.stockobj.price*100)-self.lastvalue[0])/self.lastvalue[0],abs((self.stockobj.price*100)-self.lastvalue[0]))
+        # if self.updateCount > 60:# if the stock price has changed by more than 2%
+        #     # print('recalculating option value',bypass)
+        #     self.option.s0 = float(self.stockobj.price)*100
+        #     self.option.k = self.strike_price*100
+        #     self.option.sigma = self.getVolatility()
             
-            self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="MC",iteration=200)]
-            return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
+        #     self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="MC",iteration=200)]
+        #     return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
+ 
         return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
 
 # class OptionAsset:
