@@ -167,7 +167,8 @@ class StockGraphManager:
                 # stock.drawBare(screen, (x + 5, y), (int(width), 80), graphrange, False, "None")
                 self.stockGraphs[stock.name].drawBare(screen, (x + 5, y), (int(width), 80), graphrange, False, "None")
 
-                pchange = round(((stock.graphs[stock.graphrange][-1] / stock.graphs[stock.graphrange][0]) - 1) * 100, 2)
+                # pchange = round(((stock.graphs[stock.graphrange][-1] / stock.graphs[stock.graphrange][0]) - 1) * 100, 2)
+                pchange = stock.getPercent(graphrange)
                 color = (0, 200, 0) if pchange >= 0 else (200, 0, 0)
                 if pchange == 0:
                     color = (180, 180, 180)

@@ -114,7 +114,7 @@ if __name__ == "__main__":
  
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
 
-
+        
         mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.USEREVENT:
@@ -133,8 +133,8 @@ if __name__ == "__main__":
                 stockdata = [stock.savingInputs() for stock in player.stocks]
                 optiondata = [option.savingInputs() for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
 
-                data = [str(gametime),stockdata,optiondata,player.graphrange,float(player.cash),musicdata]
-                data.extend([stockobj.graphrange for stockobj in stocklist])
+                data = [str(gametime),stockdata,optiondata,float(player.cash),musicdata]
+                # data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)
                 transact.storeTransactions()

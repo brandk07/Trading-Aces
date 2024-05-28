@@ -20,7 +20,8 @@ class TotalMarket(Stock):
         # equivalent to the datafromfile method, but it wasn't necessary to store stuff in a file since it can be loaded fast 
         for key in self.graphrangeoptions:
             self.graphs[key] = np.array([],dtype=object)
-            for point in range(POINTSPERGRAPH):
+            for point in range(stocklist[0].graphs[key].size):
+                
                 value = sum([stock.graphs[key][point] for stock in stocklist])/9
                 self.graphs[key] = np.append(self.graphs[key],value)
         self.price = self.graphs["1H"][-1]

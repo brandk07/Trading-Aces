@@ -126,6 +126,9 @@ for name in stocknames:
 with open(f"{directory}/extradata.json", "w+") as f:
     json.dump([], f)
 
+with open(r"Assets\\transactions.json", "w+") as f:
+    json.dump([], f)
+
 
 elapsed_time = timeit.default_timer() - start_time
 print(f"Total time: {elapsed_time} seconds")
