@@ -168,7 +168,7 @@ class Stockbook(Menu):
         if abletobuy and point_in_polygon((mousex,mousey),[(1110,265),(1125,335),(1465,335),(1450,265)]):
             purchasecolor = (0,150,0)
             if mousebuttons == 1:
-                player.buyAsset(StockAsset(stocklist[self.selectedstock],gametime.getTime(),stocklist[self.selectedstock].price,self.quantity))
+                player.buyAsset(StockAsset(stocklist[self.selectedstock],gametime.getTime(),stocklist[self.selectedstock].price,self.quantity,player.getNetworth()))
                 self.quantity = 0
         elif not abletobuy:
             purchasecolor = (150,0,0)

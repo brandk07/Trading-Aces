@@ -70,7 +70,7 @@ def playmusic(musicdata):
     return musicdata
 
 # Mostly used for deciding color of the percent change, it was just really annoying to write out the if statements every time
-p3choice = lambda negative, positive, zero, change : negative if change < 0 else positive if change > 0 else zero
+p3choice = lambda negative, positive, zero, change : (negative if change < 0 else positive) if round(change,2) != 0 else zero
 
 def reuserenders(renderlist,texts,textinfo,position) -> list:
     """renderlist is a list of dicts, 
@@ -206,8 +206,8 @@ def Getfromfile(stockdict:dict,player,gametime):
             gametime.setTimeStr(data[0])
             # player.stocks = [[stockdict[stock[0]],stock[1],stock[2]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
             # print(data[1])
-            player.stocks = [StockAsset(stockdict[stock[0]],stock[1],stock[2],stock[3]) for stock in data[1]]# [stockobj,creationdate,ogprice,quantity]
-            player.options = [OptionAsset(stockdict[option[0]],option[1],option[2],option[3],option[4],quantity=option[5],ogprice=option[6],color=tuple(option[7])) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity,ogprice]
+            player.stocks = [StockAsset(stockdict[stock[0]],stock[1],stock[2],stock[3],stock[4],stock[5]) for stock in data[1]]# [stockobj,creationdate,ogprice,quantity]
+            player.options = [OptionAsset(stockdict[option[0]],option[1],option[2],option[3],option[4],option[5],networth,ogprice=option[6],color=tuple(option[7])) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity,ogprice]
             player.graphrange = data[3]
             player.cash = data[4] if data[4] != 0 else 2500
             musicdata = (data[5])
@@ -400,6 +400,25 @@ def separate_stringsdict(textdict:dict,lines:int) -> list:
             separated_strings[stock].append(separated_events)
     return separated_strings
 
+def movingRect(screen,value,maxvalue,width,height,x,y):
+    """Draws the rect that moves with the value"""
+    offset = 1 if abs(value) >= maxvalue else abs(value/maxvalue)
+    colorval = (120*offset)+70
+    color = p3choice((colorval,0,0),(0,colorval,0),(190,190,190),value)
+
+    # Draws the rect that moves with the value
+
+    if value < 0: 
+        newx = x-(offset*width*0.5) + width*0.5
+        pygame.draw.rect(screen, color, pygame.Rect(newx, y, (0.5*width*offset), height),border_bottom_left_radius=25,border_top_left_radius=25)
+    else: 
+        pygame.draw.rect(screen, color, pygame.Rect(x+ width*0.5, y, (0.5*width*offset), height),border_bottom_right_radius=25,border_top_right_radius=25)
+    
+    screen.blit(s_render(f"{'+' if value > 0 else ''}{value:,.3f}%", 55, (0, 0, 0)), (x+width//2-50, y+height//2-20))
+    
+    # Draws the outline of the rect
+    pygame.draw.rect(screen, (0,0,0), pygame.Rect(870,y,740,height), width=7, border_radius=10)
+
 def drawgametime(currenttime,screen:pygame.Surface):
     numtime_text,rect = fontlist[50].render(f'{currenttime[3]}:{"0" if currenttime[4] < 10 else ""}{currenttime[4]}{currenttime[6]}',(255,255,255))
     numtime_rect = numtime_text.get_rect(center=(100, 950))
@@ -411,7 +430,7 @@ def drawgametime(currenttime,screen:pygame.Surface):
 
 def getcolorgrad(percent):
     
-    gradpercent = abs(50/(25/percent))# when perecent is at 25, it will have max color
+    gradpercent = abs(50/(25/percent))# when percent is at 25, it will have max color
     if gradpercent > 50:
         gradpercent = 50
 

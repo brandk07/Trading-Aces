@@ -14,7 +14,7 @@ DY = 200
 DH = 120
 
 class Optiontrade(Menu):
-    def __init__(self,stocklist:list,gametime):
+    def __init__(self,stocklist:list,gametime,player):
         # self.icon = pygame.image.load(r'Assets\Portfolio\portfolio2.png').convert_alpha()
 
         self.icon = pygame.image.load(r'Assets\Menu_Icons\noblack_option3.png').convert_alpha()
@@ -42,7 +42,7 @@ class Optiontrade(Menu):
         self.selected_option = None
         self.view = "Owned"# Owned or Available or Custom
         self.selected_avalaible = None
-        self.refreshOptions(stocklist,gametime)
+        self.refreshOptions(stocklist,gametime,player)
 
     
         
@@ -90,14 +90,14 @@ class Optiontrade(Menu):
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
             # Draws the information about the option on the right side of the screen
-            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
+            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strikePrice}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
             for i,txt in enumerate(info):
                 screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),280+(i*50)))
 
             # for loop to draw lots of polygons with text
 
             # total value of the stocks above the sell button
-            # strike_price = option.strike_price
+            # strikePrice = option.strikePrice
             # text = fontlist[45].render(f'Value: ${limit_digits(value,15)}', (190, 190, 190))[0]
             # gfxdraw.filled_polygon(screen,((1100,705),(1115,775),(1455,775),(1440,705)),(15,15,15))#polygon for the total value button
             # pygame.draw.polygon(screen, (0,0,0), ((1110,705),(1125,775),(1465,775),(1450,705)),5)#outline total value button polygon
@@ -160,17 +160,18 @@ class Optiontrade(Menu):
             percents.append(percentchange); alltexts.append(texts)
 
         self.allrenders,self.selected_option = drawLatterScroll(screen,player.options,self.allrenders,self.barowned.value,self.getpoints,(xshift,yshift),self.selected_option,mousebuttons,DH,alltexts,percents)
-    def refreshOptions(self,stocklist:list,gametime):
+    def refreshOptions(self,stocklist:list,gametime,player):
         self.calloptions = []; self.putoptions = []
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.95)*100,math.ceil(stock.price*1.2)*100)/100
-            self.putoptions.append(OptionAsset(stock,strikeprice,random.randint(3,25),'put',str(gametime),1))
 
+            self.putoptions.append(OptionAsset(stock,strikeprice,random.randint(3,25),'put',str(gametime),1,player.getNetworth()))
+            
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
-            self.calloptions.append(OptionAsset(stock,strikeprice,random.randint(3,25),'call',str(gametime),1))
+            self.calloptions.append(OptionAsset(stock,strikeprice,random.randint(3,25),'call',str(gametime),1,player.getNetworth()))
 
     def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player):
          if optionindex != None:
@@ -198,7 +199,7 @@ class Optiontrade(Menu):
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
             # Draws the information about the option on the right side of the screen
-            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strike_price}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
+            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strikePrice}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
             for i,txt in enumerate(info):
                 screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),280+(i*50)))
             
@@ -255,7 +256,7 @@ class Optiontrade(Menu):
         if point_in_polygon((mousex,mousey),[(1000,120),(1015,190),(1455,190),(1440,120)]):
             if mousebuttons == 1:
                 soundEffects['clickbutton2'].play()
-                self.refreshOptions(stocklist,gametime)
+                self.refreshOptions(stocklist,gametime,player)
 
         percents = []; alltexts = []
         for i, option in enumerate(alloptions[self.baravailable.value:self.baravailable.value+5]):
@@ -269,7 +270,7 @@ class Optiontrade(Menu):
                      f'Expiration: {option.expiration_date} days',
                      f'Cost: ${limit_digits(option.getValue(),15)}',
                      f'Stock Price : ${limit_digits(option.stockobj.price,15)}',
-                     f'Strike Price: ${option.strike_price}'
+                     f'Strike Price: ${option.strikePrice}'
                     ]
             self.allrenders = reuserenders(self.allrenders, texts, textinfo, i)
             alltexts.append(texts)

@@ -122,6 +122,11 @@ Make the mouseover look better and add the hold feature (3/3/2024)
 
 Break up the portfolio class somehow (3/19/2024)
 
+When filling the graphs  use the generate_random_number from tester2 rather than doing all the point bs
+    This will give the final value of the stock, and then it is a 
+    matter of bullshitting the rest of the points in each graph (3/24/2024)
+
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am

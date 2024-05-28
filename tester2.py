@@ -34,23 +34,55 @@ from dateutil.relativedelta import relativedelta
 # print(f"Time until 9:30 AM on the next day in seconds: {seconds}")
 # dt += timedelta(seconds=seconds)
 # print(dt)
-dt = datetime(2023, 1, 1, 10, 30, 0)
-dt2 = datetime(2023, 1, 5, 9, 30, 0)
-
-print((dt - dt.replace(hour=9, minute=30, second=0, microsecond=0)).seconds)
-
-difference = dt2 - dt
-# dt1 = datetime(2023, 1, 1, 17, 30, 0)
+# dt = datetime(2023, 1, 1, 10, 30, 0)
 # dt2 = datetime(2023, 1, 5, 9, 30, 0)
 
-# difference = relativedelta(dt2, dt1)
-# difference_in_years = difference.days/365
-difference = difference.days/365
-print(difference)
-print(difference*365)
-print(7/(difference))
+# print((dt - dt.replace(hour=9, minute=30, second=0, microsecond=0)).seconds)
+
+# difference = dt2 - dt
+# # dt1 = datetime(2023, 1, 1, 17, 30, 0)
+# # dt2 = datetime(2023, 1, 5, 9, 30, 0)
+
+# # difference = relativedelta(dt2, dt1)
+# # difference_in_years = difference.days/365
+# difference = difference.days/365
+# print(difference)
+# print(difference*365)
+# print(7/(difference))
 
 
+import random
+from scipy.stats import norm
+
+def generate_random_number():
+  """
+  Generates a random number with a distribution where 100 is most common
+  and likelihood decreases exponentially as you move away from 100.
+
+  Returns:
+    A random integer between 10 and 1000.
+  """
+
+  # Define the mean (center) and standard deviation of the distribution
+  mean = 100
+  std_dev = 30  # Adjust this value to control the spread
+
+  # Generate a random number from a normal distribution
+  normal_value = norm.rvs(loc=mean, scale=std_dev)
+
+  # Clip the value to the desired range (10-1000)
+  clipped_value = max(10, min(normal_value, 1000))
+
+  # Convert the (potentially) fractional value to an integer
+  return int(round(clipped_value))
+
+# Generate a few random numbers
+nums = [generate_random_number() for _ in range(5_000_000)]
+print(max(nums),min(nums))
+print(sum(nums)/len(nums))
+# for _ in range(5):
+#   number = generate_random_number()
+#   print(number)
 
 
 # start_time = timeit.timeit()

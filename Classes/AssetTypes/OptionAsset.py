@@ -7,36 +7,37 @@ from collections import deque
 
     
 class OptionAsset(Asset):
-    def __init__(self,stockobj,strike_price:int,expiration_date:int,option_type:str,creationdate:str,quantity:int,ogprice=None,color=None) -> None:
+    def __init__(self,stockobj,strikePrice:int,expiration_date:int,option_type:str,creationdate:str,quantity:int,networth,ogprice=None,color=None) -> None:
         
-        super().__init__(stockobj, creationdate, " "+option_type, ogprice, quantity, color=color)
+        super().__init__(stockobj, creationdate, " "+option_type, ogprice, quantity, 0, color=color)
         
-        self.strike_price = strike_price
+        self.strikePrice = strikePrice
         self.expiration_date = expiration_date
         self.option_type = option_type
-        self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=self.getVolatility(),r=0.05)
+        self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strikePrice*100,t=self.expiration_date,sigma=self.getVolatility(),r=0.05)
         ogprice = ogprice if ogprice else self.getValue(bypass=True,fullvalue=False)
+        self.portfolioPercent = ogprice/(networth+ogprice)# have to set this after the object is created
         self.lastvalue = [self.stockobj.price*100,self.getValue(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
         self.updateCount = 0
 
     def __eq__(self,other):
         if not isinstance(other,OptionAsset):
             return False
-        return [self.stockobj,self.strike_price,self.option_type,self.expiration_date,self.date,self.ogvalue] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date,other.date,other.ogvalue]
+        return [self.stockobj,self.strikePrice,self.option_type,self.expiration_date,self.date,self.ogvalue,self.portfolioPercent] == [other.stockobj,other.strikePrice,other.option_type,other.expiration_date,other.date,other.ogvalue,self.portfolioPercent]
 
     def savingInputs(self):
-        return (self.stockobj.name,self.strike_price,self.expiration_date,self.option_type,self.date,self.quantity,self.ogvalue,self.color)
+        return (self.stockobj.name,self.strikePrice,self.expiration_date,self.option_type,self.date,self.quantity,self.ogvalue,self.portfolioPercent,self.color)
 
 
     def copy(self):
-        return OptionAsset(self.stockobj,self.strike_price,self.expiration_date,self.option_type,str(self.date),self.quantity,self.getValue(bypass=True))
+        return OptionAsset(self.stockobj,self.strikePrice,self.expiration_date,self.option_type,str(self.date),self.quantity,self.portfolioPercent,ogprice=self.getValue(bypass=True))
 
     def getValue(self,bypass=False,fullvalue=True):
         """""Bypass is used to force a recalculation of the option value
         Full value is value*quantity otherwise it is just the value of the option"""
         if bypass:
             self.option.s0 = float(self.stockobj.price)*100
-            self.option.k = self.strike_price*100
+            self.option.k = self.strikePrice*100
             self.option.sigma = self.getVolatility()
             
             self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="BSM",iteration=1)]
@@ -46,7 +47,7 @@ class OptionAsset(Asset):
         # if self.updateCount > 60:# if the stock price has changed by more than 2%
         #     # print('recalculating option value',bypass)
         #     self.option.s0 = float(self.stockobj.price)*100
-        #     self.option.k = self.strike_price*100
+        #     self.option.k = self.strikePrice*100
         #     self.option.sigma = self.getVolatility()
             
         #     self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="MC",iteration=200)]
@@ -55,18 +56,18 @@ class OptionAsset(Asset):
         return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
 
 # class OptionAsset:
-#     def __init__(self,stockobj,strike_price,expiration_date,option_type,creationdate,quantity=1,ogprice=None) -> None:
+#     def __init__(self,stockobj,strikePrice,expiration_date,option_type,creationdate,quantity=1,ogprice=None) -> None:
 #         """Option is controls 100 shares of a stock, so quantity is controlling 100*quantity shares"""
 #         self.stockobj = stockobj
 #         self.date = creationdate
-#         self.strike_price = strike_price
+#         self.strikePrice = strikePrice
 #         self.expiration_date = int(expiration_date)
 #         self.option_type = str(option_type)
 #         self.color = (0,0,0)
 #         self.name = f'{self.stockobj.name} {self.option_type}'
 #         self.quantity = quantity
 
-#         self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strike_price*100,t=self.expiration_date,sigma=calculate_volatility(tuple(self.stockobj.graphs['1Y'])),r=0.05)
+#         self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strikePrice*100,t=self.expiration_date,sigma=calculate_volatility(tuple(self.stockobj.graphs['1Y'])),r=0.05)
         # if ogprice:
         #     self.ogvalue = ogprice
         # else:
@@ -80,7 +81,7 @@ class OptionAsset(Asset):
     # def __eq__(self,other):
     #     if not isinstance(other,OptionAsset):
     #         return False
-    #     return [self.stockobj,self.strike_price,self.option_type,self.expiration_date,self.date] == [other.stockobj,other.strike_price,other.option_type,other.expiration_date,other.date]
+    #     return [self.stockobj,self.strikePrice,self.option_type,self.expiration_date,self.date] == [other.stockobj,other.strikePrice,other.option_type,other.expiration_date,other.date]
     
 #     def __iadd__(self,other):
         
@@ -99,11 +100,11 @@ class OptionAsset(Asset):
 #         """returns the percent change of the option"""
 #         return ((self.getValue() - (self.ogvalue)) / (self.ogvalue)) * 100
 #     def get_inputs(self):
-#         return (self.option_type,self.stockobj.price,self.strike_price,self.expiration_date,calculate_volatility(tuple(self.stockobj.graphs['1Y'])),0.05,)
+#         return (self.option_type,self.stockobj.price,self.strikePrice,self.expiration_date,calculate_volatility(tuple(self.stockobj.graphs['1Y'])),0.05,)
     
 #     # create a method to return an exact copy of the object
 #     def copy(self) -> 'OptionAsset':        
-#             return OptionAsset(self.stockobj,self.strike_price,self.expiration_date,self.option_type,self.date,quantity=self.quantity,ogprice=self.getValue(bypass=True))
+#             return OptionAsset(self.stockobj,self.strikePrice,self.expiration_date,self.option_type,self.date,quantity=self.quantity,ogprice=self.getValue(bypass=True))
 #     def resetOgValue(self):
 #         self.ogvalue = self.getValue(True)
 #     def advance_time(self):
@@ -118,7 +119,7 @@ class OptionAsset(Asset):
     #     Full value is value*quantity otherwise it is just the value of the option"""
     #     if bypass:
     #         self.option.s0 = float(self.stockobj.price)*100
-    #         self.option.k = self.strike_price*100
+    #         self.option.k = self.strikePrice*100
     #         self.option.sigma = calculate_volatility(tuple(self.stockobj.graphs['1Y']))
             
     #         self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="BSM",iteration=1)]
@@ -126,7 +127,7 @@ class OptionAsset(Asset):
     #     if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.001 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.999:# if the stock price has changed by more than 2%
     #         # print('recalculating option value',bypass)
     #         self.option.s0 = float(self.stockobj.price)*100
-    #         self.option.k = self.strike_price*100
+    #         self.option.k = self.strikePrice*100
     #         self.option.sigma = calculate_volatility(tuple(self.stockobj.graphs['1Y']))
             
     #         self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="MC",iteration=200)]

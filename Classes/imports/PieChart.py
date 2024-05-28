@@ -1,7 +1,8 @@
 import pygame, math
 from pygame import gfxdraw
 from functools import lru_cache 
-from Defs import s_render, fontlist,point_in_polygon
+from Defs import s_render, point_in_polygon,limit_digits
+from Classes.imports.Latterscroll import LatterScroll
 
 
 @lru_cache(maxsize=10)
@@ -19,6 +20,7 @@ class PieChart:
         s.coords = coords
         s.pieSegments = []#[[color,points,value]...]
         s.angles = []
+        s.lscroll = LatterScroll()
     
     def updateData(s, data, coords=None, radius=None):
         """
@@ -26,10 +28,9 @@ class PieChart:
         Data is a list of tuples, each tuple is (value, name, color)
         Should Usually just use the original coords and radius, but the coords and radius parameters can be used
         """
-        if coords != None:
-            s.coords = coords
-        if radius != None:
-            s.radius = radius
+        s.coords = s.coords if coords == None else coords# if coords is None, then keep the original coords
+        s.radius = s.radius if radius == None else radius# if radius is None, then keep the original radius
+
         s.data = data
         s.pieSegments.clear()
 
@@ -56,15 +57,13 @@ class PieChart:
             s.angles.append([math.radians(percentindex)])# the first angle is the previous angle
             percentindex += (percent[0]/100)*360
             s.angles[i].append(math.radians(percentindex))# the second angle is the current angle
-
             s.angles[i].extend([percent[3], percent[1],percent[2]])# the value, name and color
             
-
         corners = [s.coords, (s.coords[0] + s.radius*2, s.coords[1]), (s.coords[0] + s.radius*2, s.coords[1] + s.radius*2), (s.coords[0], s.coords[1] + s.radius*2)]
         
         points = []
 
-        for colornum, (a1, a2, value, name, color) in enumerate(s.angles):# loop through the angles
+        for a1, a2, value, name, color in s.angles:# loop through the angles
             p0 = (s.coords[0] + s.radius, s.coords[1]+s.radius)
             p1 = (s.coords[0] + s.radius + s.radius * math.cos(a1), s.radius + s.coords[1] + (s.radius * math.sin(a1) * -1))# the first point on the circle
             p2 = (s.coords[0] + s.radius + s.radius * math.cos(a2), s.radius + s.coords[1] + (s.radius * math.sin(a2) * -1))# the second point on the circle - drawn after the corner points
@@ -103,7 +102,7 @@ class PieChart:
 
     def draw(s,screen):
         """"""        
-        total = sum([v[0] for v in s.data])# get the total value of the stocks - does this is update too, but I didn't feel the need to make another attribute for it
+        totalValue = sum([v[0] for v in s.data])# originally the displayed value is the total value of the stocks - might change if mouseover
 
         wholesurf = pygame.Surface((s.radius*2,s.radius*2))
 
@@ -115,15 +114,26 @@ class PieChart:
             for color,points,value in s.pieSegments:
                 # print(point_in_polygon((mousex-s.coords[0],mousey-s.coords[1]),ps),color, (mousex,mousey))
                 if point_in_polygon((mousex-s.coords[0],mousey-s.coords[1]),points):
-                    gfxdraw.filled_polygon(wholesurf,points,color)#draws the graphed points of the graph
-                    total = value
+                    brighten = lambda x : x + 50 if x + 50 < 255 else 255
+                    newcolor = (brighten(color[0]),brighten(color[1]),brighten(color[2]))
+                    gfxdraw.filled_polygon(wholesurf,points,newcolor)#draws the graphed points of the graph
+
+                    x,y = points[0][0]-points[1][0],points[0][1]-points[1][1]
+                    print(points,x,y)
+                    wholesurf.blit(s_render(f'${limit_digits(value,16)}',35,(0,0,0)),(x,y))
+
+                    # dispValue = value
                 else:
-                    grayscale = lambda r,g,b : (r+g+b)//3
-                    graycolor = (grayscale(*color),grayscale(*color),grayscale(*color))
-                    gfxdraw.filled_polygon(wholesurf,points,graycolor)#draws the none selected polygon darker
+                    newcolor = (color[0]//2,color[1]//2,color[2]//2)
+                    gfxdraw.filled_polygon(wholesurf,points,newcolor)#draws the none selected polygon darker
+                # pygame.draw.polygon(wholesurf, (205,205,205), points,2)# Draws a line from the middle of the pie chart to the edge of the pie chart
         else:
             for color,points,value in s.pieSegments:
+                
                 gfxdraw.filled_polygon(wholesurf,points,color)
+                # x,y = points[0][0]-points[1][0],points[0][1]-points[1][1]
+                # wholesurf.blit(s_render(f'${limit_digits(value,16)}',35,(0,0,0)),(x,y))
+                # pygame.draw.polygon(wholesurf, (255,255,255), points,2)#draws the graphed points of the graph
 
         wholesurf.blit(createbacksurf(s.radius), (0,0))  # blit the backsurface to the screen
         wholesurf.set_colorkey((0,0,0))
@@ -131,28 +141,44 @@ class PieChart:
         starpos = s.coords[1]+(((((s.radius*2))-(len(s.angles)*30))//2))
 
         corners = [s.coords, (s.coords[0] + s.radius*2, s.coords[1]), (s.coords[0] + s.radius*2, s.coords[1] + s.radius*2), (s.coords[0], s.coords[1] + s.radius*2)]
-        #  drawing the boxes displaying the colors next to the names
-        for i, (a1, a2, value, name,color) in enumerate(s.angles):
-            c = corners[1]
-            cx = c[0]
-            cy = starpos
-            box_x = cx + 10
-            box_y = cy + (i * 30)
-            box_width = 15
-            box_height = 15
-            gfxdraw.filled_polygon(screen, [(box_x, box_y), (box_x + box_width, box_y), (box_x + box_width, box_y + box_height), (box_x, box_y + box_height)], color)
+        
+        # Displaying the information in the box to the right of the pie chart
+        valueText = s_render(f'${limit_digits(totalValue,16)}',45,(0,0,0))# text that displays the appropriate dispValue
 
-        # rendering and blitting the text
-        renderedtext = [[s_render(f'{name}' if type(name) == str else{f'{name:,.2f}'},35,(255,255,255)),name] for (*_, name,color) in (s.angles)]
-        for i,text in enumerate(renderedtext):
-            text_x = cx + 30
-            text_y = starpos -5 + (i * 30)
-            screen.blit(text[0], (text_x, text_y)) 
+        boxRect = pygame.rect.Rect(corners[0][0]+s.radius*2+10,corners[0][1],s.radius*1.75,s.radius*2)
+        
+        pygame.draw.rect(screen, (110,110,110), (boxRect.x,boxRect.y,boxRect.width,valueText.get_height()+30), border_radius=10)
+        pygame.draw.rect(screen, (0,0,0), boxRect, 5, 10)
+        screen.blit(valueText, (boxRect.centerx-(valueText.get_width()/2), boxRect.y+20))
+
+        
+        # latterscroll - just put all the assets in to a small render scroll
+        # Latterscroll.
+        # s.lscroll.
+
+
+        #  drawing the boxes displaying the colors next to the names
+        # for i, (a1, a2, value, name,color) in enumerate(s.angles):
+        #     c = corners[1]
+        #     cx = c[0]
+        #     cy = starpos
+        #     box_x = cx + 10
+        #     box_y = cy + (i * 30)
+        #     box_width = 15
+        #     box_height = 15
+        #     gfxdraw.filled_polygon(screen, [(box_x, box_y), (box_x + box_width, box_y), (box_x + box_width, box_y + box_height), (box_x, box_y + box_height)], color)
+
+        # # rendering and blitting the text
+        # renderedtext = [[s_render(f'{name}' if type(name) == str else{f'{name:,.2f}'},35,(255,255,255)),name] for (*_, name,color) in (s.angles)]
+        # for i,text in enumerate(renderedtext):
+        #     text_x = cx + 30
+        #     text_y = starpos -5 + (i * 30)
+        #     screen.blit(text[0], (text_x, text_y)) 
+
+
         # draw a circle in the middle of the pie chart
         pygame.draw.circle(screen, (0, 0, 0), (s.coords[0]+s.radius,s.coords[1]+s.radius), s.radius, 10)
-        totaltext = fontlist[45].render(f'${total:,.2f}', (0, 0, 0))[0]
-        renderedtext.append([totaltext,f'${total:,.2f}'])
-        screen.blit(totaltext, (corners[0][0]+s.radius-(totaltext.get_width()/2), corners[0][1]+s.radius-(totaltext.get_height()/2)))
+        
 
 # @lru_cache(maxsize=10)
 # def createbacksurf(radius):

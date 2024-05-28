@@ -12,7 +12,10 @@ from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.imports.Transactions import Transactions
 from Classes.StockVisualizer import StockVisualizer
 from Classes.imports.PieChart import PieChart
+from Classes.imports.BarGraph import BarGraph
 import math
+import datetime
+from dateutil import parser
 
 DX = 300# default x
 DY = 230# default y
@@ -40,6 +43,7 @@ class Portfolio(Menu):
         self.networthGraph = StockVisualizer(gametime,player,stocklist)
         self.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
         self.piechart = PieChart(150, (200, 650))
+        self.barGraphs = [BarGraph([175,175],[],[],[875,400]),BarGraph([175,175],[],[],[1100,400])]
 
         # for the asset type selection which sorts the latterscroll
         # self.assetoptions = ["Stocks","Options","Other"]# future, Crypto, bonds, minerals, real estate, etc
@@ -248,7 +252,7 @@ class Portfolio(Menu):
             s_render("Final Value (After Tax)", 25, (230, 230, 230)),]
         
         texts = [s_render(f"${limit_digits(netgl,10)}", 70, p3choice((200, 0, 0),(0,200,0),(200,200,200),percent)),
-            s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, p3choice((200, 0, 0),(0,0,0),(200,200,200),-taxedamt)),
+            s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, p3choice((200, 0, 0),(0,0,0),(90,90,90),-taxedamt)),
             s_render(f"${limit_digits((asset.getValue(fullvalue=False)*quantity)-taxedamt,15)}", 70, (190, 190, 190)),]
         
         
@@ -266,30 +270,67 @@ class Portfolio(Menu):
             percent = abs(asset.getPercent()); days = 1/(diff.days/365)
             return (((1+(percent/100)) ** days)-1) * extra
         
+    #     # coords = [
+    #     #     (880,345),# Per Share
+    #     #     (880,380),# Per share #
+    #     #     # ()
+    #     #     (880,440),
+    #     # ]
+    #     # [(860, 330), (1620, 330), (1620, 960), (860, 960)]
+    #     # 860-1620 = 760
+    #     # 760/3 = 253.33333333333334
+    #     # 890+253.33333333333334 = 1143.3333333333333
+    #     # 1143.3333333333333+253.33333333333334 = 1396.6666666666667
+    #     # 1396.6666666666667+253.33333333333334 = 1650
+        if isinstance(asset,StockAsset):
+            otherTexts = ("Dividends",[f"${limit_digits(asset.totalDividends,15)}",""])
+        elif isinstance(asset,OptionAsset):
+            otherTexts = ("Expiration & Strike",[f"{asset.expiration_date} Days",f"${asset.strikePrice}"])
+                
+    #     texts = [
+    #         "Per Share",
+    #         "Total Cost",
+    #         otherTexts[0]
+    #     ]
+    #     values = [
+    #         [f"${limit_digits(asset.ogvalue,12)}", f"${limit_digits(asset.getValue(fullvalue=False),12)}"],# Per Share (OG Value, Current Value)
+    #         [f"${limit_digits(asset.ogvalue*asset.quantity,12)}", f"${limit_digits(asset.getValue(fullvalue=False)*asset.quantity,12)}"],# Total Cost (OG Value, Current Value)
+    #         otherTexts[1]
+    #     ]
+    #     for i in range(3):
+    #         points = [(880+(i*250), 385), (1133+(i*235), 385), (1133+(i*235), 530), (880+(i*250), 530)]
 
-        def movingRect(screen,value,maxvalue,width,height,x,y):
-            """Draws the rect that moves with the value"""
-            offset = 1 if abs(value) >= maxvalue else abs(value/maxvalue)
-            colorval = (120*offset)+70
-            color = p3choice((colorval,0,0),(0,colorval,0),(190,190,190),value)
-
-            # Draws the rect that moves with the value
-
-            if value < 0: 
-                newx = x-(offset*width*0.5) + width*0.5
-                pygame.draw.rect(screen, color, pygame.Rect(newx, y, (0.5*width*offset), height),border_bottom_left_radius=25,border_top_left_radius=25)
-            else: 
-                pygame.draw.rect(screen, color, pygame.Rect(x+ width*0.5, y, (0.5*width*offset), height),border_bottom_right_radius=25,border_top_right_radius=25)
+    #         # pygame.draw.polygon(screen, (0, 0, 0), points, 5)
+    #         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(880+(i*250), 385, 253, 145), 5, 10)
             
-            screen.blit(s_render(f"{'+' if value > 0 else ''}{value:,.3f}%", 55, (0, 0, 0)), (x+width//2-50, y+height//2-20))
-            
-            # Draws the outline of the rect
-            pygame.draw.rect(screen, (0,0,0), pygame.Rect(870,y,740,height), width=7, border_radius=10)
-            
-        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(870, 340, 740, 250), 5, 10)
+    #         x,y = 890+(i*253),390
+    #         screen.blit(s_render(texts[i], 40, (190, 190, 190)), (x, y-40))# the text describing the values in the boxes (Per Share, Total Cost, etc...)
+    #         screen.blit(s_render(values[i][0], 50, (190, 190, 190)), (x, y))# the value of the variable (Per Share, Total Cost, etc...)
+    #         screen.blit(s_render(values[i][1], 50, (190, 190, 190)), (x, y+50))# the value of the variable (Per Share, Total Cost, etc...)
+        
 
-        movingRect(screen,getYearlyReturn(asset,gametime),35,740,100,870,600)
-        movingRect(screen,(asset.getValue()/player.getNetworth())*100,35,740,100,870,740)
+
+    #     screen.blit(s_render(f"Purchased on {asset.date}", 40, (190, 190, 190)), (880, 540))
+        # def drawAssetInfo(self,screen,asset,gametime,player):
+        ogtext = s_render("Original", 55, (190, 190, 190))
+        screen.blit(ogtext, (885, 350))
+        pygame.draw.rect(screen, (60, 60, 60), pygame.Rect(900+ogtext.get_width(), 350, 35, 35), 0, 10)
+
+        screen.blit(s_render("Current", 55, asset.color), (1140, 350))
+        pygame.draw.rect(screen, asset.color, pygame.Rect(1155+ogtext.get_width(), 350, 35, 35), 0, 10)
+
+        
+        self.barGraphs[0].updateValues([asset.ogvalue,asset.getValue(fullvalue=False)],[(110,110,110),asset.color])# bar graph 1 with the original value and the current value
+        self.barGraphs[1].updateValues([asset.ogvalue*asset.quantity,asset.getValue(fullvalue=True)],[(110,110,110),asset.color])# bar graph 2 with the original value and the current value
+        for graph in self.barGraphs:
+            
+            graph.draw(screen)
+        # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(870, 340, 740, 250), 5, 10)
+
+        # movingRect(screen,getYearlyReturn(asset,gametime),35,740,100,870,600)
+        # movingRect(screen,(asset.getValue()/player.getNetworth())*100,35,740,100,870,740)
+
+
 
         # offset = 1 if abs(x:=(getYearlyReturn(asset,gametime))) >= 25 else abs(x/25)
         # colorval = (120*offset)+70

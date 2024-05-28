@@ -24,10 +24,11 @@ def calculate_volatility(points) -> float:
     return annualized_volatility
 
 class Asset:
-    def __init__(self,stockobj,creationdate,nametext,ogvalue,quantity,color=None) -> None:
+    def __init__(self,stockobj,creationdate,nametext,ogvalue,quantity,portfolioPercent,color=None) -> None:
         """Parent class for all assets"""
         self.stockobj = stockobj
         self.date = creationdate
+        self.portfolioPercent = portfolioPercent
         self.ogvalue = ogvalue# ogvalue is the value the asset orginally had, just for 1 asset
         self.color = (randint(50,255),randint(50,255),randint(50,255)) if color == None else color
         self.name = f'{self.stockobj.name}{nametext}'# nametext for options is the option type

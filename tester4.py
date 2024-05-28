@@ -25,6 +25,8 @@ def getAvgReturn(percent,days):
 # avgreturn =  lambda percent,days : ((1+(abs(percent)/100)) ** (1/(days/365)))*100
 
 print(str(getAvgReturn(-75,1095))+"%")
+
+print(round(0.004456,2))
 # from decimal import Decimal, getcontext
 # import math
 # # Set the precision.
