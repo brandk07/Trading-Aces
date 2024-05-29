@@ -7,16 +7,21 @@ from collections import deque
 
     
 class OptionAsset(Asset):
-    def __init__(self,stockobj,strikePrice:int,expiration_date:int,option_type:str,creationdate:str,quantity:int,networth,ogprice=None,color=None) -> None:
-        
-        super().__init__(stockobj, creationdate, " "+option_type, ogprice, quantity, 0, color=color)
+    def __init__(self,stockobj,strikePrice:int,expiration_date:int,option_type:str,creationdate:str,quantity:int,porfolioPercent=None,networth=None,ogprice=None,color=None) -> None:
+        """Needs to be given either porfolioPercent or networth"""
+        super().__init__(stockobj, creationdate, " "+option_type, ogprice, quantity, porfolioPercent, color=color)
         
         self.strikePrice = strikePrice
         self.expiration_date = expiration_date
         self.option_type = option_type
         self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strikePrice*100,t=self.expiration_date,sigma=self.getVolatility(),r=0.05)
         ogprice = ogprice if ogprice else self.getValue(bypass=True,fullvalue=False)
-        self.portfolioPercent = ogprice/(networth+ogprice)# have to set this after the object is created
+        # print(f"{self.name}, {porfolioPercent} {self.portfolioPercent}")
+        if porfolioPercent == None:
+            
+            self.portfolioPercent = ogprice/(networth+ogprice)# have to set this after the object is created
+            # print(f"dont, {self.portfolioPercent}, {ogprice} {networth}") 
+            
         self.lastvalue = [self.stockobj.price*100,self.getValue(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
         self.updateCount = 0
 

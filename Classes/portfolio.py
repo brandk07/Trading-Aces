@@ -43,7 +43,7 @@ class Portfolio(Menu):
         self.networthGraph = StockVisualizer(gametime,player,stocklist)
         self.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
         self.piechart = PieChart(150, (200, 650))
-        self.barGraphs = [BarGraph([175,175],[],[],[875,400]),BarGraph([175,175],[],[],[1100,400])]
+        self.barGraphs = [BarGraph("Price Change",[175,175],[],[],[875,400]),BarGraph("Porfolio Allocation",[175,175],[],[],[1150,400])]
 
         # for the asset type selection which sorts the latterscroll
         # self.assetoptions = ["Stocks","Options","Other"]# future, Crypto, bonds, minerals, real estate, etc
@@ -262,20 +262,8 @@ class Portfolio(Menu):
         # need to fix teh option.add method - when you add the og value doesn't change
         
     def drawAssetInfo(self,screen,asset,gametime,player):
-        def getYearlyReturn(asset,gametime):
-            """returns the yearly return of the asset"""
-            diff = gametime.time-asset.dateobj
-            if diff.days <= 365: return asset.getPercent()
-            extra = 100 if asset.getPercent() > 0 else -100
-            percent = abs(asset.getPercent()); days = 1/(diff.days/365)
-            return (((1+(percent/100)) ** days)-1) * extra
         
-    #     # coords = [
-    #     #     (880,345),# Per Share
-    #     #     (880,380),# Per share #
-    #     #     # ()
-    #     #     (880,440),
-    #     # ]
+        
     #     # [(860, 330), (1620, 330), (1620, 960), (860, 960)]
     #     # 860-1620 = 760
     #     # 760/3 = 253.33333333333334
@@ -307,7 +295,20 @@ class Portfolio(Menu):
     #         screen.blit(s_render(texts[i], 40, (190, 190, 190)), (x, y-40))# the text describing the values in the boxes (Per Share, Total Cost, etc...)
     #         screen.blit(s_render(values[i][0], 50, (190, 190, 190)), (x, y))# the value of the variable (Per Share, Total Cost, etc...)
     #         screen.blit(s_render(values[i][1], 50, (190, 190, 190)), (x, y+50))# the value of the variable (Per Share, Total Cost, etc...)
+        def getYearlyReturn(asset,gametime):
+            """returns the yearly return of the asset"""
+            diff = gametime.time-asset.dateobj
+            if diff.days <= 365: return asset.getPercent()
+            extra = 100 if asset.getPercent() > 0 else -100
+            percent = abs(asset.getPercent()); days = 1/(diff.days/365)
+            return (((1+(percent/100)) ** days)-1) * extra
         
+        descriptexts = [# the descriptions for all the text that will be displayed
+        s_render(f"Per {self.classtext[type(asset)]}", 40, (190, 190, 190)),
+        s_render("Total Cost", 40, (190, 190, 190)),
+        s_render("Avg Return", 25, (190, 190, 190)),
+        s_render(f"Percent of Portfolio", 25, (190, 190, 190))]
+
 
 
     #     screen.blit(s_render(f"Purchased on {asset.date}", 40, (190, 190, 190)), (880, 540))
@@ -321,7 +322,8 @@ class Portfolio(Menu):
 
         
         self.barGraphs[0].updateValues([asset.ogvalue,asset.getValue(fullvalue=False)],[(110,110,110),asset.color])# bar graph 1 with the original value and the current value
-        self.barGraphs[1].updateValues([asset.ogvalue*asset.quantity,asset.getValue(fullvalue=True)],[(110,110,110),asset.color])# bar graph 2 with the original value and the current value
+        portfolioP = lambda x : x/(player.getNetworth()+x)
+        self.barGraphs[1].updateValues([asset.portfolioPercent,portfolioP(asset.getValue())],[(110,110,110),asset.color])# bar graph 2 with the original value and the current value
         for graph in self.barGraphs:
             
             graph.draw(screen)
@@ -355,12 +357,12 @@ class Portfolio(Menu):
 
     # def drawAssetInfo(self,screen,asset,gametime,player):
     #     """Draws the Asset Analytics underneath the stock graph on the left side of the screen"""
-    #     descriptexts = [# the descriptions for all the text that will be displayed
-    #         s_render(f"Per {self.classtext[type(asset)]}", 40, (190, 190, 190)),
-    #         s_render("Total Cost", 40, (190, 190, 190)),
-    #         s_render("Avg Return", 25, (190, 190, 190)),
-    #         s_render(f"Percent of Portfolio", 25, (190, 190, 190))]
-    #     # All the values that will be displayed
+        # descriptexts = [# the descriptions for all the text that will be displayed
+        #     s_render(f"Per {self.classtext[type(asset)]}", 40, (190, 190, 190)),
+        #     s_render("Total Cost", 40, (190, 190, 190)),
+        #     s_render("Avg Return", 25, (190, 190, 190)),
+        #     s_render(f"Percent of Portfolio", 25, (190, 190, 190))]
+        # # All the values that will be displayed
         # def getYearlyReturn(asset,gametime):
         #     """returns the yearly return of the asset"""
         #     diff = gametime.time-asset.dateobj
@@ -375,13 +377,13 @@ class Portfolio(Menu):
         #     else:
         #         return f"{num:,.4f}"
         
-    #     getCorrrectSize = lambda strlen: int(-85*math.log10(strlen))+155
+        # getCorrrectSize = lambda strlen: int(-85*math.log10(strlen))+155
         # valstrings = [# the strings that will be displayed
         #     f"${limit_digits(asset.ogvalue,12)}",
         #     f"${limit_digits(asset.ogvalue*asset.quantity,12)}",
         #     f"{getYearlyReturn(asset,gametime)}%",
         #     f"{limit_digits((asset.getValue()/player.getNetworth())*100,12)}%"]
-        # # colors = [(190, 0, 0) if getYearlyReturn(asset,gametime) < 0 else (0, 190, 0),(190, 190, 190)]
+        
         # colors = [p3choice((190,0,0),(0,190,0),(190,190,190),float(getYearlyReturn(asset,gametime))),(190, 190, 190)]
 
     #     if isinstance(asset,OptionAsset):
