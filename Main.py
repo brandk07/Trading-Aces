@@ -110,7 +110,7 @@ if __name__ == "__main__":
         
         for i,menu in enumerate(menulist):
             menu.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,165+(i*175)),ui_controls,gametime)
-
+# 
  
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
 

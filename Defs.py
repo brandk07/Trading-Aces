@@ -37,7 +37,7 @@ fontlistpix = [pixfonts(num) for num in range(0,201)]#list of fonts from 0-100
 font45 = fonts(45)
 GRAPHRANGES = ["1H","1D","1W","1M","3M","1Y"]
 
-@lru_cache(maxsize=100)
+@lru_cache(maxsize=150)
 def s_render(string:str, size, color,font='reg') -> pygame.Surface:
     """Caches the renders of the strings, and returns the rendered surface"""
     # print(f"Caching arguments: {string}, {size}, {color}")
@@ -90,6 +90,15 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
             renderlist[position].pop(text)
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
+
+def drawBoxedText(screen,text,size,boxcolor,textcolor,pos):
+    valueText = s_render(text,size,textcolor)
+    x = pos[0]-(valueText.get_width()//2)-30; y = pos[1]-(valueText.get_height()//2)-20
+    w,h = valueText.get_width()+60, valueText.get_height()+40
+    pygame.draw.rect(screen, boxcolor, (x,y,w,h), border_radius=10)
+    pygame.draw.rect(screen, (1,1,1), (x,y,w,h), 5, 10)
+    
+    screen.blit(valueText,(pos[0]-(valueText.get_width()//2),pos[1]-(valueText.get_height()//2)))
 
 def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:int,getpoints,shifts:tuple,selected_value:int,mousebuttons:int,defaultHeight:int,alltexts,percents) -> list:
     """Draws the scroll bar for the latter menu"""

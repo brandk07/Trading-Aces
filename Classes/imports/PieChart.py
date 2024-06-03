@@ -1,7 +1,7 @@
 import pygame, math
 from pygame import gfxdraw
 from functools import lru_cache 
-from Defs import s_render, point_in_polygon,limit_digits
+from Defs import *
 from Classes.imports.Latterscroll import LatterScroll
 
 
@@ -14,8 +14,9 @@ def createbacksurf(radius):
     return backsurface
 
 class PieChart:
-    def __init__(s,radius,coords):
+    def __init__(s,radius,coords,portfolio):
         s.data = []
+        s.portfolio = portfolio
         s.radius = radius
         s.coords = coords
         s.pieSegments = []#[[color,points,value]...]
@@ -97,7 +98,7 @@ class PieChart:
                 points.insert(-2,dto_corner(degree))
             # draw the polygon
             # pygame.draw.polygon(wholesurf, color, [(x[0]-coords[0],x[1]-coords[1]) for x in points]) 
-            s.pieSegments.append([color,[(x[0]-s.coords[0],x[1]-s.coords[1]) for x in points],value])
+            s.pieSegments.append([color,[(x[0]-s.coords[0],x[1]-s.coords[1]) for x in points],value,name])
     
 
     def draw(s,screen):
@@ -108,33 +109,39 @@ class PieChart:
 
         mousex,mousey = pygame.mouse.get_pos()
 
-        # for color,points in s.pieSegments:
-        #     if point_in_polygon((mousex,mousey),points):
+
         if pygame.Rect(s.coords[0],s.coords[1],s.radius*2,s.radius*2).collidepoint(mousex,mousey):# if the mouse is in the pie chart
-            for color,points,value in s.pieSegments:
-                # print(point_in_polygon((mousex-s.coords[0],mousey-s.coords[1]),ps),color, (mousex,mousey))
-                if point_in_polygon((mousex-s.coords[0],mousey-s.coords[1]),points):
-                    brighten = lambda x : x + 50 if x + 50 < 255 else 255
-                    newcolor = (brighten(color[0]),brighten(color[1]),brighten(color[2]))
-                    gfxdraw.filled_polygon(wholesurf,points,newcolor)#draws the graphed points of the graph
+            collided = False
+            for i,(color,points,value,name) in enumerate(s.pieSegments):# loop through the pie segments
+                if point_in_polygon((mousex-s.coords[0],mousey-s.coords[1]),points):# set collided to the one the mouse is over
+                    collided = i
+                    if pygame.mouse.get_pressed()[0]:
+                        print(name,value)
+                        if name == "Cash":
+                            print("cash")
+                            
+                            s.portfolio.menudrawn = False
+                            print(s.portfolio.menudrawn)
+                            # s.bankmenu.menudrawn = True
+                        s.portfolio.menudrawn = True
+                        s.portfolio.selectedAsset = s.portfolio.findAsset(value,name)
 
-                    x,y = points[0][0]-points[1][0],points[0][1]-points[1][1]
-                    print(points,x,y)
-                    wholesurf.blit(s_render(f'${limit_digits(value,16)}',35,(0,0,0)),(x,y))
+            for i,(color,points,value,name) in enumerate(s.pieSegments):# draws all the segments darker except the one the mouse is over
+                newcolor = (color[0]//2,color[1]//2,color[2]//2) if i != collided else color
+                gfxdraw.filled_polygon(wholesurf,points,newcolor)#draws the none selected polygon darker
+            
+            value = s.pieSegments[collided][2]# the value of the stock the mouse is over
+            # drawBoxedText(wholesurf, f'${limit_digits(value,16)}',50,(1,1,1),s.radius-(valueText.get_width()//2),s.radius-(valueText.get_height()//2),30,40,10,10)# blit the value of the mouseover segement to the screen
+            drawBoxedText(wholesurf, f'${limit_digits(value,16)}',50,s.pieSegments[collided][0],(1,1,1),(s.radius,s.radius))# blit the value of the mouseover segement to the screen
 
-                    # dispValue = value
-                else:
-                    newcolor = (color[0]//2,color[1]//2,color[2]//2)
-                    gfxdraw.filled_polygon(wholesurf,points,newcolor)#draws the none selected polygon darker
-                # pygame.draw.polygon(wholesurf, (205,205,205), points,2)# Draws a line from the middle of the pie chart to the edge of the pie chart
         else:
-            for color,points,value in s.pieSegments:
-                
+            for color,points,value,name in s.pieSegments: 
                 gfxdraw.filled_polygon(wholesurf,points,color)
-                # x,y = points[0][0]-points[1][0],points[0][1]-points[1][1]
-                # wholesurf.blit(s_render(f'${limit_digits(value,16)}',35,(0,0,0)),(x,y))
-                # pygame.draw.polygon(wholesurf, (255,255,255), points,2)#draws the graphed points of the graph
 
+            # if the mouse isn't over any of the segments, then display the total value    
+            drawBoxedText(wholesurf, f'${limit_digits(totalValue,16)}',50,(0,170,0),(1,1,1),(s.radius,s.radius))# blit the value of the mouseover segement to the screen    
+
+        
         wholesurf.blit(createbacksurf(s.radius), (0,0))  # blit the backsurface to the screen
         wholesurf.set_colorkey((0,0,0))
         screen.blit(wholesurf, s.coords)
