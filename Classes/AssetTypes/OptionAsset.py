@@ -7,19 +7,18 @@ from collections import deque
 
     
 class OptionAsset(Asset):
-    def __init__(self,stockobj,strikePrice:int,expiration_date:int,option_type:str,creationdate:str,quantity:int,porfolioPercent=None,networth=None,ogprice=None,color=None) -> None:
-        """Needs to be given either porfolioPercent or networth"""
-        super().__init__(stockobj, creationdate, " "+option_type, ogprice, quantity, porfolioPercent, color=color)
+    def __init__(self,player,stockobj,strikePrice:int,expiration_date:int,option_type:str,creationdate:str,quantity:int,porfolioPercent=None,ogprice=None,color=None) -> None:
+        super().__init__(player,stockobj, creationdate, " "+option_type, ogprice, quantity, porfolioPercent, color=color)
         
         self.strikePrice = strikePrice
         self.expiration_date = expiration_date
         self.option_type = option_type
         self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strikePrice*100,t=self.expiration_date,sigma=self.getVolatility(),r=0.05)
-        ogprice = ogprice if ogprice else self.getValue(bypass=True,fullvalue=False)
+        ogprice = ogprice if ogprice else self.getValue(bypass=True,fullvalue=True)
         # print(f"{self.name}, {porfolioPercent} {self.portfolioPercent}")
         if porfolioPercent == None:
             
-            self.portfolioPercent = ogprice/(networth+ogprice)# have to set this after the object is created
+            self.portfolioPercent = ogprice/(player.getNetworth())# have to set this after the object is created
             # print(f"dont, {self.portfolioPercent}, {ogprice} {networth}") 
             
         self.lastvalue = [self.stockobj.price*100,self.getValue(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
@@ -30,12 +29,20 @@ class OptionAsset(Asset):
             return False
         return [self.stockobj,self.strikePrice,self.option_type,self.expiration_date,self.date,self.ogvalue,self.portfolioPercent] == [other.stockobj,other.strikePrice,other.option_type,other.expiration_date,other.date,other.ogvalue,self.portfolioPercent]
 
+    def __iadd__(self,other):
+        if self == other:
+            extraValue = (other.getValue(bypass=True)+self.getValue(bypass=True))
+            self.portfolioPercent = extraValue/(self.playerObj.getNetworth()+other.getValue(bypass=True))
+            self.quantity += other.quantity
+            return self
+        raise ValueError(f'{type(self).__name__} objects must be the same to add them together')
+
     def savingInputs(self):
-        return (self.stockobj.name,self.strikePrice,self.expiration_date,self.option_type,self.date,self.quantity,self.ogvalue,self.portfolioPercent,self.color)
+        return (self.stockobj.name,self.strikePrice,self.expiration_date,self.option_type,self.date,self.quantity,self.portfolioPercent,self.ogvalue,self.color)
 
 
     def copy(self):
-        return OptionAsset(self.stockobj,self.strikePrice,self.expiration_date,self.option_type,str(self.date),self.quantity,self.portfolioPercent,ogprice=self.getValue(bypass=True))
+        return OptionAsset(self.playerObj,self.stockobj,self.strikePrice,self.expiration_date,self.option_type,str(self.date),self.quantity,self.portfolioPercent,ogprice=self.getValue(bypass=True))
 
     def getValue(self,bypass=False,fullvalue=True):
         """""Bypass is used to force a recalculation of the option value

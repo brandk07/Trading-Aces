@@ -49,9 +49,9 @@ musicdata = Getfromfile(stockdict,player,gametime)# muiscdata = [time, volume, s
 # CREATING OBJECTS
 stockgraphmanager = StockGraphManager(stocklist,gametime)
 stockbook = Stockbook(stocklist,gametime)
-portfolio = Portfolio(stocklist,player,gametime)
-optiontrade = Optiontrade(stocklist,gametime,player)
 tmarket = TotalMarket(gametime)
+portfolio = Portfolio(stocklist,player,gametime,tmarket)
+optiontrade = Optiontrade(stocklist,gametime,player)
 ui_controls = UI_Controls(stocklist,GAMESPEED,gametime,tmarket,player)
 
 # VARS FROM SETTINGS

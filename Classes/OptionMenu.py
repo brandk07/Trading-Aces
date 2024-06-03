@@ -166,12 +166,12 @@ class Optiontrade(Menu):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.95)*100,math.ceil(stock.price*1.2)*100)/100
 
-            self.putoptions.append(OptionAsset(stock,strikeprice,random.randint(3,25),'put',str(gametime),1,networth=player.getNetworth()))
+            self.putoptions.append(OptionAsset(player,stock,strikeprice,random.randint(3,25),'put',str(gametime),1))
             
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
-            self.calloptions.append(OptionAsset(stock,strikeprice,random.randint(3,25),'call',str(gametime),1,networth=player.getNetworth()))
+            self.calloptions.append(OptionAsset(player,stock,strikeprice,random.randint(3,25),'call',str(gametime),1))
 
     def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player):
          if optionindex != None:

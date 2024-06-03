@@ -24,9 +24,10 @@ def calculate_volatility(points) -> float:
     return annualized_volatility
 
 class Asset:
-    def __init__(self,stockobj,creationdate,nametext,ogvalue,quantity,portfolioPercent,color=None) -> None:
+    def __init__(self,player,stockobj,creationdate,nametext,ogvalue,quantity,portfolioPercent,color=None) -> None:
         """Parent class for all assets"""
         self.stockobj = stockobj
+        self.playerObj = player
         self.date = creationdate
         self.portfolioPercent = portfolioPercent
         self.ogvalue = ogvalue# ogvalue is the value the asset orginally had, just for 1 asset
@@ -44,6 +45,8 @@ class Asset:
     
     def __iadd__(self,other):
         if self == other:
+            extraValue = (other.getValue(bypass=True)+self.getValue(bypass=True))
+            self.portfolioPercent = extraValue/(self.playerObj.getNetworth()+other.getValue(bypass=True))
             self.quantity += other.quantity
             return self
         raise ValueError(f'{type(self).__name__} objects must be the same to add them together')
