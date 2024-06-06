@@ -45,15 +45,15 @@ stocklist = [stockdict[name] for name in stocknames]
 # GETTING DATA FROM FILE
 
 musicdata = Getfromfile(stockdict,player,gametime)# muiscdata = [time, volume, songindex]
-
+menuList = []
 # CREATING OBJECTS
 stockgraphmanager = StockGraphManager(stocklist,gametime)
 stockbook = Stockbook(stocklist,gametime)
 tmarket = TotalMarket(gametime)
-portfolio = Portfolio(stocklist,player,gametime,tmarket)
+portfolio = Portfolio(stocklist,player,gametime,tmarket,menuList)
 optiontrade = Optiontrade(stocklist,gametime,player)
 ui_controls = UI_Controls(stocklist,GAMESPEED,gametime,tmarket,player)
-
+menuList.extend([stockbook,portfolio,optiontrade])
 # VARS FROM SETTINGS
 autofastforward = True
 
@@ -61,7 +61,7 @@ autofastforward = True
 background = pygame.image.load(r'Assets\backgrounds\Background (9).png').convert_alpha()
 background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
 
-menulist = [stockbook,portfolio,optiontrade]
+
 
 
 pygame.mixer.music.set_endevent(pygame.USEREVENT)  # Set custom event when music ends
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         mousex,mousey = pygame.mouse.get_pos()
         screen.blit(s,(0,0))
 
-        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist,tmarket)#draws the ui controls to the screen, and senses for clicks
+        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
         
         gametime.advanceTime(ui_controls.gameplay_speed,autofastforward,FASTFORWARDSPEED)
 
@@ -108,8 +108,8 @@ if __name__ == "__main__":
 
 
         
-        for i,menu in enumerate(menulist):
-            menu.draw_icon(screen,mousebuttons,stocklist,player,menulist,(30,165+(i*175)),ui_controls,gametime)
+        for i,menu in enumerate(menuList):
+            menu.draw_icon(screen,mousebuttons,stocklist,player,menuList,(30,165+(i*175)),ui_controls,gametime)
 # 
  
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))

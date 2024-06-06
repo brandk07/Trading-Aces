@@ -23,7 +23,7 @@ DX = 300# default x
 DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
-    def __init__(s,stocklist,player,gametime,totalmarket) -> None:
+    def __init__(s,stocklist,player,gametime,totalmarket,menuList) -> None:
         s.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
         s.icon = pygame.transform.scale(s.icon,(140,100))
         s.icon.set_colorkey((255,255,255))
@@ -46,7 +46,7 @@ class Portfolio(Menu):
         s.displayedStocks = [StockVisualizer(gametime,stocklist[i],stocklist) for i in range(3)]# the stock visualizers for the stocks that are displayed
         s.networthGraph = StockVisualizer(gametime,player,stocklist)
         s.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
-        s.piechart = PieChart(150, (200, 650),s)
+        s.piechart = PieChart(150, (200, 650),menuList)
         s.barGraphs = [BarGraph("Value",[175,175],[875,400]),BarGraph("Allocation",[175,175],[1150,400])]
 
         # for the asset type selection which sorts the latterscroll

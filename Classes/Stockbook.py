@@ -91,6 +91,7 @@ class Stockbook(Menu):
         self.stocktext = {name:[] for name in stocknames}
         self.selectedstock = 0
         self.menudrawn = False
+        self.stocklist = stocklist
         self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
         self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         self.stockGraph = StockVisualizer(gametime,stocklist[0],stocklist)
@@ -113,7 +114,19 @@ class Stockbook(Menu):
                     self.stocktext[key][i] = fontlist[40].render(line,(120, 120, 120))[0]
                 else:#else render it with a smaller font and orange color
                     self.stocktext[key][i] = fontlist[30].render(line,(225, 130, 0))[0]
+
+    def changeSelectedStock(self,name=None,obj=None):
+        if name:
+            self.selectedstock = [stock.name for stock in self.stocklist].index(name)
+            self.stockGraph.setStockObj(self.stocklist[self.selectedstock])
+        elif obj:
+            self.selectedstock = self.stocklist.index(obj)
+            self.stockGraph.setStockObj(self.stocklist[self.selectedstock])
+        else:
+            raise ValueError('You must provide either a name or an object')
         
+        
+
     def draw_menu_content(self,screen:pygame.Surface,stocklist:list,mousebuttons:int,player,gametime):
         """Draws all the main content for the stockbook menu (the stocks on the left side of the screen)"""
         mousex,mousey = pygame.mouse.get_pos()
