@@ -102,9 +102,6 @@ Acually fix the problem with the bar class where if it is reversedscroll it will
 
 make it so option expirationdate decreases with time (2/9/2024)
 
-make class for drawing the pie chart (2/28/2024)
-create a point in pie for mouseover the pie chart (1/2/2024)
-
 Save all the year graphs, use the year graphs to make an all time graph (2/14/2024)
 
 Add a mark on the stock graphs in portfolio where it would mark where you bought the stock (1/22/2024)
@@ -128,6 +125,9 @@ When filling the graphs  use the generate_random_number from tester2 rather than
     matter of bullshitting the rest of the points in each graph (3/24/2024)
 
 the vs market doesn't work since getPercent for an asset will always give the total life time of the asset rather than a period (6/2/2024)
+    -----Add ablility to find the percent from a certain date to today(6/9/2024)
+        ^You can use the closest point if the exact point doesn't exist
+        ^Also add in 5 year and lifetime graphs
 
 Add cost to purchase under the purachase details in the portoflio selected asset (6/5/2024)
 
@@ -180,3 +180,5 @@ Make it so player.price is equal to its networth (2/28/2024)
     May be used somewhere else where it is meant to be used as cash - just change that
     the portfolio graph doesn't work rn because of this
 Need to add back range controls to stock StockVisualizer or somewhere (2/28/2024)
+make class for drawing the pie chart (2/28/2024)
+create a point in pie for mouseover the pie chart (1/2/2024)

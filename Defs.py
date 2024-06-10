@@ -93,8 +93,8 @@ emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 
 def drawBoxedText(screen,text,size,boxcolor,textcolor,pos):
     valueText = s_render(text,size,textcolor)
-    x = pos[0]-(valueText.get_width()//2)-30; y = pos[1]-(valueText.get_height()//2)-20
-    w,h = valueText.get_width()+60, valueText.get_height()+40
+    x = pos[0]-(valueText.get_width()//2)-25; y = pos[1]-(valueText.get_height()//2)-15
+    w,h = valueText.get_width()+50, valueText.get_height()+30
     pygame.draw.rect(screen, boxcolor, (x,y,w,h), border_radius=10)
     pygame.draw.rect(screen, (1,1,1), (x,y,w,h), 5, 10)
     

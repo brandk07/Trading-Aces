@@ -46,7 +46,25 @@ class Stock():
     def getPercent(self,graphrange):
         """Returns the percent change of the stock"""
         return ((self.graphs[graphrange][-1]/self.graphs[graphrange][0])-1)*100
+    
+    def getPercentDate(self,date:datetime,gametime:datetime):
+        """Returns the percent change from a specific date to today"""
+        def getClosestDate(secondsAgo):
+            """Returns the point closest to the number of seconds ago a date was"""
+            key = list(self.graphrangeoptions)[-1]# sets it to the last key	"1Y"
+            for k,value in (self.graphrangeoptions.items()):
+                if value > secondsAgo:
+                    key = k
+                    break
+            secondsPerPoint = self.graphrangeoptions[key]/POINTSPERGRAPH
+            closestIndex = int(secondsAgo/secondsPerPoint)
+            if closestIndex >= len(self.graphs[key]):
+                closestIndex = len(self.graphs[key])-1
+            return self.graphs[key][closestIndex]
+        diff = gametime-date
+        return ((self.price/getClosestDate(diff.total_seconds()))-1)*100
 
+        
     def reset_graphs(self):
         """resets the graphs to be empty"""
         # for i in ["1H","1D","1W","1M","3M","1Y","trends"]:
@@ -81,42 +99,6 @@ class Stock():
             
             file.write(json.dumps(self.bonustrends))
         
-
-    # def bankrupcy(self,drawn,coords=None,wh=None,screen:pygame.Surface=None):
-    #     """returns False if stock is not bankrupt,don't need screen if drawn is False"""	
-    #     if self.price < 0 and self.pricereset_time == None:#if stock goes bankrupt, and no time has been set
-    #         self.pricereset_time = time.time()
-    #         return False
-    #     elif self.pricereset_time != None and time.time() > self.pricereset_time+5:#if stock goes bankrupt and 5 seconds have passed
-    #         self.price = randint(*self.starting_value_range)
-    #         self.reset_trends(); self.pricereset_time = None#reset the trends and the pricereset_time
-    #         self.reset_graphs()
-    #         if drawn:
-    #             gfxdraw.filled_polygon(screen,[(coords[0],coords[1]),(coords[0],coords[1]+wh[1]),(coords[0]+wh[0],coords[1]+wh[1]),(coords[0]+wh[0],coords[1])],(200,0,0))#draws the background of the graph red
-    #         return False
-    #     elif self.pricereset_time != None and time.time() < self.pricereset_time+5:#if stock goes bankrupt and less then 5 seconds have passed
-    #         if drawn:
-    #             gfxdraw.filled_polygon(screen,[(coords[0],coords[1]),(coords[0],coords[1]+wh[1]),(coords[0]+wh[0],coords[1]+wh[1]),(coords[0]+wh[0],coords[1])],(200,0,0))#draws the background of the graph red
-    #             screen.blit(fontlist[40].render(f'BANKRUPT',(255,255,255))[0],(coords[0]+15,coords[1]+15))
-    #         return False
-    #     return True
-    
-    # def stock_split(self,player):
-    #     if self.price >= 2500:
-    #         player.messagedict[f'{self.name} has split'] = (time.time(),(0,0,200))
-    #         for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"]
-    #             self.graphs[grange] = np.array([point*0.5 for point in self.graphs[grange]])
-    #         self.price = self.price*0.5
-    #         stock_quantity = len([stock for stock in player.stocks if stock[0] == self])
-    #         if stock_quantity > 0:
-    #             player.messagedict[f'You now have {stock_quantity*2} shares of {self.name}'] = (time.time(),(0,0,200))
-    #             for stock in player.stocks.copy():
-    #                 print(stock)
-    #                 if stock[0] == self:
-    #                     player.stocks.remove(stock)
-    #                     player.stocks.append([stock[0],stock[1]*0.5,stock[2]])
-    #                     player.stocks.append([stock[0],stock[1]*0.5,stock[2]])
-    #             print('stocks are',player.stocks)
 
     def addpoint(self, lastprice, multiplier=1,maxstep=25):
         """returns the new price of the stock
@@ -215,170 +197,4 @@ class Stock():
             self.price = self.getNetworth()
             for _ in range(gamespeed):
                 self.update_range_graphs(self.getNetworth())#updates the range graphs
-        
-
-    # def rangecontrols(self,screen:pygame.Surface,Mousebuttons,blnkspacey,coords,wh):
-    #     """draws the range controls and checks for clicks"""
-    #     x,y = coords[0]+wh[0]-int((coords[1]+wh[1]-coords[1])/20),coords[1]+wh[1]-blnkspacey*.75
-    #     for i in range(len(self.graphrangeoptions),0,-1):
-    #         name = list(self.graphrangeoptions)[i-1]
-    #         text = s_render(name,int((coords[1]+wh[1]-coords[1])/15),(255,255,255) if self.graphrange == name else (120,120,120))
-    #         screen.blit(text,(x-(text.get_width()/2),y))
-    #         if pygame.Rect(x - text.get_width() / 2 - 2, y - 2, text.get_width() + 10, text.get_height() + 10).collidepoint(pygame.mouse.get_pos()):
-    #             if Mousebuttons == 1:
-    #                 self.graphrange = name
-    #         x -= text.get_width()+int((coords[1]+wh[1]-coords[1])/40)
-
-
-
-    # def mouseover(self,screen:pygame.Surface,graphpoints,spacing,blnkspacey,coords,wh,gametime=False):
-    #     """displays the price of the stock when the mouse is over the graph"""
-    #     mousex,mousey = pygame.mouse.get_pos()
-    #     if pygame.Rect(coords[0],coords[1],(coords[0]+wh[0]-coords[0]),(coords[1]+wh[1]-coords[1])).collidepoint(mousex,mousey):
-    #         pos = (mousex-coords[0])//spacing
-    #         if pos < len(self.graphs[self.graphrange]):
-    #             text1 = s_render(f'${self.graphs[self.graphrange][int(pos)]:,.2f}',30,(255,255,255))# the value of the stock
-    #             screen.blit(text1,(mousex,graphpoints[int(pos)]-text1.get_height()-5))# the value of the stock
-    #             # text2 = s_render()
-    #             if gametime:
-    #                 mousepoint = (len(self.graphs[self.graphrange])-pos)
-
-    #                 graphed_seconds = mousepoint*(self.graphrangeoptions[self.graphrange]/POINTSPERGRAPH)# the amount of seconds that the stock has been graphed
-    #                 grapheddays = graphed_seconds//self.graphrangeoptions["1D"]# the amount of days that the stock has been graphed
-    #                 seconds = graphed_seconds%self.graphrangeoptions["1D"]# the amount of seconds that the stock has been graphed
-    #                 time_offset = gametime.time#time offset
-    #                 if gametime.isOpen(time_offset)[0] == False:
-    #                     time_offset = time_offset.replace(hour=15,minute=59,second=0)# set the time to 3:59 PM
-    #                 dayscount = 0
-
-    #                 while dayscount < grapheddays:
-    #                     time_offset -= timedelta(days=1)# add a day to the time offset
-    #                     if gametime.isOpen(time_offset)[0]:# if that is a day that was open for trading
-    #                         dayscount += 1# add 1 to the days count
-
-    #                 secondsleft = (time_offset - time_offset.replace(hour=9,minute=30,second=0)).seconds# the amount of seconds left in the day
-    #                 if seconds > secondsleft:# if the amount of seconds needed to minus is greater than the seconds left in the day
-    #                     seconds -= secondsleft
-    #                     time_offset -= timedelta(days=1)# add a day to the time offset
-    #                     while gametime.isOpen(time_offset)[0] == False:
-    #                         time_offset -= timedelta(days=1)
-                        
-    #                     time_offset = time_offset.replace(hour=15,minute=59,second=0)# set the time to 3:59 PM
-                        
-    #                 time_offset -= timedelta(seconds=seconds)# add a day to the time offset
-
-    #                 text2 = s_render(f'{time_offset.strftime("%m/%d/%Y %I:%M %p")}',30,(255,255,255))
-    #                 screen.blit(text2,(mousex,graphpoints[int(pos)]))# the time of the stock
-
-    #             percentchange = round(((self.graphs[self.graphrange][int(pos)]/self.graphs[self.graphrange][0])-1)*100,2)
-    #             color = (0,205,0) if percentchange >= 0 else (205,0,0)
-    #             if percentchange == 0: color = (205,205,205)
-    #             screen.blit(s_render(f'{percentchange:,.2f}%',30,color),(mousex,graphpoints[int(pos)]+text1.get_height()+5))# the percent change of the stock
-
-    #             gfxdraw.line(screen,mousex,coords[1]+wh[1]-blnkspacey,mousex,coords[1],(255,255,255))
-
-    # def baredraw(self,screen,coords,wh,graphrange,mouseover=False):
-    #     """Draws only the graph of the stock - uses the graphrange,startpos, and endpos parameter, not self.graphrange,(coords[0]+wh[0],coords[1]), and (coords[0],coords[1]+wh[1])"""
-    #     # startingpos is the top left corner of the graph, endingpos is the bottom right corner of the graph
-        
-    #     percentchange = round(((self.graphs[graphrange][-1]/self.graphs[graphrange][0])-1)*100,2)
-
-    #     self.graph.setPoints(self.graphs[graphrange])
-    #     color = (30,30,30) if percentchange == 0 else (0,30,0) if percentchange > 0 else (30,0,0)
-    #     graphheight = wh[1]
-    #     graphwidth = wh[0]
-
-    #     graphingpoints,spacing,minmax_same = self.graph.draw_graph(screen,coords,(graphwidth,graphheight),color,True)
-
-    #     if mouseover:
-    #         self.mouseover(screen,graphingpoints,spacing,0,coords,wh)#displays the price of the stock when the mouse is over the graph
-
-    #     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0],coords[1],graphwidth,graphheight), 5)
-        
-    
-    # def draw(self,screen:pygame.Surface,player:object,coords,wh,Mousebuttons,gametime,rangecontroldisp=True,graphrange=None) -> bool:
-    #     """Draws the graph of the stock along with the range controls, price lines, and the name"""
-        
-    #     if type(self) == self.Playerclass:#if it is a Player object
-    #         # self.graph(stocklist)#graph the player networth
-    #         self.message(screen)#display the messages
-        
-    #     self.price = self.graphs["1H"][-1]
-    #     self.graphrange = graphrange if graphrange != None else self.graphrange
-
-        
-    #     blnkspacex = (coords[0]+wh[0]-coords[0])//10#the amount of blank space to be left on the right side of the graph for x
-    #     blnkspacey = (coords[1]+wh[1]-coords[1])//10#the amount of blank space to be left on the right side of the graph for y
-        
-    #     percentchange = round(((self.graphs[self.graphrange][-1]/self.graphs[self.graphrange][0])-1)*100,2)
-
-    #     if self.bankrupcy(True,coords, wh, screen=screen):#if stock is not bankrupt, first argument is drawn
-    #         percentchange = round(((self.graphs[self.graphrange][-1]/self.graphs[self.graphrange][0])-1)*100,2)
-    #         color = (0,55,0) if percentchange >= 0 else (55,0,0)
-
-    #         gfxdraw.filled_polygon(screen, [(coords[0], coords[1]), (coords[0],coords[1]+wh[1]), (coords[0]+wh[0], coords[1]+wh[1]), (coords[0]+wh[0],coords[1])],color)  # draws the perimeter around graphed values
-    #         gfxdraw.filled_polygon(screen,[(coords[0],coords[1]),(coords[0],coords[1]+wh[1]-blnkspacey),(coords[0]+wh[0]-blnkspacex,coords[1]+wh[1]-blnkspacey),(coords[0]+wh[0]-blnkspacex,coords[1])],(15,15,15))#draws the background of the graph
-        
-    #     if rangecontroldisp:# if the range controls are drawn
-    #         self.rangecontrols(screen,Mousebuttons,blnkspacey,coords,wh)#draws the range controls
-
-    #     # using the graph class to graph the points
-    #     self.graph.setPoints(self.graphs[self.graphrange])# set the list of points
-    #     # color = (30,30,30) if percentchange == 0 else (0,30,0) if percentchange > 0 else (30,0,0)
-    #     color = percent3choices((30,0,0),(0,30,0),(30,30,30),self.getPercent(self.graphrange))
-    #     graphheight = (coords[1]+wh[1]-coords[1])-blnkspacey
-    #     graphwidth = (coords[0]+wh[0]-coords[0])-blnkspacex
-
-    #     graphingpoints,spacing,minmax_same = self.graph.draw_graph(screen,(coords[0],coords[1]),(graphwidth,graphheight),color,True)# graph the points and get needed values
-        
-    #     # black outline around the whole graph and the smaller graph
-    #     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0], coords[1], (coords[0]+wh[0] - coords[0])-blnkspacex,(coords[1]+wh[1] - coords[1])-blnkspacey), 5)# the one around the graph itself
-    #     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0], coords[1], (coords[0]+wh[0] - coords[0]),(coords[1]+wh[1] - coords[1])), 5)# 
-        
-    #     if not minmax_same:# if the min and max are not the same
-    #         """text that displays the price of the stock and the lines that go across the graph"""
-    #         sortedlist = self.graphs[self.graphrange].copy();sortedlist.sort()# first makes a copy of the list, then sorts the list
-    #         for i in range(4):
-    #             lenpos = int((len(self.graphs[self.graphrange])-1)*(i/3))#Position based purely on the length of the current graph size
-    #             point = sortedlist[lenpos]#using the sorted list so an even amount of price values are displayed
-                
-    #             #gets the position of the point in the graphingpoints (the y values) - the sorted list moves the points around so the index of the point is different
-    #             yvalpos = np.where(self.graphs[self.graphrange] == point)[0][0]
-
-    #             text = s_render(str(limit_digits(point,13)), 30, (255,255,255))
-    #             gfxdraw.line(screen,coords[0]+5,int(graphingpoints[yvalpos]),coords[0]+wh[0]-blnkspacex-5,int(graphingpoints[yvalpos]),(150,150,150))
-    #             # text_rect = text.get_rect(left=((coords[0]+wh[0]-text.get_width()),(graphingpoints[yvalpos]-text.get_height()//2-5)))
-    #             screen.blit(text,(coords[0]+wh[0]-blnkspacex-text.get_width()-10,(graphingpoints[yvalpos]-text.get_height())))
-
-
-    #     #draws the text that displays the price of the stock
-    #     if type(self) == Stock:#text displaying the price, and the net worth
-    #         pricetext = s_render(f"${limit_digits(self.price,15)}", 45 if 45 > int((coords[1]+wh[1]-coords[1])/12.5) else int((coords[1]+wh[1]-coords[1])/12.5), (200,200,200))
-    #         textx = coords[0]+10; texty = coords[1]+wh[1]-pricetext.get_height()-15
-    #         screen.blit(pricetext,(textx,texty))# draws the price
-                    
-    #     else:
-    #         # goes off the current price of the stock, not the original value stored in the stock object
-    #         screen.blit(s_render(f' Net Worth ${player.getNetworth():,.2f}',40,(255,255,255)),(coords[0]+10,coords[1]+wh[1]-40)) 
-            
-        
-        
-    #     #Below is the price change text
-    #     color = (0,175,0) if percentchange >= 0 else (175,0,0)
-        
-    #     # if type(self) == Stock:
-    #     change_text = '+' + str(percentchange) + '%' if percentchange >= 0 else '' + str(percentchange) + '%'
-    #     change_text_rendered = s_render(change_text, 40, color)
-    #     screen.blit(change_text_rendered, (coords[0]+10, coords[1]+50))
-        
-    #     self.mouseover(screen,graphingpoints,spacing,blnkspacey,coords,wh,gametime=gametime)#displays the price of the stock when the mouse is over the graph
-        
-    #     nametext = s_render(f"{self.name if type(self) == Stock else 'Portfolio'}",50,self.color)
-
-    #     if pygame.Rect(coords[0]+10,coords[1]+10,nametext.get_width(),nametext.get_height()).collidepoint(pygame.mouse.get_pos()):#if the mouse is over the name of the stock
-    #         nametext = s_render(f"{self.name if type(self) == Stock else 'Portfolio'}",50,(230,230,230))    
-    #         screen.blit(nametext,(coords[0]+10,coords[1]+10))#draws the text that displays the name of the stock or the player
-    #         return True   
-    #     screen.blit(nametext,(coords[0]+10,coords[1]+10))#draws the text that displays the name of the stock or the player
-    #     return False
     

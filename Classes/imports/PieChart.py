@@ -132,7 +132,7 @@ class PieChart:
             boxRect = pygame.rect.Rect(corners[0][0]+s.radius*2+10,corners[0][1],s.radius*1.75,s.radius*2)
             pygame.draw.rect(screen, (0,0,0), boxRect, 5, 10)
 
-            nameText,percentText = s_render(name,45,color), s_render(f'{limit_digits((value/totalValue)*100,16)}% of Portfolio',40,(1,1,1))
+            nameText,percentText = s_render(name,45,color), s_render(f'{limit_digits((value/totalValue)*100,16)}% of Portfolio',40,(110,110,110))
             nameH,nameW = nameText.get_height(),nameText.get_width()
             
             screen.blit(nameText, (boxRect.centerx-(nameW/2), boxRect.y+10))
@@ -158,15 +158,13 @@ class PieChart:
                         if i == 1:# if the portfolio is clicked, then set the selected asset to the one the mouse is over
                             s.menuList[1].selectedAsset = s.menuList[1].findAsset(value,name)
 
-
+        
         if pygame.Rect(s.coords[0],s.coords[1],s.radius*2,s.radius*2).collidepoint(mousex,mousey):# if the mouse is in the pie chart
             collided = False
             for i,(color,points,value,name) in enumerate(s.pieSegments):# loop through the pie segments
                 if point_in_polygon((mousex-s.coords[0],mousey-s.coords[1]),points):# set collided to the one the mouse is over
                     collided = i
                     if pygame.mouse.get_pressed()[0]:# if the mouse is clicked, then set the selected asset to the one the mouse is over
-                        # s.portfolio.menudrawn = True
-                        # s.portfolio.selectedAsset = s.portfolio.findAsset(value,name)
                         s.selectedAssetIndex = i
 
             for i,(color,points,value,name) in enumerate(s.pieSegments):# draws all the segments darker except the one the mouse is over
