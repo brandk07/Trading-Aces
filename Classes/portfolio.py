@@ -365,9 +365,13 @@ class Portfolio(Menu):
             """returns the yearly return of the asset"""
             diff = gametime.time-asset.dateobj
             if diff.days <= 365: return asset.getPercent()
-            extra = 100 if asset.getPercent() > 0 else -100
-            percent = abs(asset.getPercent()); days = 1/(diff.days/365)
-            return (((1+(percent/100)) ** days)-1) * extra
+            # extra = 100 if asset.getPercent() > 0 else -100
+            # percent = abs(asset.getPercent()); days = 365/diff.days
+            # return (((1+(percent/100)) ** days)-1) * extra
+            if asset.getPercent() < 0:
+                # print(1+((asset.getPercent())/100),365/diff.days,((1+((asset.getPercent())/100))**(365/diff.days)),1-((1+((asset.getPercent())/100))**(365/diff.days)))
+                return (1-((1+((asset.getPercent())/100))**(365/diff.days))) * -100
+            return (((1+(asset.getPercent()/100))**(365/diff.days))-1) * 100
         
         purchaseDetailsText = s_render(f"Purchase Details", 50, (0, 0, 0))
         screen.blit(purchaseDetailsText, (880, 670))

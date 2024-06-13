@@ -1,5 +1,6 @@
 import pygame
-from pygame import gfxdraw 
+from pygame import gfxdraw
+import pygame.gfxdraw 
 from Defs import *
 
 class Numpad:
@@ -18,10 +19,13 @@ class Numpad:
     def draw(self,screen,coords,wh,extratext,mousebuttons,maxvalue):
         # gfxdraw.box(screen,pygame.Rect(coords,wh),(50,50,50))
         # pygame.draw.rect(screen,(50,50,50),pygame.Rect(coords,wh),)
-        pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,wh),5,10)
+        # pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,wh),5,10)
         extratext = s_render(f"{int(self.numstr):,.0f} "+extratext+("S" if int(self.numstr) != 1 else ""),45,(255,255,255),font='cry')
         topheight = extratext.get_height()*1.8
-        gfxdraw.box(screen,pygame.Rect((coords[0]+5,coords[1]+5),(wh[0]-10,topheight)),(35,35,35))
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,(wh[0],topheight)),5,10)
+        # pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,(wh[0],topheight)),5,10)
+        
+        # gfxdraw.box(screen,pygame.Rect((coords[0]+5,coords[1]+5),(wh[0]-10,topheight)),(35,35,35))
         screen.blit(extratext,(coords[0]+wh[0]/2-(extratext.get_width()/2),coords[1]+10))
 
         # Triangles for the up and down buttons
@@ -57,9 +61,12 @@ class Numpad:
 
                 rect = pygame.Rect(x,y,w,h)
                 color = (80,80,80)
+                
 
                 if rect.collidepoint(pygame.mouse.get_pos()):
+                    
                     color = (135,135,135)
+                    pygame.gfxdraw.filled_polygon(screen,[(x,y),(x+w,y),(x+w,y+h),(x,y+h)],color)
                     if mousebuttons == 1:
                         if self.nums[ind] == 'DEL' and len(self.numstr) > 1:
                             self.numstr = self.numstr[:-1]
@@ -77,7 +84,7 @@ class Numpad:
                             self.numstr = str(maxvalue)
 
                 # gfxdraw.box(screen,rect,color)
-                pygame.draw.rect(screen,color,rect,5,10)
+                # pygame.draw.rect(screen,color,rect,5,10)
                 
                 pos_x = x + w/2 - self.widths[ind]/2
                 pos_y = y + h/2 - self.heights[ind]/2
