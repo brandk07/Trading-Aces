@@ -5,6 +5,7 @@ from Classes.Stock import Stock
 from Defs import *
 from pygame import gfxdraw
 import numpy as np
+from datetime import datetime, timedelta
 
 class Player(Stock):
     
@@ -33,6 +34,18 @@ class Player(Stock):
         self.updateOptions = 0# used to update the options every 120 frames
 
         # self.recent_movementvar = (None,None,(180,180,180)
+    def newDay(self,gametime:datetime):
+        """Called at the start of a new day"""
+        self.updateOptions = 0
+        for option in self.options:
+            option.getValue(bypass=True)
+        for i in range(len(self.options)-1,-1,-1):
+            if self.options[i].daysToExpiration(gametime.time) <= 0:
+                self.cash += self.options[i].getValue(bypass=True,fullvalue=True)
+                self.options.pop(i)
+        print('new day')
+        
+
     def gameTick(self,gamespeed:int):
         """Used to update the options every 120 frames"""
         self.updateOptions += gamespeed

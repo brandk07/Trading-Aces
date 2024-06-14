@@ -93,9 +93,10 @@ if __name__ == "__main__":
         screen.blit(s,(0,0))
 
         ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
-        
-        gametime.advanceTime(ui_controls.gameplay_speed,autofastforward,FASTFORWARDSPEED)
 
+        if gametime.advanceTime(ui_controls.gameplay_speed,autofastforward,FASTFORWARDSPEED):# if there is a new trading day
+
+            player.newDay(gametime)
 
         if gametime.isOpen()[0]:# if the market is open
             if ui_controls.gameplay_speed > 0:# if the game is not paused

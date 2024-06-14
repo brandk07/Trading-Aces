@@ -7,6 +7,7 @@ from Classes.imports.Bar import SliderBar
 from Classes.Stockbook import quantityControls
 from Classes.AssetTypes.OptionAsset import OptionAsset
 import math
+from datetime import timedelta
 
 #used for the Owned options
 DX = 300
@@ -56,7 +57,7 @@ class Optiontrade(Menu):
 
         return [p1, p2, p3, total]
 
-    def SelectedPlayerOption(self, screen, optionindex, mousebuttons, player):
+    def SelectedPlayerOption(self, screen, optionindex, mousebuttons, player, gametime):
         if optionindex != None:
             option = player.options[optionindex]
             option.getValue(True)# force updates the price of the option (since it is selected)
@@ -90,7 +91,7 @@ class Optiontrade(Menu):
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
             # Draws the information about the option on the right side of the screen
-            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strikePrice}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
+            info = [f'Expiration: {option.daysToExpiration(gametime.time)} days',f'Strike Price: ${option.strikePrice}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
             for i,txt in enumerate(info):
                 screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),280+(i*50)))
 
@@ -115,7 +116,7 @@ class Optiontrade(Menu):
             sell_text_rect = sell_text.get_rect(center=(1280, 840))
             screen.blit(sell_text, sell_text_rect)
 
-    def draw_Owned(self,screen,mousebuttons,player):
+    def draw_Owned(self,screen,mousebuttons,player, gametime):
         mousex, mousey = pygame.mouse.get_pos()
         xshift = 15
         yshift = 150    
@@ -131,7 +132,7 @@ class Optiontrade(Menu):
 
         self.barowned.draw_bar(screen, [225, DY], [45, DY + (yshift*4) - 80], 'vertical', barwh=[43, barheight], shift=85, reversedscroll=True, text=False)
         if len(player.options) > 0:
-            self.SelectedPlayerOption(screen, self.selected_option, mousebuttons, player)# draws the additional stock info
+            self.SelectedPlayerOption(screen, self.selected_option, mousebuttons, player, gametime)# draws the additional stock info
 
         percents = []; alltexts = []
         for i, option in enumerate(player.options[self.barowned.value:self.barowned.value+5]):
@@ -165,15 +166,16 @@ class Optiontrade(Menu):
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.95)*100,math.ceil(stock.price*1.2)*100)/100
-
-            self.putoptions.append(OptionAsset(player,stock,strikeprice,random.randint(3,25),'put',str(gametime),1))
+            extime = str(gametime.time+timedelta(days=random.randint(3,400)))
+            self.putoptions.append(OptionAsset(player,stock,strikeprice,extime,'put',str(gametime),1))
             
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
             strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
-            self.calloptions.append(OptionAsset(player,stock,strikeprice,random.randint(3,25),'call',str(gametime),1))
+            extime = str(gametime.time+timedelta(days=random.randint(3,400)))
+            self.calloptions.append(OptionAsset(player,stock,strikeprice,extime,'call',str(gametime),1))
 
-    def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player):
+    def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player, gametime):
          if optionindex != None:
             option = (self.putoptions+self.calloptions)[optionindex]
             option.getValue(True)# force updates the price of the option (since it is selected)
@@ -199,7 +201,7 @@ class Optiontrade(Menu):
             pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
             # Draws the information about the option on the right side of the screen
-            info = [f'Expiration: {option.expiration_date} days',f'Strike Price: ${option.strikePrice}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
+            info = [f'Expiration: {option.daysToExpiration(gametime.time)} days',f'Strike Price: ${option.strikePrice}',f'Option type: {option.option_type}',f'Volatility: {limit_digits(option.getVolatility()*100,15)}%']
             for i,txt in enumerate(info):
                 screen.blit(fontlist[35].render(txt,(190,190,190))[0],(1050+(i*8),280+(i*50)))
             
@@ -245,7 +247,7 @@ class Optiontrade(Menu):
 
         self.baravailable.draw_bar(screen, [225, DY], [45, DY + (yshift*4) - 80], 'vertical', barwh=[43, barheight], shift=85, reversedscroll=True, text=False)
 
-        self.SelectedAvailableOption(screen, self.selected_avalaible, mousebuttons, player)# draws the additional stock info
+        self.SelectedAvailableOption(screen, self.selected_avalaible, mousebuttons, player, gametime)# draws the additional stock info
 
         # draw a polygon similar to the one above but at the starting point 1000,120 rather than 1110,805. Change the rest of the points accordingly
         gfxdraw.filled_polygon(screen,((1000,120),(1015,190),(1455,190),(1440,120)),(15,15,15))#polygon for the refresh button
@@ -267,7 +269,7 @@ class Optiontrade(Menu):
             textinfo = [[(190, 190, 190), 45],[(190, 190, 190), 35],[grcolor, 35],[grcolor, 35],[grcolor, 35]]
 
             texts = [f'{option.stockobj.name} {option.option_type}',
-                     f'Expiration: {option.expiration_date} days',
+                     f'Expiration: {option.daysToExpiration(gametime.time)} days',
                      f'Cost: ${limit_digits(option.getValue(),15)}',
                      f'Stock Price : ${limit_digits(option.stockobj.price,15)}',
                      f'Strike Price: ${option.strikePrice}'
@@ -318,7 +320,7 @@ class Optiontrade(Menu):
                 self.view = "Custom"
 
         if self.view == "Owned":
-            self.draw_Owned(screen,mousebuttons,player)
+            self.draw_Owned(screen,mousebuttons,player, gametime)
         elif self.view == "Available":
             self.draw_Available(screen,mousebuttons,player,stocklist,gametime)
         elif self.view == "Custom":

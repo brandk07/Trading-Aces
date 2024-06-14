@@ -24,7 +24,7 @@ def calculate_volatility(points) -> float:
     return annualized_volatility
 
 class Asset:
-    def __init__(self,player,stockobj,creationdate,nametext,ogvalue,quantity,portfolioPercent,color=None) -> None:
+    def __init__(self,player:object,stockobj:object,creationdate:str,nametext:str,ogvalue:float,quantity:int,portfolioPercent:float,color=None) -> None:
         """Parent class for all assets"""
         self.stockobj = stockobj
         self.playerObj = player

@@ -34,6 +34,8 @@ class GameTime:
         self.time = datetime.strptime(time,DFORMAT)
     
     def advanceTime(self,speed:int,autoFastForward:bool,fastforwardspeed:int):
+        """Advances the time by a certain amount of seconds and returns if it is a new day"""
+        fastforward = self.fastforwarding
         if autoFastForward and not self.isOpen()[0]:
             if (secs:=secsTo930(self.time)) < fastforwardspeed:
                 seconds = secs
@@ -44,8 +46,8 @@ class GameTime:
             seconds = speed
             self.fastforwarding = False
         self.time += timedelta(seconds=seconds)
-        return self.time
-
+        return (self.fastforwarding) and (fastforward != self.fastforwarding)# returns if fastforwarding is stopped (new trading day) and 
+    
     def getTime(self):
         return self.time.strftime(DFORMAT)
         # return self.time

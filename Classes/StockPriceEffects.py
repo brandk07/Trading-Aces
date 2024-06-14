@@ -2,9 +2,10 @@ from random import randint
 from datetime import datetime,timedelta
 
 class StockPriceEffects:
-    def __init__(self,parentStock) -> None:
+    def __init__(self,parentStock,gametime) -> None:
         self.effectsDict = {}# {modiferName : [ogAmount,currentAmount,enlapsedtime:int,duration:int]}
         self.pastReports = []# [performance,time of report]
+        self.futureReports:list[datetime] = [gametime+timedelta(days=91)*i+timedelta(days=randint(30,60)) for i in range(4)]# [time of report]
         self.modifers = {"priceTrend":0,"tempVolatility":0}
         self.parentStock = parentStock
     
@@ -37,10 +38,11 @@ class StockPriceEffects:
             percent += 5 if performance > 0 else 0# if the performance met expectations, add 5%
         
         # ---Stock performance accounts for 80% of the likelyhood-----
+        perfEquation = lambda x : 8*x+75
+        percent += max(0,min(100,perfEquation(self.parentStock.getPercentDate(self.pastReports[-1][1]))))# the stock performance over the last quarter
         
+        return percent
         
-
-
 
     def updateEffects(self,gametime:datetime):
         """Updates all the effects and effect attributes"""
@@ -63,7 +65,13 @@ class StockPriceEffects:
                 self.effectsDict[var][2] += 1
 
         self.effectsDict = tempDict
-
                     
                     
-                
+    def update(self,gametime:datetime):
+        """Updates the effects"""
+        self.updateEffects(gametime)
+        
+        if gametime > self.futureReports[0]:
+            self.generateQuarterlyReport(gametime)
+            self.futureReports.pop(0)
+            self.futureReports.append(gametime+timedelta(days=91)+timedelta(days=randint(30,60)))

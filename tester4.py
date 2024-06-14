@@ -27,6 +27,10 @@ def getAvgReturn(percent,days):
 print(str(getAvgReturn(-75,1095))+"%")
 
 print(round(0.004456,2))
+
+from optionprice import Option as Op
+myOption = Op(european=True,kind="put",s0=9543.754571035066,k=10024.0,t=208,sigma=0.154,r=0.05)
+print(myOption.getPrice(method="BSM",iteration=1))
 # from decimal import Decimal, getcontext
 # import math
 # # Set the precision.
