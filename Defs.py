@@ -173,6 +173,28 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         screen.blit(emptytext, (points[0][0]+40, points[0][1]+40))  # displays empty text
     return allrenders,selected_value
 
+def checkboxOptions(screen,options,selectedOptions,w,h,pos,mousebuttons) -> tuple:
+    """Displays the options in options, will return the option that is click (option,index)"""
+    width = w//len(options)
+    
+    for i,option in enumerate(options):
+        x,y = pos[0]+(i*width),pos[1]
+        rect = pygame.Rect(x,y,width-5,h)
+        color = (120,120,120)
+        if rect.collidepoint(pygame.mouse.get_pos()):
+            color = (160,160,160)
+            pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
+            if mousebuttons == 1:
+                soundEffects['clickbutton2'].play()
+                return (option, i)
+            
+        pygame.draw.rect(screen, (0,0,0), [x+10,y+10,15,15], 3)# draws the outline of the box
+        # rectangle inside the one above
+        if option in selectedOptions:
+            pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
+            pygame.draw.rect(screen, (200,200,200), [x+13,y+13,9,9])
+        screen.blit(s_render(option, 30, (210, 210, 210)), (x+34,y+8))
+                
 def update_fps(clock,lastfps:deque):
     fps = str(int(clock.get_fps()))
     lastfps.append(fps)

@@ -4,7 +4,7 @@ import numpy as np
 from collections import deque
 import datetime
 # ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
-
+DFORMAT = "%m/%d/%Y"
 myOption = Op(european=True,kind="put",s0=9543.754571035066,k=10024.0,t=208,sigma=.154,r=0.05)
 print(myOption.getPrice(method="BSM",iteration=1))
     
@@ -16,17 +16,20 @@ class OptionAsset(Asset):
         self.strikePrice = strikePrice
         self.expirationDate = datetime.datetime.strptime(expirationDate, "%Y-%m-%d %H:%M:%S")
         self.option_type = option_type
-        print(f"kind {self.option_type}, s0 {float(self.stockobj.price)*100}, k {self.strikePrice*100}, t {self.daysToExpiration(self.gametime.time)}, sigma {self.getVolatility()}, r 0.05")
+    
         self.option = Op(european=True,kind=self.option_type,s0=float(self.stockobj.price)*100,k=self.strikePrice*100,t=self.daysToExpiration(self.gametime.time),sigma=self.getVolatility(),r=0.05)
         ogprice = ogprice if ogprice else self.getValue(bypass=True,fullvalue=True)
+        
         # print(f"{self.name}, {porfolioPercent} {self.portfolioPercent}")
         if porfolioPercent == None:
             
             self.portfolioPercent = ogprice/(player.getNetworth())# have to set this after the object is created
             # print(f"dont, {self.portfolioPercent}, {ogprice} {networth}") 
             
-        self.lastvalue = [self.stockobj.price*100,self.getValue(bypass=True,fullvalue=False)]# [stock price, option value] Used to increase performance by not recalculating the option value every time
+        self.lastvalue = self.getValue(bypass=True,fullvalue=False)# [stock price, option value] Used to increase performance by not recalculating the option value every time
+        
         self.updateCount = 0
+
     def __eq__(self,other):
         if not isinstance(other,OptionAsset):
             return False
@@ -42,7 +45,8 @@ class OptionAsset(Asset):
 
     def savingInputs(self):
         return (self.stockobj.name,self.strikePrice,str(self.expirationDate),self.option_type,self.date,self.quantity,self.portfolioPercent,self.ogvalue,self.color)
-
+    def getExpDate(self):
+        return self.expirationDate.strftime(DFORMAT)
     def daysToExpiration(self,gametimeTime:datetime.datetime):
         assert isinstance(gametimeTime,datetime.datetime), "gametimeTime must be a datetime object"
         return (self.expirationDate - gametimeTime).days
@@ -56,14 +60,15 @@ class OptionAsset(Asset):
         
         if bypass or self.updateCount > 60:
             self.option.s0 = float(self.stockobj.price)*100
-            self.option.k = self.strikePrice*100
             self.option.sigma = self.getVolatility()
-            self.option.t = self.daysToExpiration(self.gametime.time)
+            self.option.t = self.daysToExpiration(self.gametime.time)/365
+  
+            self.option.t = self.option.t if self.option.t > 0 else 0
+
             self.updateCount = 0
-            print('recalculating option value',bypass,self.option.getPrice(method="BSM",iteration=1))
-            print(f"k is {self.option.k}, s0 is {self.option.s0}, sigma is {self.option.sigma}, r is {self.option.r}, t is {self.option.t}")
-            self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="BSM",iteration=1)]
-            return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
+
+            self.lastvalue = self.option.getPrice(method="BSM",iteration=1)
+            return (self.lastvalue * self.quantity) if fullvalue else self.lastvalue
 
         # if ((self.stockobj.price*100)/self.lastvalue[0]) > 1.001 or ((self.stockobj.price*100)/self.lastvalue[0]) < 0.999:# if the stock price has changed by more than 2%
         # print("percent",abs((self.stockobj.price*100)-self.lastvalue[0])/self.lastvalue[0],abs((self.stockobj.price*100)-self.lastvalue[0]))
@@ -76,7 +81,7 @@ class OptionAsset(Asset):
         #     self.lastvalue = [self.stockobj.price*100,self.option.getPrice(method="MC",iteration=200)]
         #     return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
         self.updateCount += 1
-        return (self.lastvalue[1] * self.quantity) if fullvalue else self.lastvalue[1]
+        return (self.lastvalue * self.quantity) if fullvalue else self.lastvalue
 
 # class OptionAsset:
 #     def __init__(self,stockobj,strikePrice,expirationDate,option_type,creationdate,quantity=1,ogprice=None) -> None:

@@ -144,28 +144,36 @@ class Portfolio(Menu):
     def assetscroll_controls(s,screen,mousebuttons):
         """Controls for the asset scroll"""
         screen.blit(s_render("My Assets", 45, (210, 210, 210)), (880, 100))
-        
-        width = 500//len(s.assetoptions)
-        for i,option in enumerate(s.assetoptions):
-            x,y = 880+(i*width),160
-            rect = pygame.Rect(x,y,width-5,35)
-            color = (120,120,120)
-            if rect.collidepoint(pygame.mouse.get_pos()):
-                color = (160,160,160)
-                if mousebuttons == 1:
-                    soundEffects['clickbutton2'].play()
-                    if option in s.displayed_asset_type:
-                        s.displayed_asset_type.remove(option)
-                    else:
-                        s.displayed_asset_type.append(option)
-                    s.selectedAsset = None
+        result = checkboxOptions(screen,s.assetoptions,s.displayed_asset_type,500,35,(880,160),mousebuttons)
+        if result != None:
+            if result[0] in s.displayed_asset_type:
+                s.displayed_asset_type.remove(result[0])
+            else:
+                s.displayed_asset_type.append(result[0])
+            s.selectedAsset = None
+        # width = 500//len(s.assetoptions)
+        # for i,option in enumerate(s.assetoptions):
+        #     x,y = 880+(i*width),160
+        #     rect = pygame.Rect(x,y,width-5,35)
+        #     color = (120,120,120)
+        #     if rect.collidepoint(pygame.mouse.get_pos()):
+        #         color = (160,160,160)
+        #         pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
+        #         if mousebuttons == 1:
+        #             soundEffects['clickbutton2'].play()
+                    # if option in s.displayed_asset_type:
+                    #     s.displayed_asset_type.remove(option)
+                    # else:
+                    #     s.displayed_asset_type.append(option)
+                    # s.selectedAsset = None
 
-            pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
-            pygame.draw.rect(screen, (0,0,0), [x+10,y+10,15,15], 3)
-            # rectangle inside the one above
-            if option in s.displayed_asset_type:
-                pygame.draw.rect(screen, (200,200,200), [x+13,y+13,9,9])
-            screen.blit(s_render(option, 30, (210, 210, 210)), (x+34,y+8))
+            
+        #     pygame.draw.rect(screen, (0,0,0), [x+10,y+10,15,15], 3)
+        #     # rectangle inside the one above
+        #     if option in s.displayed_asset_type:
+        #         pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
+        #         pygame.draw.rect(screen, (200,200,200), [x+13,y+13,9,9])
+        #     screen.blit(s_render(option, 30, (210, 210, 210)), (x+34,y+8))
 
     def get_allassets(s) -> list:
         """returns a sorted list of the currently displayed assets of the player"""
@@ -251,7 +259,7 @@ class Portfolio(Menu):
             screen.blit(text, (1640, 325+(i*125)-text.get_height()-20))
 
         # color = ((200,0,0) if asset.getPercent() < 0 else (0,200,0)) if asset.getPercent() != 0 else (200,200,200)
-        quantity = s.numpad.get_value()# gets the quantity from the numpad
+        quantity = s.numpad.getValue()# gets the quantity from the numpad
         netgl = (asset.getValue(bypass=True,fullvalue=False) - asset.ogvalue)*quantity# net gain/loss
         taxedamt = 0 if netgl <= 0 else netgl*player.taxrate# the amount taxed
         percent = asset.getPercent()
@@ -400,6 +408,7 @@ class Portfolio(Menu):
             screen.blit(s_render(f"Strike Price : {asset.strikePrice}", 40, (190, 190, 190)), (1285, 730))
             screen.blit(s_render(f"Option Type : {asset.option_type}", 40, (190, 190, 190)), (1285, 770))
             screen.blit(s_render(f"Voliatility : {limit_digits(asset.getVolatility()*100,15)}%", 40, (190, 190, 190)), (1285, 810))
+            screen.blit(s_render(f"Exp Date : {asset.getExpDate()}", 40, (190, 190, 190)), (1285, 850))
             
         
 

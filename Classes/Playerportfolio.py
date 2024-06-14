@@ -40,10 +40,12 @@ class Player(Stock):
         for option in self.options:
             option.getValue(bypass=True)
         for i in range(len(self.options)-1,-1,-1):
+            # print(self.options[i].name,self.options[i].daysToExpiration(gametime.time))
             if self.options[i].daysToExpiration(gametime.time) <= 0:
-                self.cash += self.options[i].getValue(bypass=True,fullvalue=True)
+                self.options[i].option.t = 0
+                self.cash += self.options[i].option.getPrice(method="BSM",iteration=1)*self.options[i].quantity
                 self.options.pop(i)
-        print('new day')
+        # print('new day')
         
 
     def gameTick(self,gamespeed:int):

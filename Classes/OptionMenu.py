@@ -7,7 +7,7 @@ from Classes.imports.Bar import SliderBar
 from Classes.Stockbook import quantityControls
 from Classes.AssetTypes.OptionAsset import OptionAsset
 import math
-from datetime import timedelta
+from datetime import datetime,timedelta
 
 #used for the Owned options
 DX = 300
@@ -165,14 +165,18 @@ class Optiontrade(Menu):
         self.calloptions = []; self.putoptions = []
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
-            strikeprice = random.randint(math.floor(stock.price*0.95)*100,math.ceil(stock.price*1.2)*100)/100
             extime = str(gametime.time+timedelta(days=random.randint(3,400)))
+            while gametime.isOpen(datetime.strptime(extime, "%Y-%m-%d %H:%M:%S")) == False:#  Makes sure the expiration date is a trading day
+                extime = str(gametime.time+timedelta(days=random.randint(3,400)))
+            strikeprice = random.randint(math.floor(stock.price*0.95)*100,math.ceil(stock.price*1.2)*100)/100
             self.putoptions.append(OptionAsset(player,stock,strikeprice,extime,'put',str(gametime),1))
             
         for i in range(5):
             stock = stocklist[random.randint(0,len(stocklist)-1)]
-            strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
             extime = str(gametime.time+timedelta(days=random.randint(3,400)))
+            while gametime.isOpen(datetime.strptime(extime, "%Y-%m-%d %H:%M:%S")) == False:#  Makes sure the expiration date is a trading day
+                extime = str(gametime.time+timedelta(days=random.randint(3,400)))
+            strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
             self.calloptions.append(OptionAsset(player,stock,strikeprice,extime,'call',str(gametime),1))
 
     def SelectedAvailableOption(self, screen, optionindex, mousebuttons, player, gametime):

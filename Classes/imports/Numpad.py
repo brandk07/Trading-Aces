@@ -4,7 +4,7 @@ import pygame.gfxdraw
 from Defs import *
 
 class Numpad:
-    def __init__(self) -> None:
+    def __init__(self,displayText=True) -> None:
         self.value = 0
         self.nums = ['DEL','0','MAX']
         self.nums.extend([str(i) for i in range(1,10)])
@@ -12,35 +12,41 @@ class Numpad:
         self.numrenders = {name:s_render(name,35,(255,255,255),font='cry') for name in self.nums}
         self.heights = [self.numrenders[name].get_height() for name in self.nums]
         self.widths = [self.numrenders[name].get_width() for name in self.nums]
+        self.displayText = displayText
 
-    def get_value(self):
+    def getValue(self):
         return int(self.numstr)
+    
+    def getNumstr(self,extraText):
+        return f"{int(self.numstr):,.0f} "+extraText+("S" if int(self.numstr) != 1 else "")
     
     def draw(self,screen,coords,wh,extratext,mousebuttons,maxvalue):
         # gfxdraw.box(screen,pygame.Rect(coords,wh),(50,50,50))
         # pygame.draw.rect(screen,(50,50,50),pygame.Rect(coords,wh),)
         # pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,wh),5,10)
-        extratext = s_render(f"{int(self.numstr):,.0f} "+extratext+("S" if int(self.numstr) != 1 else ""),45,(255,255,255),font='cry')
-        topheight = extratext.get_height()*1.8
-        pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,(wh[0],topheight)),5,10)
+        
+        if self.displayText:
+            extratext = s_render(f"{int(self.numstr):,.0f} "+extratext+("S" if int(self.numstr) != 1 else ""),45,(255,255,255),font='cry')
+            topheight = extratext.get_height()*1.8
+            pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,(wh[0],topheight)),5,10)
         # pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords,(wh[0],topheight)),5,10)
         
         # gfxdraw.box(screen,pygame.Rect((coords[0]+5,coords[1]+5),(wh[0]-10,topheight)),(35,35,35))
-        screen.blit(extratext,(coords[0]+wh[0]/2-(extratext.get_width()/2),coords[1]+10))
+            screen.blit(extratext,(coords[0]+wh[0]/2-(extratext.get_width()/2),coords[1]+10))
 
-        # Triangles for the up and down buttons
-        leftboxpoints = [(coords[0]+10,coords[1]+10),(coords[0]+45,coords[1]+10),(coords[0]+45,coords[1]+topheight-5),(coords[0]+10,coords[1]+topheight-5)]
-        rightboxpoints = [(coords[0]+wh[0]-10,coords[1]+10),(coords[0]+wh[0]-45,coords[1]+10),(coords[0]+wh[0]-45,coords[1]+topheight-5),(coords[0]+wh[0]-10,coords[1]+topheight-5)]
-        gfxdraw.filled_polygon(screen,leftboxpoints,(20,20,20))
-        gfxdraw.filled_polygon(screen,rightboxpoints,(20,20,20))
-        pygame.draw.polygon(screen,(0,0,0),leftboxpoints,3)
-        pygame.draw.polygon(screen,(0,0,0),rightboxpoints,3)
-        
+            # Triangles for the up and down buttons
+            leftboxpoints = [(coords[0]+10,coords[1]+10),(coords[0]+45,coords[1]+10),(coords[0]+45,coords[1]+topheight-5),(coords[0]+10,coords[1]+topheight-5)]
+            rightboxpoints = [(coords[0]+wh[0]-10,coords[1]+10),(coords[0]+wh[0]-45,coords[1]+10),(coords[0]+wh[0]-45,coords[1]+topheight-5),(coords[0]+wh[0]-10,coords[1]+topheight-5)]
+            gfxdraw.filled_polygon(screen,leftboxpoints,(20,20,20))
+            gfxdraw.filled_polygon(screen,rightboxpoints,(20,20,20))
+            pygame.draw.polygon(screen,(0,0,0),leftboxpoints,3)
+            pygame.draw.polygon(screen,(0,0,0),rightboxpoints,3)
+            
 
-        lefttripoints = [(coords[0]+15,coords[1]+topheight/2),(coords[0]+40,coords[1]+12),(coords[0]+40,coords[1]+topheight-12)]
-        righttripoints = [(coords[0]+wh[0]-15,coords[1]+topheight/2),(coords[0]+wh[0]-40,coords[1]+12),(coords[0]+wh[0]-40,coords[1]+topheight-12)]
-        gfxdraw.filled_polygon(screen,lefttripoints,(150,150,150))
-        gfxdraw.filled_polygon(screen,righttripoints,(150,150,150))
+            lefttripoints = [(coords[0]+15,coords[1]+topheight/2),(coords[0]+40,coords[1]+12),(coords[0]+40,coords[1]+topheight-12)]
+            righttripoints = [(coords[0]+wh[0]-15,coords[1]+topheight/2),(coords[0]+wh[0]-40,coords[1]+12),(coords[0]+wh[0]-40,coords[1]+topheight-12)]
+            gfxdraw.filled_polygon(screen,lefttripoints,(150,150,150))
+            gfxdraw.filled_polygon(screen,righttripoints,(150,150,150))
 
         if point_in_polygon(pygame.mouse.get_pos(),leftboxpoints):
             if mousebuttons == 1 and int(self.numstr) > 0: self.numstr = str(int(self.numstr)-1)

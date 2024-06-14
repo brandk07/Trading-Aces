@@ -55,6 +55,7 @@ class GameTime:
     def isOpen(self,time:datetime=None):
         """Checks if the market is open or not
         returns a tuple of (bool,reason)"""
+        assert time == None or isinstance(time,datetime), "time must be a datetime object"
         if time == None:
             time = self.time
         if (time.month,time.day) in HOLIDAYS:
