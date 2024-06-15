@@ -48,10 +48,10 @@ class Numpad:
             gfxdraw.filled_polygon(screen,lefttripoints,(150,150,150))
             gfxdraw.filled_polygon(screen,righttripoints,(150,150,150))
 
-        if point_in_polygon(pygame.mouse.get_pos(),leftboxpoints):
-            if mousebuttons == 1 and int(self.numstr) > 0: self.numstr = str(int(self.numstr)-1)
-        if point_in_polygon(pygame.mouse.get_pos(),rightboxpoints):
-            if mousebuttons == 1: self.numstr = str(int(self.numstr)+1)
+            if point_in_polygon(pygame.mouse.get_pos(),leftboxpoints):
+                if mousebuttons == 1 and int(self.numstr) > 0: self.numstr = str(int(self.numstr)-1)
+            if point_in_polygon(pygame.mouse.get_pos(),rightboxpoints):
+                if mousebuttons == 1: self.numstr = str(int(self.numstr)+1)
 
         if int(self.numstr) > maxvalue:
             self.numstr = str(maxvalue)

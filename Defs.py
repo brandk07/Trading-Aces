@@ -184,7 +184,7 @@ def checkboxOptions(screen,options,selectedOptions,w,h,pos,mousebuttons) -> tupl
         if rect.collidepoint(pygame.mouse.get_pos()):
             color = (160,160,160)
             pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
-            if mousebuttons == 1:
+            if mousebuttons == 1 and not option in selectedOptions:
                 soundEffects['clickbutton2'].play()
                 return (option, i)
             

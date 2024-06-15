@@ -4,7 +4,7 @@ from Defs import *
 from Classes.imports.Menu import Menu
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
-from Classes.Stockbook import quantityControls
+# from Classes.Stockbook import quantityControls
 from Classes.AssetTypes.OptionAsset import OptionAsset
 import math
 from datetime import datetime,timedelta
@@ -126,7 +126,7 @@ class Optiontrade(Menu):
         if self.selected_option == None and len(player.options) > 0:
             self.selected_option = 0
         self.barowned.scroll(mousebuttons)# check for the scroll of the bar
-        self.barowned.changemaxvalue(len(player.options) if len(player.options) > 0 else 1)# change the max value of the bar based on the amount of stocks the player has
+        self.barowned.changeMaxValue(len(player.options) if len(player.options) > 0 else 1)# change the max value of the bar based on the amount of stocks the player has
 
         barheight = (520//len(player.options)) if len(player.options) > 0 else 1
 
@@ -245,7 +245,7 @@ class Optiontrade(Menu):
         if self.selected_avalaible == None and len(alloptions) > 0:
             self.selected_avalaible = 0
         self.baravailable.scroll(mousebuttons)# check for the scroll of the bar
-        self.baravailable.changemaxvalue(len(alloptions) if len(alloptions) > 0 else 1)# change the max value of the bar based on the amount of stocks the player has
+        self.baravailable.changeMaxValue(len(alloptions) if len(alloptions) > 0 else 1)# change the max value of the bar based on the amount of stocks the player has
         
         barheight = (520//len(alloptions)) if len(alloptions) > 0 else 1
 

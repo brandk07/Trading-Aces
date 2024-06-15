@@ -22,6 +22,7 @@ def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizo
         next_barpos = int(next_mouselength * seclength) + xy# the next bar position
         current_barpos = int(mouselength * seclength) + xy# the current bar position
         comparingvar = mousex if horizontal else mousey# the mouse x or y position depending on the orientation of the bar
+        
         if abs(comparingvar - next_barpos) < abs(comparingvar - current_barpos):# if the next bar is closer to the mouse than the current bar
             return [next_barpos, next_mouselength, True]
         else:
@@ -50,7 +51,7 @@ class SliderBar():
         self.slider_points = []
 
 
-    def changemaxvalue(self,maxvalue):
+    def changeMaxValue(self,maxvalue):
         if maxvalue != self.maxvalue:
             self.maxvalue = maxvalue
             if self.maxvalue > len(self.gamevaluetexts)-1:
@@ -61,7 +62,7 @@ class SliderBar():
     def set_currentvalue(self,newvalue,overridemax=False):
         self.value = newvalue
         if not overridemax and self.value > self.maxvalue:
-            self.changemaxvalue(self.value)
+            self.changeMaxValue(self.value)
     
         self.value = self.maxvalue if self.value > self.maxvalue else self.value
         self.value = 0 if self.value < 0 else self.value
@@ -72,7 +73,7 @@ class SliderBar():
         """changes the current value by the offset"""
         self.value += offset
         if not overridemax and self.value > self.maxvalue:
-            self.changemaxvalue(self.value)
+            self.changeMaxValue(self.value)
     
         self.value = self.maxvalue if self.value > self.maxvalue else self.value
         self.value = 0 if self.value < 0 else self.value
@@ -216,5 +217,6 @@ class SliderBar():
             screen.blit(text, (self.sliderxy[0]+textx, self.sliderxy[1]+self.sliderwh[1]//2-texty//2))
         if self.value < self.minvalue:
             self.value = self.minvalue
-
+        if self.value <= 2:
+            self.value = 0
         return self.value

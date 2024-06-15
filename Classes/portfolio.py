@@ -5,9 +5,9 @@ import pygame.draw_py
 from Defs import *
 from Classes.imports.Menu import Menu
 from pygame import gfxdraw
-from Classes.imports.Bar import SliderBar
+# from Classes.imports.Bar import SliderBar
 from Classes.imports.Latterscroll import *
-from Classes.Stockbook import quantityControls
+# from Classes.Stockbook import quantityControls
 from Classes.imports.Numpad import Numpad
 # from Classes.Stock import Stock
 from Classes.AssetTypes.OptionAsset import OptionAsset
@@ -31,7 +31,7 @@ class Portfolio(Menu):
         # remove all the white from the image
         # s.bar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         # s.bar.value = 0
-        s.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
+        # s.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         s.totalmarket = totalmarket
 
         s.sharebackground = pygame.image.load(r"Assets\backgrounds\Background (8).png").convert_alpha()
@@ -39,7 +39,7 @@ class Portfolio(Menu):
         s.sharebackground.set_alpha(150)
 
         s.displayingtext = fontlist[35].render('Displaying ',(220,220,220))[0]
-        s.menudrawn = True
+        s.menudrawn = False
         # s.allrenders = []
         s.selectedAsset = None
         s.player = player

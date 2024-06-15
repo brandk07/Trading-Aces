@@ -48,11 +48,12 @@ musicdata = Getfromfile(stockdict,player,gametime)# muiscdata = [time, volume, s
 menuList = []
 # CREATING OBJECTS
 stockgraphmanager = StockGraphManager(stocklist,gametime)
-stockbook = Stockbook(stocklist,gametime)
 tmarket = TotalMarket(gametime)
+ui_controls = UI_Controls(stocklist,GAMESPEED,gametime,tmarket,player)
+stockbook = Stockbook(stocklist,gametime,ui_controls)
 portfolio = Portfolio(stocklist,player,gametime,tmarket,menuList)
 optiontrade = Optiontrade(stocklist,gametime,player)
-ui_controls = UI_Controls(stocklist,GAMESPEED,gametime,tmarket,player)
+
 menuList.extend([stockbook,portfolio,optiontrade])
 # VARS FROM SETTINGS
 autofastforward = True
@@ -91,13 +92,14 @@ if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
         screen.blit(s,(0,0))
-
+        
         ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
+
 
         if gametime.advanceTime(ui_controls.gameplay_speed,autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
             player.newDay(gametime)
-
+        
         if gametime.isOpen()[0]:# if the market is open
             if ui_controls.gameplay_speed > 0:# if the game is not paused
                 for stock in stocklist:
@@ -106,7 +108,7 @@ if __name__ == "__main__":
                 player.gameTick(ui_controls.gameplay_speed)
                 tmarket.updategraphs(stocklist,ui_controls.gameplay_speed)
 
-
+        
 
         
         for i,menu in enumerate(menuList):
@@ -115,7 +117,7 @@ if __name__ == "__main__":
  
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
 
-        
+        ui_controls.bar.changeMaxValue(GAMESPEED)
         mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.USEREVENT:
@@ -150,7 +152,7 @@ if __name__ == "__main__":
 
         
         pygame.display.update()
-
+        
         clock.tick(600)
 
 
