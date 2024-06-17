@@ -83,20 +83,21 @@ from Classes.imports.OrderScreen import OrderScreen
 #     return quantity
 
 class Stockbook(Menu):
-    def __init__(self,stocklist,gametime,uicontrols) -> None:
+    def __init__(self,stocklist,gametime,orderScreen) -> None:
         self.icon = pygame.image.load(r'Assets\Menu_Icons\stockbook.png').convert_alpha()
         self.icon = pygame.transform.scale(self.icon,(140,100))
         super().__init__(self.icon)
         self.quantity = 0
         stocknames = [stock.name for stock in stocklist]
         self.stocktext = {name:[] for name in stocknames}
-        self.selectedstock = 0
+        self.selectedStock = 0
         self.menudrawn = True
         self.stocklist = stocklist
         self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
         self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         self.stockGraph = StockVisualizer(gametime,stocklist[0],stocklist)
-        self.orderScreen = OrderScreen(uicontrols)
+        self.orderScreen = orderScreen
+        self.oScreenDisp = True
 
         with open(r'Assets\newstockdes.txt','r') as descriptions:
             filecontents = descriptions.readlines()
@@ -116,13 +117,13 @@ class Stockbook(Menu):
                 else:#else render it with a smaller font and orange color
                     self.stocktext[key][i] = fontlist[30].render(line,(225, 130, 0))[0]
 
-    def changeSelectedStock(self,name=None,obj=None):
+    def changeselectedStock(self,name=None,obj=None):
         if name:
-            self.selectedstock = [stock.name for stock in self.stocklist].index(name)
-            self.stockGraph.setStockObj(self.stocklist[self.selectedstock])
+            self.selectedStock = [stock.name for stock in self.stocklist].index(name)
+            self.stockGraph.setStockObj(self.stocklist[self.selectedStock])
         elif obj:
-            self.selectedstock = self.stocklist.index(obj)
-            self.stockGraph.setStockObj(self.stocklist[self.selectedstock])
+            self.selectedStock = self.stocklist.index(obj)
+            self.stockGraph.setStockObj(self.stocklist[self.selectedStock])
         else:
             raise ValueError('You must provide either a name or an object')
         
@@ -135,13 +136,13 @@ class Stockbook(Menu):
             points = [(215+(i*8),120+(i*65)),(225+(i*8),160+(i*65)),(450+(i*8),160+(i*65)),(440+(i*8),120+(i*65))]
             if (hover:=point_in_polygon((mousex,mousey),points)):#if the mouse is hovering over the stock name
                 if mousebuttons == 1:#if the mouse is hovering over the stock
-                    self.selectedstock = i
-                    self.stockGraph.setStockObj(stocklist[self.selectedstock])# change the stock object in the stock graph
+                    self.selectedStock = i
+                    self.stockGraph.setStockObj(stocklist[self.selectedStock])# change the stock object in the stock graph
                     soundEffects['clickbutton2'].play()
                     self.quantity = 0
 
             change = stock.price - stock.graphs["1D"][0]
-            if hover or self.selectedstock == i:
+            if hover or self.selectedStock == i:
                 color = (0, 160, 0) if change > 0 else (160, 0, 0)
                 color = (160, 160, 160) if change == 0 else color
             else:
@@ -149,26 +150,28 @@ class Stockbook(Menu):
                 color = (80, 80, 80) if change == 0 else color
 
             gfxdraw.filled_polygon(screen,points,color)# polygon for the stock name
-            outlinecolor = (0, 0, 0) if self.selectedstock != i else (180, 180, 180)#
+            outlinecolor = (0, 0, 0) if self.selectedStock != i else (180, 180, 180)#
             pygame.draw.polygon(screen, outlinecolor, points,5)
 
             screen.blit(fontlist[36].render(f'{stock.name} ${limit_digits(stock.price,12)}',(255,255,255))[0],(230+(i*8),130+(i*65)))
-            if self.selectedstock == i:
+            if self.selectedStock == i:
                 self.selected_stock(screen,stocklist,player,mousebuttons,gametime)
+        if self.oScreenDisp:
+            self.oScreenDisp = self.orderScreen.draw(screen,stocklist[self.selectedStock],mousebuttons,player)
 
-            self.orderScreen.draw(screen,stock,mousebuttons,player)
+            
 
     def draw_descriptions(self,screen:pygame.Surface,stocklist:list,player,mousebuttons,gametime):
         """Draws the stock descriptions and the stock graph for the selected stock"""
         gfxdraw.filled_polygon(screen,((290,700),(320,955),(1570,955),(1535,700)),(60,60,60))#  polygon for the stock description
-        screen.blit(self.renderedstocknames[stocklist[self.selectedstock].name],(300,710))# blits the stock name to the screen
+        screen.blit(self.renderedstocknames[stocklist[self.selectedStock].name],(300,710))# blits the stock name to the screen
 
-        # stocklist[self.selectedstock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
-        # stocklist[self.selectedstock].draw(screen,player,(550,130),(550,550),mousebuttons,gametime)
-        # stocklist[self.selectedstock].drawFull(screen,(550,130),(550,550),"Stockbook Graph",True,"Normal")
+        # stocklist[self.selectedStock].update(screen,play_pause,player,(1100,130),(500,680),drawn=True)
+        # stocklist[self.selectedStock].draw(screen,player,(550,130),(550,550),mousebuttons,gametime)
+        # stocklist[self.selectedStock].drawFull(screen,(550,130),(550,550),"Stockbook Graph",True,"Normal")
         self.stockGraph.drawFull(screen,(550,130),(550,550),f"Stockbook Graph",True,"Normal")
-        for i,line in enumerate(self.stocktext[stocklist[self.selectedstock].name]):
-            x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedstock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
+        for i,line in enumerate(self.stocktext[stocklist[self.selectedStock].name]):
+            x,y = (305+((i-1)*8) if i != 0 else self.renderedstocknames[stocklist[self.selectedStock].name].get_width()+310),(800+((i-1)*40) if i != 0 else 725)
             screen.blit(line,(x,y))
             
     def draw_costpurchase(self,screen,mousebuttons:int,player,stocklist:list,abletobuy:bool,gametime):
@@ -178,13 +181,13 @@ class Stockbook(Menu):
         gfxdraw.filled_polygon(screen,((1110,200),(1125,250),(1465,250),(1450,200)),(30,30,30))
         pygame.draw.polygon(screen, (0,0,0), ((1110,200),(1125,250),(1465,250),(1450,200)),5)
 
-        text = fontlist[45].render(f'Cost : ${self.quantity*stocklist[self.selectedstock].price:.2f}',(255, 255, 255))[0]
+        text = fontlist[45].render(f'Cost : ${self.quantity*stocklist[self.selectedStock].price:.2f}',(255, 255, 255))[0]
         screen.blit(text,(1175,210))
 
         if abletobuy and point_in_polygon((mousex,mousey),[(1110,265),(1125,335),(1465,335),(1450,265)]):
             purchasecolor = (0,150,0)
             if mousebuttons == 1:
-                player.buyAsset(StockAsset(player,stocklist[self.selectedstock],gametime.getTime(),stocklist[self.selectedstock].price,self.quantity))
+                player.buyAsset(StockAsset(player,stocklist[self.selectedStock],gametime.getTime(),stocklist[self.selectedStock].price,self.quantity))
                 self.quantity = 0
         elif not abletobuy:
             purchasecolor = (150,0,0)
@@ -203,7 +206,7 @@ class Stockbook(Menu):
         """This function is called for the selected stock in the stockbook menu"""
         self.draw_descriptions(screen,stocklist,player,mousebuttons,gametime)
         # self.quantitycontrols(screen,mousebuttons,player,stocklist)
-        stock = stocklist[self.selectedstock]
+        stock = stocklist[self.selectedStock]
         # self.quantity = quantityControls(screen,mousebuttons,int(player.cash/stock.price),self.quantity,(1105,110))
         abletobuy = int(player.cash/stock.price) > 0
         if abletobuy:

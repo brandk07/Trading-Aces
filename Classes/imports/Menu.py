@@ -1,6 +1,6 @@
 import pygame
 from Defs import *
-from Classes.UI_controls import UI_Controls
+from Classes.UIControls import UIControls
 class Menu():
     def __init__(self,iconimage) -> None:
         surface = pygame.Surface((140,115))
@@ -17,6 +17,7 @@ class Menu():
         self.menudrawn = False
         self.menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
         self.topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]
+        
 
     
     def draw_icon(self,screen,mousebuttons:int,stocklist:list,player,menulist,iconcoords:tuple,ui_controls,gametime):
@@ -47,7 +48,7 @@ class Menu():
         if self.menudrawn:
             self.draw_menu(screen,mousebuttons,stocklist,player,ui_controls,gametime)
 
-    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,Mousebuttons:int,player):
+    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,mousebuttons:int,player,gametime):
         """Mearly a placeholder for the child classes to override"""
         pass
     # def draw_menu_sidebar(self,screen,ui_controls,stocklist,gametime):
@@ -80,7 +81,7 @@ class Menu():
 
         # gfxdraw.filled_polygon(screen, ((1150,40),(1900,40),(1900,975),(1150,975)),(40,40,40))
         # pygame.draw.polygon(screen, (0,0,0), ((1150,40),(1900,40),(1900,975),(1150,975)),10)
-    def drawbottombar(self,screen,ui_controls:UI_Controls,gametime):
+    def drawbottombar(self,screen,ui_controls:UIControls,gametime):
         """Draws the bottom bar of the screen"""
         ui_controls.gameplay_speed = ui_controls.bar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True,text=gametime.skipText())
 

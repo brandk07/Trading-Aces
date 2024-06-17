@@ -3,17 +3,19 @@ from random import randint
 import time
 from Defs import *
 from Classes.Stock import Stock
-from Classes.UI_controls import UI_Controls
+from Classes.UIControls import UIControls
 from Classes.Gametime import GameTime
-from Classes.Playerportfolio import Player
+from Classes.Player import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
-from Classes.portfolio import Portfolio
+from Classes.Portfolio import Portfolio
 from Classes.OptionMenu import Optiontrade
 from collections import deque
 from Classes.smallClasses.TotalMarket import TotalMarket
 import timeit
+from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
+from Classes.NewstockBook import Stockbook2
 GAMESPEED = 250
 FASTFORWARDSPEED = 500
 pygame.init()
@@ -49,8 +51,10 @@ menuList = []
 # CREATING OBJECTS
 stockgraphmanager = StockGraphManager(stocklist,gametime)
 tmarket = TotalMarket(gametime)
-ui_controls = UI_Controls(stocklist,GAMESPEED,gametime,tmarket,player)
-stockbook = Stockbook(stocklist,gametime,ui_controls)
+uiControls = UIControls(stocklist,GAMESPEED,gametime,tmarket,player)
+orderScreen = OrderScreen(uiControls)
+# stockbook = Stockbook(stocklist,gametime,orderScreen)
+stockbook = Stockbook2(stocklist,gametime,orderScreen)
 portfolio = Portfolio(stocklist,player,gametime,tmarket,menuList)
 optiontrade = Optiontrade(stocklist,gametime,player)
 
@@ -93,31 +97,31 @@ if __name__ == "__main__":
         mousex,mousey = pygame.mouse.get_pos()
         screen.blit(s,(0,0))
         
-        ui_controls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
+        uiControls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
 
 
-        if gametime.advanceTime(ui_controls.gameplay_speed,autofastforward,FASTFORWARDSPEED):# if there is a new trading day
+        if gametime.advanceTime(uiControls.gameplay_speed,autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
             player.newDay(gametime)
         
         if gametime.isOpen()[0]:# if the market is open
-            if ui_controls.gameplay_speed > 0:# if the game is not paused
+            if uiControls.gameplay_speed > 0:# if the game is not paused
                 for stock in stocklist:
-                    stock.update_price(ui_controls.gameplay_speed,Player)
-                # player.update_price(ui_controls.gameplay_speed,Player)
-                player.gameTick(ui_controls.gameplay_speed)
-                tmarket.updategraphs(stocklist,ui_controls.gameplay_speed)
+                    stock.update_price(uiControls.gameplay_speed,Player)
+                # player.update_price(uiControls.gameplay_speed,Player)
+                player.gameTick(uiControls.gameplay_speed)
+                tmarket.updategraphs(stocklist,uiControls.gameplay_speed)
 
         
 
         
         for i,menu in enumerate(menuList):
-            menu.draw_icon(screen,mousebuttons,stocklist,player,menuList,(30,165+(i*175)),ui_controls,gametime)
+            menu.draw_icon(screen,mousebuttons,stocklist,player,menuList,(30,165+(i*175)),uiControls,gametime)
 # 
  
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
 
-        ui_controls.bar.changeMaxValue(GAMESPEED)
+        uiControls.bar.changeMaxValue(GAMESPEED)
         mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.USEREVENT:

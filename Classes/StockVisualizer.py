@@ -90,7 +90,7 @@ class StockVisualizer:
 
     def drawRangeControls(self,screen:pygame.Surface,coords,wh,graphrange):
         """Draws the range controls for the stock to the screen
-        needs the inputed graphrange, not the valid graphrange"""	
+        needs the inputed graphrange, not the valid graphrange,"""	
         blnkspacex = ((coords[0]+wh[0]-coords[0])//10)
         blnkspacey = ((coords[1]+wh[1]-coords[1])//10)
         drawingy = (wh[1])/len(GRAPHRANGES)
@@ -137,7 +137,8 @@ class StockVisualizer:
     
 
     def drawBare(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset):
-        """Draws the basic graph of the stock to the screen"""
+        """Draws the basic graph of the stock to the screen,
+        Graphrange can be a valid range or it will be used as a key in a dict to store the range"""
         truegraphrange = self.getValidRange(graphrange)
         graphingpoints,spacing,minmax_same = self._defaultDraw(screen,coords,wh,graphrange,False)# draw the basic graph, no range controls
 
@@ -147,7 +148,8 @@ class StockVisualizer:
         # return self.drawNamePreset(screen,coords,wh,truegraphrange,preset)
     
     def drawFull(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset,customRange=True):
-        """Draws the full graph of the stock to the screen"""
+        """Draws the full graph of the stock to the screen, 
+        Graphrange can be a valid range or it will be used as a key in a dict to store the range"""
         truegraphrange = self.getValidRange(graphrange)
         backcolor = p3choice((55,0,0),(0,55,0),(55,55,55),self.stockObj.getPercent(truegraphrange))
 

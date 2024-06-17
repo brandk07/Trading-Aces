@@ -2,26 +2,7 @@ from optionprice import Option as Op
 import numpy as np
 from collections import deque    
 from random import randint
-from functools import lru_cache
 import datetime
-
-@lru_cache(maxsize=20)
-def calculate_volatility(points) -> float:
-    """Calculate the volatility of a stock, points must be a tuple"""
-
-    if len(points) < 2:
-        return .1
-    
-    # Calculate daily returns
-    returns = np.diff(points) / points[:-1]
-
-    # Calculate standard deviation of daily returns
-    daily_volatility = np.std(returns)
-
-    # Annualize volatility
-    annualized_volatility = np.sqrt(252) * daily_volatility
-
-    return annualized_volatility
 
 class Asset:
     def __init__(self,player:object,stockobj:object,creationdate:str,nametext:str,ogvalue:float,quantity:int,portfolioPercent:float,color=None) -> None:
@@ -57,7 +38,7 @@ class Asset:
     
     def getVolatility(self):
         """returns the volatility of the asset's stock"""
-        return calculate_volatility(tuple(self.stockobj.graphs['1Y']))
+        return self.stockobj.getVolatility()
     
     def savingInputs(self):
         """returns the all the inputs needed to construct a new object"""

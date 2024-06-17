@@ -11,13 +11,13 @@ from Classes.StockVisualizer import StockVisualizer
 # [20,60] [60,20]
 # [700,1000] [1000,650]
 
-class UI_Controls():
+class UIControls():
     def __init__(self,stocklist,gamespeed,gametime,tmarket,player) -> None:
         self.gameplay_speed = 0
         # self.stockevent = StockEvents()# the stock events
         self.bar = SliderBar(gamespeed,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
         # self.newsobj = News()
-        self.latterscroll = LatterScroll(5)
+        self.latterscroll = LatterScroll()
         # for i in range(10):
         #     for stock in stocklist:
         #         self.newsobj.addStockNews(stock.name)

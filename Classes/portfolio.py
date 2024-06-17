@@ -62,25 +62,6 @@ class Portfolio(Menu):
         s.latterscrollnorm = PortfolioLatter()
         s.latterscrollselect = PortfolioLatter()
         s.numpad = Numpad()
-        stocknames = [stock.name for stock in stocklist]
-        s.stocktext = {name:[] for name in stocknames}# the list has [fullstockname,stockdescription1,stockdescription etc...]
-        with open(r'Assets\newstockdes.txt','r') as descriptions:
-            filecontents = descriptions.readlines()
-            for i,line in enumerate(filecontents):
-                for stockname in stocknames:
-                    if line.replace('\n','') == stockname:
-                        s.stocktext[stockname].append(filecontents[i+1].replace('\n',''))# Full stock name Ex. "Kyronix Solutions Inc. (KSTON)"
-                        seperatatedstrings = separate_strings((filecontents[i+2].replace('\n','')),5)
-                        for string in seperatatedstrings:# a list containing 4 strings 
-                            s.stocktext[stockname].append(string)
-
-        s.renderedstocknames = {name:fontlist[90].render(name,(150,150,150))[0] for name in stocknames}
-        for key,lines in s.stocktext.items():#rendering the text that displays info about the stocks
-            for i,line in enumerate(lines):
-                if i == 0:#if its the first line, render it with a larger font and grey color
-                    s.stocktext[key][i] = fontlist[55].render(line,(190, 190, 190))[0]
-                else:#else render it with a smaller font and orange color
-                    s.stocktext[key][i] = fontlist[35].render(line,(140, 140, 140))[0]
  
         
     def getpoints(s, w1, w2, w3, x, y):
@@ -151,29 +132,6 @@ class Portfolio(Menu):
             else:
                 s.displayed_asset_type.append(result[0])
             s.selectedAsset = None
-        # width = 500//len(s.assetoptions)
-        # for i,option in enumerate(s.assetoptions):
-        #     x,y = 880+(i*width),160
-        #     rect = pygame.Rect(x,y,width-5,35)
-        #     color = (120,120,120)
-        #     if rect.collidepoint(pygame.mouse.get_pos()):
-        #         color = (160,160,160)
-        #         pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
-        #         if mousebuttons == 1:
-        #             soundEffects['clickbutton2'].play()
-                    # if option in s.displayed_asset_type:
-                    #     s.displayed_asset_type.remove(option)
-                    # else:
-                    #     s.displayed_asset_type.append(option)
-                    # s.selectedAsset = None
-
-            
-        #     pygame.draw.rect(screen, (0,0,0), [x+10,y+10,15,15], 3)
-        #     # rectangle inside the one above
-        #     if option in s.displayed_asset_type:
-        #         pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
-        #         pygame.draw.rect(screen, (200,200,200), [x+13,y+13,9,9])
-        #     screen.blit(s_render(option, 30, (210, 210, 210)), (x+34,y+8))
 
     def get_allassets(s) -> list:
         """returns a sorted list of the currently displayed assets of the player"""
@@ -279,54 +237,7 @@ class Portfolio(Menu):
         # need to fix teh option.add method - when you add the og value doesn't change
         
     def drawAssetInfo(s,screen,asset,gametime,player):
-        
-        
-    #     # [(860, 330), (1620, 330), (1620, 960), (860, 960)]
-    #     # 860-1620 = 760
-    #     # 760/3 = 253.33333333333334
-    #     # 890+253.33333333333334 = 1143.3333333333333
-    #     # 1143.3333333333333+253.33333333333334 = 1396.6666666666667
-    #     # 1396.6666666666667+253.33333333333334 = 1650
-        # if isinstance(asset,StockAsset):
-        #     otherTexts = ("Dividends",[f"${limit_digits(asset.dividends,15)}",""])
-        # elif isinstance(asset,OptionAsset):
-        #     otherTexts = ("Expiration & Strike",[f"{asset.expiration_date} Days",f"${asset.strikePrice}"])
-                
-    #     texts = [
-    #         "Per Share",
-    #         "Total Cost",
-    #         otherTexts[0]
-    #     ]
-    #     values = [
-    #         [f"${limit_digits(asset.ogvalue,12)}", f"${limit_digits(asset.getValue(fullvalue=False),12)}"],# Per Share (OG Value, Current Value)
-    #         [f"${limit_digits(asset.ogvalue*asset.quantity,12)}", f"${limit_digits(asset.getValue(fullvalue=False)*asset.quantity,12)}"],# Total Cost (OG Value, Current Value)
-    #         otherTexts[1]
-    #     ]
-    #     for i in range(3):
-    #         points = [(880+(i*250), 385), (1133+(i*235), 385), (1133+(i*235), 530), (880+(i*250), 530)]
 
-    #         # pygame.draw.polygon(screen, (0, 0, 0), points, 5)
-    #         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(880+(i*250), 385, 253, 145), 5, 10)
-            
-    #         x,y = 890+(i*253),390
-    #         screen.blit(s_render(texts[i], 40, (190, 190, 190)), (x, y-40))# the text describing the values in the boxes (Per Share, Total Cost, etc...)
-    #         screen.blit(s_render(values[i][0], 50, (190, 190, 190)), (x, y))# the value of the variable (Per Share, Total Cost, etc...)
-    #         screen.blit(s_render(values[i][1], 50, (190, 190, 190)), (x, y+50))# the value of the variable (Per Share, Total Cost, etc...)
-        
-        
-        # descriptexts = [# the descriptions for all the text that will be displayed
-        # s_render(f"Per {s.classtext[type(asset)]}", 40, (190, 190, 190)),
-        # s_render("Total Cost", 40, (190, 190, 190)),
-        # s_render("Avg Return", 25, (190, 190, 190)),
-        # s_render(f"Percent of Portfolio", 25, (190, 190, 190))]
-
-
-
-        # screen.blit(s_render(f"Purchased on {asset.date}", 40, (190, 190, 190)), (880, 540))
-        # def drawAssetInfo(s,screen,asset,gametime,player):
-
-
-        # //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         # top part of the asset Info
         ogtext = s_render("Original", 55, (190, 190, 190))
         screen.blit(ogtext, (885, 350))
@@ -355,7 +266,6 @@ class Portfolio(Menu):
         elif isinstance(asset,OptionAsset):
             strValue = f"{asset.daysToExpiration(gametime.time)} Days"
             color = p3choice((160,10,10),(10,160,10),(190,190,190),asset.daysToExpiration(gametime.time)-5)
-        
         
         
         valueText = s_render(strValue, 50, (0,0,0))# the value for the dividend / expiration date
@@ -409,100 +319,7 @@ class Portfolio(Menu):
             screen.blit(s_render(f"Option Type : {asset.option_type}", 40, (190, 190, 190)), (1285, 770))
             screen.blit(s_render(f"Voliatility : {limit_digits(asset.getVolatility()*100,15)}%", 40, (190, 190, 190)), (1285, 810))
             screen.blit(s_render(f"Exp Date : {asset.getExpDate()}", 40, (190, 190, 190)), (1285, 850))
-            
-        
 
-        
-
-        # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(870, 340, 740, 250), 5, 10)
-
-        # movingRect(screen,getYearlyReturn(asset,gametime),35,740,100,870,600)
-        # movingRect(screen,(asset.getValue()/player.getNetworth())*100,35,740,100,870,740)
-
-
-
-        # offset = 1 if abs(x:=(getYearlyReturn(asset,gametime))) >= 25 else abs(x/25)
-        # colorval = (120*offset)+70
-        # color = p3choice((colorval,0,0),(0,colorval,0),(190,190,190),float(getYearlyReturn(asset,gametime)))
-
-        # if x < 0:
-        #     # print(x,offset,1240-(offset*740), 740*offset)
-        #     pygame.draw.rect(screen, color, pygame.Rect(1240-(offset*340), 600, 340*offset, 100),border_bottom_left_radius=25,border_top_left_radius=25)
-        # else:
-        #     pygame.draw.rect(screen, color, pygame.Rect(1240, 600, 340*offset, 100),border_bottom_right_radius=25,border_top_right_radius=25)
-        #     # avgrtrnRect = pygame.Rect(1240, 600, 340*offset, 100)
-        
-       
-        
-        # pygame.draw.rect(screen, (0,0,0), pygame.Rect(870,595,740,110), width=7, border_radius=10)
-        # pygame.draw.rect(screen, (0,0,0), avgrtrnRect)
-
-
-
-        
-
-
-    # def drawAssetInfo(s,screen,asset,gametime,player):
-    #     """Draws the Asset Analytics underneath the stock graph on the left side of the screen"""
-        # descriptexts = [# the descriptions for all the text that will be displayed
-        #     s_render(f"Per {s.classtext[type(asset)]}", 40, (190, 190, 190)),
-        #     s_render("Total Cost", 40, (190, 190, 190)),
-        #     s_render("Avg Return", 25, (190, 190, 190)),
-        #     s_render(f"Percent of Portfolio", 25, (190, 190, 190))]
-        # # All the values that will be displayed
-        # def getYearlyReturn(asset,gametime):
-        #     """returns the yearly return of the asset"""
-        #     diff = gametime.time-asset.dateobj
-        #     if diff.days <= 365:
-        #         return asset.getPercent()
-        #     extra = 100 if asset.getPercent() > 0 else -100
-        #     percent = abs(asset.getPercent())
-        #     days = 1/(diff.days/365)
-        #     num = (((1+(percent/100)) ** days)-1) * extra
-        #     if len(f"{num:,.4f}".format(num)) > 12:
-        #         return "{:,.2e}".format(num)    
-        #     else:
-        #         return f"{num:,.4f}"
-        
-        # getCorrrectSize = lambda strlen: int(-85*math.log10(strlen))+155
-        # valstrings = [# the strings that will be displayed
-        #     f"${limit_digits(asset.ogvalue,12)}",
-        #     f"${limit_digits(asset.ogvalue*asset.quantity,12)}",
-        #     f"{getYearlyReturn(asset,gametime)}%",
-        #     f"{limit_digits((asset.getValue()/player.getNetworth())*100,12)}%"]
-        
-        # colors = [p3choice((190,0,0),(0,190,0),(190,190,190),float(getYearlyReturn(asset,gametime))),(190, 190, 190)]
-
-    #     if isinstance(asset,OptionAsset):
-    #         descriptexts.append(s_render("Expiration", 25, (190, 190, 190)))
-    #         valstrings.append(f"{asset.expiration_date} Days")
-    #         colors.append((190,0,0) if asset.expiration_date < 5 else (190,190,190))
-    #     elif isinstance(asset,StockAsset):
-    #         descriptexts.append(s_render("Dividends Received", 25, (190, 190, 190)))
-    #         valstrings.append(f"${limit_digits(asset.dividends,15)}")
-    #         colors.append((190,190,190) if asset.dividends == 0 else (0,190,0))
-            
-        
-    #     valueTexts = [s_render(valstrings[i], getCorrrectSize(len(valstrings[i])), (190, 190, 190)) for i in range(2)]# adds the top row (per share and total cost)
-        
-    #     valueTexts += [s_render(valstrings[i], 50, colors[i-2]) for i in range(2,5)]# adds values below the top row (avg return, etc...)
-        
-    #     # top rows (the OG value of the share and the total)
-    #     for i in range(2):
-    #         valueText = valueTexts[i]# the value of the variable 
-    #         screen.blit(valueText, (205+(i*320)+(315-valueText.get_width())/2, 670+(100-valueText.get_height())/2))
-    #         screen.blit(descriptexts[i], (205+(i*320)+(315-descriptexts[i].get_width())/2, 773))# the text describing the variable
-    #         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(205+(i*320), 665, 315, 145), 5,10)# the border of the variable
-    #     # bottom rows (the avg return, etc...)
-    #     for i in range(2,5):
-    #         valueText = valueTexts[i]
-    #         screen.blit(valueText, (205+((i-2)*213)+(210-valueText.get_width())/2, 835))
-    #         screen.blit(descriptexts[i], (205+((i-2)*213)+(210-descriptexts[i].get_width())/2, 885))
-    #         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(205+((i-2)*213), 815, 210, 95), 5,10)
-        
-    #     anatext, datetext = s_render(f"Original Asset Analytics", 55, (190, 190, 190)), s_render(f"{asset.date}", 45, (190, 190, 190))
-    #     screen.blit(anatext, (205+(650-anatext.get_width())/2, 610))
-    #     screen.blit(datetext, (210+(650-datetext.get_width())/2, 918))# blits the date of the asset
 
 
     def drawSellingInfo(s,screen,descriptions,values,mousebuttons,quantity) -> bool:
@@ -592,7 +409,7 @@ class Portfolio(Menu):
 
             # stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
             # stockgraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
-            s.selectedGraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
+            s.selectedGraph.drawFull(screen,(190,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
 
             selectedindex = sortedassets.index(s.selectedAsset)
             s.drawselectedScroll(screen,sortedassets[selectedindex],mousebuttons)# draws the selected asset scroll on the right

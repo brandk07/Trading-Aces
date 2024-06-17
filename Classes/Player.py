@@ -20,7 +20,7 @@ class Player(Stock):
         self.cash = 25000
         if self.graphs["1H"].size == 1:
             self.graphs = {key:np.array([self.price],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
-        self.stocks = []# list of lists containing the [stock object, the price bought at, and the quantity]
+        self.stocks = []# list of lists containing the stockAsset objects
         self.options = []#list of option objects
         self.stockvalues = []
         self.messagedict = {}

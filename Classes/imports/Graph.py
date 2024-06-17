@@ -4,6 +4,8 @@ from Defs import *
 import numpy as np
 
 class Graph:
+    """SHOULD NOT BE USED TO DRAW A GRAPH, USE THE STOCKVISUALIZER CLASS INSTEAD
+    This class is used BY stock visualizer as an in-between for the stock object and the screen"""
     def __init__(self) -> None:
         self.graphpoints = np.array([],dtype=object)
 

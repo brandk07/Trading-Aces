@@ -7,10 +7,29 @@ import json
 from Classes.imports.Graph import Graph
 from datetime import datetime,timedelta
 from Classes.StockVisualizer import StockVisualizer,POINTSPERGRAPH
+from functools import lru_cache
 
+@lru_cache(maxsize=20)
+def calculate_volatility(points) -> float:
+    """Calculate the volatility of a stock, points must be a tuple"""
+
+    if len(points) < 2:
+        return .1
+    
+    # Calculate daily returns
+    returns = np.diff(points) / points[:-1]
+
+    # Calculate standard deviation of daily returns
+    daily_volatility = np.std(returns)
+
+    # Annualize volatility
+    annualized_volatility = np.sqrt(252) * daily_volatility
+
+    return annualized_volatility
 
 class Stock():
-    """Class contains the points and ability to modify the points of the stock"""
+    """Class contains the points and ability to modify the points of the stock
+    an object of stockVisualizer is created to visualize the stock"""
 
     def __init__(self,name,volatility,color) -> None:
         self.color,self.name = color,name
@@ -29,7 +48,7 @@ class Stock():
 
         self.datafromfile()# Retrieves the data from the file
         self.price = self.graphs['1H'][-1]# the price of the stock at the last graphed point
-        
+        self.dividend = 0
         self.volatility = volatility
         self.recentrenders = {}# a dict of the renders of the recent prices
 
@@ -39,16 +58,18 @@ class Stock():
     def __str__(self) -> str:
         return f'{self.name}'
     
-    def reset_trends(self):
-        """Sets/resets the trends for the stock"""
-        self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]#resets the trends for each bonus trend
-
-    def getPercent(self,graphrange):
-        """Returns the percent change of the stock"""
-        return ((self.graphs[graphrange][-1]/self.graphs[graphrange][0])-1)*100
+    def getVolatility(self,graphrange="1Y"):
+        return calculate_volatility(tuple(self.graphs[graphrange]))
     
-    def getPercentDate(self,date:datetime,gametime:datetime):
-        """Returns the percent change from a specific date to today"""
+    def getValue(self):
+        """Returns the price of the stock"""
+        return self.price
+    
+    def getPoint(self,graphrange,ind):
+        """Returns the point at a specific index"""
+        return self.graphs[graphrange][ind]
+    
+    def getPointDate(self,date:datetime,gametime:datetime):
         def getClosestDate(secondsAgo):
             """Returns the point closest to the number of seconds ago a date was"""
             key = list(self.graphrangeoptions)[-1]# sets it to the last key	"1Y"
@@ -62,7 +83,20 @@ class Stock():
                 closestIndex = len(self.graphs[key])-1
             return self.graphs[key][closestIndex]
         diff = gametime-date
-        return ((self.price/getClosestDate(diff.total_seconds()))-1)*100
+        return getClosestDate(diff.total_seconds())
+        
+    def reset_trends(self):
+        """Sets/resets the trends for the stock"""
+        self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]#resets the trends for each bonus trend
+
+    def getPercent(self,graphrange="1Y"):
+        """Returns the percent change of the stock"""
+        return ((self.graphs[graphrange][-1]/self.graphs[graphrange][0])-1)*100
+    
+    def getPercentDate(self,date:datetime,gametime:datetime):
+        """Returns the percent change from a specific date to today"""
+        point = self.getPointDate(date,gametime)
+        return ((self.price/point)-1)*100
 
         
     def reset_graphs(self):

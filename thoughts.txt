@@ -52,6 +52,7 @@ def appendtolist(elements,target=None):
 
 you can use the exec() to run strings as code exec("print('hello')")
 
+enumerate can start at a specific num if you give it a second parameter enumerate(iterable, start)
 
 ------------------Eventually ----------------------
  

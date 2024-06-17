@@ -3,7 +3,7 @@ import pygame,pygame.gfxdraw
 from collections import deque
 
 class LatterScroll():
-    def __init__(self,polysdisplayed=5):
+    def __init__(self):
         self.texts = []# list of dicts, each dict is {(x,y):text}, each is for a different polygon
         self.totalwidth = []# the total width of the box, each item is a int for each polygon
         self.scrollvalue = 0
@@ -17,7 +17,9 @@ class LatterScroll():
 
     def decidebottomcolor(self,hover,selected_value,numdrawn,*args):
         """This can be overriden in child classes"""
-        return (80,80,80) if hover or numdrawn == selected_value else (50,50,50)
+        if numdrawn == selected_value :
+            return (220,220,220) 
+        return (150,150,150) if hover else (50,50,50)
     
     def set_textcoords(self,textcoords):
         """textcoords is a list of lists of tuples, each tuple is y the coords for each text drawn [[(x,y),(x2,y2)]] 
@@ -104,8 +106,9 @@ class LatterScroll():
 
         return ty,by,textcoords,renderedtexts
 
-    def store_rendercoords(self,coords:tuple,maxcoords:tuple,polyheight:tuple,xcoordshift:int,polyshift:int,updatefreq=0) -> None:
-        """Stores the coords for the polygons and the texts, and stores the rendered texts"""	
+    def store_rendercoords(self,coords:tuple,maxcoords:tuple,polyheight:int,xcoordshift:int,polyshift:int,updatefreq=0) -> tuple:
+        """Stores the coords for the polygons and the texts, and stores the rendered texts
+        returns the index of the first and last stock that is drawn on the screen"""	
         if self.updatetexts <= 0:# if the texts should be updated
             self.lasttexts = []
             self.updatetexts = updatefreq
@@ -210,8 +213,8 @@ class LatterScroll():
     
 
 class PortfolioLatter(LatterScroll):
-    def __init__(self, polysdisplayed=5):
-        super().__init__(polysdisplayed)
+    def __init__(self):
+        super().__init__()
     
     def draw_stockgraph(self,screen,stocks):
 
