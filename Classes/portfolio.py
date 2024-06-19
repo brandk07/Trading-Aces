@@ -300,7 +300,7 @@ class Portfolio(Menu):
         screen.blit(s_render(f"{(gametime.time-asset.dateobj).days} days ago", 40, (190, 190, 190)), (880, 770))
         yearlyReturn = getYearlyReturn(asset,gametime); eText = "+" if yearlyReturn > 0 else ""
         screen.blit(s_render(f"{eText}{limit_digits(yearlyReturn,15)}% Per Year", 40, (190, 190, 190)), (880, 810))
-        percentDiff = asset.getPercent()-s.totalmarket.getPercentDate(asset.dateobj,gametime.time); eText = "+" if percentDiff > 0 else ""
+        percentDiff = asset.getPercent()-s.totalmarket.getPercentDate(asset.dateobj,gametime); eText = "+" if percentDiff > 0 else ""
         screen.blit(s_render(f"{eText}{limit_digits(percentDiff,15)}% Vs Market (1Y)", 40, (190, 190, 190)), (880, 850))
         # ---------------Right bottom (Asset Specifics)----------------
         assetSpecificsText = s_render(f"Asset Specifics", 50, (0, 0, 0))

@@ -41,6 +41,7 @@ GRAPHRANGES = ["1H","1D","1W","1M","3M","1Y"]
 def s_render(string:str, size, color,font='reg') -> pygame.Surface:
     """Caches the renders of the strings, and returns the rendered surface"""
     # print(f"Caching arguments: {string}, {size}, {color}")
+    assert isinstance(string,str), 'The string must be a string'
     if font == 'reg':
         text = fontlist[size].render(string, (color))[0]
     elif font == 'cry':
@@ -90,6 +91,26 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
             renderlist[position].pop(text)
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
+
+def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int) -> bool:
+    """Draws a clickable box on the screen, returns True if the box is clicked"""
+
+    
+    valueText = s_render(text,textsize,color1)
+    x,y = coords
+    w,h = valueText.get_width()+50, valueText.get_height()+30
+    pygame.draw.rect(screen, (0,0,0), (x-25,y-15,w,h), 5, 10)
+    
+    myrect = pygame.Rect(x,y,w,h)
+
+    if myrect.collidepoint(pygame.mouse.get_pos()):
+        valueText = s_render(text,textsize,color2)# re-render the text with a different color
+        pygame.draw.rect(screen, (0,0,0), (x-25,y-15,w,h), 5, 10)
+        if mousebuttons == 1:
+            soundEffects['clickbutton2'].play()
+            return True
+    screen.blit(valueText,coords)
+    return False
 
 def drawBoxedText(screen,text,size,boxcolor,textcolor,pos):
     valueText = s_render(text,size,textcolor)
@@ -172,6 +193,7 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         # Use the points from the first polygon to draw teh empty text
         screen.blit(emptytext, (points[0][0]+40, points[0][1]+40))  # displays empty text
     return allrenders,selected_value
+
 
 def checkboxOptions(screen,options,selectedOptions,w,h,pos,mousebuttons,disabledOptions=None) -> tuple:
     """Displays the options in options, will return the option that is click (option,index), 

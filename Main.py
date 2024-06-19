@@ -41,7 +41,7 @@ transact = Transactions()
 gametime = GameTime("01/01/2030 00:00:00")
 player = Player(stocknames,stockcolors[-1],transact,gametime)
 # stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
-stockdict = {name:Stock(name,10,stockcolors[i]) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+stockdict = {name:Stock(name,10,stockcolors[i],gametime) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 
 # GETTING DATA FROM FILE
@@ -108,11 +108,12 @@ if __name__ == "__main__":
             if uiControls.gameplay_speed > 0:# if the game is not paused
                 for stock in stocklist:
                     stock.update_price(uiControls.gameplay_speed,Player)
+                    
                 # player.update_price(uiControls.gameplay_speed,Player)
                 player.gameTick(uiControls.gameplay_speed)
                 tmarket.updategraphs(stocklist,uiControls.gameplay_speed)
-
-        
+        for stock in stocklist:
+            stock.priceEffects.update(gametime,screen)
 
         
         for i,menu in enumerate(menuList):

@@ -6,8 +6,11 @@ import numpy as np
 import json
 from Classes.imports.Graph import Graph
 from datetime import datetime,timedelta
+from Classes.Gametime import GameTime
+import math
 from Classes.StockVisualizer import StockVisualizer,POINTSPERGRAPH
 from functools import lru_cache
+from Classes.StockPriceEffects import StockPriceEffects
 
 @lru_cache(maxsize=20)
 def calculate_volatility(points) -> float:
@@ -31,12 +34,12 @@ class Stock():
     """Class contains the points and ability to modify the points of the stock
     an object of stockVisualizer is created to visualize the stock"""
 
-    def __init__(self,name,volatility,color) -> None:
+    def __init__(self,name,volatility,color,gametime) -> None:
         self.color,self.name = color,name
 
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
-        self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":489_450,"3M":1_468_350,"1Y":5_873_400}
+        self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"3M":1_474_200,"1Y":5_896_800}
         self.condensefacs = {key:value/POINTSPERGRAPH for key,value in self.graphrangeoptions.items()}#the amount of points that each index of the graph has
         # self.graphrange = '1H' # H, D, W, M, 3M, Y
         self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
@@ -51,8 +54,9 @@ class Stock():
         self.dividend = 0
         self.volatility = volatility
         self.recentrenders = {}# a dict of the renders of the recent prices
-
+        self.priceEffects = StockPriceEffects(self,gametime)
         self.graph = Graph()
+        # print()
     
 
     def __str__(self) -> str:
@@ -69,20 +73,56 @@ class Stock():
         """Returns the point at a specific index"""
         return self.graphs[graphrange][ind]
     
-    def getPointDate(self,date:datetime,gametime:datetime):
+    # @lru_cache(maxsize=10)
+    def getPointDate(self,date:datetime,gametime:GameTime):
+        assert isinstance(date,datetime), "date must be a datetime object"
+        assert isinstance(gametime,GameTime), "gametime must be a GameTime object"
+        def getNumTradingDays(date1:datetime,date2:datetime):
+            """Returns the number of trading days between two dates"""
+            diff2 = (date2-date1)
+            days = diff2.days
+            if days < 0:
+                return 0
+            tradingsecs = 0
+            date1 = datetime.strptime(f"{date1.month}/{date1.day}/{date1.year} 9:30:00 AM", "%m/%d/%Y %I:%M:%S %p")
+            # print(f"Num days is {days}")
+            for i in range(days):
+                # print(f"i is {i}, date is {date1+timedelta(days=i)}, {gametime.isOpen(date1+timedelta(days=i))}, tradingsecs is {tradingsecs}")
+                # if (day:=date1+timedelta(days=i)).weekday() < 5:
+                if gametime.isOpen(date1+timedelta(days=i))[0]:
+                    
+                    tradingsecs += 3600*6.5
+            date1 = datetime.strptime(f"{date2.month}/{date2.day}/{date2.year} {date1.hour}:{date1.minute}:{date1.second} AM", "%m/%d/%Y %I:%M:%S %p")
+            diff2 = (date2-date1).seconds
+
+            # print(diff2+tradingsecs)
+            return diff2 + tradingsecs
         def getClosestDate(secondsAgo):
             """Returns the point closest to the number of seconds ago a date was"""
+            
+            # ranges = [3600,23_400,604_800,2_592_000,7_776_000,31_104_000]
+            if secondsAgo > 23_400:# if more than 1 trading day has passed
+                secondsAgo = getNumTradingDays(date,gametime.time)
+
             key = list(self.graphrangeoptions)[-1]# sets it to the last key	"1Y"
             for k,value in (self.graphrangeoptions.items()):
                 if value > secondsAgo:
                     key = k
                     break
             secondsPerPoint = self.graphrangeoptions[key]/POINTSPERGRAPH
-            closestIndex = int(secondsAgo/secondsPerPoint)
+            # Have to multiply by the weird number because the graphrangeoption only takes trading day seconds
+            # The one below counts all seconds so the number is an approximate trading day seconds to total seconds
+            closestIndex = POINTSPERGRAPH-math.ceil((secondsAgo)/secondsPerPoint)# Finding the closet Index
             if closestIndex >= len(self.graphs[key]):
                 closestIndex = len(self.graphs[key])-1
+            if closestIndex < -len(self.graphs[key]):
+                closestIndex = 0
+            # print(closestIndex,key,len(self.graphs[key]))
+            print(closestIndex,key,"is the closest index")
+
             return self.graphs[key][closestIndex]
-        diff = gametime-date
+        
+        diff = gametime.time-date
         return getClosestDate(diff.total_seconds())
         
     def reset_trends(self):
@@ -93,9 +133,10 @@ class Stock():
         """Returns the percent change of the stock"""
         return ((self.graphs[graphrange][-1]/self.graphs[graphrange][0])-1)*100
     
-    def getPercentDate(self,date:datetime,gametime:datetime):
+    def getPercentDate(self,date:datetime,gametime:GameTime):
         """Returns the percent change from a specific date to today"""
         point = self.getPointDate(date,gametime)
+        print(point,"is the point")
         return ((self.price/point)-1)*100
 
         

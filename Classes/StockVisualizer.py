@@ -19,6 +19,8 @@ class StockVisualizer:
         self.getValidRange = lambda graphrange: graphrange if graphrange in GRAPHRANGES else self.storedRanges.setdefault(graphrange,"1D")
     def setStockObj(self,stockobj):
         """Changes the stock object that the visualizer is using"""
+        if stockobj == None:
+            return
         self.stockObj = stockobj
     def calculateTime(self,truegraphrange,mousepoint:int):
         graphed_seconds = mousepoint*(self.stockObj.graphrangeoptions[truegraphrange]/POINTSPERGRAPH)# the amount of seconds that the stock has been graphed

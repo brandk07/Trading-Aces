@@ -6,6 +6,7 @@ from Classes.imports.Numpad import Numpad
 from Classes.UIControls import UIControls
 from Classes.imports.Latterscroll import LatterScroll
 TXTCOLOR = (220,220,220)
+
 class OrderScreen:
     """This class will be used in stockbook and porfolio to buy or sell stocks"""
     def __init__(self,uicontrols) -> None:
@@ -23,21 +24,39 @@ class OrderScreen:
         self.surfs = {key:pygame.Surface((self.whDict[key][0],self.whDict[key][1])) for key in self.whDict.keys()}
         for key in self.surfs.keys():
             self.surfs[key].fill((0,0,0))
-            self.surfs[key].blit(self.background,(-480,-270))
+            self.surfs[key].blit(self.background,(-750,-200))
         # self.surf.blit(background,(-480,-270))
-        self.surfCoords = [480,270]
+        self.surfCoords = [750,200]
         self.lastMousePos = [0,0]
         self.numPad = Numpad(displayText=False)
         self.uicontrols : UIControls = uicontrols
         self.latterScroll = LatterScroll()
         self.selectedAsset = None
-
+    
     def reBlitDisplays(self):
         for key in self.surfs.keys():
             self.surfs[key].fill((0,0,0))
             self.surfs[key].blit(self.background,(-self.surfCoords[0],-self.surfCoords[1]))
 
-    def draw(self,screen,stockObj,mousebuttons:int,player):
+    def executeOrder(self,player,stockObj,gametime):
+        """Executes the order that the player has selected"""
+        if self.transactionType == 'Buy':
+            if self.orderType == 'Market':
+                player.buyAsset(StockAsset(player,stockObj,gametime.getTime(),stockObj.price,self.numPad.getValue()))
+            elif self.orderType == 'Limit':
+                pass
+            elif self.orderType == 'Stop':
+                pass
+        elif self.transactionType == 'Sell':
+            if self.orderType == 'Market':
+                # print
+                self.selectedAsset.sell(player,self.numPad.getValue())
+            elif self.orderType == 'Limit':
+                pass
+            elif self.orderType == 'Stop':
+                pass
+
+    def draw(self,screen,stockObj,mousebuttons:int,player,gametime):
         # self.uicontrols.bar.changeMaxValue(5)
         
         mousex,mousey = pygame.mouse.get_pos()
@@ -101,7 +120,8 @@ class OrderScreen:
             confirmColor = (0,180,0)
             if mousebuttons == 1:
                 print('confirmed order')
-                return False
+                self.executeOrder(player,stockObj,gametime)
+
         confirmtxt = s_render('Confirm Order',40,confirmColor)
         screen.blit(confirmtxt,(-5+x+225-confirmtxt.get_width()/2,380+y+10))
         
@@ -129,7 +149,7 @@ class OrderScreen:
         # DIFFERENT SPECIFIC FUNCTIONS FOR BUY AND SELL
         if self.transactionType == "Sell":
             self.drawMarketSell(screen,stockObj,mousebuttons,player,relaviveCoords)
-            maxNum = 0 if self.selectedAsset == None else self.selectedAsset[0].quantity
+            maxNum = 0 if self.selectedAsset == None else self.selectedAsset.quantity
             self.numPad.draw(screen,(-5+x,445+y),(450,210),"SHARE",mousebuttons,maxNum)# draws the numpad for the shares
         else:# buy
             self.numPad.draw(screen,(-5+x,445+y),(450,210),"SHARE",mousebuttons,int(player.cash/stockObj.price))# draws the numpad for the shares
@@ -141,17 +161,17 @@ class OrderScreen:
         def get_Quant(asset):
             return f"{asset.quantity} {'Share'}{'' if asset.quantity == 1 else 's'}"
         
-        stocks = [(stock,get_Quant(stock)) for stock in player.stocks if stock.stockobj == stockObj]
-        stocks.sort(key=lambda x:x[0].getValue(),reverse=True)
+        stocks = [stock for stock in player.stocks if stock.stockobj == stockObj]
+        stocks.sort(key=lambda x:x.getValue(),reverse=True)
 
-        get_text = lambda asset,secondtext : [f'{asset} ',asset.dateobj.strftime("%m/%d/%Y"),secondtext]
+        get_text = lambda asset : [f'{asset} ',asset.dateobj.strftime("%m/%d/%Y"),get_Quant(asset)]
         # getting the text for each asset
-        textlist = [get_text(asset,secondtext) for [asset,secondtext] in stocks]# stores 3 texts for each asset in the stocks list
+        textlist = [get_text(asset) for asset in stocks]# stores 3 texts for each asset in the stocks list
 
         textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
         coords = [[(20,15),(25,60)] for i in range(len(textlist))]
         # loop through the textlist and store the text info in the textinfo list
-        for i,(text,[asset,secondtext]) in enumerate(zip(textlist,stocks)):
+        for i,(text,asset) in enumerate(zip(textlist,stocks)):
             polytexts = []# temporary list to store the text info for each asset
             polytexts.append([text[0],50,asset.color])
             polytexts.append([text[1],35,(190,190,190)])
@@ -169,7 +189,7 @@ class OrderScreen:
         if self.selectedAsset not in stocks:
             self.selectedAsset = None
         selectedindex = None if self.selectedAsset == None else stocks.index(self.selectedAsset)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
-        newselected = self.latterScroll.draw_polys(screen, (x+wh[0]-440, y+80), scrollmaxcoords, mousebuttons, selectedindex, True, *[sasset[0].getPercent() for sasset in stocks[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.latterScroll.draw_polys(screen, (x+wh[0]-440, y+80), scrollmaxcoords, mousebuttons, selectedindex, True, *[sasset.getPercent() for sasset in stocks[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         if newselected == None:
             self.selectedAsset = None
         else:# if the selected asset is not None

@@ -9,7 +9,7 @@ POINTSPERGRAPH = 200
 class TotalMarket(Stock):
     def __init__(self,gametime) -> None:
         # name,volatility,color,gametime
-        super().__init__('Total Market',0,(213, 219, 44))
+        super().__init__('Total Market',0,(213, 219, 44),gametime)
 
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
     def datafromfile(self):
