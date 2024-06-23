@@ -91,12 +91,12 @@ class OrderScreen:
         # --------------draw the order type and transaction type--------------
         orderTypeText = s_render('Order & Transaction Type',35,TXTCOLOR)
         screen.blit((orderTypeText),(20+x,80+y))
-        result = checkboxOptions(screen,self.orderTypes,self.orderType,500,35,(20+x,y+90+orderTypeText.get_height()),mousebuttons)# draws the checkbox for the order type
+        result = checkboxOptions(screen,self.orderTypes,self.orderType,(500,35),(20+x,y+90+orderTypeText.get_height()),mousebuttons)# draws the checkbox for the order type
         if result != None and result[0] != self.orderType:
             self.orderType = result[0]
             self.reBlitDisplays()
 
-        result = checkboxOptions(screen,self.transactionTypes,self.transactionType,500,35,(20+x,170+y),mousebuttons)# draws the checkbox for the sell vs buy
+        result = checkboxOptions(screen,self.transactionTypes,self.transactionType,(500,35),(20+x,170+y),mousebuttons)# draws the checkbox for the sell vs buy
         if result != None and result[0] != self.transactionType:
             self.transactionType = result[0]
             self.reBlitDisplays()

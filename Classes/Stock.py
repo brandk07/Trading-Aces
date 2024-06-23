@@ -112,13 +112,13 @@ class Stock():
             secondsPerPoint = self.graphrangeoptions[key]/POINTSPERGRAPH
             # Have to multiply by the weird number because the graphrangeoption only takes trading day seconds
             # The one below counts all seconds so the number is an approximate trading day seconds to total seconds
-            closestIndex = POINTSPERGRAPH-math.ceil((secondsAgo)/secondsPerPoint)# Finding the closet Index
+            closestIndex = POINTSPERGRAPH-math.ceil((secondsAgo)/secondsPerPoint)+1# Finding the closet Index
             if closestIndex >= len(self.graphs[key]):
                 closestIndex = len(self.graphs[key])-1
             if closestIndex < -len(self.graphs[key]):
                 closestIndex = 0
             # print(closestIndex,key,len(self.graphs[key]))
-            print(closestIndex,key,"is the closest index")
+            # print(closestIndex,key,"is the closest index")
 
             return self.graphs[key][closestIndex]
         
@@ -136,7 +136,7 @@ class Stock():
     def getPercentDate(self,date:datetime,gametime:GameTime):
         """Returns the percent change from a specific date to today"""
         point = self.getPointDate(date,gametime)
-        print(point,"is the point")
+        # print(point,"is the point")
         return ((self.price/point)-1)*100
 
         

@@ -22,7 +22,7 @@ def timing_decorator(func):
 
 
 #  ////////////////////////////////////////////Fonts///////////////////////////////////////////////////////////////////////////////////////
-fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size*.75)
+
 crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)
 pixfonts = lambda font_size: freetype.Font(r'Assets\fonts\Silkscreen\Silkscreen-Regular.ttf', font_size*.75)
 fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.ttf', font_size*.75)
@@ -31,13 +31,15 @@ fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.
 # fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
 # fonts = lambda font_size: freetype.Font(r'Assets\antonio\Liquid_Crystal_Extra_Characters.otf', font_size)
 bold40 = fontsbold(45)
+fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size*.75)
 fontlist = [fonts(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistcry = [crystalfonts(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistpix = [pixfonts(num) for num in range(0,201)]#list of fonts from 0-100
 font45 = fonts(45)
 GRAPHRANGES = ["1H","1D","1W","1M","3M","1Y"]
 
-@lru_cache(maxsize=150)
+
+@lru_cache(maxsize=250)
 def s_render(string:str, size, color,font='reg') -> pygame.Surface:
     """Caches the renders of the strings, and returns the rendered surface"""
     # print(f"Caching arguments: {string}, {size}, {color}")
@@ -72,6 +74,35 @@ def playmusic(musicdata):
 
 # Mostly used for deciding color of the percent change, it was just really annoying to write out the if statements every time
 p3choice = lambda negative, positive, zero, change : (negative if change < 0 else positive) if round(change,2) != 0 else zero
+
+getTSizeCharsAndNums = lambda chars, xSpace : int(((xSpace/chars)-0.9506)/0.2347)# 
+# strSizes = {'0': (0.259, 1.201), '1': (0.158, 0.697), '2': (0.229, 1.031), '3': (0.25, 1.221), '4': (0.273, 0.977), '5': (0.226, 0.787), '6': (0.262, 0.832), '7': (0.258, 0.987), '8': (0.248, 1.372), '9': (0.248, 0.873), '.': (0.065, 0.885)}
+# returns the font size that will fit the text in the xSpace
+strSizes = {str(num):[fontlist[i].get_rect(str(num)) for i in range(1,199)] for num in range(10)}
+strSizes['.'] = ([fontlist[i].get_rect('.') for i in range(1,199)])
+def getTSizeNums(chars:str, xSpace:int):
+    """Returns the font size that will fit the text in the xSpace"""
+    xSpace*=.7
+    def getSize(size, totalSpace, chars, lastwidth:int):
+        """Lastwidth is the last width of text, totalSpace is the total space the text should take up, chars is the text to be rendered"""
+        newSum = sum([fontlist[size].get_rect(c).width for c in chars])
+        if newSum == totalSpace:
+            return size
+        elif newSum < totalSpace and lastwidth > totalSpace:# if the current is under, but the last was too big, than current is best
+            return size
+        elif newSum > totalSpace and lastwidth < totalSpace:# If the current is too big, but the last was smaller, than last is best
+            return size-1
+        elif newSum < totalSpace and lastwidth < totalSpace:
+            return getSize(size+1, totalSpace, chars, newSum)
+        elif newSum > totalSpace and lastwidth > totalSpace:
+            return getSize(size-1, totalSpace, chars, newSum)
+        else:
+            print(newSum, totalSpace, lastwidth, size, chars, fontlist[size].get_rect(chars).width)
+        
+    getTSizeNum = lambda chars, xSpace : int(((xSpace/len(chars))+0.8)/0.225)
+    return getSize(getTSizeNum(chars, xSpace), xSpace, chars, 0)
+
+
 
 def reuserenders(renderlist,texts,textinfo,position) -> list:
     """renderlist is a list of dicts, 
@@ -195,19 +226,20 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
     return allrenders,selected_value
 
 
-def checkboxOptions(screen,options,selectedOptions,w,h,pos,mousebuttons,disabledOptions=None) -> tuple:
+def checkboxOptions(screen,options,selectedOptions,wh,pos,mousebuttons,disabledOptions=None,txtSize=30) -> tuple:
     """Displays the options in options, will return the option that is click (option,index), 
     disabledOptions is a list of options that are disabled,"""
-    width = w//len(options)
+    width = wh[0]//len(options)
     if disabledOptions == None:
         disabledOptions = {}
     
     for i,option in enumerate(options):
         
         x,y = pos[0]+(i*width),pos[1]
-        rect = pygame.Rect(x,y,width-5,h)
+        rect = pygame.Rect(x,y,width-5,wh[1])
         color = (120,120,120)
-        screen.blit(s_render(option, 30, (210, 210, 210)), (x+34,y+8))
+        txt = s_render(option, txtSize, (210, 210, 210))
+        screen.blit(txt, (x+5+width/2-txt.get_width()/2,y+wh[1]/2-txt.get_height()/2))
         if rect.collidepoint(pygame.mouse.get_pos()):
             color = (160,160,160) if not option in disabledOptions else (200,0,0)
             pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
@@ -217,20 +249,21 @@ def checkboxOptions(screen,options,selectedOptions,w,h,pos,mousebuttons,disabled
                 # screen.blit(s_render(disabledOptions[option], 40, (180,0,0)), (x,y-20))
 
         if option not in disabledOptions:
-            pygame.draw.rect(screen, (0,0,0), [x+10,y+10,15,15], 3)# draws the outline of the box
+            pygame.draw.rect(screen, (0,0,0), [x+10,y+wh[1]/2-8,16,16], 3)# draws the outline of the box
         # rectangle inside the one above
         if option in selectedOptions:
             pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
-            pygame.draw.rect(screen, (200,200,200), [x+13,y+13,9,9])
+            pygame.draw.rect(screen, (200,200,200), [x+13,y+wh[1]/2-5,10,10])
+    
 
 def drawLinedInfo(screen,coord:tuple,wh:tuple,infoDict:dict,size,color):
-    """Draws the info in infoDict, in the box at coord with width and height wh"""
+    """Draws the info in infoDict {str (left side): value:int/str (right side)}, in the box at coord with width and height wh"""
     sep = wh[1]//len(infoDict)
     x,y = coord
     for i, (key,value) in enumerate(infoDict.items()):
         newY = y+(i*sep)
-        screen.blit(s_render(key,40,color),(x+10,newY))
-        valueText = s_render(str(value),40,color)
+        screen.blit(s_render(key,size,color),(x+10,newY))
+        valueText = s_render(str(value),size,color)
         screen.blit((valueText),(x+wh[0]-valueText.get_width()-10,newY))
         if i != len(infoDict)-1:
             pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x, 5+newY+sep/2, wh[0], 3))
@@ -254,11 +287,12 @@ def time_it(func):
         print(f"{func.__name__} took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-def limit_digits(num, max_digits, floater=True) -> str:
+def limit_digits(num, max_digits,truncate=False) -> str:
+    
     if len("{:,.2f}".format(num)) > max_digits:
         return "{:,.2e}".format(num)    
     else:
-        return f"{num:,.2f}" if floater else f"{int(num)}"
+        return f"{int(num):,d}" if truncate else f"{num:,.2f}"
 def time_loop(loop):
     def wrapper(*args, **kwargs):
         start_time = time.time()

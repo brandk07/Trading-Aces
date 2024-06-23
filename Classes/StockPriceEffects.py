@@ -7,7 +7,7 @@ class StockPriceEffects:
     def __init__(self,parentStock,gametime:GameTime) -> None:
         self.effectsDict = {}# {modiferName : [ogAmount,currentAmount,enlapsedtime:int,duration:int]}
         # self.pastReports = []# [performance,time of report,quarter of report [1,2,3,4]]
-        self.pastReports = [(randint(-1000,1000)/100,gametime.time-timedelta(days=91)*i-timedelta(days=randint(30,60)),((7-i)%4)+1) for i in range(8)]# [performance,time of report,quarter of report]
+        self.pastReports = [(gametime.time-timedelta(days=91)*i-timedelta(days=randint(30,60)),((7-i)%4)+1,randint(-1000,1000)/100) for i in range(8)]# [time of report,quarter of report,performance]
         self.futureReports:list[datetime,int] = [(gametime.time+timedelta(days=91)*i+timedelta(days=randint(30,60)),i+1) for i in range(4)]# [time of report,quarter]
         self.modifers = {"priceTrend":0,"tempVolatility":0}
         self.parentStock = parentStock
@@ -36,24 +36,40 @@ class StockPriceEffects:
             self.pastReports.pop(0)# remove the oldest report
         
         self.futureReports.append((self.futureReports[-1][0]+self.randomQuartDate(),(self.futureReports[-1][1]) % 4 + 1))
-        self.pastReports.insert(0,[performance,self.futureReports[0][0],self.futureReports[0][1]])
+        self.pastReports.insert(0,[self.futureReports[0][0],self.futureReports[0][1],performance])
         self.futureReports.pop(0)
         return self.pastReports[-1]
+    def getReportLikelyhood(self):
+        """Used as a part of the calculating the quarterly likelyhood (18% of the likelyhood)"""
+        percent = 0
+        for (time,quarter,performance) in self.pastReports[:4]:# for the last 4 reports
+            percent += 3 if performance > 0 else 0# if the performance met expectations, add 5%
 
+        return 3*len([p for (t,q,p) in self.pastReports[:4] if p > 0])
+        # return percent
+    def getPastPerfLikelyhood(self,gametime:GameTime):
+        """Used as a part of the calculating the quarterly likelyhood (Can be any amount)"""
+        perfEquation = lambda x : 8*x+65
+        percent = ((self.parentStock.price/self.parentStock.getPointDate(self.pastReports[0][0],gametime))-1)*100
+        # print(self.parentStock.getPointDate(self.pastReports[0][0],gametime))
+        # print(percent)
+        # print(self.parentStock.getPercentDate(self.pastReports[0][0],gametime))
+        
+        return max(0,min(88,perfEquation(percent)))# the stock performance over the last quarter
+        
     def getQuarterlyLikelyhood(self,gametime:GameTime):
         """Gives the likelyhood that the quarterly report will meet expectations"""
         percent = 0
         # ---Past reports accounts for 12% of the likelyhood-----
         # print(self.pastReports)
-        for (performance,time,quarter) in self.pastReports[:4]:# for the last 4 reports
-            percent += 3 if performance > 0 else 0# if the performance met expectations, add 5%
-        print(f"Percent after {percent} after past reports")
+        percent += self.getReportLikelyhood()
+        # print(f"Percent after {percent} after past reports")
         # ---Stock performance accounts for 80% of the likelyhood-----
-        perfEquation = lambda x : 8*x+65
-        print(self.parentStock.getPercentDate(self.pastReports[0][1],gametime))
-        print(perfEquation(self.parentStock.getPercentDate(self.pastReports[0][1],gametime)))
-        percent += max(0,min(100,perfEquation(self.parentStock.getPercentDate(self.pastReports[0][1],gametime))))# the stock performance over the last quarter
-        print(f"Percent after {percent} after stock performance")
+        
+        # print(self.parentStock.getPercentDate(self.pastReports[0][1],gametime))
+        # print(perfEquation(self.parentStock.getPercentDate(self.pastReports[0][1],gametime)))
+        percent += self.getPastPerfLikelyhood(gametime)
+        # print(f"Percent after {percent} after stock performance")
         return percent
         
 
