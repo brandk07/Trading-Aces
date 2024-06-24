@@ -154,6 +154,7 @@ class PieChart:
                             menu.menudrawn = False
                         s.menuList[i].menudrawn = True
                         if i == 0:# if the stockbook is clicked, then set the selected asset to the one the mouse is over
+                            print(name[:4])
                             s.menuList[0].changeSelectedStock(name=name[:4])
                         if i == 1:# if the portfolio is clicked, then set the selected asset to the one the mouse is over
                             s.menuList[1].selectedAsset = s.menuList[1].findAsset(value,name)

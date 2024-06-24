@@ -56,7 +56,7 @@ class Stockbook2(Menu):
 
     def changeSelectedStock(self,name=None,stockobj=None):
         if name and isinstance(name,str):
-            self.selectedStock = [stock for stock in self.stocklist if stock.name == name]
+            self.selectedStock = [stock for stock in self.stocklist if stock.name == name][0]
             
             self.stockGraph.setStockObj(self.selectedStock)
         elif (stockobj and isinstance(stockobj,Stock)) or (name and isinstance(name,Stock)):
@@ -136,6 +136,7 @@ class Stockbook2(Menu):
         pygame.draw.rect(screen,(30,30,30),(x-25,460,chanceTxt.get_width()+50,80),border_radius=10)
         pygame.draw.rect(screen,(0,0,0),(x-25,460,chanceTxt.get_width()+50,80),5,10)
         screen.blit(chanceTxt,(760+340-chanceTxt.get_width()/2,475))
+
         # -----------------Drawing the future and past reports----------------
         getDate = lambda time : f"{time.month}/{time.day}/{time.year}"
 
@@ -217,10 +218,10 @@ class Stockbook2(Menu):
         bmouse = mousebuttons# click still needs to go to the order screen
         if self.oScreenDisp:# Can't click anything if the order screen is displayed
             mousebuttons = 0
+
         # Draw the stock graph
         self.stockGraph.setStockObj(self.selectedStock)
         self.stockGraph.drawFull(screen, (190,100),(550,450),"StockBook Graph",True,"Normal")
-
        
 
         self.drawStockLatter(screen, mousebuttons, player)

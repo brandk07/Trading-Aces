@@ -21,7 +21,7 @@ class StockVisualizer:
         self.longHover = None# the index of the point that is being hovered over
     def setStockObj(self,stockobj):
         """Changes the stock object that the visualizer is using"""
-        if stockobj == None:
+        if stockobj == None or type(stockobj) != type(self.stockObj):
             return
         self.stockObj = stockobj
     def calculateTime(self,truegraphrange,mousepoint:int):

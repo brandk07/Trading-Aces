@@ -16,20 +16,23 @@ class StockPriceEffects:
     def randomQuartDate(self):
         """Returns a random date for a quarterly report"""
         return timedelta(days=91)+timedelta(days=randint(30,60))
+    
     def generateQuarterlyReport(self,gametime:GameTime) -> list:
         """Generates a quarterly report"""
         def findPercent(likelyPercent) -> float:
             result = 0
             randomx = randint(0,100)# random spot on the formula
-            if likelyHood > 0.5:
-                result = 2**((randomx-78)/3)+(randomx/2)+likelyPercent-50
+            print(randomx,"Randomx")
+            if likelyHood > 50:
+                result = (2**((randomx-78)/3)+(randomx/2)+(likelyPercent/2)-50)/10
             else:
-                result = (randomx/2)-2**((randomx-22)/-3)+likelyPercent
-            result /= 10; result += 5
+                result = ((randomx/2)-2**((randomx-22)/-3)+(likelyPercent/2))/10 - 5
+
             return result
 
         likelyHood = self.getQuarterlyLikelyhood(gametime)
         performance = findPercent(likelyHood)
+        print(likelyHood,performance,"New report")
     
         self.effectsDict["priceTrend"] = [performance,performance,randint(100,1800),0]# New  price trend that will last for 30 seconds
         if self.pastReports == 8:# if there are 8 reports
@@ -39,6 +42,7 @@ class StockPriceEffects:
         self.pastReports.insert(0,[self.futureReports[0][0],self.futureReports[0][1],performance])
         self.futureReports.pop(0)
         return self.pastReports[-1]
+    
     def getReportLikelyhood(self):
         """Used as a part of the calculating the quarterly likelyhood (18% of the likelyhood)"""
         percent = 0
@@ -49,7 +53,7 @@ class StockPriceEffects:
         # return percent
     def getPastPerfLikelyhood(self,gametime:GameTime):
         """Used as a part of the calculating the quarterly likelyhood (Can be any amount)"""
-        perfEquation = lambda x : 8*x+65
+        perfEquation = lambda x : 2*x+70
         percent = ((self.parentStock.price/self.parentStock.getPointDate(self.pastReports[0][0],gametime))-1)*100
         # print(self.parentStock.getPointDate(self.pastReports[0][0],gametime))
         # print(percent)
@@ -103,7 +107,7 @@ class StockPriceEffects:
         
         # print(gametime.time < self.futureReports[0][0],self.parentStock.name)
         if gametime.time > self.futureReports[0][0]:
-            # print("Generating Quarterly Report",self.parentStock.name)
+            print("Generating Quarterly Report",self.parentStock.name)
             self.generateQuarterlyReport(gametime)
             # self.futureReports.pop(0)
             # self.futureReports.append((gametime.time+timedelta(days=91)+timedelta(days=randint(30,60)),(self.futureReports[-1][1]+1)%4))

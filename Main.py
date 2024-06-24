@@ -16,7 +16,7 @@ import timeit
 from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
 from Classes.NewstockBook import Stockbook2
-GAMESPEED = 250
+GAMESPEED = 1000
 FASTFORWARDSPEED = 500
 pygame.init()
 pygame.mixer.init()
@@ -41,7 +41,7 @@ transact = Transactions()
 gametime = GameTime("01/01/2030 00:00:00")
 player = Player(stocknames,stockcolors[-1],transact,gametime)
 # stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
-stockdict = {name:Stock(name,10,stockcolors[i],gametime) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+stockdict = {name:Stock(name,50,stockcolors[i],gametime) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 
 # GETTING DATA FROM FILE
