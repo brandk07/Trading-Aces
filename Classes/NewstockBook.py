@@ -81,72 +81,74 @@ class Stockbook2(Menu):
             coords[i].append(((text[1],100),30))
 
         self.stockLS.storetextinfo(textinfo); self.stockLS.set_textcoords(coords)# stores the text info and the coords for the latter scroll
-        ommitted = self.stockLS.store_rendercoords((1450, 135), (435,975),135,0,0,updatefreq=60)
+        ommitted = self.stockLS.store_rendercoords((1470, 135), (435,975),135,0,0,updatefreq=60)
         self.selectedStock = self.selectedStock if self.selectedStock in self.stocklist else None# Ensuring that the selected stock is in the stocklist
 
         selectedindex = None if self.selectedStock == None else self.stocklist.index(self.selectedStock)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
-        newselected = self.stockLS.draw_polys(screen, (1450, 135), (435,975), mousebuttons, selectedindex, True, *[sasset.getPercent() for sasset in self.stocklist[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.stockLS.draw_polys(screen, (1470, 135), (435,975), mousebuttons, selectedindex, True, *[sasset.getPercent() for sasset in self.stocklist[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         self.selectedStock = self.selectedStock if newselected == None else self.stocklist[newselected]# Changes selected stock if the new selected has something
 
-        screen.blit(s_render(f"Displaying {ommitted[0]} - {ommitted[1]-1} out of {len(self.stocklist)}",35,(220,220,220)),(1500,105))
+        # screen.blit(s_render(f"Displaying {ommitted[0]} - {ommitted[1]-1} out of {len(self.stocklist)}",35,(220,220,220)),(1535,105))
     
     def drawQuarterlyReports(self,screen:pygame.Surface,gametime,mousebuttons):
         """Draws the quarterly reports for the stock on the right top"""
-        screen.blit(s_render("Quarterly Reports",80,(220,220,220)),(760,160))
+        # screen.blit(s_render("Quarterly Reports",80,(220,220,220)),(760,160))
 
-        screen.blit(s_render("Chance Of Hitting Expectations",50,(220,220,220)),(760,235))
+        # screen.blit(s_render("Chance Of Hitting Expectations",50,(220,220,220)),(760,235))
 
-        # -------------Drawing the things to calculate the likelyhood of the quarterly report----------------
-        perfIndicators = ["Past Reports","Stock Performance","News"]
-        numRanges = [18,88,0]
-        vals = [
-            self.selectedStock.priceEffects.getReportLikelyhood(),
-            self.selectedStock.priceEffects.getPastPerfLikelyhood(gametime),0]
-        for i in range(3):
-            x,y = 760+(i*226),300
-            w,h = 200,140
+        # # -------------Drawing the things to calculate the likelyhood of the quarterly report----------------
+        # perfIndicatorss = ["Past Reports","Stock Performance","News"]
+        # numRanges = [18,88,0]
+        # vals = [
+        #     self.selectedStock.priceEffects.getReportLikelyhood(),
+        #     self.selectedStock.priceEffects.getPastPerfLikelyhood(gametime),0]
+        # for i in range(3):
+        #     x,y = 760+(i*226),300
+        #     w,h = 200,140
             
-            if numRanges[i] == 0:
-                color = (60,60,60)
-            elif (p:=(vals[i])/numRanges[i]) >= 0.5:
-                color = (0,int(225*p),0)
-            else:# if p is realy low
-                color = (int(-225*p)+225,0,0)
+        #     if numRanges[i] == 0:
+        #         color = (60,60,60)
+        #     elif (p:=(vals[i])/numRanges[i]) >= 0.5:
+        #         color = (0,int(225*p),0)
+        #     else:# if p is realy low
+        #         color = (int(-225*p)+225,0,0)
 
-            pygame.draw.rect(screen,color,(x,y,w,h),border_radius=10)
-            pygame.draw.rect(screen,(0,0,0),(x,y,w,h),5,10)
+        #     pygame.draw.rect(screen,color,(x,y,w,h),border_radius=10)
+        #     pygame.draw.rect(screen,(0,0,0),(x,y,w,h),5,10)
             
-            descripttxt = s_render(perfIndicators[i],30,(0,0,0))
-            screen.blit(descripttxt,(x+w/2-descripttxt.get_width()/2,y+h-descripttxt.get_height()-10))
-            valTxt = s_render(f"{limit_digits(vals[i],15)}",65,(0,0,0))
-            screen.blit(valTxt,(x+((w-valTxt.get_width())/2),y+((h-valTxt.get_height())/2)))
+        #     descripttxt = s_render(perfIndicators[i],30,(0,0,0))
+        #     screen.blit(descripttxt,(x+w/2-descripttxt.get_width()/2,y+h-descripttxt.get_height()-10))
+        #     valTxt = s_render(f"{limit_digits(vals[i],15)}",65,(0,0,0))
+        #     screen.blit(valTxt,(x+((w-valTxt.get_width())/2),y+((h-valTxt.get_height())/2)))
             
-            if i != 2:# if its not the last one
-                screen.blit(s_render("+",70,(220,220,220)),(x+w+5,y+h/2-15))
+        #     if i != 2:# if its not the last one
+        #         screen.blit(s_render("+",70,(220,220,220)),(x+w+5,y+h/2-15))
 
-        pLikelyhood = self.selectedStock.priceEffects.getQuarterlyLikelyhood(gametime)
+        # pLikelyhood = self.selectedStock.priceEffects.getQuarterlyLikelyhood(gametime)
 
-        if (p:=(pLikelyhood/100)) >= 0.5:
-            color = (0,int(225*p),0)
-        else:# if p is realy low
-            color = (int(-225*p)+225,0,0)
+        # if (p:=(pLikelyhood/100)) >= 0.5:
+        #     color = (0,int(225*p),0)
+        # else:# if p is realy low
+        #     color = (int(-225*p)+225,0,0)
 
-        chanceTxt = s_render(f"= {limit_digits(pLikelyhood,15)} %",80,color)
-        x = 760+340-chanceTxt.get_width()/2
-        pygame.draw.rect(screen,(30,30,30),(x-25,460,chanceTxt.get_width()+50,80),border_radius=10)
-        pygame.draw.rect(screen,(0,0,0),(x-25,460,chanceTxt.get_width()+50,80),5,10)
-        screen.blit(chanceTxt,(760+340-chanceTxt.get_width()/2,475))
+        # chanceTxt = s_render(f"= {limit_digits(pLikelyhood,15)} %",80,color)
+        # x = 760+340-chanceTxt.get_width()/2
+        # pygame.draw.rect(screen,(30,30,30),(x-25,460,chanceTxt.get_width()+50,80),border_radius=10)
+        # pygame.draw.rect(screen,(0,0,0),(x-25,460,chanceTxt.get_width()+50,80),5,10)
+        # screen.blit(chanceTxt,(760+340-chanceTxt.get_width()/2,475))
 
         # -----------------Drawing the future and past reports----------------
         getDate = lambda time : f"{time.month}/{time.day}/{time.year}"
 
         futureDict = {f"Q{report[1]} {getDate(report[0])}":f'{(report[0]-gametime.time).days} Days Away' for report in self.selectedStock.priceEffects.futureReports}
         pastDict = {f'Q{report[1]} {getDate(report[0])}':f' {"Beat" if report[2] > 0 else "Miss"} {limit_digits(report[2],15)}%' for report in self.selectedStock.priceEffects.pastReports[:4]}
-        pygame.draw.rect(screen,(0,0,0),(750,620,690,270),5,10)
-        drawLinedInfo(screen,(760,640),(330,280),pastDict,30,TXTCOLOR)
-        drawLinedInfo(screen,(1100,640),(330,280),futureDict,30,TXTCOLOR)
-        screen.blit(s_render("Past Reports",50,(220,220,220)),(765,575))
-        screen.blit(s_render("Future Reports",50,(220,220,220)),(1110,575))
+        pygame.draw.rect(screen,(0,0,0),(190,690,690,270),5,10)
+        drawLinedInfo(screen,(200,710),(330,280),pastDict,30,TXTCOLOR)
+        # drawLinedInfo(screen,(760,640),(330,280),pastDict,30,TXTCOLOR)
+        # drawLinedInfo(screen,(1100,640),(330,280),futureDict,30,TXTCOLOR)
+        drawLinedInfo(screen,(540,710),(330,280),futureDict,30,TXTCOLOR)
+        screen.blit(s_render("PAST",50,(220,220,220)),(205,645))
+        screen.blit(s_render("UPCOMING",50,(220,220,220)),(560,645))
         
 
         # screen.blit(s_render(str(self.selectedStock.priceEffects.getQuarterlyLikelyhood(gametime)),40,(220,220,220)),(1110,100))
@@ -210,7 +212,7 @@ class Stockbook2(Menu):
             f"{limit_digits(self.selectedStock.getVolatility()*100,12)}%"
         ]
         info = {key:value for key,value in zip(keys,values)}
-        drawLinedInfo(screen,(190,570),(550,300),info,40,TXTCOLOR)
+        drawLinedInfo(screen,(750,100),(400,300),info,40,TXTCOLOR)
 
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
         mousex, mousey = pygame.mouse.get_pos()
@@ -225,11 +227,13 @@ class Stockbook2(Menu):
        
 
         self.drawStockLatter(screen, mousebuttons, player)
-        if drawClickableBox(screen,(315,880),"Create Order",90,(130,130,130),(0,170,0),mousebuttons):
+        if drawClickableBox(screen,(1150,160),"Create Order",80,(130,130,130),(0,170,0),mousebuttons):
             self.oScreenDisp = True
 
-        result = checkboxOptions(screen,self.middleDisplays,self.currentMDisp,(680,50),(760,100),mousebuttons,txtSize=35)
+        result = checkboxOptions(screen,self.middleDisplays,self.currentMDisp,(680,50),(190,550),mousebuttons,txtSize=35)
         self.currentMDisp = result[0] if result else self.currentMDisp
+
+        self.drawBuySellInfo(screen,gametime)
 
         match self.currentMDisp:
             case "Company Info":
@@ -242,7 +246,7 @@ class Stockbook2(Menu):
                 self.drawQuarterlyReports(screen,gametime,mousebuttons)
         
         
-        self.drawBuySellInfo(screen,gametime)
+        
         # print(self.selectedStock.getPointDate(datetime.datetime.strptime(f"04/19/2029 9:30:00 AM", "%m/%d/%Y %I:%M:%S %p"),gametime))
         
         if self.oScreenDisp:

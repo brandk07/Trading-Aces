@@ -6,16 +6,21 @@ from Defs import *
 class StockPriceEffects:
     def __init__(self,parentStock,gametime:GameTime) -> None:
         self.effectsDict = {}# {modiferName : [ogAmount,currentAmount,enlapsedtime:int,duration:int]}
-        # self.pastReports = []# [performance,time of report,quarter of report [1,2,3,4]]
-        self.pastReports = [(gametime.time-timedelta(days=91)*i-timedelta(days=randint(30,60)),((7-i)%4)+1,randint(-1000,1000)/100) for i in range(8)]# [time of report,quarter of report,performance]
-        self.futureReports:list[datetime,int] = [(gametime.time+timedelta(days=91)*i+timedelta(days=randint(30,60)),i+1) for i in range(4)]# [time of report,quarter]
+        # self.pastReports = []# [time of report,quarter of report [1,2,3,4],performance]
+        self.pastReports = [(self.randomQuartDate(i,gametime),((7-i)%4)+1,randint(-1000,1000)/100) for i in range(8)]# [time of report,quarter of report,performance]
+        self.futureReports:list[datetime,int] = [(self.randomQuartDate(i,gametime),i+1) for i in range(4)]# [time of report,quarter]
         self.modifers = {"priceTrend":0,"tempVolatility":0}
         self.parentStock = parentStock
         # for report in self.pastReports:
         #     print(report)
-    def randomQuartDate(self):
-        """Returns a random date for a quarterly report"""
-        return timedelta(days=91)+timedelta(days=randint(30,60))
+    def randomQuartDate(self,quarter,gametime:GameTime,extraYears=0):
+        """Returns a random date for a quarterly report, Quarter 1-4"""
+        # create a datetime object with the same year as gametime, but january 1st
+        year = gametime.time.year+extraYears
+        january_1st = datetime(year, 1, 1)
+        
+
+        return january_1st+((quarter-1)*timedelta(days=75))+timedelta(days=randint(30,65))
     
     def generateQuarterlyReport(self,gametime:GameTime) -> list:
         """Generates a quarterly report"""
@@ -37,8 +42,9 @@ class StockPriceEffects:
         self.effectsDict["priceTrend"] = [performance,performance,randint(100,1800),0]# New  price trend that will last for 30 seconds
         if self.pastReports == 8:# if there are 8 reports
             self.pastReports.pop(0)# remove the oldest report
-        
-        self.futureReports.append((self.futureReports[-1][0]+self.randomQuartDate(),(self.futureReports[-1][1]) % 4 + 1))
+        newQuarter = self.futureReports[-1][1] % 4 + 1
+        # extraYears = 1 if self.passReports[0][0].year == gametime.time.year else 0
+        self.futureReports.append((self.randomQuartDate(newQuarter,gametime),newQuarter))
         self.pastReports.insert(0,[self.futureReports[0][0],self.futureReports[0][1],performance])
         self.futureReports.pop(0)
         return self.pastReports[-1]

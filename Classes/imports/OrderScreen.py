@@ -40,6 +40,8 @@ class OrderScreen:
 
     def executeOrder(self,player,stockObj,gametime):
         """Executes the order that the player has selected"""
+        if self.numPad.getValue() == 0:
+            return
         if self.transactionType == 'Buy':
             if self.orderType == 'Market':
                 player.buyAsset(StockAsset(player,stockObj,gametime.getTime(),stockObj.price,self.numPad.getValue()))
