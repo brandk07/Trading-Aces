@@ -125,7 +125,7 @@ class Portfolio(Menu):
     def assetscroll_controls(s,screen,mousebuttons):
         """Controls for the asset scroll"""
         screen.blit(s_render("My Assets", 45, (210, 210, 210)), (880, 100))
-        result = checkboxOptions(screen,s.assetoptions,s.displayed_asset_type,(500,35),(880,160),mousebuttons)
+        result = checkboxOptions(screen,s.assetoptions,s.displayed_asset_type,(880,160),(500,35),mousebuttons)
         if result != None:
             if result[0] in s.displayed_asset_type:
                 s.displayed_asset_type.remove(result[0])

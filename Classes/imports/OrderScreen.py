@@ -93,12 +93,12 @@ class OrderScreen:
         # --------------draw the order type and transaction type--------------
         orderTypeText = s_render('Order & Transaction Type',35,TXTCOLOR)
         screen.blit((orderTypeText),(20+x,80+y))
-        result = checkboxOptions(screen,self.orderTypes,self.orderType,(500,35),(20+x,y+90+orderTypeText.get_height()),mousebuttons)# draws the checkbox for the order type
+        result = checkboxOptions(screen,self.orderTypes,self.orderType,(20+x,y+90+orderTypeText.get_height()),(500,35),mousebuttons)# draws the checkbox for the order type
         if result != None and result[0] != self.orderType:
             self.orderType = result[0]
             self.reBlitDisplays()
 
-        result = checkboxOptions(screen,self.transactionTypes,self.transactionType,(500,35),(20+x,170+y),mousebuttons)# draws the checkbox for the sell vs buy
+        result = checkboxOptions(screen,self.transactionTypes,self.transactionType,(20+x,170+y),(500,35),mousebuttons)# draws the checkbox for the sell vs buy
         if result != None and result[0] != self.transactionType:
             self.transactionType = result[0]
             self.reBlitDisplays()
@@ -108,10 +108,10 @@ class OrderScreen:
             
         # --------------Cancel button and confirm button --------------
         cancelButton = s_render('Cancel',40,(200,200,200))
-
         if pygame.Rect.collidepoint(pygame.Rect(wh[0]+x-cancelButton.get_width()-10,610+y,cancelButton.get_width(),cancelButton.get_height()),mousex,mousey):# if the mouse is colliding with the cancel button
             cancelButton = s_render('Cancel',40,(180,0,0))
             if mousebuttons == 1:
+                soundEffects['clickbutton2'].play()
                 return False
         
         screen.blit(cancelButton,(wh[0]+x-cancelButton.get_width()-10,610+y))
@@ -121,7 +121,7 @@ class OrderScreen:
         if pygame.Rect.collidepoint(pygame.Rect(x+50, y+380, 350, 50),mousex,mousey):
             confirmColor = (0,180,0)
             if mousebuttons == 1:
-                print('confirmed order')
+                soundEffects['clickbutton2'].play()
                 self.executeOrder(player,stockObj,gametime)
 
         confirmtxt = s_render('Confirm Order',40,confirmColor)

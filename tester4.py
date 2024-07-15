@@ -79,27 +79,27 @@ import numpy as np
 # # The coefficient of determination: 1 is perfect prediction
 # print('Coefficient of determination: %.2f' % regr.score(X_test, y_test))
 
-finalDict = {str(i)+str(i):(0,0) for i in range(10)}
-testDict = {str(i)+str(i):[] for i in range(10)}
-finalDict['..']= (0,0)
-testDict['..']= []
+# finalDict = {str(i)+str(i):(0,0) for i in range(10)}
+# testDict = {str(i)+str(i):[] for i in range(10)}
+# finalDict['..']= (0,0)
+# testDict['..']= []
 
-INDEPENDENT = [[i] for i in range(5,180,10)]
-for key in testDict:
-    print(key)
-    for i in range(5,180,10):
-        testDict[key].append(s_render(key,i,(0,0,0)).get_width())
+# INDEPENDENT = [[i] for i in range(5,180,10)]
+# for key in testDict:
+#     print(key)
+#     for i in range(5,180,10):
+#         testDict[key].append(s_render(key,i,(0,0,0)).get_width())
 
-    X_train, X_test, y_train, y_test = train_test_split(INDEPENDENT, testDict[key])
+#     X_train, X_test, y_train, y_test = train_test_split(INDEPENDENT, testDict[key])
 
-    regr = LinearRegression()
-    regr.fit(X_train, y_train)
-    y_pred = regr.predict(X_test)
-    print('Coefficients: \n', regr.coef_, key)
-    print(regr.intercept_)
-    finalDict[key] = (round(regr.coef_[0],3),round(regr.intercept_,3))
-    print('Mean squared error: %.2f' % mean_squared_error(y_test, y_pred))
-print(finalDict)
+#     regr = LinearRegression()
+#     regr.fit(X_train, y_train)
+#     y_pred = regr.predict(X_test)
+#     print('Coefficients: \n', regr.coef_, key)
+#     print(regr.intercept_)
+#     finalDict[key] = (round(regr.coef_[0],3),round(regr.intercept_,3))
+#     print('Mean squared error: %.2f' % mean_squared_error(y_test, y_pred))
+# print(finalDict)
 
 # from sklearn.ensemble import RandomForestRegressor, 
 # from sklearn.metrics import mean_squared_error
@@ -145,4 +145,22 @@ print(finalDict)
 # num = (num/Decimal(str(0.041666666666666664)))
 # print(format(num, '.5e'))
 # print(format(num, ',.10f'))
+from faker import Faker
 
+fake = Faker()
+
+# Generate a random name
+print(fake.name())
+
+# Generate a specific number of names
+for _ in range(5):
+    print(fake.company())
+
+print(fake.ascii_company_email())
+print(fake.ascii_email())
+print(fake.city())
+# print(fake.random_company_product())
+print(fake.street_address())
+# print(fake.large_company())
+print(fake.job())
+# print(fake.)

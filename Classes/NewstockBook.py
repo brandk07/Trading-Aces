@@ -190,6 +190,14 @@ class Stockbook2(Menu):
         
         # self.selectedStock = self.selectedStock if newselected == None else self.stocklist[newselected]# Changes selected stock if the new selected has something
     def drawCompanyInfo(self,screen:pygame.Surface,stockname:str,coords:tuple):
+        """Draws the company info for the stock on the right middle """
+        # def pil_to_pygame(image):
+        #     """Convert a PIL Image to a Pygame Surface."""
+        #     return pygame.image.fromstring(image.tobytes(), image.size, image.mode)
+        screen.blit(self.selectedStock.ceo.image,(200,625))
+        screen.blit(s_render(self.selectedStock.ceo.name,50,(220,220,220)),(200,690))
+        screen.blit(s_render(f"Age {self.selectedStock.ceo.age} Years",40,(220,220,220)),(200,710))
+        screen.blit(s_render(self.selectedStock.ceo.homeTown,50,(220,220,220)),(200,730))
          # Draw the stock name & description
         screen.blit(s_render(self.selectedStock.name,90,self.selectedStock.color),(775,710))# blits the stock name to the screen
         for i,line in enumerate(self.stocktext[self.selectedStock.name]):
@@ -212,7 +220,7 @@ class Stockbook2(Menu):
             f"{limit_digits(self.selectedStock.getVolatility()*100,12)}%"
         ]
         info = {key:value for key,value in zip(keys,values)}
-        drawLinedInfo(screen,(750,100),(400,300),info,40,TXTCOLOR)
+        drawLinedInfo(screen,(750,120),(700,300),info,40,TXTCOLOR)
 
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
         mousex, mousey = pygame.mouse.get_pos()
@@ -227,10 +235,10 @@ class Stockbook2(Menu):
        
 
         self.drawStockLatter(screen, mousebuttons, player)
-        if drawClickableBox(screen,(1150,160),"Create Order",80,(130,130,130),(0,170,0),mousebuttons):
+        if drawClickableBox(screen,(879,420),"Create Order",95,(130,130,130),(0,170,0),mousebuttons):
             self.oScreenDisp = True
 
-        result = checkboxOptions(screen,self.middleDisplays,self.currentMDisp,(680,50),(190,550),mousebuttons,txtSize=35)
+        result = checkboxOptions(screen,self.middleDisplays,self.currentMDisp,(190,550),(680,50),mousebuttons,txtSize=35)
         self.currentMDisp = result[0] if result else self.currentMDisp
 
         self.drawBuySellInfo(screen,gametime)

@@ -162,20 +162,35 @@ class StockVisualizer:
                     gfxdraw.line(screen,x2,coords[1]+wh[1]-5,x2,coords[1]+5,(255,255,255))
                     gfxdraw.filled_circle(screen,x1,int(graphpoints[int(pos1)]),5,(255,255,255))
                     gfxdraw.filled_circle(screen,x2,int(graphpoints[int(pos2)]),5,(255,255,255))
-                    amtTxt = f'${limit_digits(amtChange,12,amtChange > 1000)}'
+                    amtTxt = f'${limit_digits(amtChange,12,abs(amtChange) > 1000)}'
                     pTxt = f'{limit_digits(percentChange,12)}%'
                     # amtChangeTxt = s_render(,60,color)
                     # percentChangeTxt = s_render(f'{limit_digits(percentChange,12)}%',60,color)
-                    valsTxt = s_render(f'{amtTxt} ({pTxt})',40,color)
-                    timeTxt1 = s_render(f'{time1.strftime("%m/%d/%Y %I:%M %p")}',30,(255,255,255))# renders the cursor time
-                    timeTxt2 = s_render(f'{time2.strftime("%m/%d/%Y %I:%M %p")}',30,(255,255,255))# renders the cursor time
-                    maxWidth = max(valsTxt.get_width(),timeTxt1.get_width(),timeTxt2.get_width())
+                    valsTxt = s_render(f'{"+" if amtChange > 0 else ""}{amtTxt} ({pTxt})',55,color)
+                    timeformat = "%m/%d %I:%M %p" if abs((time1.date()-time2.date()).days) < 365 else "%m/%d/%Y"
+                    timeTxt1 = s_render(f'{time1.strftime(timeformat)} - ',27,(255,255,255))# renders the cursor time
+                    timeTxt2 = s_render(f'{time2.strftime(timeformat)}',27,(255,255,255))# renders the cursor time
+                    maxWidth = max(valsTxt.get_width(),timeTxt1.get_width()+timeTxt2.get_width()+4)
                     rectX = coords[0]+wh[0]-30-maxWidth
 
-                    pygame.draw.rect(screen,(0,0,0),pygame.Rect(rectX-5,coords[1]+5,maxWidth+25,105),5,10)
-                    screen.blit(valsTxt,(rectX+8,coords[1]+15))# the value of the stock
-                    screen.blit(timeTxt1,(rectX+8,coords[1]+50))# blits the cursor time to the screen
-                    screen.blit(timeTxt2,(rectX+8,coords[1]+80))# blits the cursor time to the screen                      
+                    backRectcolor = p3choice((55,0,0),(0,55,0),(55,55,55),percentChange)
+
+                    pygame.draw.rect(screen,backRectcolor,pygame.Rect(rectX-5,coords[1]+5,maxWidth+25,90),border_radius=10)
+                    pygame.draw.rect(screen,(0,0,0),pygame.Rect(rectX-5,coords[1]+5,maxWidth+25,90),5,10)
+                    
+                    screen.blit(valsTxt,(rectX+8,coords[1]+40))# the value of the stock
+                    screen.blit(timeTxt1,(rectX+8,coords[1]+15))# blits the cursor time to the screen
+                    screen.blit(timeTxt2,(rectX+12+timeTxt1.get_width(),coords[1]+15))# blits the cursor time to the screen                      
+                    # timeformat = "%m/%d %I:%M %p" if abs((time1.date()-time2.date()).days) < 365 else "%m/%d/%Y"
+                    # timeTxt1 = s_render(f'{time1.strftime(timeformat)}',30,(255,255,255))# renders the cursor time
+                    # timeTxt2 = s_render(f'{time2.strftime(timeformat)}',30,(255,255,255))# renders the cursor time
+                    # maxWidth = max(valsTxt.get_width(),timeTxt1.get_width(),timeTxt2.get_width())
+                    # rectX = coords[0]+wh[0]-30-maxWidth
+
+                    # pygame.draw.rect(screen,(0,0,0),pygame.Rect(rectX-5,coords[1]+5,maxWidth+25,105),5,10)
+                    # screen.blit(valsTxt,(rectX+8,coords[1]+15))# the value of the stock
+                    # screen.blit(timeTxt1,(rectX+8,coords[1]+50))# blits the cursor time to the screen
+                    # screen.blit(timeTxt2,(rectX+8,coords[1]+80))# blits the cursor time to the screen                      
                 
     
     def drawPriceLines(self,screen,truegraphrange,coords,wh,graphingpoints):

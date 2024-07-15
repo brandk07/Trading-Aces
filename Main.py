@@ -16,7 +16,7 @@ import timeit
 from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
 from Classes.NewstockBook import Stockbook2
-GAMESPEED = 1000
+GAMESPEED = 100
 FASTFORWARDSPEED = 500
 pygame.init()
 pygame.mixer.init()
@@ -76,6 +76,7 @@ pygame.mixer.music.load(musicThemes[musicnames[musicdata[2]]] if musicdata[2] < 
 pygame.mixer.music.play()
 pygame.mixer.music.set_pos(musicdata[0])
 pygame.mixer.music.set_volume(musicdata[1])
+pygame.mixer.music.set_volume(0)
 
 # LAST DECLARATIONS
 lastfps = deque(maxlen=300)
@@ -87,7 +88,7 @@ mousebuttons = 0
 tmarket.fill_graphs(stocklist)
 
 
-screen.fill((50,50,50))
+screen.fill((30,30,30))
 screen.blit(background,(0,0))
 s = screen.copy()# makes way better performance
 

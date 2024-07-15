@@ -10,6 +10,7 @@ from Classes.Gametime import GameTime
 import math
 from Classes.StockVisualizer import StockVisualizer,POINTSPERGRAPH
 from functools import lru_cache
+from faker import Faker
 from Classes.StockPriceEffects import StockPriceEffects
 
 @lru_cache(maxsize=20)
@@ -29,6 +30,16 @@ def calculate_volatility(points) -> float:
     annualized_volatility = np.sqrt(252) * daily_volatility
 
     return annualized_volatility
+fake = Faker()
+class CEO():
+    def __init__(self) -> None:
+        gender = ['male','female'][randint(0,1)]
+
+        self.name = fake.name_female() if gender == 'female' else fake.name_male()
+        self.age = randint(30,70)
+        self.homeTown = fake.city()
+        self.image = generate_8bit_character(gender)
+
 
 class Stock():
     """Class contains the points and ability to modify the points of the stock
@@ -36,7 +47,7 @@ class Stock():
 
     def __init__(self,name,volatility,color,gametime) -> None:
         self.color,self.name = color,name
-
+        self.ceo = CEO()
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
         self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"3M":1_474_200,"1Y":5_896_800}
