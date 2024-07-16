@@ -303,13 +303,18 @@ def time_loop(loop):
         print(f"Loop took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-
+def setGameTime(gametime):
+    with open('Assets/Stockdata/extradata.json','r') as file:
+        data = json.load(file)
+        if data:
+            gametime.setTimeStr(data[0])
+            # return gametime
 def Getfromfile(stockdict:dict,player,gametime):
     with open('Assets/Stockdata/extradata.json','r') as file:
         data = json.load(file)
         print(data)
         if data:
-            gametime.setTimeStr(data[0])
+            # gametime.setTimeStr(data[0])
             # player.stocks = [[stockdict[stock[0]],stock[1],stock[2]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
             # print(data[1])
             player.stocks = [StockAsset(player,stockdict[stock[0]],stock[1],stock[2],stock[3],dividends=stock[4],portfolioPercent=stock[5]) for stock in data[1]]# [stockobj,creationdate,ogprice,quantity]
@@ -602,7 +607,7 @@ def generate_8bit_character(gender='male'):
             fill_rect(width-14, 8, 6, 27, hair_color)
         else:  # Short bob
             fill_rect(8, 0, width-16, 8, hair_color)
-            draw.arc((6, 12, width-6, -2), 0, 180, fill=hair_color, width=4)
+            draw.arc((6, -2, width-6, 12), 0, 180, fill=hair_color, width=4)
 
     # Draw eyes
     eye_color = random.choice(colors['eyes'])

@@ -62,6 +62,9 @@ Look into hosting online with using a (12/18/23)
 
 Make everything stored inside .json files and such encripted so it can't be changed (at least the important stuff) (1/3/2024)
 
+blits gamemode where you have a certain amount of time to make as much money as possible, (7/16/2024)
+    or where you need to make a certain amount and your time is the Indicator 
+
 Make a progression where you have to get enough money to unlock certain features (1/3/2024)
     option trading
     amount of stocks/options you can hold

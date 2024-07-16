@@ -8,7 +8,7 @@ from Classes.Gametime import GameTime
 from Classes.Player import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
-from Classes.Portfolio import Portfolio
+from Classes.portfolio import Portfolio
 from Classes.OptionMenu import Optiontrade
 from collections import deque
 from Classes.smallClasses.TotalMarket import TotalMarket
@@ -39,6 +39,7 @@ stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0)
 # CREATING OBJECTS NEEDED FOR FILE DATA
 transact = Transactions()
 gametime = GameTime("01/01/2030 00:00:00")
+setGameTime(gametime)
 player = Player(stocknames,stockcolors[-1],transact,gametime)
 # stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stockdict = {name:Stock(name,50,stockcolors[i],gametime) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
@@ -48,6 +49,7 @@ stocklist = [stockdict[name] for name in stocknames]
 
 musicdata = Getfromfile(stockdict,player,gametime)# muiscdata = [time, volume, songindex]
 menuList = []
+
 # CREATING OBJECTS
 stockgraphmanager = StockGraphManager(stocklist,gametime)
 tmarket = TotalMarket(gametime)

@@ -1,5 +1,5 @@
 from random import randint
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,date
 from Classes.Gametime import GameTime
 from Defs import *
 
@@ -7,20 +7,39 @@ class StockPriceEffects:
     def __init__(self,parentStock,gametime:GameTime) -> None:
         self.effectsDict = {}# {modiferName : [ogAmount,currentAmount,enlapsedtime:int,duration:int]}
         # self.pastReports = []# [time of report,quarter of report [1,2,3,4],performance]
-        self.pastReports = [(self.randomQuartDate(i,gametime),((7-i)%4)+1,randint(-1000,1000)/100) for i in range(8)]# [time of report,quarter of report,performance]
-        self.futureReports:list[datetime,int] = [(self.randomQuartDate(i,gametime),i+1) for i in range(4)]# [time of report,quarter]
+        currQ = self.getCurrentQuarter(gametime)
+        self.pastReports = [(self.randomQuartDate(((i)%4)+1,gametime,True),((i)%4)+1,randint(-1000,1000)/100) for i in range(currQ,currQ-4,-1)]# [time of report,quarter of report,performance]
+        # self.futureReports:list[datetime,int] = [(self.randomQuartDate((i)%4+1,gametime),(i)%4+1) for i in range(currQ,currQ-4,-1)]# [time of report,quarter]
+        self.futureReports:list[datetime,int] = [(self.randomQuartDate((i)%4+1,gametime),(i)%4+1) for i in range(currQ,currQ+4)]# [time of report,quarter]
+        self.pastReports.sort(key=lambda x: x[0],reverse=True)
+        self.futureReports.sort(key=lambda x: x[0])
         self.modifers = {"priceTrend":0,"tempVolatility":0}
         self.parentStock = parentStock
         # for report in self.pastReports:
         #     print(report)
-    def randomQuartDate(self,quarter,gametime:GameTime,extraYears=0):
+    def getCurrentQuarter(self,gametime:GameTime):
+        """Returns the current quarter"""
+        return (gametime.time.month-1)//3+1
+    def randomQuartDate(self,quarter,gametime:GameTime,past=False):
         """Returns a random date for a quarterly report, Quarter 1-4"""
         # create a datetime object with the same year as gametime, but january 1st
-        year = gametime.time.year+extraYears
-        january_1st = datetime(year, 1, 1)
-        
+        # year = gametime.time.year+extraYears
+        print(quarter)
+        january_1st = datetime(gametime.time.year, 1, 1)
+        print((quarter-1)*timedelta(days=75),"Days",quarter,quarter-1)
+        quartTime = january_1st+((quarter-1)*timedelta(days=90))+timedelta(days=randint(30,90))
+        print(quartTime,gametime)
 
-        return january_1st+((quarter-1)*timedelta(days=75))+timedelta(days=randint(30,65))
+        year = gametime.time.year + 1 if quartTime < gametime.time else gametime.time.year
+        if past:# override the year with opposite
+            year = gametime.time.year - 1 if quartTime > gametime.time else gametime.time.year
+            if quarter == self.getCurrentQuarter(gametime):
+                year = gametime.time.year-1
+            
+        print(year)
+        quartTime = datetime(year, quartTime.month, quartTime.day)
+        print(quartTime,"//////////////////////////////")
+        return quartTime
     
     def generateQuarterlyReport(self,gametime:GameTime) -> list:
         """Generates a quarterly report"""
@@ -43,7 +62,8 @@ class StockPriceEffects:
         if self.pastReports == 8:# if there are 8 reports
             self.pastReports.pop(0)# remove the oldest report
         newQuarter = self.futureReports[-1][1] % 4 + 1
-        # extraYears = 1 if self.passReports[0][0].year == gametime.time.year else 0
+
+        # extraYears = 1 if self.pastReports[0][0].year == gametime.time.year else 0# if the report is in the same year as the last report, add a year
         self.futureReports.append((self.randomQuartDate(newQuarter,gametime),newQuarter))
         self.pastReports.insert(0,[self.futureReports[0][0],self.futureReports[0][1],performance])
         self.futureReports.pop(0)
