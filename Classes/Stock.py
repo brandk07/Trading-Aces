@@ -136,7 +136,7 @@ class Stock():
         diff = gametime.time-date
         return getClosestDate(diff.total_seconds())
         
-    def reset_trends(self):
+    def resetTrends(self):
         """Sets/resets the trends for the stock"""
         self.bonustrends = [[randint(*x[0]),randint(*x[1])] for x in self.bonustrendranges]#resets the trends for each bonus trend
 
@@ -171,7 +171,7 @@ class Stock():
             if len(data[-1]) > 0:
                 self.bonustrends = data[-1]
             else:
-                self.reset_trends()
+                self.resetTrends()
 
     def save_data(self):
         with open(f'Assets/Stockdata/{self.name}/data.json','w') as file:
@@ -189,6 +189,8 @@ class Stock():
     def addpoint(self, lastprice, multiplier=1,maxstep=25):
         """returns the new price of the stock
         maxstep is the maximum multiplier added to 1 price movement, a lower value will make it more accurate but slower"""
+        vol = int(self.volatility+self.priceEffects._modifers["volatility"])# the volatility of the stock
+        tempP = self.priceEffects._modifers["priceTrend"]# the temporary price trend
         while multiplier > 0:
             step = multiplier % maxstep if multiplier < maxstep else maxstep# how much to multiply the movement by
 
@@ -200,8 +202,9 @@ class Stock():
 
             total_trend = sum(trend[0] for trend in self.bonustrends)# the total trend of all the bonus trends
             total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)# if the total trend is negative, then divide it by 2
-            highvolitity = self.volatility + total_trend# the highest volitility that the stock can have
-            lowvolitity = -self.volatility + total_trend# the lowest volitility that the stock can have
+            total_trend += tempP# add the temporary price trend to the total
+            highvolitity = vol + total_trend# the highest volitility that the stock can have
+            lowvolitity = -vol + total_trend# the lowest volitility that the stock can have
             
             factor = (randint(lowvolitity, highvolitity) / 500_000) * step# the factor that the price will be multiplied by
             lastprice = lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock

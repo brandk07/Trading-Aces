@@ -8,7 +8,7 @@ from Classes.Gametime import GameTime
 from Classes.Player import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
-from Classes.portfolio import Portfolio
+from Classes.Portfolio import Portfolio
 from Classes.OptionMenu import Optiontrade
 from collections import deque
 from Classes.smallClasses.TotalMarket import TotalMarket
@@ -16,8 +16,8 @@ import timeit
 from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
 from Classes.NewstockBook import Stockbook2
-GAMESPEED = 100
-FASTFORWARDSPEED = 500
+GAMESPEED = 250
+FASTFORWARDSPEED = 1000
 pygame.init()
 pygame.mixer.init()
 
@@ -111,12 +111,14 @@ if __name__ == "__main__":
             if uiControls.gameplay_speed > 0:# if the game is not paused
                 for stock in stocklist:
                     stock.update_price(uiControls.gameplay_speed,Player)
+                    stock.priceEffects.update(gametime,screen)
                     
                 # player.update_price(uiControls.gameplay_speed,Player)
                 player.gameTick(uiControls.gameplay_speed)
                 tmarket.updategraphs(stocklist,uiControls.gameplay_speed)
-        for stock in stocklist:
-            stock.priceEffects.update(gametime,screen)
+
+                # for stock in stocklist:
+                    
 
         
         for i,menu in enumerate(menuList):

@@ -140,7 +140,7 @@ class Stockbook2(Menu):
         # -----------------Drawing the future and past reports----------------
         getDate = lambda time : f"{time.month}/{time.day}/{time.year}"
 
-        futureDict = {f"Q{report[1]} {getDate(report[0])}":f'{(report[0]-gametime.time).days} Days Away' for report in self.selectedStock.priceEffects.futureReports}
+        futureDict = {f"Q{report[1]} {getDate(report[0])}":f'{(report[0]-gametime.time).days+1} Days Away' for report in self.selectedStock.priceEffects.futureReports}
         pastDict = {f'Q{report[1]} {getDate(report[0])}':f' {"Beat" if report[2] > 0 else "Miss"} {limit_digits(report[2],15)}%' for report in self.selectedStock.priceEffects.pastReports[:4]}
         pygame.draw.rect(screen,(0,0,0),(190,690,690,270),5,10)
         drawLinedInfo(screen,(200,710),(330,280),pastDict,30,TXTCOLOR)
