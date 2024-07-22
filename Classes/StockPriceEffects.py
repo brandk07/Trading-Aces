@@ -2,6 +2,7 @@ from random import randint
 from datetime import datetime,timedelta,date
 from Classes.Gametime import GameTime
 from Defs import *
+import calendar
 
 class StockPriceEffects:
     def __init__(self,parentStock,gametime:GameTime) -> None:
@@ -26,16 +27,35 @@ class StockPriceEffects:
         """Returns the current quarter [1,2,3,4]"""
         return (gametime.time.month-1)//3+1
 
+    
+
     def randomQuartDate(self,quarter,gametime:GameTime,past=False):
         """Returns a random date for a quarterly report, Quarter 1-4"""
-
+        def daysInQuarter(quarter:int,gametime:GameTime):
+            """Returns the # of days from beginning of the year to the end of the quarter"""
+            assert quarter in range(1, 5), "Quarter must be between 1 and 4"
+            # Calculate the number of days in each month of the quarter
+            days_in_quarter = 0
+            for month in range(1, (quarter-1)*3 + 1):
+                days_in_quarter += calendar.monthrange(gametime.time.year, month)[1]
+            return days_in_quarter
+        def daysInMonthRange(startMonth:int,endMonth:int,gametime:GameTime):
+            """Includes the end month"""
+            days_in_month_range = 0
+            for month in range(startMonth,endMonth+1):
+                days_in_month_range += calendar.monthrange(gametime.time.year, month)[1]
+                print(days_in_month_range,calendar.monthrange(gametime.time.year, month)[1],month)
+            return days_in_month_range
+    
         january_1st = datetime(gametime.time.year, 1, 1)# Really a placeholder datetime object
 
-        timeOff = ((quarter-1)*timedelta(days=90))+timedelta(days=randint(0,90))#Normal time offset
-        if not past and quarter == self.getCurrentQuarter(gametime):# if the report is in the current quarter
-            daysPastQuart = int((gametime.time.month-1)*30+gametime.time.day-((quarter-1)*90))+1
+        timeOff = (timedelta(days=daysInQuarter(quarter,gametime)))+timedelta(days=randint(0,90))#Normal time offset
+        if not past and quarter == self.getCurrentQuarter(gametime) and self.pastReports[0][1] != self.getCurrentQuarter(gametime):# if the report is in the current quarter
+            print(f"Current quarter {quarter} {daysInQuarter(quarter,gametime)}, {daysInMonthRange(1,gametime.time.month-1,gametime)} {gametime.time.day}")
+            daysPastQuart = daysInMonthRange(1,gametime.time.month-1,gametime)-daysInQuarter(quarter,gametime)+gametime.time.day
+            # daysPastQuart = int((gametime.time.month-1)*32+gametime.time.day-((quarter-1)*90))+1
             print(daysPastQuart,"Days past quart",print(range(min(89,daysPastQuart),90)))
-            timeOff = ((quarter-1)*timedelta(days=90))+timedelta(days=randint(min(89,daysPastQuart),90))# the first day of the quarter
+            timeOff = (timedelta(days=daysInQuarter(quarter,gametime)))+timedelta(days=randint(min(89,daysPastQuart),90))# the first day of the quarter
             print(timeOff,"Time off")
 
         quartTime = january_1st+timeOff# add the time offset
@@ -45,10 +65,13 @@ class StockPriceEffects:
             year = gametime.time.year - 1 if quartTime > gametime.time else gametime.time.year
             if quarter == self.getCurrentQuarter(gametime):# if it was really long ago
                 year = gametime.time.year-1
-        # print(year,quartTime,quartTime.month,quartTime.day)
+        print(year,quartTime,quartTime.month,quartTime.day)
         quartTime = datetime(year, quartTime.month, min(28,quartTime.day))# creating a new datetime object with the new year
-        if not past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) and self.pastReports[-1][1] != self.getCurrentQuarter(gametime):# if the report is in the same quarter
-            # print(gametime.time,quartTime,(gametime.time-quartTime).days,'Same quarter')
+        if not past:
+            print('/'*10,'\n',quartTime, gametime)
+            print(self.pastReports[0][1], self.getCurrentQuarter(gametime), self.pastReports[0][1] == self.getCurrentQuarter(gametime),not past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) )
+        if not past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) and self.pastReports[0][1] == self.getCurrentQuarter(gametime) and quartTime.year == gametime.time.year:# if the report is in the same quarter
+            print(gametime.time,quartTime,(gametime.time-quartTime).days,'Same quarter')
             quartTime = quartTime + timedelta(days=365)# move the report to next year at that time
 
         # offcase where the report is in the same quarter but is earlier in the year (so didn't trigger above), but should be a long way in the past
@@ -75,13 +98,13 @@ class StockPriceEffects:
         # print(likelyHood,performance,"New report")
     
         # self.__effectsDict["priceTrend"] = [performance,performance,randint(100,1800),0]# New  price trend that will last for 30 seconds
-        if self.pastReports == 8:# if there are 8 reports
+        if len(self.pastReports) == 5:# if there are 8 reports
             self.pastReports.pop(0)# remove the oldest report
         newQuarter = self.futureReports[-1][1] % 4 + 1
 
         # extraYears = 1 if self.pastReports[0][0].year == gametime.time.year else 0# if the report is in the same year as the last report, add a year
-        self.futureReports.append((self.randomQuartDate(newQuarter,gametime),newQuarter))
         self.pastReports.insert(0,[self.futureReports[0][0],self.futureReports[0][1],performance])
+        self.futureReports.append((self.randomQuartDate(newQuarter,gametime),newQuarter))
         self.futureReports.pop(0)
 
         self.applyPriceChange(performance)
@@ -100,38 +123,35 @@ class StockPriceEffects:
         self._effectsDict[modiferName] = [amount,durationMins*60,amount/(durationMins*60)]# [modifierAmount,duration:int,decayRate]
         self._modifers[modiferName] = amount
     
-    def getReportLikelyhood(self):
-        """Used as a part of the calculating the quarterly likelyhood (18% of the likelyhood)"""
-        percent = 0
-        for (time,quarter,performance) in self.pastReports[:4]:# for the last 4 reports
-            percent += 3 if performance > 0 else 0# if the performance met expectations, add 5%
-
-        return 3*len([p for (t,q,p) in self.pastReports[:4] if p > 0])
-        # return percent
-    def getPastPerfLikelyhood(self,gametime:GameTime):
-        """Used as a part of the calculating the quarterly likelyhood (Can be any amount)"""
+    # def getPastPerfLikelyhood(self,gametime:GameTime):
+    #     """Used as a part of the calculating the quarterly likelyhood (Can be any amount)"""
+    #     perfEquation = lambda x : 2*x+70
+    #     percent = ((self.parentStock.price/self.parentStock.getPointDate(self.pastReports[0][0],gametime))-1)*100
+        
+    #     return max(0,min(88,perfEquation(percent)))# the stock performance over the last quarter
+    def getLikelyHoods(self,gametime:GameTime):
+        """Returns the components that go into making the quarterly likelyhood,
+        [0] is the % that comes from the reports that met expectations
+        [1] is the % that comes from the stock performance since the last report and over the last year"""
         perfEquation = lambda x : 2*x+70
-        percent = ((self.parentStock.price/self.parentStock.getPointDate(self.pastReports[0][0],gametime))-1)*100
-        # print(self.parentStock.getPointDate(self.pastReports[0][0],gametime))
-        # print(percent)
-        # print(self.parentStock.getPercentDate(self.pastReports[0][0],gametime))
-        
-        return max(0,min(88,perfEquation(percent)))# the stock performance over the last quarter
-        
+        tempP = ((self.parentStock.price/self.parentStock.getPointDate(self.pastReports[0][0],gametime))-1)*50# half from last report
+        tempP += self.parentStock.getPercent("1Y")/2# half from the last year
+        perlikelyhood = max(0,min(88,perfEquation(tempP)))# the stock performance over the last quarter
+
+        return 3*len([p for (t,q,p) in self.pastReports[:4] if p > 0]), perlikelyhood
+
     def getQuarterlyLikelyhood(self,gametime:GameTime):
         """Gives the likelyhood that the quarterly report will meet expectations"""
-        percent = 0
         # ---Past reports accounts for 12% of the likelyhood-----
-        # print(self.pastReports)
-        percent += self.getReportLikelyhood()
-        # print(f"Percent after {percent} after past reports")
-        # ---Stock performance accounts for 80% of the likelyhood-----
-        
-        # print(self.parentStock.getPercentDate(self.pastReports[0][1],gametime))
-        # print(perfEquation(self.parentStock.getPercentDate(self.pastReports[0][1],gametime)))
-        percent += self.getPastPerfLikelyhood(gametime)
-        # print(f"Percent after {percent} after stock performance")
-        return percent
+        # percent += 3*len([p for (t,q,p) in self.pastReports[:4] if p > 0])# if the performance met expectations, add 3%
+        # # ---Stock performance accounts for 80% of the likelyhood-----
+        # # percent += self.getPastPerfLikelyhood(gametime)
+        # perfEquation = lambda x : 2*x+70
+        # tempP = ((self.parentStock.price/self.parentStock.getPointDate(self.pastReports[0][0],gametime))-1)*100
+        # percent += max(0,min(88,perfEquation(tempP)))# the stock performance over the last quarter
+        pastReportsPer,PerfPercent = self.getLikelyHoods(gametime)
+
+        return pastReportsPer + PerfPercent
         
 
     def updateEffects(self,gametime:GameTime):

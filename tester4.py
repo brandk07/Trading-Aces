@@ -171,3 +171,9 @@ print([(i%4)+1 for i in range(1,-3,-1)])
 currQ = 2
 # print([(i%4)+1 for i in range(currQ+2,currQ-2,-1)])
 print([(i%4)+1 for i in range(currQ-5,currQ-1)])
+mylist1,mylist2 = [1,2,3,4,5],[6,7,8,9,10]
+for i,ii in zip(mylist1,mylist2):
+    print(i,ii)
+
+for i in range(0,1):
+    print(i)

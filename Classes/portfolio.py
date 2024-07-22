@@ -13,7 +13,7 @@ from Classes.imports.Numpad import Numpad
 from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.imports.Transactions import Transactions
 from Classes.StockVisualizer import StockVisualizer
-from Classes.imports.PieChart import PieChart
+from Classes.imports.PieChart import PieChartSideInfo
 from Classes.imports.BarGraph import BarGraph
 import math
 import datetime
@@ -46,7 +46,7 @@ class Portfolio(Menu):
         s.displayedStocks = [StockVisualizer(gametime,stocklist[i],stocklist) for i in range(3)]# the stock visualizers for the stocks that are displayed
         s.networthGraph = StockVisualizer(gametime,player,stocklist)
         s.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
-        s.piechart = PieChart(150, (200, 650),menuList)
+        s.piechart = PieChartSideInfo(150, (200, 650),menuList)
         s.barGraphs = [BarGraph("Value",[175,175],[875,400]),BarGraph("Allocation",[175,175],[1150,400])]
 
         # for the asset type selection which sorts the latterscroll

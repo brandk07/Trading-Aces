@@ -11,6 +11,7 @@ pygame.font.init()
 pygame.mixer.init()
 pygame.init()
 
+TXTCOLOR = (220,220,220)
 
 def timing_decorator(func):
     def wrapper(*args, **kwargs):
@@ -257,17 +258,41 @@ def checkboxOptions(screen,options,selectedOptions,pos,wh,mousebuttons,disabledO
             pygame.draw.rect(screen, (200,200,200), [x+13,y+wh[1]/2-5,10,10])
     
 
-def drawLinedInfo(screen,coord:tuple,wh:tuple,infoDict:dict,size,color):
-    """Draws the info in infoDict {str (left side): value:int/str (right side)}, in the box at coord with width and height wh"""
-    sep = wh[1]//len(infoDict)
+def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list,size,color):
+    """Draws the info in infoList [str (left side), value:int/str (right side)], in the box at coord with width and height wh"""
+    sep = wh[1]//len(infoList)
     x,y = coord
-    for i, (key,value) in enumerate(infoDict.items()):
+    for i, (string,value) in enumerate(infoList):
         newY = y+(i*sep)
-        screen.blit(s_render(key,size,color),(x+10,newY))
+        screen.blit(s_render(string,size,color),(x+10,newY))
         valueText = s_render(str(value),size,color)
         screen.blit((valueText),(x+wh[0]-valueText.get_width()-10,newY))
-        if i != len(infoDict)-1:
-            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x, 5+newY+sep/2, wh[0], 3))
+        if i != len(infoList)-1:
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x, newY+(sep/2)*1.2, wh[0], 3))
+
+def drawLinedInfoBigColored(screen,coord:tuple,wh:tuple,infoListL:list,infoListR:list,sizeLg:int,sizeSm:int,colors:list):
+    """Displays two lists with str1,value1 on left and str2,value2 on right
+    the str is bigger and the the second dict's str is colored"""
+    assert len(infoListL) == len(infoListR), 'The two lists must have the same length'
+    sep = wh[1]//len(infoListL)
+    x,y = coord
+    for i, ((leftStr,leftVal),(rightStr,rightVal)) in enumerate(zip(infoListL,infoListR)):
+        newY = y+(i*sep)
+        lStr = s_render(leftStr,sizeLg,TXTCOLOR)# string on the left (Q1)
+        rStr = s_render(rightStr,sizeLg,colors[i])# string on the right (Beat/Miss) with color
+        lVal = s_render(str(leftVal),sizeSm,(120,120,120))# value on the left (Q1)
+        rVal = s_render(str(rightVal),sizeSm,colors[i])# value on the right (Beat/Miss) with color
+        screen.blit(lStr,(x+10,newY))# display the string on the left
+        totalXw = rStr.get_width()+rVal.get_width()
+        screen.blit(rStr,(x+wh[0]-totalXw-15,newY))# display the string on the right
+        yposl = newY+lStr.get_height()-lVal.get_height()
+        yposr = newY+rStr.get_height()-rVal.get_height()
+        screen.blit(lVal,(x+20+lStr.get_width(),yposl))# display the value on the left
+        screen.blit(rVal,(x+wh[0]-rVal.get_width()-5,yposr))# display the value on the right
+
+        # screen.blit((valueText),(x+wh[0]-valueText.get_width()-10,newY))
+        if i != len(infoListL)-1:
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x, newY+(sep/2)*1.2, wh[0], 3))
                 
 def update_fps(clock,lastfps:deque):
     fps = str(int(clock.get_fps()))
