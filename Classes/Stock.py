@@ -31,14 +31,29 @@ def calculate_volatility(points) -> float:
 
     return annualized_volatility
 fake = Faker()
+with open(r'Assets\ceoSlogans.txt','r') as file:
+    slogans = file.readlines()
 class CEO():
     def __init__(self) -> None:
         gender = ['male','female'][randint(0,1)]
 
         self.name = fake.name_female() if gender == 'female' else fake.name_male()
         self.age = randint(30,70)
-        self.homeTown = fake.city()
         self.image = generate_8bit_character(gender)
+        self.image = pygame.transform.scale(self.image,(100,100))
+        self.slogan = slogans[randint(0,len(slogans)-1)].replace('\n','')
+
+    @lru_cache(maxsize=5)
+    def getSloganLines(self,lines):
+        """Returns the slogan of the CEO with the amount of lines specified"""
+        return separate_strings(self.slogan,lines)
+    @lru_cache(maxsize=5)
+    def getImageSize(self,xSize,ySize):
+        """Returns the image of the CEO with the size of xSize and ySize"""	
+        return pygame.transform.scale(self.image,(xSize,ySize)) 
+    def addYears(self,years):
+        self.age += years
+        return self.age
 
 
 class Stock():

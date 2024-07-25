@@ -94,7 +94,6 @@ screen.fill((30,30,30))
 screen.blit(background,(0,0))
 s = screen.copy()# makes way better performance
 
-
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
@@ -159,10 +158,8 @@ if __name__ == "__main__":
                 mousebuttons = event.button
                 if mousebuttons == 1:
                     print(mousex,mousey)
-
-        
         pygame.display.update()
-        
-        clock.tick(600)
+
+        clock.tick(180)
 
 

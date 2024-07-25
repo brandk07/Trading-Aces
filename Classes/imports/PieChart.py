@@ -136,7 +136,7 @@ class PieChart:
             boxRect = pygame.rect.Rect(corners[0][0]+s.radius*2+10,corners[0][1],s.radius*1.75,s.radius*2)
             pygame.draw.rect(screen, (0,0,0), boxRect, 5, 10)
 
-            nameText,percentText = s_render(name,45,color), s_render(f'{limit_digits((value/totalValue)*100,16)}% of Portfolio',s.boxtextsize,(110,110,110))
+            nameText,percentText = s_render(name,45,color), s_render(f'{limit_digits((value/totalValue)*100,16)}%',s.boxtextsize,(110,110,110))
             nameH,nameW = nameText.get_height(),nameText.get_width()
             
             screen.blit(nameText, (boxRect.centerx-(nameW/2), boxRect.y+10))
@@ -185,7 +185,7 @@ class PieChart:
                 gfxdraw.filled_polygon(wholesurf,points,color)
 
             # if the mouse isn't over any of the segments, then display the total value    
-            drawBoxedText(wholesurf, f'{limit_digits(totalValue,16)}',50,(0,170,0),(1,1,1),(s.radius,s.radius))# blit the value of the mouseover segement to the screen    
+            drawBoxedText(wholesurf, f'{limit_digits(totalValue,16)}',50,(0,0,0),(1,1,1),(s.radius,s.radius))# blit the value of the mouseover segement to the screen    
 
         if s.selectedAssetIndex != None:
             if s.selectedAssetIndex >= len(s.pieSegments):

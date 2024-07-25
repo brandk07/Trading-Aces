@@ -10,6 +10,7 @@ from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Latterscroll import PortfolioLatter,LatterScroll
 from Classes.Stock import Stock
 from Classes.imports.PieChart import PieChart
+from Classes.imports.BarGraph import BarGraph
 import datetime
 
 TXTCOLOR = (220,220,220)
@@ -35,6 +36,7 @@ class Stockbook2(Menu):
         self.currentMDisp = self.middleDisplays[0]
         self.oScreenDisp = False
         self.reportPieChart = PieChart(125,(940,700))
+        self.reportBarGraph = BarGraph("Report Likelyhood",(450,190),(940,740))
         
 
     def createDescriptions(self,stocknames):
@@ -44,7 +46,7 @@ class Stockbook2(Menu):
                 for stockname in stocknames:
                     if line.replace('\n','') == stockname:
                         self.stocktext[stockname].append(filecontents[i+1].replace('\n',''))# Full stock name Ex. "Kyronix Solutions Inc. (KSTON)"
-                        seperatatedstrings = separate_strings((filecontents[i+2].replace('\n','')),4)
+                        seperatatedstrings = separate_strings((filecontents[i+2].replace('\n','')),5)
                         for string in seperatatedstrings:# a list containing 4 strings 
                             self.stocktext[stockname].append(string)
 
@@ -164,7 +166,7 @@ class Stockbook2(Menu):
         # drawLinedInfo(screen,(540,710),(330,280),futureDict,30,TXTCOLOR)
         screen.blit(s_render("PAST",50,(220,220,220)),(205,645))
         screen.blit(s_render("UPCOMING",50,(220,220,220)),(575,645))
-        screen.blit(s_render("EXPERT PREDICTION",50,(220,220,220)),(930,645))
+        # screen.blit(s_render("EXPERT PREDICTION",50,(220,220,220)),(930,645))
 
         pastReportPer, perfReportPer = self.selectedStock.priceEffects.getLikelyHoods(gametime)
         prediction = self.selectedStock.priceEffects.getQuarterlyLikelyhood(gametime)
@@ -192,14 +194,40 @@ class Stockbook2(Menu):
         # info = [(string,value) for string,value in zip(strings,values)]
         # pygame.draw.rect(screen,(0,0,0),(910,710,545,290),5,10)
         # drawLinedInfo(screen,(920,730),(525,250),info,50,TXTCOLOR)
-        changeVals = lambda val : round(val/10,2) 
+        changeVals = lambda val : round(val,2) 
         data = [
-            (changeVals(pastReportPer),"Past Reports",(100,0,205)),
-            (changeVals(perfReportPer),"Stock Perf",(255,128,0)),
-            (10-(changeVals(pastReportPer)+changeVals(perfReportPer)),"",(0,0,0))
+            (changeVals(pastReportPer),(150,0,230)),
+            (changeVals(perfReportPer),(255,128,0)),
+            ((changeVals(pastReportPer)+changeVals(perfReportPer)),(140,140,140))
         ]
-        self.reportPieChart.updateData(data)
-        self.reportPieChart.draw(screen)
+
+        self.reportBarGraph.updateValues([d[0] for d in data],[d[1] for d in data],["%"]*len(data))
+        self.reportBarGraph.draw(screen,absoluteScale=100)
+        # ogtext = s_render("Original", 55, (190, 190, 190))
+        # screen.blit(ogtext, (885, 350))
+        # pygame.draw.rect(screen, (60, 60, 60), pygame.Rect(900+ogtext.get_width(), 350, 35, 35), 0, 10)
+
+        # screen.blit(s_render("Current", 55, asset.color), (1140, 350))
+        # pygame.draw.rect(screen, asset.color, pygame.Rect(1155+ogtext.get_width(), 350, 35, 35), 0, 10)
+        # The Text and the boxes indicating which color is which on the bar graph
+        pastRtxt = s_render("Past Reports", 40, (220, 220, 220))
+        perfRtxt = s_render("Performance", 40, (220, 220, 220))
+        predtxt = s_render("Prediction", 40, (220, 220, 220))
+        screen.blit(pastRtxt, (930, 640))
+        screen.blit(perfRtxt, (1090, 640))
+        screen.blit(predtxt, (1275, 640))
+        # The boxes indicating which color is which on the bar graph
+        pygame.draw.rect(screen, (150, 0, 230), pygame.Rect(930, 680, 35, 35), 0, 10)
+        pygame.draw.rect(screen, (255, 128, 0), pygame.Rect(1090, 680, 35, 35), 0, 10)
+        pygame.draw.rect(screen, (140, 140, 140), pygame.Rect(1275, 680, 35, 35), 0, 10)
+
+
+        
+
+        
+        
+        # self.reportPieChart.updateData(data)
+        # self.reportPieChart.draw(screen)
 
 
 
@@ -251,15 +279,42 @@ class Stockbook2(Menu):
         # def pil_to_pygame(image):
         #     """Convert a PIL Image to a Pygame Surface."""
         #     return pygame.image.fromstring(image.tobytes(), image.size, image.mode)
-        screen.blit(self.selectedStock.ceo.image,(200,625))
-        screen.blit(s_render(self.selectedStock.ceo.name,50,(220,220,220)),(200,690))
-        screen.blit(s_render(f"Age {self.selectedStock.ceo.age} Years",40,(220,220,220)),(200,710))
-        screen.blit(s_render(self.selectedStock.ceo.homeTown,50,(220,220,220)),(200,730))
-         # Draw the stock name & description
-        screen.blit(s_render(self.selectedStock.name,90,self.selectedStock.color),(775,710))# blits the stock name to the screen
+        
+        
+        # Draw the stock name & description
+        
+        pygame.draw.rect(screen,(20,20,20),(200,625,550,325),border_radius=10)
+        pygame.draw.rect(screen,(0,0,0),(200,625,550,325),5,10)
+        screen.blit(s_render(self.selectedStock.name,90,self.selectedStock.color),(210,635))# blits the stock name to the screen
         for i,line in enumerate(self.stocktext[self.selectedStock.name]):
-            x,y = (775 if i != 0 else self.renderedstocknames[self.selectedStock.name].get_width()+780),(800+((i-1)*40) if i != 0 else 725)
+            x,y = (210 if i != 0 else self.renderedstocknames[self.selectedStock.name].get_width()+215),(725+((i-1)*40) if i != 0 else 650)
             screen.blit(line,(x,y))
+        # Draw stuff about CEO
+        ceo = self.selectedStock.ceo
+        xCeo,yCeo = 1165,620
+        wCeo,hCeo = 290,330
+        pygame.draw.rect(screen,(0,0,0),(1165,620,290,330),5,10)
+        ceoInfo = s_render("CEO INFO",50,(220,220,220))
+        screen.blit(ceoInfo,(xCeo+wCeo/2-ceoInfo.get_width()/2,yCeo+10))
+        # screen.blit(s_render("CEO INFO",50,(220,220,220)),(1175,630))
+        pygame.draw.rect(screen,(0,0,0),(xCeo+wCeo/2-118/2,yCeo+55,128,110),5)# Box for the CEO image
+        # pygame.draw.rect(screen,(0,0,0),(1175,670,128,110),5)# Box for the CEO image
+        screen.blit(ceo.getImageSize(118,100),(xCeo+(wCeo/2)-(118/2)+5,yCeo+60))
+
+        ceoName = s_render(ceo.name,50,(220,220,220))
+        screen.blit(ceoName,(xCeo+wCeo/2-ceoName.get_width()/2,yCeo+170))
+
+        ceoAge = s_render(f"{ceo.age} Years Old",40,(220,220,220))
+        screen.blit(ceoAge,(xCeo+wCeo/2-ceoAge.get_width()/2,yCeo+210))
+        # screen.blit(s_render(infoListR.name,50,(220,220,220)),(1175,785))
+        # screen.blit(s_render(f"{infoListR.age} Years Old",40,(220,220,220)),(1200,825))
+        print(ceo.slogan.split(' '),int(len(ceo.slogan.split(' '))/4))
+        numslines = int(len(ceo.slogan.split(' '))/4)+1
+        for i,line in enumerate(ceo.getSloganLines(numslines)):
+            ex1 = '"' if i == 0 else ''
+            ex2 = '"' if i == numslines-1 else ''
+            screen.blit(s_render(ex1+line+ex2,30,(220,220,220)),(1180,875+(i*35)))
+        
     def drawNews(self,screen:pygame.Surface,stockname:str,coords:tuple):
         """Draws the news for the stock on the right middle """
         pass
