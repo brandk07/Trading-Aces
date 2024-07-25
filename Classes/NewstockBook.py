@@ -293,7 +293,7 @@ class Stockbook2(Menu):
         ceo = self.selectedStock.ceo
         xCeo,yCeo = 1165,620
         wCeo,hCeo = 290,330
-        pygame.draw.rect(screen,(0,0,0),(1165,620,290,330),5,10)
+        
         ceoInfo = s_render("CEO INFO",50,(220,220,220))
         screen.blit(ceoInfo,(xCeo+wCeo/2-ceoInfo.get_width()/2,yCeo+10))
         # screen.blit(s_render("CEO INFO",50,(220,220,220)),(1175,630))
@@ -308,12 +308,17 @@ class Stockbook2(Menu):
         screen.blit(ceoAge,(xCeo+wCeo/2-ceoAge.get_width()/2,yCeo+210))
         # screen.blit(s_render(infoListR.name,50,(220,220,220)),(1175,785))
         # screen.blit(s_render(f"{infoListR.age} Years Old",40,(220,220,220)),(1200,825))
-        print(ceo.slogan.split(' '),int(len(ceo.slogan.split(' '))/4))
-        numslines = int(len(ceo.slogan.split(' '))/4)+1
+        # print(ceo.slogan.split(' '),int(len(ceo.slogan.split(' '))/4))
+        # numslines = int(len(ceo.slogan.split(' '))/4)+1
+        numslines = int(len(ceo.slogan)/24)+1
+        # print(numslines)
         for i,line in enumerate(ceo.getSloganLines(numslines)):
             ex1 = '"' if i == 0 else ''
             ex2 = '"' if i == numslines-1 else ''
-            screen.blit(s_render(ex1+line+ex2,30,(220,220,220)),(1180,875+(i*35)))
+            txt = s_render(ex1+line+ex2,30,(220,220,220))
+            screen.blit(txt,(xCeo+(wCeo/2)-(txt.get_width()/2),yCeo+255+(i*35)))
+            # screen.blit(s_render(ex1+line+ex2,30,(220,220,220)),(1180+(i*10),875+(i*35)))
+        pygame.draw.rect(screen,(0,0,0),(1165,620,290,255+35*numslines),5,10)
         
     def drawNews(self,screen:pygame.Surface,stockname:str,coords:tuple):
         """Draws the news for the stock on the right middle """

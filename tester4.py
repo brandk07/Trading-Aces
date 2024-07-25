@@ -4,6 +4,8 @@ from Defs import point_in_polygon
 mypoly = [(150, 150), (277.94524373378374, 228.29440979982337), (300, 300), (300.0, 150.0000000000001), (150, 150)]
 print(point_in_polygon((376, 729),mypoly))
 
+
+
 # pygame.mixer.init()
 # pygame.mixer.music.load("Assets\Sounds\Timo Versemann - Shalom Chaverim.mp3")
 # pygame.mixer.music.play()
@@ -49,10 +51,10 @@ import string
 #     txtlist = [s_render(alphabet[i],ii,(0,0,0)) for i in range(len(alphabet))]
 #     print(ii,sum([txt.get_width() for txt in txtlist])/len(txtlist))
 # Import necessary libraries
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
-import numpy as np
+# from sklearn.model_selection import train_test_split
+# from sklearn.linear_model import LinearRegression
+# from sklearn.metrics import mean_squared_error
+# import numpy as np
 
 # # Example data
 # # Independent variables
