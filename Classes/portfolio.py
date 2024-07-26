@@ -79,7 +79,7 @@ class Portfolio(Menu):
         """Draws the assetscroll"""
         # asset is the class name (the class should have a str method that returns the name of the asset)
 
-        # asset is [class, ogvalue:float, secondary text:str, value:float, percent:float]
+        # asset is [class, ogValue:float, secondary text:str, value:float, percent:float]
         # function to get the text for each asset
         get_text = lambda asset,secondtext : [f'{asset} ',
                                     # f"{limit_digits(asset[2],10,False)} Share{'' if asset[2] == 1 else 's'}",
@@ -210,15 +210,15 @@ class Portfolio(Menu):
         s.numpad.draw(screen,(200,610),(275,350),extratext,mousebuttons,asset.quantity)
         # s.numpad.draw(screen,(870,620),(300,330),extratext,mousebuttons,asset.quantity)
         
-        for i,graphname in enumerate(asset.stockobj.graphrangeoptions):# 1H, 1D, etc...
-            # asset.stockobj.baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
+        for i,graphname in enumerate(asset.getStockObj().graphrangeoptions):# 1H, 1D, etc...
+            # asset.getStockObj().baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
             s.selectedGraph.drawBare(screen,(1630,200+(i*125)),(270,115),graphname,True,"None")
             text = s_render(graphname, 40, (230, 230, 230))
             screen.blit(text, (1640, 325+(i*125)-text.get_height()-20))
 
         # color = ((200,0,0) if asset.getPercent() < 0 else (0,200,0)) if asset.getPercent() != 0 else (200,200,200)
         quantity = s.numpad.getValue()# gets the quantity from the numpad
-        netgl = (asset.getValue(bypass=True,fullvalue=False) - asset.ogvalue)*quantity# net gain/loss
+        netgl = (asset.getValue(bypass=True,fullvalue=False) - asset.getOgVal())*quantity# net gain/loss
         taxedamt = 0 if netgl <= 0 else netgl*player.taxrate# the amount taxed
         percent = asset.getPercent()
         # descriptions = [s_render("Net Gain" if asset.getPercent() > 0 else "Net Loss", 25, (230,230,230)),
@@ -247,7 +247,7 @@ class Portfolio(Menu):
         pygame.draw.rect(screen, asset.color, pygame.Rect(1155+ogtext.get_width(), 350, 35, 35), 0, 10)
 
         
-        s.barGraphs[0].updateValues([asset.ogvalue,asset.getValue(fullvalue=False)],[(110,110,110),asset.color],["$","$"])# bar graph 1 with the original value and the current value
+        s.barGraphs[0].updateValues([asset.getOgVal(),asset.getValue(fullvalue=False)],[(110,110,110),asset.color],["$","$"])# bar graph 1 with the original value and the current value
         portfolioP = lambda x : x/(player.getNetworth())
         s.barGraphs[1].updateValues([asset.portfolioPercent*100,portfolioP(asset.getValue())*100],[(110,110,110),asset.color],["%","%"])# bar graph 2 with the orignial allocation and the current allocation
         for graph in s.barGraphs:
@@ -308,7 +308,7 @@ class Portfolio(Menu):
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(1275, 710, assetSpecificsText.get_width()+30, 10))
 
         if isinstance(asset,StockAsset):
-            dividendYield = (asset.dividends/asset.ogvalue)*100
+            dividendYield = (asset.dividends/asset.getOgVal())*100
             screen.blit(s_render(f"Total Dividend Yield : {limit_digits(dividendYield,15)}%", 40, (190, 190, 190)), (1285, 730))
 
             avgYield = 0 if (gametime.time-asset.dateobj).days == 0 else dividendYield/((gametime.time-asset.dateobj).days/365)
@@ -316,7 +316,7 @@ class Portfolio(Menu):
             screen.blit(s_render(f"Last Quarter Dividend Yield : N/a", 40, (190,190,190)), (1285, 810))
         elif isinstance(asset,OptionAsset):
             screen.blit(s_render(f"Strike Price : {asset.strikePrice}", 40, (190, 190, 190)), (1285, 730))
-            screen.blit(s_render(f"Option Type : {asset.option_type}", 40, (190, 190, 190)), (1285, 770))
+            screen.blit(s_render(f"Option Type : {asset.getType()}", 40, (190, 190, 190)), (1285, 770))
             screen.blit(s_render(f"Voliatility : {limit_digits(asset.getVolatility()*100,15)}%", 40, (190, 190, 190)), (1285, 810))
             screen.blit(s_render(f"Exp Date : {asset.getExpDate()}", 40, (190, 190, 190)), (1285, 850))
 
@@ -405,7 +405,7 @@ class Portfolio(Menu):
         
         else:# if the selected asset is NOT None
             # stockgraph = s.selectedAsset[0].stockobj
-            s.selectedGraph.setStockObj(s.selectedAsset[0].stockobj)
+            s.selectedGraph.setStockObj(s.selectedAsset[0].getStockObj())
 
             # stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
             # stockgraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left

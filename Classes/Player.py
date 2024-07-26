@@ -73,7 +73,7 @@ class Player(Stock):
         if self.cash >= newasset.getValue(bypass=True):
             # ["Sold 39 Shares of","KSTON for $5,056.93","Balance $26,103.18"]
             text = [
-                f"Added {newasset.quantity} {newasset.stockobj.name} {'' if type(newasset) == StockAsset else newasset.option_type} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
+                f"Added {newasset.quantity} {newasset.getStockObj().name} {'' if type(newasset) == StockAsset else newasset.getType()} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
                 f"{self.gametime.getDate()}",
                 f"${limit_digits(newasset.getValue(bypass=True,fullvalue=False),12)} Per Share",
                 f"Cost -${limit_digits(newasset.getValue(bypass=True),12)}",
@@ -105,10 +105,10 @@ class Player(Stock):
             quantity = quant
         # text = [
         #     f"Sold {quantity} {self.assetText[type(asset)]+('s' if quantity > 1 else '')} of",
-        #     f"{asset.stockobj.name} for ${limit_digits(asset.getValue(bypass=True,fullvalue=False),12)}",
+        #     f"{asset.getStockObj().name} for ${limit_digits(asset.getValue(bypass=True,fullvalue=False),12)}",
         #     f"Balance ${limit_digits(self.cash+asset.getValue(bypass=True,fullvalue=False),12)}"
         # ]
-        loss_gain = asset.getValue(bypass=True,fullvalue=False)*quantity-asset.ogvalue*quantity
+        loss_gain = asset.getValue(bypass=True,fullvalue=False)*quantity-asset.getOgVal()*quantity
         taxes = loss_gain*self.taxrate if loss_gain > 0 else 0
         loss_gain = loss_gain if loss_gain <= 0 else loss_gain*(1-self.taxrate)
         value = (asset.getValue(bypass=True,fullvalue=False)*quantity)-taxes
@@ -167,13 +167,13 @@ class Player(Stock):
     #     if self.stocks:#if there are stocks
     #         bankruptamounts = []#list containing the amount of money lost from each bankrupt stocks - all in 1 message so it doesn't spam the message box
     #         for stock in self.stocks:
-    #             if isinstance([stockobj.pricereset_time for stockobj in stocklist if stockobj == stock[0]][0],float):#checking to see if the stockobj has a pricereset_time (if it's bankrupt)
+    #             if isinstance([getStockObj().pricereset_time for getStockObj() in stocklist if getStockObj() == stock[0]][0],float):#checking to see if the getStockObj() has a pricereset_time (if it's bankrupt)
     #                 if not bankruptamounts:#if there are no amounts in bankruptamounts yet
     #                     bankruptamounts.append(f'{stock[0]} went bankrupt')#only 1 of these messages
     #                 bankruptamounts += [stock[1]]#add the amount of money lost from the bankrupt stock to the list
 
     #                 self.stocks.remove(stock)
-    #             self.stockvalues.append([stockobj for stockobj in stocklist if stockobj == stock[0]][0].price)
+    #             self.stockvalues.append([getStockObj() for getStockObj() in stocklist if getStockObj() == stock[0]][0].price)
     #         if bankruptamounts:
     #             self.messagedict[bankruptamounts[0]] = (time.time(),(200,0,0))#add the bankrupt message to the message dict
     #             bankruptamounts.remove(bankruptamounts[0])#remove the bankrupt message from bankruptamounts

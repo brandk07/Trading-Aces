@@ -15,9 +15,9 @@ class LatterScroll():
         self.lasttextcoords = []# the last textcoords drawn 
         self.textcoords = []
 
-    def decidebottomcolor(self,hover,selected_value,numdrawn,*args):
+    def decidebottomcolor(self,hover,selectedVal,numdrawn,*args):
         """This can be overriden in child classes"""
-        if numdrawn == selected_value :
+        if numdrawn == selectedVal :
             return (220,220,220) 
         return (150,150,150) if hover else (50,50,50)
     
@@ -153,11 +153,11 @@ class LatterScroll():
     
     def get_bottompoints(self,points:list):
          return [
-                (points[1][0],points[1][1]),
+                (points[1][0]+10,points[1][1]),
                 (points[1][0]+20,points[1][1]-20),
                 (points[2][0],points[2][1]-20),
-                (points[2][0],points[2][1]),
-                (points[1][0],points[1][1]),]
+                (points[2][0]-10,points[2][1]),
+                (points[1][0]+10,points[1][1]),]
     
     def scrollcontrols(self, mousebuttons, coords, wh):
         mousex,mousey = pygame.mouse.get_pos()
@@ -175,7 +175,7 @@ class LatterScroll():
         if self.scrollvalue != svalue:# if the scroll value changed
             self.updatetexts = 0# update the texts next frame
 
-    def draw_polys(self,screen,coords,wh,mousebuttons,selected_value,drawbottom,*args):
+    def draw_polys(self,screen,coords,wh,mousebuttons,selectedVal,drawbottom,*args):
         """Draws the polygons to the screen, and returns the value of the polygon that is selected"""
         # Selected value is a index
 
@@ -185,21 +185,21 @@ class LatterScroll():
             # check if the mouse is hovering over the polygon
             if (hover:=point_in_polygon(pygame.mouse.get_pos(),points)):
                 if mousebuttons == 1:
-                    if numdrawn+self.omittedstocks[0] == selected_value:
-                        selected_value = None
+                    if numdrawn+self.omittedstocks[0] == selectedVal:
+                        selectedVal = None
                     else:
-                        selected_value = numdrawn+self.omittedstocks[0]
+                        selectedVal = numdrawn+self.omittedstocks[0]
                     soundEffects['clickbutton2'].play()
             
             # draw the polygon
-            # gfxdraw.filled_polygon(screen, points, (60,60,60,150) if hover or numdrawn == selected_value else (25,25,25,150 ))
+            # gfxdraw.filled_polygon(screen, points, (60,60,60,150) if hover or numdrawn == selectedVal else (25,25,25,150 ))
 
             # get bottom coords
             if drawbottom:
                 bottom_polygon = self.get_bottompoints(points)
                 # draw the bottom of the polygon
                 bottomargument = None if len(args) <= numdrawn else args[numdrawn]
-                bottomcolor = self.decidebottomcolor(hover,selected_value,numdrawn+self.omittedstocks[0],bottomargument)       
+                bottomcolor = self.decidebottomcolor(hover,selectedVal,numdrawn+self.omittedstocks[0],bottomargument)       
                 gfxdraw.filled_polygon(screen,bottom_polygon,bottomcolor)  
 
              # draw all the texts for each polygon
@@ -207,11 +207,21 @@ class LatterScroll():
 
                 # self.get_textcoord(self.textcoords[i],points[0],self.texts[numdrawn])
                 screen.blit(render,(points[0][0]+self.textcoords[numdrawn][i][0],points[0][1]+self.textcoords[numdrawn][i][1]))
-            pygame.draw.polygon(screen, (0, 0, 1), points, 5)
+            # pygame.draw.polygon(screen, (0, 0, 1), points, 5)
+            pygame.draw.rect(screen,(0,0,0),pygame.Rect(points[0][0],points[0][1],points[2][0]-points[0][0],points[1][1]-points[0][1]),5,10)
         # screen.blit(self.surf,coords)
-        return selected_value
+        return selectedVal
     
-
+class CustomColorLatter(LatterScroll):
+    def __init__(self):
+        super().__init__()
+    def decidebottomcolor(self,hover,selectedVal,numdrawn,color):
+        """All this does is allows you to pass in colors into args and it uses that color for the botom"""
+        if hover or selectedVal == numdrawn:
+            return brightenCol(color,1.5)
+        else:
+            return color
+            
 class PortfolioLatter(LatterScroll):
     def __init__(self):
         super().__init__()
@@ -224,11 +234,11 @@ class PortfolioLatter(LatterScroll):
             addedx = self.texts[i][list(self.texts[i])[0]].get_width()+45
             stock[0].baredraw(screen, (x+130+addedx, y), (x+addedx, y+height-9), '1D')
 
-    def decidebottomcolor(self,hover,selected_value,numdrawn,percent):
+    def decidebottomcolor(self,hover,selectedVal,numdrawn,percent):
         percentchange = percent
 
         bright,dull = 175,100
-        if hover or selected_value == numdrawn:
+        if hover or selectedVal == numdrawn:
             if percentchange > 0:bottomcolor = (0, bright, 0)
             elif percentchange == 0:bottomcolor = (bright, bright, bright)
             else:bottomcolor = (bright, 0, 0)

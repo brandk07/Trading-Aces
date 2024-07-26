@@ -9,13 +9,14 @@ from Classes.Player import Player
 from Classes.StockGraphManager import StockGraphManager
 from Classes.Stockbook import Stockbook
 from Classes.Portfolio import Portfolio
-from Classes.OptionMenu import Optiontrade
+# from Classes.OptionMenu import Optiontrade
 from collections import deque
 from Classes.smallClasses.TotalMarket import TotalMarket
 import timeit
 from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
 from Classes.NewstockBook import Stockbook2
+from Classes.NewOptionMenu import Optiontrade
 GAMESPEED = 250
 FASTFORWARDSPEED = 1000
 pygame.init()

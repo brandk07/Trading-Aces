@@ -4,13 +4,14 @@ from pygame import gfxdraw
 from Classes.imports.Menu import Menu
 import numpy as np
 from Classes.imports.Bar import SliderBar
-from Classes.AssetTypes.StockAsset import StockAsset
+# from Classes.AssetTypes.StockAsset import StockAsset
 from Classes.StockVisualizer import StockVisualizer
-from Classes.imports.OrderScreen import OrderScreen
+# from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Latterscroll import PortfolioLatter,LatterScroll
 from Classes.Stock import Stock
 from Classes.imports.PieChart import PieChart
 from Classes.imports.BarGraph import BarGraph
+from Classes.imports.SelectionBar import SelectionBar
 import datetime
 
 TXTCOLOR = (220,220,220)
@@ -27,16 +28,17 @@ class Stockbook2(Menu):
         self.menudrawn = True
         self.stocklist = stocklist
         self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
-        self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
-        self.stockGraph = StockVisualizer(gametime,stocklist[0],stocklist)
-        self.stockLS = PortfolioLatter()
-        self.futureRepLS,self.pastRepLS = LatterScroll(),LatterScroll()
+        self.quantitybar : SliderBar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
+        self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
+        self.stockLS : PortfolioLatter = PortfolioLatter()
+        self.futureRepLS, self.pastRepLS = LatterScroll(), LatterScroll()
         self.orderScreen = orderScreen
-        self.middleDisplays = ["Company Info","Quarterly Reports","News"]
+        self.middleDisplays = ["Info","Reports","News"]
         self.currentMDisp = self.middleDisplays[0]
         self.oScreenDisp = False
-        self.reportPieChart = PieChart(125,(940,700))
-        self.reportBarGraph = BarGraph("Report Likelyhood",(450,190),(940,740))
+        self.reportPieChart : PieChart = PieChart(125,(940,700))
+        self.reportBarGraph : BarGraph = BarGraph("Report Likelyhood",(450,190),(940,740))
+        self.barSelection : SelectionBar = SelectionBar()
         
 
     def createDescriptions(self,stocknames):
@@ -85,7 +87,7 @@ class Stockbook2(Menu):
             coords[i].append(((text[1],100),30))
 
         self.stockLS.storetextinfo(textinfo); self.stockLS.set_textcoords(coords)# stores the text info and the coords for the latter scroll
-        ommitted = self.stockLS.store_rendercoords((1470, 135), (435,975),135,0,0,updatefreq=60)
+        ommitted = self.stockLS.store_rendercoords((1470, 135), (435,975),135,0,0,updatefreq=0)
         self.selectedStock = self.selectedStock if self.selectedStock in self.stocklist else None# Ensuring that the selected stock is in the stocklist
 
         selectedindex = None if self.selectedStock == None else self.stocklist.index(self.selectedStock)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
@@ -294,7 +296,7 @@ class Stockbook2(Menu):
         xCeo,yCeo = 1165,620
         wCeo,hCeo = 290,330
         
-        ceoInfo = s_render("CEO INFO",50,(220,220,220))
+        ceoInfo = s_render("CEO",50,(220,220,220))
         screen.blit(ceoInfo,(xCeo+wCeo/2-ceoInfo.get_width()/2,yCeo+10))
         # screen.blit(s_render("CEO INFO",50,(220,220,220)),(1175,630))
         pygame.draw.rect(screen,(0,0,0),(xCeo+wCeo/2-118/2,yCeo+55,128,110),5)# Box for the CEO image
@@ -343,9 +345,9 @@ class Stockbook2(Menu):
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
         mousex, mousey = pygame.mouse.get_pos()
 
-        bmouse = mousebuttons# click still needs to go to the order screen
-        if self.oScreenDisp:# Can't click anything if the order screen is displayed
-            mousebuttons = 0
+        # bmouse = mousebuttons# click still needs to go to the order screen
+        # if self.oScreenDisp:# Can't click anything if the order screen is displayed
+        #     mousebuttons = 0
 
         # Draw the stock graph
         self.stockGraph.setStockObj(self.selectedStock)
@@ -354,21 +356,23 @@ class Stockbook2(Menu):
 
         self.drawStockLatter(screen, mousebuttons, player)
         if drawClickableBox(screen,(879,420),"Create Order",95,(130,130,130),(0,170,0),mousebuttons):
-            self.oScreenDisp = True
+            self.oScreenDisp = True 
 
-        result = checkboxOptions(screen,self.middleDisplays,self.currentMDisp,(190,550),(680,50),mousebuttons,txtSize=35)
-        self.currentMDisp = result[0] if result else self.currentMDisp
+        self.barSelection.draw(screen,self.middleDisplays,(195,560),(545,45),txtsize=35)
+        # result = checkboxOptions(screen,self.middleDisplays,self.currentMDisp,(190,550),(680,50),mousebuttons,txtSize=35)
+        # self.currentMDisp = result[0] if result else self.currentMDisp
 
         self.drawBuySellInfo(screen,gametime)
 
-        match self.currentMDisp:
-            case "Company Info":
+        # match self.currentMDisp:
+        match self.barSelection.getSelected():
+            case "Info":
                 self.drawCompanyInfo(screen,self.selectedStock.name,(190,100))
                 pass
             case "News":
                 # self.drawNews(screen,self.selectedStock.name,(190,100))
                 pass
-            case "Quarterly Reports":
+            case "Reports":
                 self.drawQuarterlyReports(screen,gametime,mousebuttons)
         
         
@@ -376,6 +380,6 @@ class Stockbook2(Menu):
         # print(self.selectedStock.getPointDate(datetime.datetime.strptime(f"04/19/2029 9:30:00 AM", "%m/%d/%Y %I:%M:%S %p"),gametime))
         
         if self.oScreenDisp:
-            self.oScreenDisp = self.orderScreen.draw(screen,self.selectedStock,bmouse,player,gametime)
+            self.oScreenDisp = self.orderScreen.draw(screen,self.selectedStock,mousebuttons,player,gametime)
 
 

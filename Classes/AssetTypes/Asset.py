@@ -5,17 +5,17 @@ from random import randint
 import datetime
 
 class Asset:
-    def __init__(self,player:object,stockobj:object,creationdate:str,nametext:str,ogvalue:float,quantity:int,portfolioPercent:float,color=None) -> None:
+    def __init__(self,player:object,stockObj:object,creationDate:str,nameText:str,ogValue:float,quantity:int,portfolioPercent:float,color=None) -> None:
         """Parent class for all assets"""
-        self.stockobj = stockobj
+        self.stockObj = stockObj
         self.playerObj = player
-        self.date = creationdate
+        self.date = creationDate
         self.portfolioPercent = portfolioPercent
-        self.ogvalue = ogvalue# ogvalue is the value the asset orginally had, just for 1 asset
+        self.ogValue = ogValue# ogValue is the value the asset orginally had, just for 1 asset
         self.color = (randint(50,255),randint(50,255),randint(50,255)) if color == None else color
-        self.name = f'{self.stockobj.name}{nametext}'# nametext for options is the option type
+        self.name = f'{self.stockObj.name}{nameText}'# nameText for options is the option type
         self.quantity = quantity
-        self.dateobj = datetime.datetime.strptime(creationdate, "%m/%d/%Y %I:%M:%S %p")
+        self.dateobj = datetime.datetime.strptime(creationDate, "%m/%d/%Y %I:%M:%S %p")
         
 
     def __str__(self) -> str:
@@ -31,14 +31,16 @@ class Asset:
             self.quantity += other.quantity
             return self
         raise ValueError(f'{type(self).__name__} objects must be the same to add them together')
-        
+    def getStockObj(self): return self.stockObj
+    def getOgVal(self): return self.ogValue
+
     def getPercent(self):
         """returns the percent change of the option"""
-        return ((self.getValue(fullvalue=False) - (self.ogvalue)) / (self.ogvalue)) * 100
+        return ((self.getValue(fullvalue=False) - (self.ogValue)) / (self.ogValue)) * 100
     
     def getVolatility(self):
         """returns the volatility of the asset's stock"""
-        return self.stockobj.getVolatility()
+        return self.stockObj.getVolatility()
     
     def savingInputs(self):
         """returns the all the inputs needed to construct a new object"""

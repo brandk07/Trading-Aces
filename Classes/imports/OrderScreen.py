@@ -17,6 +17,7 @@ class OrderScreen:
         background = pygame.image.load(r'Assets\backgrounds\Background (9).png').convert_alpha()
         background = pygame.transform.smoothscale_by(background,2);background.set_alpha(140)
         self.background = background
+        pygame.draw.rect(self.background,(100,100,100),pygame.Rect(0,0,2000,1200))
         # self.wh = [960,650]
         self.whDict = {'MarketBuy':[550,650],'MarketSell':[960,650],'LimitBuy':[960,650],'LimitSell':[960,650],'StopBuy':[960,650],'StopSell':[960,650]}
 
@@ -27,7 +28,7 @@ class OrderScreen:
             self.surfs[key].blit(self.background,(-750,-200))
         # self.surf.blit(background,(-480,-270))
         self.surfCoords = [750,200]
-        self.lastMousePos = [0,0]
+        self.lastMousePos = None
         self.numPad = Numpad(displayText=False)
         self.uicontrols : UIControls = uicontrols
         self.latterScroll = LatterScroll()
@@ -69,11 +70,16 @@ class OrderScreen:
         collide = pygame.Rect.collidepoint(pygame.Rect(x-20,y-20,wh[0]+40,wh[1]+40),mousex,mousey)
 
         if collide and pygame.mouse.get_pressed()[0]:
-            xdiff,ydiff = mousex-self.lastMousePos[0],mousey-self.lastMousePos[1]
-            if xdiff != 0 or ydiff != 0:
-                self.surfCoords[0] += xdiff
-                self.surfCoords[1] += ydiff
-            
+            if self.lastMousePos != None:# if there is a last mouse pos
+                xdiff,ydiff = mousex-self.lastMousePos[0],mousey-self.lastMousePos[1]
+                if xdiff != 0 or ydiff != 0:
+                    self.surfCoords[0] += xdiff
+                    self.surfCoords[1] += ydiff
+                
+                    surf.fill((0,0,0))
+                    surf.blit(self.background,(-self.surfCoords[0],-self.surfCoords[1]))
+            else:# if there isn't a last mouse pos
+                self.lastMousePos = [mousex,mousey]
                 surf.fill((0,0,0))
                 surf.blit(self.background,(-self.surfCoords[0],-self.surfCoords[1]))
                 
@@ -112,6 +118,7 @@ class OrderScreen:
             cancelButton = s_render('Cancel',40,(180,0,0))
             if mousebuttons == 1:
                 soundEffects['clickbutton2'].play()
+                self.lastMousePos = None
                 return False
         
         screen.blit(cancelButton,(wh[0]+x-cancelButton.get_width()-10,610+y))
@@ -163,7 +170,7 @@ class OrderScreen:
         def get_Quant(asset):
             return f"{asset.quantity} {'Share'}{'' if asset.quantity == 1 else 's'}"
         
-        stocks = [stock for stock in player.stocks if stock.stockobj == stockObj]
+        stocks = [stock for stock in player.stocks if stock.getStockObj() == stockObj]
         stocks.sort(key=lambda x:x.getValue(),reverse=True)
 
         get_text = lambda asset : [f'{asset} ',asset.dateobj.strftime("%m/%d/%Y"),get_Quant(asset)]
