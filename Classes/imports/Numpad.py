@@ -4,10 +4,11 @@ import pygame.gfxdraw
 from Defs import *
 
 class Numpad:
-    def __init__(self,displayText=True) -> None:
+    def __init__(self,displayText=True,nums=('DEL','0','MAX'),maxDecimals=2) -> None:
         self.value = 0
-        self.nums = ['DEL','0','MAX']
+        self.nums = list(nums)
         self.nums.extend([str(i) for i in range(1,10)])
+        self.maxDecimals = maxDecimals
         self.numstr = '0'
         self.numrenders = {name:s_render(name,35,(255,255,255),font='cry') for name in self.nums}
         self.heights = [self.numrenders[name].get_height() for name in self.nums]
@@ -15,10 +16,13 @@ class Numpad:
         self.displayText = displayText
 
     def getValue(self):
-        return int(self.numstr)
+        if self.numstr.count('.') == 0:
+            return int(self.numstr)
+        return float(self.numstr)
+
     
     def getNumstr(self,extraText):
-        return f"{int(self.numstr):,.0f} "+extraText+("S" if int(self.numstr) != 1 else "")
+        return f"{float(self.numstr):,.0f} "+extraText+("S" if float(self.numstr) != 1 else "")
     
     def draw(self,screen,coords,wh,extratext,mousebuttons,maxvalue):
         # gfxdraw.box(screen,pygame.Rect(coords,wh),(50,50,50))
@@ -52,9 +56,14 @@ class Numpad:
         #         if mousebuttons == 1 and int(self.numstr) > 0: self.numstr = str(int(self.numstr)-1)
         #     if point_in_polygon(pygame.mouse.get_pos(),rightboxpoints):
         #         if mousebuttons == 1: self.numstr = str(int(self.numstr)+1)
+        maxvalue = round(maxvalue,self.maxDecimals)
+        if self.numstr == '.': self.numstr = '0'
 
-        if int(self.numstr) > maxvalue:
+        if float(self.numstr) > maxvalue:
             self.numstr = str(maxvalue)
+
+        if float(self.numstr) != int(float(self.numstr)):
+            self.numstr = str(round(float(self.numstr),self.maxDecimals))
 
         for row in range(4):
             for col in range(3):
@@ -80,13 +89,19 @@ class Numpad:
                             self.numstr = '0'
                         elif self.nums[ind] == 'MAX':
                             self.numstr = str(maxvalue)
+                        elif self.nums[ind] == '.': 
+                            if '.' not in self.numstr:
+                                self.numstr += '.'
                         else:
-                            self.numstr += self.nums[ind]
+                            if '.' in self.numstr and len(self.numstr.split('.')[1]) < self.maxDecimals:
+                                self.numstr += self.nums[ind]
+                            elif '.' not in self.numstr:
+                                self.numstr += self.nums[ind]
                         self.numstr = self.numstr.lstrip('0')
-                        if self.numstr == '':
+                        if self.numstr == '' or self.numstr == '.':
                             self.numstr = '0'
 
-                        if int(self.numstr) > maxvalue:
+                        if float(self.numstr) > maxvalue:
                             self.numstr = str(maxvalue)
 
                 # gfxdraw.box(screen,rect,color)

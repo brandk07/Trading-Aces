@@ -151,13 +151,13 @@ class LatterScroll():
             y += polyheight  
         return self.omittedstocks[0]+1,self.omittedstocks[0]+ndrawn+1
     
-    def get_bottompoints(self,points:list):
-         return [
-                (points[1][0]+10,points[1][1]),
-                (points[1][0]+20,points[1][1]-20),
-                (points[2][0],points[2][1]-20),
-                (points[2][0]-10,points[2][1]),
-                (points[1][0]+10,points[1][1]),]
+    # def get_bottompoints(self,points:list):
+    #      return [
+    #             (points[1][0]+10,points[1][1]),
+    #             (points[1][0]+20,points[1][1]-20),
+    #             (points[2][0],points[2][1]-20),
+    #             (points[2][0]-10,points[2][1]),
+    #             (points[1][0]+10,points[1][1]),]
     
     def scrollcontrols(self, mousebuttons, coords, wh):
         mousex,mousey = pygame.mouse.get_pos()
@@ -196,11 +196,12 @@ class LatterScroll():
 
             # get bottom coords
             if drawbottom:
-                bottom_polygon = self.get_bottompoints(points)
+                # bottom_polygon = self.get_bottompoints(points)
                 # draw the bottom of the polygon
                 bottomargument = None if len(args) <= numdrawn else args[numdrawn]
                 bottomcolor = self.decidebottomcolor(hover,selectedVal,numdrawn+self.omittedstocks[0],bottomargument)       
-                gfxdraw.filled_polygon(screen,bottom_polygon,bottomcolor)  
+
+                pygame.draw.rect(screen,bottomcolor,pygame.Rect(points[0][0],points[1][1]-20,points[2][0]-points[0][0],20),border_bottom_left_radius=10,border_bottom_right_radius=10)
 
              # draw all the texts for each polygon
             for i,render in enumerate(text_renders):
@@ -218,7 +219,7 @@ class CustomColorLatter(LatterScroll):
     def decidebottomcolor(self,hover,selectedVal,numdrawn,color):
         """All this does is allows you to pass in colors into args and it uses that color for the botom"""
         if hover or selectedVal == numdrawn:
-            return brightenCol(color,1.5)
+            return brightenCol(color,.15)
         else:
             return color
             

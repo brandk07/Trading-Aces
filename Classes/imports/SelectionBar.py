@@ -8,7 +8,7 @@ class SelectionBar:
         self.selected = None
     def getSelected(self):
         return self.selected
-    def draw(self,screen:pygame.Surface,data:list[str],coords:list[int],wh:list[int],colors:list[tuple]=None,txtsize:int=36):
+    def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],colors:list[tuple]=None,txtsize:int=36):
         """Data is a list of strings that can be selected
         the length of data can be changed, but it must be at least 1
         will auto select the first element in the list"""	
@@ -23,12 +23,18 @@ class SelectionBar:
         x,y = coords
         w,h = wh
         spacing = math.ceil(w/len(data))
-        pygame.draw.rect(screen,(20,20,20),pygame.Rect(x,y,w,h),border_radius=25)# Ovalish shape that all elements will be drawn on
+        # pygame.draw.rect(screen,(20,20,20),pygame.Rect(x,y,w,h),border_radius=25)# Ovalish shape that all elements will be drawn on
 
         for i,txt in enumerate(data):
             rtxt = s_render(txt,txtsize,colors[i])
+
             if txt == self.selected:
-                pygame.draw.rect(screen,(110,110,110),pygame.Rect(x+(i*spacing),y,spacing,h),border_radius=25)
+                pygame.draw.rect(screen,(10,10,10),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),border_radius=25)
+
+            pygame.draw.rect(screen,(0,0,0),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),width=5,border_radius=25)
+            
+
+                
             txtx = x+(i*spacing)+(spacing//2)-(rtxt.get_width()//2)
             txty = y+(h//2)-(rtxt.get_height()//2)
             screen.blit(rtxt,(txtx,txty))

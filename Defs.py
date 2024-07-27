@@ -125,24 +125,32 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 
-def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int) -> bool:
-    """Draws a clickable box on the screen, returns True if the box is clicked"""
-
+def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,centerX=False,fill=False) -> bool:
+    """Draws a clickable box on the screen, returns True if the box is clicked
+    Will center the X position onto coords[0] of the text if centerX is True"""
     
     valueText = s_render(text,textsize,color1)
     x,y = coords
     w,h = valueText.get_width()+50, valueText.get_height()+30
+    if centerX:
+        x -= w//2
+
     pygame.draw.rect(screen, (0,0,0), (x,y,w,h), 5, 10)
     
     myrect = pygame.Rect(x,y,w,h)
 
     if myrect.collidepoint(pygame.mouse.get_pos()):
-        valueText = s_render(text,textsize,color2)# re-render the text with a different color
-        pygame.draw.rect(screen, (0,0,0), (x,y,w,h), 5, 10)
+        if fill:# Rather than changing the text, the box will fill in
+            pygame.draw.rect(screen, color2, (x,y,w,h), border_radius=10)
+            pygame.draw.rect(screen, (0,0,0), (x,y,w,h), 5, 10)
+        else:# The text will change color
+            valueText = s_render(text,textsize,color2)# re-render the text with a different color
+
         if mousebuttons == 1:
             soundEffects['clickbutton2'].play()
             return True
-    screen.blit(valueText,(coords[0]+25,coords[1]+15))
+        
+    screen.blit(valueText,(x+25,y+15))
     return False
 
 def drawBoxedText(screen,text,size,boxcolor,textcolor,pos):

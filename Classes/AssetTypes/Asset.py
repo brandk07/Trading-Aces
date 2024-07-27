@@ -14,7 +14,7 @@ class Asset:
         self.ogValue = ogValue# ogValue is the value the asset orginally had, just for 1 asset
         self.color = (randint(50,255),randint(50,255),randint(50,255)) if color == None else color
         self.name = f'{self.stockObj.name}{nameText}'# nameText for options is the option type
-        self.quantity = quantity
+        self.quantity = int(quantity)
         self.dateobj = datetime.datetime.strptime(creationDate, "%m/%d/%Y %I:%M:%S %p")
         
 
@@ -28,7 +28,7 @@ class Asset:
         if self == other:
             extraValue = (other.getValue(bypass=True)+self.getValue(bypass=True))
             self.portfolioPercent = extraValue/(self.playerObj.getNetworth()+other.getValue(bypass=True))
-            self.quantity += other.quantity
+            self.quantity += int(other.quantity)
             return self
         raise ValueError(f'{type(self).__name__} objects must be the same to add them together')
     def getStockObj(self): return self.stockObj

@@ -96,6 +96,7 @@ class Player(Stock):
     def sellAsset(self,asset,quantity):
         """sells the quantity number of the asset object given
         won't sell more than the quantity of the asset"""
+        quantity = int(quantity)
         if isinstance(asset,StockAsset):
             assetlist = self.stocks 
         elif isinstance(asset,OptionAsset):
