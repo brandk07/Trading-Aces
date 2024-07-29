@@ -125,15 +125,16 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 
-def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,centerX=False,fill=False,border=True) -> bool:
+def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,centerX=False,centerY=False,fill=False,border=True,topLeftX=False) -> bool:
     """Draws a clickable box on the screen, returns True if the box is clicked
     Will center the X position onto coords[0] of the text if centerX is True"""
     
     valueText = s_render(text,textsize,color1)
     x,y = coords
     w,h = valueText.get_width()+50, valueText.get_height()+30
-    if centerX:
-        x -= w//2
+    if centerX: x -= w//2
+    if centerY: y -= h//2
+    if topLeftX: x -= w
     if border:
         pygame.draw.rect(screen, (0,0,0), (x,y,w,h), 5, 10)
     

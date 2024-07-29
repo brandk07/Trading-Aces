@@ -17,15 +17,32 @@ class Numpad:
         self.displayText = displayText
 
     def getValue(self):
-        if self.numstr.count('.') == 0:
-            return int(self.numstr)
-        return float(self.numstr)
+        num = self.numstr
+        if self.numstr[-1] == '.':# if the last character is a decimal point
+            num = self.numstr[:-1]# remove the decimal point
+            if num == '':# if the number is empty
+                return self.defaultVal# return the default value
+        
+        if num.count('.') == 0:# if there are no decimal points
+            return int(num)
+        return round(float(num),self.maxDecimals)
 
     
-    def getNumstr(self,extraText,upperCase=False):
+    def getNumstr(self,extraText='',upperCase=False,haveSes=True):
+        print(self.numstr,' numstr')
+        seS = extraText
+        if haveSes:
+            s = "S" if upperCase else "s"
+            seS += (s if self.getValue() != 1 else "")
+
+        if self.numstr[-1] == '.':
+            return f"{self.getValue():,}. "+seS
+
         if upperCase:
-            return f"{self.getValue():,.0f} "+extraText+("S" if self.getValue() != 1 else "")
-        return f"{self.getValue():,.0f} "+extraText+("s" if self.getValue() != 1 else "")
+            return f"{self.getValue():,} "+seS
+        return f"{self.getValue():,} "+seS
+        #     return f"{self.getValue():,.0f} "+extraText+("S" if self.getValue() != 1 else "")
+        # return f"{self.getValue():,.0f} "+extraText+("s" if self.getValue() != 1 else "")
     
     def draw(self,screen,coords,wh,extratext,mousebuttons,maxvalue):
         # gfxdraw.box(screen,pygame.Rect(coords,wh),(50,50,50))
@@ -60,13 +77,15 @@ class Numpad:
         #     if point_in_polygon(pygame.mouse.get_pos(),rightboxpoints):
         #         if mousebuttons == 1: self.numstr = str(int(self.numstr)+1)
         maxvalue = round(maxvalue,self.maxDecimals)
-        if self.numstr == '.': self.numstr = str(self.defaultVal)
+        # if self.numstr == '.': self.numstr = str(self.defaultVal)
+        if self.numstr == '.': 
+            '0.'
+        else:
+            if float(self.numstr) > maxvalue:
+                self.numstr = str(maxvalue)
 
-        if float(self.numstr) > maxvalue:
-            self.numstr = str(maxvalue)
-
-        if float(self.numstr) != int(float(self.numstr)):
-            self.numstr = str(round(float(self.numstr),self.maxDecimals))
+            if float(self.numstr) != int(float(self.numstr)):
+                self.numstr = str(round(float(self.numstr),self.maxDecimals))
 
         for row in range(4):
             for col in range(3):
@@ -101,11 +120,13 @@ class Numpad:
                             elif '.' not in self.numstr:
                                 self.numstr += self.nums[ind]
                         self.numstr = self.numstr.lstrip('0')
-                        if self.numstr == '' or self.numstr == '.':
+                        if self.numstr == '':
                             self.numstr = str(self.defaultVal)
-
-                        if float(self.numstr) > maxvalue:
-                            self.numstr = str(maxvalue)
+                        if self.numstr == '.': 
+                            '0.'
+                        else:
+                            if float(self.numstr) > maxvalue:
+                                self.numstr = str(maxvalue)
 
                 # gfxdraw.box(screen,rect,color)
                 # pygame.draw.rect(screen,color,rect,5,10)

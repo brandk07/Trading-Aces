@@ -32,7 +32,7 @@ class Optiontrade(Menu):
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockSelection : SelectionBar = SelectionBar()
         self.oTypeSelect : SelectionBar = SelectionBar()
-        self.strikeNumPad : Numpad = Numpad(displayText=False,nums=('DEL','0','.'),defaultVal=1)
+        self.strikeNumPad : Numpad = Numpad(displayText=False,nums=('DEL','0','.'))
         self.dateNumPad : Numpad = Numpad(displayText=False,nums=('DEL','0','MAX'))
         stocknames = [stock.name for stock in stocklist]
         self.findStockObj = lambda name: stocklist[stocknames.index(name)] 
@@ -105,10 +105,9 @@ class Optiontrade(Menu):
         screen.blit(txt,(390-txt.get_width()/2,950))
     
     def customOptionLogic(self,screen:pygame.Surface,mousebuttons:int,gametime:GameTime,stock:Stock):
-
+        """Handles the logic for creating a custom option"""
         # pygame.draw.rect(screen,(0,0,0),pygame.Rect(1510,260,390,415),5,10)
 
-        
         
         if self.newOptionInfo == None:# if there is no new option being created (display the create new option button)
             pygame.draw.rect(screen,(0,0,0),pygame.Rect(1520,270,200,50),5,10)
@@ -122,21 +121,27 @@ class Optiontrade(Menu):
             createTxt = s_render('+ Create New', 45, createColor)
             screen.blit(createTxt, (1620-createTxt.get_width()/2, 280))
         else:# if there is a new option being created
-
-            typeTxt = s_render('Option Type', 40, (200, 200, 200))
+            coords = [(270,105),(380,95),(480,115),(605,85)]# stores the y and height of the boxes [Type, strike, exp date, est price]
+            for i,coord in enumerate(coords):
+                pygame.draw.rect(screen,(0,0,0),pygame.Rect(1510,coord[0],375,coord[1]),5,10)
+                
+            typeTxt = s_render('Type', 45, (200, 200, 200))
             screen.blit(typeTxt, (1700-typeTxt.get_width()/2, 275))
+            
+            # screen.blit(typeTxt, (1530, 325-typeTxt.get_height()/2))
             # wh = 250
             # 1575-320(127,25,255) if optionType == "put" else (50, 180, 169)
-            self.oTypeSelect.draw(screen, ["Call","Put"], (1575, 320), (250, 50), colors=[(50, 180, 169),(127,25,255)],txtsize=35)
+            self.oTypeSelect.draw(screen, ["Call","Put"], (1575, 315), (250, 50), colors=[(50, 180, 169),(127,25,255)],txtsize=35)
 
             # --------------------------------------- STRIKE PRICE ----------------------------------
-            strikeTxt = s_render('Strike Price', 40, (200, 200, 200))
-            screen.blit(strikeTxt, (1505, 385))
+            strikeTxt = s_render('Strike', 45, (180, 180, 180))
+            screen.blit(strikeTxt, (1530, 427-strikeTxt.get_height()/2))
             # strikeTxt = s_render('Strike Price', 40, (200, 200, 200))
             # screen.blit(strikeTxt, (1700-strikeTxt.get_width()/2, 385))
 
             if self.newOptionInfo[0] == None:
-                result = drawClickableBox(screen, (1700, 420), "Set Value", 45, (0,0,0), (160,160,160), mousebuttons,centerX=True,fill=True)
+                result = drawClickableBox(screen, (1875, 427), "Set Value", 45, (0,0,0), (160,160,160), mousebuttons,centerY=True,fill=True,topLeftX=True)
+                # result = drawClickableBox(screen, (1700, 420), "Set Value", 45, (0,0,0), (160,160,160), mousebuttons,centerX=True,fill=True)
                 if result:# if the box has been clicked to set the value (numpad displayed)
                     self.newOptionInfo[0] = True# changing it to true so that the numpad will be displayed
                     self.newOptionInfo[1] = None if self.newOptionInfo[1] == True else self.newOptionInfo[1]# if the box has been clicked for setting a value, but no value has been confirmed
@@ -145,21 +150,27 @@ class Optiontrade(Menu):
                 self.strikeNumPad.draw(screen,(1050,190),(450,340),"",mousebuttons,stock.price*2)# draw the numpad
                 result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Strike Value", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
                 if result:
-                    self.newOptionInfo[0] = max(self.strikeNumPad.getValue(),1)# ensure that the strike price is at least 1
-                numValTxt = s_render(f"${self.strikeNumPad.getValue()}", 55, (200, 200, 200))
-                screen.blit(numValTxt, (1700-numValTxt.get_width()/2, 430))
-               
+                    self.newOptionInfo[0] = self.strikeNumPad.getValue()# ensure that the strike price is at least 1
+                numValTxt = s_render(f"${self.strikeNumPad.getNumstr(haveSes=False)}", 55, (200, 200, 200))
+                # screen.blit(numValTxt, (1700-numValTxt.get_width()/2, 430))
+                screen.blit(numValTxt, (1850-numValTxt.get_width(), 428-numValTxt.get_height()/2))
+                if self.newOptionInfo[0] == 0:
+                    self.newOptionInfo[0] = None
             
             else:# if the value has been confirmed
-                result = drawClickableBox(screen, (1700, 415), f"${self.strikeNumPad.getValue()}", 55, (0,0,0), (160,160,160), mousebuttons,centerX=True,border=False)
+                
+                # result = drawClickableBox(screen, (1700, 415), f"${self.strikeNumPad.getValue()}", 55, (0,0,0), (160,160,160), mousebuttons,centerX=True,border=False)
+                result = drawClickableBox(screen, (1875, 427), f"${self.strikeNumPad.getValue()}", 55, (200,200,200), (0,0,0), mousebuttons,centerY=True,border=False,topLeftX=True)
                 self.newOptionInfo[0] = result if result else self.newOptionInfo[0]# Allows the user to change the value even if it has been confirmed
-            
+                
+
             # --------------------------------------- EXPIRATION DATE ----------------------------------
-            dateTxt = s_render('Expiration Date', 40, (200, 200, 200))
-            screen.blit(dateTxt, (1700-dateTxt.get_width()/2, 485))
+            dateTxt = s_render('Exp Date', 40, (200, 200, 200))
+            # screen.blit(dateTxt, (1700-dateTxt.get_width()/2, 485))
+            screen.blit(dateTxt, (1530, 537-dateTxt.get_height()/2))
 
             if self.newOptionInfo[1] == None:
-                result = drawClickableBox(screen, (1700, 520), "Set Date", 45, (0,0,0), (170,170,170), mousebuttons, centerX=True,fill=True)
+                result = drawClickableBox(screen, (1875, 537), "Set Date", 45, (0,0,0), (170,170,170),mousebuttons,centerY=True,fill=True,topLeftX=True)
                 if result:# if the box has been clicked to set the date (numpad displayed)
                     self.newOptionInfo[1] = True# changing it to true so that the numpad will be displayed
                     self.newOptionInfo[0] = None if self.newOptionInfo[0] == True else self.newOptionInfo[0]# if the box has been clicked for setting a value, but no value has been confirmed
@@ -172,23 +183,29 @@ class Optiontrade(Menu):
                 if result:
                     self.newOptionInfo[1] = self.dateNumPad.getValue()
                 daysValTxt = s_render(f"{self.dateNumPad.getNumstr('Day',upperCase=False)}", 55, (200, 200, 200))
-                screen.blit(daysValTxt, (1700-daysValTxt.get_width()/2, 520))
+                # screen.blit(daysValTxt, (1700-daysValTxt.get_width()/2, 520))
+                screen.blit(daysValTxt, (1860-daysValTxt.get_width(), 500))
                 timeOffset = gametime.time+timedelta(days=self.dateNumPad.getValue())
                 dateValTxt = s_render(f"{timeOffset.strftime('%m/%d/%Y')}", 40, (175, 175, 175))
-                screen.blit(dateValTxt, (1700-dateValTxt.get_width()/2, 570))
+                # screen.blit(dateValTxt, (1700-dateValTxt.get_width()/2, 570))
+                screen.blit(dateValTxt, (1860-dateValTxt.get_width(), 545))
             else:# if the value has been confirmed
-                result = drawClickableBox(screen, (1700, 505), f"{self.dateNumPad.getNumstr('Day',upperCase=False)}", 55, (0,0,0), (160,160,160), mousebuttons,centerX=True,border=False)
+                # result = drawClickableBox(screen, (1700, 505), f"{self.dateNumPad.getNumstr('Day',upperCase=False)}", 55, (0,0,0), (160,160,160), mousebuttons,centerX=True,border=False)
+                result = drawClickableBox(screen, (1885, 485), f"{self.dateNumPad.getNumstr('Day',upperCase=False)}", 55, (200,200,200), (0,0,0), mousebuttons,border=False,topLeftX=True)
                 self.newOptionInfo[1] = result if result else self.newOptionInfo[1]
                 timeOffset = gametime.time+timedelta(days=self.dateNumPad.getValue())
                 dateValTxt = s_render(f"{timeOffset.strftime('%m/%d/%Y')}", 40, (120, 120, 120))
-                screen.blit(dateValTxt, (1700-dateValTxt.get_width()/2, 570))
+                # screen.blit(dateValTxt, (1700-dateValTxt.get_width()/2, 570))
+                screen.blit(dateValTxt, (1860-dateValTxt.get_width(), 545))
                 
             # --------------------------------------- ESTIMATED PRICE ----------------------------------
-            priceTxt = s_render('Est. Price', 40, (200, 200, 200))
-            screen.blit(priceTxt, (1700-priceTxt.get_width()/2, 615))
+            priceTxt = s_render('Est Price', 40, (200, 200, 200))
+            # screen.blit(priceTxt, (1700-priceTxt.get_width()/2, 615))
+            screen.blit(priceTxt, (1530, 647-priceTxt.get_height()/2))
+            
 
             if self.newOptionInfo[0] != None and self.newOptionInfo[1] != None:
-                if type(self.newOptionInfo[0]) != bool and type(self.newOptionInfo[1]) != bool:
+                if type(self.newOptionInfo[0]) != bool and type(self.newOptionInfo[1]) != bool and self.newOptionInfo[0] > 0:
                     timeOffset = (gametime.time+timedelta(days=self.dateNumPad.getValue()))
                     if self.newOptionObj == None:
                         self.newOptionObj = OptionAsset(self.player,stock,self.newOptionInfo[0],timeOffset,self.oTypeSelect.getSelected(),str(gametime),1)
@@ -197,8 +214,11 @@ class Optiontrade(Menu):
                         self.newOptionObj.setValues(strikePrice=self.newOptionInfo[0],expirationDate=timeOffset,optionType=self.oTypeSelect.getSelected())
                     price = self.newOptionObj.getValue(bypass=True)
                     priceTxt = s_render(f"${limit_digits(price,15)}", 55, (200, 200, 200))
-                    print(self.newOptionObj.getStrike(),self.newOptionObj.getExpDate(),self.newOptionObj.getType(),self.newOptionObj.getValue())
-                    screen.blit(priceTxt, (1700-priceTxt.get_width()/2, 655))
+                    # print(self.newOptionObj.getStrike(),self.newOptionObj.getExpDate(),self.newOptionObj.getType(),self.newOptionObj.getValue())
+                    screen.blit(priceTxt, (1860-priceTxt.get_width(), 625))
+                else:# if the value has not been confirmed
+                    notAppltxt = s_render(f"N/A", 55, (200, 200, 200))
+                    screen.blit(notAppltxt, (1860-notAppltxt.get_width(), 625))
 
 
             drawClickableBox(screen, (1700, 700), "Save & Continue", 45, (0,0,0), (0,205,0), mousebuttons, centerX=True)
