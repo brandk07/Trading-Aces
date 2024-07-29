@@ -196,7 +196,7 @@ class UIControls():
                 percentchange = asset.getPercent()
                 c = '+' if percentchange > 0 else ''
                 if isinstance(asset,StockAsset):
-                    return [f'${limit_digits(asset.getValue(),10)}',f'{asset.name} shares of {asset.stockobj.name}',f'{c}{limit_digits(percentchange,8)}%',]
+                    return [f'${limit_digits(asset.getValue(),10)}',f'{asset.name} shares of {asset.getStockObj().name}',f'{c}{limit_digits(percentchange,8)}%',]
                 elif isinstance(asset,OptionAsset):
                     return [f'${limit_digits(asset.getValue(),10)}',f'{asset.name} option',f'{c}{limit_digits(percentchange,8)}%',]
                 #     percentchange = ((asset[0].price - asset[1]) / asset[1]) * 100

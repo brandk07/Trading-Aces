@@ -14,7 +14,7 @@ class OptionAsset(Asset):
         
         self.gametime : datetime.datetime = player.gametime
         self.strikePrice = strikePrice
-        self.expirationDate = datetime.datetime.strptime(expirationDate, "%Y-%m-%d %H:%M:%S")
+        self.expirationDate = datetime.datetime.strptime(expirationDate, "%Y-%m-%d %H:%M:%S") if isinstance(expirationDate,str) else expirationDate
         self.optionType = optionType
     
         self.option = Op(european=True,kind=self.optionType,s0=float(self.stockObj.price)*100,k=self.strikePrice*100,t=self.daysToExpiration(self.gametime.time),sigma=self.getVolatility(),r=0.05)
@@ -44,7 +44,12 @@ class OptionAsset(Asset):
         raise ValueError(f'{type(self).__name__} objects must be the same to add them together')
     def getStrike(self): return self.strikePrice
     def getType(self): return self.optionType
-    
+    def setValues(self,strikePrice=None,expirationDate=None,optionType=None,quantity=None):
+        if strikePrice: self.strikePrice = strikePrice
+        if expirationDate: self.expirationDate = expirationDate
+        if optionType: self.optionType = optionType
+        if quantity: self.quantity = quantity
+        self.option.setValues(strike=self.strikePrice*100,days=self.daysToExpiration(self.gametime.time),optionType=self.optionType)
     def savingInputs(self):
         return (self.stockObj.name,self.strikePrice,str(self.expirationDate),self.optionType,self.date,self.quantity,self.portfolioPercent,self.ogValue,self.color)
     def getExpDate(self):
@@ -61,9 +66,10 @@ class OptionAsset(Asset):
         Full value is value*quantity otherwise it is just the value of the option"""
         
         if bypass or self.updateCount > 60:
-            self.option.s0 = float(self.stockObj.price)*100
-            self.option.sigma = self.getVolatility()
-            self.option.t = self.daysToExpiration(self.gametime.time)/365
+            # self.option.s0 = float(self.stockObj.price)*100
+            # self.option.sigma = self.getVolatility()
+            # self.option.t = self.daysToExpiration(self.gametime.time)/365
+            self.option.setValues(underPrice=float(self.stockObj.price)*100,volatility=self.getVolatility(),days=self.daysToExpiration(self.gametime.time)/365)
   
             self.option.t = self.option.t if self.option.t > 0 else 0
 

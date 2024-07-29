@@ -24,7 +24,7 @@ class SelectionBar:
         w,h = wh
         spacing = math.ceil(w/len(data))
         # pygame.draw.rect(screen,(20,20,20),pygame.Rect(x,y,w,h),border_radius=25)# Ovalish shape that all elements will be drawn on
-
+        changed = False
         for i,txt in enumerate(data):
             rtxt = s_render(txt,txtsize,colors[i])
 
@@ -41,6 +41,8 @@ class SelectionBar:
             if pygame.Rect(x+(i*spacing),y,spacing,h).collidepoint(pygame.mouse.get_pos()):
                 if pygame.mouse.get_pressed()[0]:
                     self.selected = txt
+                    changed = True
+        return changed
         
 
 

@@ -4,12 +4,13 @@ import pygame.gfxdraw
 from Defs import *
 
 class Numpad:
-    def __init__(self,displayText=True,nums=('DEL','0','MAX'),maxDecimals=2) -> None:
-        self.value = 0
+    def __init__(self,displayText=True,nums=('DEL','0','MAX'),maxDecimals=2,defaultVal=0) -> None:
+        self.value = defaultVal
+        self.defaultVal = defaultVal
         self.nums = list(nums)
         self.nums.extend([str(i) for i in range(1,10)])
         self.maxDecimals = maxDecimals
-        self.numstr = '0'
+        self.numstr = f'{defaultVal}'
         self.numrenders = {name:s_render(name,35,(255,255,255),font='cry') for name in self.nums}
         self.heights = [self.numrenders[name].get_height() for name in self.nums]
         self.widths = [self.numrenders[name].get_width() for name in self.nums]
@@ -21,8 +22,10 @@ class Numpad:
         return float(self.numstr)
 
     
-    def getNumstr(self,extraText):
-        return f"{float(self.numstr):,.0f} "+extraText+("S" if float(self.numstr) != 1 else "")
+    def getNumstr(self,extraText,upperCase=False):
+        if upperCase:
+            return f"{self.getValue():,.0f} "+extraText+("S" if self.getValue() != 1 else "")
+        return f"{self.getValue():,.0f} "+extraText+("s" if self.getValue() != 1 else "")
     
     def draw(self,screen,coords,wh,extratext,mousebuttons,maxvalue):
         # gfxdraw.box(screen,pygame.Rect(coords,wh),(50,50,50))
@@ -57,7 +60,7 @@ class Numpad:
         #     if point_in_polygon(pygame.mouse.get_pos(),rightboxpoints):
         #         if mousebuttons == 1: self.numstr = str(int(self.numstr)+1)
         maxvalue = round(maxvalue,self.maxDecimals)
-        if self.numstr == '.': self.numstr = '0'
+        if self.numstr == '.': self.numstr = str(self.defaultVal)
 
         if float(self.numstr) > maxvalue:
             self.numstr = str(maxvalue)
@@ -86,7 +89,7 @@ class Numpad:
                         if self.nums[ind] == 'DEL' and len(self.numstr) > 1:
                             self.numstr = self.numstr[:-1]
                         elif self.nums[ind] == 'DEL' and len(self.numstr) == 1:
-                            self.numstr = '0'
+                            self.numstr = str(self.defaultVal)
                         elif self.nums[ind] == 'MAX':
                             self.numstr = str(maxvalue)
                         elif self.nums[ind] == '.': 
@@ -99,7 +102,7 @@ class Numpad:
                                 self.numstr += self.nums[ind]
                         self.numstr = self.numstr.lstrip('0')
                         if self.numstr == '' or self.numstr == '.':
-                            self.numstr = '0'
+                            self.numstr = str(self.defaultVal)
 
                         if float(self.numstr) > maxvalue:
                             self.numstr = str(maxvalue)

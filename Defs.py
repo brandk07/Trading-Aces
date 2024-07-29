@@ -125,7 +125,7 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 
-def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,centerX=False,fill=False) -> bool:
+def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,centerX=False,fill=False,border=True) -> bool:
     """Draws a clickable box on the screen, returns True if the box is clicked
     Will center the X position onto coords[0] of the text if centerX is True"""
     
@@ -134,6 +134,30 @@ def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,colo
     w,h = valueText.get_width()+50, valueText.get_height()+30
     if centerX:
         x -= w//2
+    if border:
+        pygame.draw.rect(screen, (0,0,0), (x,y,w,h), 5, 10)
+    
+    myrect = pygame.Rect(x,y,w,h)
+
+    if myrect.collidepoint(pygame.mouse.get_pos()):
+        if fill:# Rather than changing the text, the box will fill in
+            pygame.draw.rect(screen, color2, (x,y,w,h), border_radius=10)
+            pygame.draw.rect(screen, (0,0,0), (x,y,w,h), 5, 10)
+        else:# The text will change color
+            valueText = s_render(text,textsize,color2)# re-render the text with a different color
+
+        if mousebuttons == 1:
+            soundEffects['clickbutton2'].play()
+            return True
+        
+    screen.blit(valueText,(x+25,y+15))
+    return False
+def drawClickableBoxWH(screen,coords:tuple,wh:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,fill=False) -> bool:
+    """Same as drawClickable Box, but you give width and height and the text will be centered"""
+    
+    valueText = s_render(text,textsize,color1)
+    x,y = coords
+    w,h = wh
 
     pygame.draw.rect(screen, (0,0,0), (x,y,w,h), 5, 10)
     
@@ -150,7 +174,7 @@ def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,colo
             soundEffects['clickbutton2'].play()
             return True
         
-    screen.blit(valueText,(x+25,y+15))
+    screen.blit(valueText,(x+(w//2)-(valueText.get_width()//2),y+(h//2)-(valueText.get_height()//2)))
     return False
 
 def drawBoxedText(screen,text,size,boxcolor,textcolor,pos):
