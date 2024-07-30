@@ -9,8 +9,8 @@ myOption = Op(european=True,kind="put",s0=9543.754571035066,k=10024.0,t=208,sigm
 print(myOption.getPrice(method="BSM",iteration=1))
     
 class OptionAsset(Asset):
-    def __init__(self,player,stockObj,strikePrice:int,expirationDate:datetime.datetime,optionType:str,creationDate:str,quantity:int,porfolioPercent=None,ogPrice=None,color=None) -> None:
-        super().__init__(player,stockObj, creationDate, " "+optionType, ogPrice, quantity, porfolioPercent, color=color)
+    def __init__(self,player,stockObj,strikePrice:int,expirationDate:datetime.datetime,optionType:str,creationDate:str,quantity:int,porfolioPercent=None,ogValue=None,color=None) -> None:
+        super().__init__(player,stockObj, creationDate, " "+optionType, ogValue, quantity, porfolioPercent, color=color)
         
         self.gametime : datetime.datetime = player.gametime
         self.strikePrice = strikePrice
@@ -18,13 +18,13 @@ class OptionAsset(Asset):
         self.optionType = optionType
     
         self.option = Op(european=True,kind=self.optionType,s0=float(self.stockObj.price)*100,k=self.strikePrice*100,t=self.daysToExpiration(self.gametime.time),sigma=self.getVolatility(),r=0.05)
-        ogPrice = ogPrice if ogPrice else self.getValue(bypass=True,fullvalue=True)
+        self.ogValue = self.ogValue if self.ogValue != None else self.getValue(bypass=True,fullvalue=False)
         
         # print(f"{self.name}, {porfolioPercent} {self.portfolioPercent}")
         if porfolioPercent == None:
             
-            self.portfolioPercent = ogPrice/(player.getNetworth())# have to set this after the object is created
-            # print(f"dont, {self.portfolioPercent}, {ogPrice} {networth}") 
+            self.portfolioPercent = self.getValue(bypass=True,fullvalue=True)/(player.getNetworth())# have to set this after the object is created
+            # print(f"dont, {self.portfolioPercent}, {ogValue} {networth}") 
             
         self.lastvalue = self.getValue(bypass=True,fullvalue=False)# [stock price, option value] Used to increase performance by not recalculating the option value every time
         
@@ -50,6 +50,7 @@ class OptionAsset(Asset):
         if optionType: self.optionType = optionType
         if quantity: self.quantity = quantity
         self.option.setValues(strike=self.strikePrice*100,days=self.daysToExpiration(self.gametime.time),optionType=self.optionType)
+        self.ogValue = self.getValue(bypass=True,fullvalue=False); self.portfolioPercent = self.getValue(bypass=True,fullvalue=True)/(self.playerObj.getNetworth())
     def savingInputs(self):
         return (self.stockObj.name,self.strikePrice,str(self.expirationDate),self.optionType,self.date,self.quantity,self.portfolioPercent,self.ogValue,self.color)
     def getExpDate(self):
@@ -59,7 +60,7 @@ class OptionAsset(Asset):
         return (self.expirationDate - gametimeTime).days
     
     def copy(self):
-        return OptionAsset(self.playerObj,self.stockObj,self.strikePrice,str(self.expirationDate),self.optionType,str(self.date),self.quantity,self.portfolioPercent,ogPrice=self.getValue(bypass=True))
+        return OptionAsset(self.playerObj,self.stockObj,self.strikePrice,str(self.expirationDate),self.optionType,str(self.date),self.quantity,self.portfolioPercent,ogValue=self.getValue(bypass=True))
 
     def getValue(self,bypass=False,fullvalue=True):
         """""Bypass is used to force a recalculation of the option value
@@ -92,7 +93,7 @@ class OptionAsset(Asset):
         return (self.lastvalue * self.quantity) if fullvalue else self.lastvalue
 
 # class OptionAsset:
-#     def __init__(self,stockObj,strikePrice,expirationDate,optionType,creationDate,quantity=1,ogPrice=None) -> None:
+#     def __init__(self,stockObj,strikePrice,expirationDate,optionType,creationDate,quantity=1,ogValue=None) -> None:
 #         """Option is controls 100 shares of a stock, so quantity is controlling 100*quantity shares"""
 #         self.stockObj = stockObj
 #         self.date = creationDate
@@ -104,8 +105,8 @@ class OptionAsset(Asset):
 #         self.quantity = quantity
 
 #         self.option = Op(european=True,kind=self.optionType,s0=float(self.stockObj.price)*100,k=self.strikePrice*100,t=self.expirationDate,sigma=calculate_volatility(tuple(self.stockObj.graphs['1Y'])),r=0.05)
-        # if ogPrice:
-        #     self.ogValue = ogPrice
+        # if ogValue:
+        #     self.ogValue = ogValue
         # else:
         #     self.ogValue = self.option.getPrice(method="BSM",iteration=1)
 
@@ -140,7 +141,7 @@ class OptionAsset(Asset):
     
 #     # create a method to return an exact copy of the object
 #     def copy(self) -> 'OptionAsset':        
-#             return OptionAsset(self.stockObj,self.strikePrice,self.expirationDate,self.optionType,self.date,quantity=self.quantity,ogPrice=self.getValue(bypass=True))
+#             return OptionAsset(self.stockObj,self.strikePrice,self.expirationDate,self.optionType,self.date,quantity=self.quantity,ogValue=self.getValue(bypass=True))
 #     def resetOgValue(self):
 #         self.ogValue = self.getValue(True)
 #     def advance_time(self):

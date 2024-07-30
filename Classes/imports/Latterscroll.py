@@ -108,7 +108,8 @@ class LatterScroll():
 
     def store_rendercoords(self,coords:tuple,maxcoords:tuple,polyheight:int,xcoordshift:int,polyshift:int,updatefreq=0) -> tuple:
         """Stores the coords for the polygons and the texts, and stores the rendered texts
-        returns the index of the first and last stock that is drawn on the screen"""	
+        returns the index of the first and last stock that is drawn on the screen
+        IF YOU ARE GOING TO BE CHANGING THE COORDS SET UPDATEFREQ TO 0, OR IF YOU HAVE ANY REAL ERROR IN GENERAL"""	
         if self.updatetexts <= 0:# if the texts should be updated
             self.lasttexts = []
             self.updatetexts = updatefreq
@@ -136,7 +137,7 @@ class LatterScroll():
                     self.renderedtexts.append(render)
                     self.lasttexts.append(render)
 
-                self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn].copy(),[(t[0]) for t in text],self.renderedtexts[ndrawn])         
+                self.textcoords[ndrawn] = self.get_textcoord(self.textcoords[ndrawn].copy(),[(t[0]) for t in text],self.renderedtexts[ndrawn])# If error on this line set updatefreq to 0
                        
                 ty,by,self.textcoords,self.renderedtexts = self.trim_poly(y,polyheight,maxcoords,coords,ndrawn,self.textcoords.copy(),self.renderedtexts)
 

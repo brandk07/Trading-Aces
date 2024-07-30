@@ -26,10 +26,12 @@ class Numpad:
         if num.count('.') == 0:# if there are no decimal points
             return int(num)
         return round(float(num),self.maxDecimals)
-
+    
+    def reset(self):
+        self.numstr = str(self.defaultVal)
+        self.value = self.defaultVal
     
     def getNumstr(self,extraText='',upperCase=False,haveSes=True):
-        print(self.numstr,' numstr')
         seS = extraText
         if haveSes:
             s = "S" if upperCase else "s"
@@ -119,7 +121,8 @@ class Numpad:
                                 self.numstr += self.nums[ind]
                             elif '.' not in self.numstr:
                                 self.numstr += self.nums[ind]
-                        self.numstr = self.numstr.lstrip('0')
+   
+                        self.numstr = self.numstr.lstrip(str(self.defaultVal))
                         if self.numstr == '':
                             self.numstr = str(self.defaultVal)
                         if self.numstr == '.': 

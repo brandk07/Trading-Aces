@@ -33,6 +33,7 @@ class Asset:
         raise ValueError(f'{type(self).__name__} objects must be the same to add them together')
     def getStockObj(self): return self.stockObj
     def getOgVal(self): return self.ogValue
+    def getQuantity(self): return self.quantity
 
     def getPercent(self):
         """returns the percent change of the option"""
