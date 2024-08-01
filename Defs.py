@@ -124,7 +124,17 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
             renderlist[position].pop(text)
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
-
+def drawCenterTxt(screen,text:str,size:int,color:tuple,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False) -> None:
+    """Draws text centered on the screen, 
+    centerx and y will minus half the wh of the txt,
+    full will minus the full width of the txt (drawing from the top left)"""
+    valueText = s_render(text,size,color)
+    x,y = coords
+    if centerX: x -= valueText.get_width()//2
+    if centerY: y -= valueText.get_height()//2
+    if fullX: x -= valueText.get_width()
+    if fullY: y -= valueText.get_height()
+    screen.blit(valueText,(x,y))
 def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,centerX=False,centerY=False,fill=False,border=True,topLeftX=False) -> bool:
     """Draws a clickable box on the screen, returns True if the box is clicked
     Will center the X position onto coords[0] of the text if centerX is True"""

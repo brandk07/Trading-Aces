@@ -44,9 +44,9 @@ class OptionAsset(Asset):
         raise ValueError(f'{type(self).__name__} objects must be the same to add them together')
     def getStrike(self): return self.strikePrice
     def getType(self): return self.optionType
-    def setValues(self,strikePrice=None,expirationDate=None,optionType=None,quantity=None):
+    def setValues(self,strikePrice=None,expDate=None,optionType=None,quantity=None):
         if strikePrice: self.strikePrice = strikePrice
-        if expirationDate: self.expirationDate = expirationDate
+        if expDate: self.expirationDate = expDate
         if optionType: self.optionType = optionType
         if quantity: self.quantity = quantity
         self.option.setValues(strike=self.strikePrice*100,days=self.daysToExpiration(self.gametime.time),optionType=self.optionType)
