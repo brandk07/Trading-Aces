@@ -101,7 +101,8 @@ class Optiontrade(Menu):
         select = self.selectedOption if self.selectedOption in optionList else None# Ensuring that the selected stock is in the optionlist
         selectedindex = None if select == None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
 
-        newselected = self.avaOptionScrll.draw_polys(screen, (205, 270), (370,950), mousebuttons, selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        # newselected = self.avaOptionScrll.draw_polys(screen, (205, 270), (370,950), mousebuttons, selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.avaOptionScrll.draw_polys(screen, (205, 270), (370,950), mousebuttons, selectedindex, True, *[brightenCol(self.determineColor(option.getType()),0.25) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         self.selectedOption = self.selectedOption if newselected == None else optionList[newselected]# Changes selected stock if the new selected has something
         txt = s_render(f"{ommitted[0]} - {ommitted[1]-1} out of {len(optionList)} Options",35,(0,0,0))
         screen.blit(txt,(390-txt.get_width()/2,950))
@@ -331,7 +332,7 @@ class Optiontrade(Menu):
         self.drawOptionInfo(screen,gametime,stock)# draws the info underneath the stock graph for the selected option
         maxQuant = int(self.player.cash//option.getValue(bypass=True,fullvalue=False))
         self.quantNumPad.draw(screen,(1050,190),(450,340),"Option",mousebuttons,maxQuant)# draw the numpad
-        self.selectedOption.setValues(quantity=self.quantNumPad.getValue())# set the quantity of the option
+        # self.selectedOption.setValues(quantity=self.quantNumPad.getValue())# set the quantity of the option
 
         quantTxt = s_render(f"{self.quantNumPad.getNumstr('Option')}", 65, (200, 200, 200))
         screen.blit(quantTxt, (1275-quantTxt.get_width()/2, 600))
@@ -352,6 +353,7 @@ class Optiontrade(Menu):
 
         result = drawClickableBox(screen, (1275, 880), "Confirm Purchase", 55, (200,200,200), (0,225,0), mousebuttons,centerX=True)# draw the buy button
         if result:
+            self.selectedOption.setValues(quantity=self.quantNumPad.getValue())# set the quantity of the option
             self.player.buyAsset(self.selectedOption)
             print(self.selectedOption.savingInputs())
             self.selectedOption = None

@@ -220,7 +220,7 @@ class CustomColorLatter(LatterScroll):
     def decidebottomcolor(self,hover,selectedVal,numdrawn,color):
         """All this does is allows you to pass in colors into args and it uses that color for the botom"""
         if hover or selectedVal == numdrawn:
-            return brightenCol(color,.15)
+            return brightenCol(color,5)
         else:
             return color
             
