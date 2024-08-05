@@ -5,6 +5,7 @@ from collections import deque
 from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.AssetTypes.StockAsset import StockAsset
 import numpy as np
+from datetime import datetime, timedelta
 from PIL import Image, ImageDraw
 from functools import lru_cache 
 pygame.font.init()
@@ -38,7 +39,7 @@ fontlist = [fonts(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistcry = [crystalfonts(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistpix = [pixfonts(num) for num in range(0,201)]#list of fonts from 0-100
 font45 = fonts(45)
-GRAPHRANGES = ["1H","1D","1W","1M","3M","1Y"]
+GRAPHRANGES = ["1H","1D","1W","1M","1Y","5Y"]
 
 
 @lru_cache(maxsize=250)
@@ -269,6 +270,7 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         # Use the points from the first polygon to draw teh empty text
         screen.blit(emptytext, (points[0][0]+40, points[0][1]+40))  # displays empty text
     return allrenders,selected_value
+
 
 
 def checkboxOptions(screen,options,selectedOptions,pos,wh,mousebuttons,disabledOptions=None,txtSize=30) -> tuple:

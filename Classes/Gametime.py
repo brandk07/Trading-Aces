@@ -18,6 +18,7 @@ def secsTo930(dt):
         seconds = (combined_minutes + 1440) * 60  # Add 1 day and adjust minutes
 
     return seconds
+
 DFORMAT = "%m/%d/%Y %I:%M:%S %p"
 class GameTime:
     def __init__(self,time:str) -> None:

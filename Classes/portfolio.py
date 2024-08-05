@@ -264,8 +264,8 @@ class Portfolio(Menu):
             color = (60, 60, 60) if asset.dividends == 0 else (0, 190, 0)
             
         elif isinstance(asset,OptionAsset):
-            strValue = f"{asset.daysToExpiration(gametime.time)} Days"
-            color = p3choice((160,10,10),(10,160,10),(190,190,190),asset.daysToExpiration(gametime.time)-5)
+            strValue = f"{asset.daysToExpiration()} Days"
+            color = p3choice((160,10,10),(10,160,10),(190,190,190),asset.daysToExpiration()-5)
         
         
         valueText = s_render(strValue, 50, (0,0,0))# the value for the dividend / expiration date

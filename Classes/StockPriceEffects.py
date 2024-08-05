@@ -44,19 +44,19 @@ class StockPriceEffects:
             days_in_month_range = 0
             for month in range(startMonth,endMonth+1):
                 days_in_month_range += calendar.monthrange(gametime.time.year, month)[1]
-                print(days_in_month_range,calendar.monthrange(gametime.time.year, month)[1],month)
+                # print(days_in_month_range,calendar.monthrange(gametime.time.year, month)[1],month)
             return days_in_month_range
     
         january_1st = datetime(gametime.time.year, 1, 1)# Really a placeholder datetime object
 
         timeOff = (timedelta(days=daysInQuarter(quarter,gametime)))+timedelta(days=randint(0,90))#Normal time offset
         if not past and quarter == self.getCurrentQuarter(gametime) and self.pastReports[0][1] != self.getCurrentQuarter(gametime):# if the report is in the current quarter
-            print(f"Current quarter {quarter} {daysInQuarter(quarter,gametime)}, {daysInMonthRange(1,gametime.time.month-1,gametime)} {gametime.time.day}")
+            # print(f"Current quarter {quarter} {daysInQuarter(quarter,gametime)}, {daysInMonthRange(1,gametime.time.month-1,gametime)} {gametime.time.day}")
             daysPastQuart = daysInMonthRange(1,gametime.time.month-1,gametime)-daysInQuarter(quarter,gametime)+gametime.time.day
             # daysPastQuart = int((gametime.time.month-1)*32+gametime.time.day-((quarter-1)*90))+1
-            print(daysPastQuart,"Days past quart",print(range(min(89,daysPastQuart),90)))
+            # print(daysPastQuart,"Days past quart",print(range(min(89,daysPastQuart),90)))
             timeOff = (timedelta(days=daysInQuarter(quarter,gametime)))+timedelta(days=randint(min(89,daysPastQuart),90))# the first day of the quarter
-            print(timeOff,"Time off")
+            # print(timeOff,"Time off")
 
         quartTime = january_1st+timeOff# add the time offset
 
@@ -65,18 +65,18 @@ class StockPriceEffects:
             year = gametime.time.year - 1 if quartTime > gametime.time else gametime.time.year
             if quarter == self.getCurrentQuarter(gametime):# if it was really long ago
                 year = gametime.time.year-1
-        print(year,quartTime,quartTime.month,quartTime.day)
+        # print(year,quartTime,quartTime.month,quartTime.day)
         quartTime = datetime(year, quartTime.month, min(28,quartTime.day))# creating a new datetime object with the new year
-        if not past:
-            print('/'*10,'\n',quartTime, gametime)
-            print(self.pastReports[0][1], self.getCurrentQuarter(gametime), self.pastReports[0][1] == self.getCurrentQuarter(gametime),not past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) )
+        # if not past:
+            # print('/'*10,'\n',quartTime, gametime)
+            # print(self.pastReports[0][1], self.getCurrentQuarter(gametime), self.pastReports[0][1] == self.getCurrentQuarter(gametime),not past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) )
         if not past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) and self.pastReports[0][1] == self.getCurrentQuarter(gametime) and quartTime.year == gametime.time.year:# if the report is in the same quarter
-            print(gametime.time,quartTime,(gametime.time-quartTime).days,'Same quarter')
+            # print(gametime.time,quartTime,(gametime.time-quartTime).days,'Same quarter')
             quartTime = quartTime + timedelta(days=365)# move the report to next year at that time
 
         # offcase where the report is in the same quarter but is earlier in the year (so didn't trigger above), but should be a long way in the past
         if past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) and quartTime > gametime.time:
-            print(gametime.time,quartTime,(gametime.time-quartTime).days,'Same quarter Past')
+            # print(gametime.time,quartTime,(gametime.time-quartTime).days,'Same quarter Past')
             quartTime = quartTime - timedelta(days=365)# move the report to next year at that time
         return quartTime
     
@@ -85,7 +85,7 @@ class StockPriceEffects:
         def findPercent(likelyPercent) -> float:
             result = 0
             randomx = randint(0,100)# random spot on the formula
-            print(randomx,"Randomx")
+            # print(randomx,"Randomx")
             if likelyHood > 50:
                 result = (2**((randomx-78)/3)+(randomx/2)+(likelyPercent/2)-50)/10
             else:

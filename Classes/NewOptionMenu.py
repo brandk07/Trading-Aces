@@ -4,7 +4,7 @@ from pygame import gfxdraw
 from Classes.imports.Menu import Menu
 import numpy as np
 from Classes.imports.Bar import SliderBar
-from Classes.AssetTypes.OptionAsset import OptionAsset
+from Classes.AssetTypes.OptionAsset import OptionAsset,getCloseOpenDate
 from Classes.StockVisualizer import StockVisualizer
 # from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Latterscroll import CustomColorLatter
@@ -78,8 +78,13 @@ class CustomOptionCreator:
             
             self.datePad.draw(screen,(1050,190),(450,340),"Day",mousebuttons,365*3)# draw the numpad, max value of 3 years
             result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Date", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
+
             self.expDate = self.datePad.getValue() if result else self.expDate
             self.numPadDisplay = None if result else self.numPadDisplay
+            if result:
+                newNumDays = (getCloseOpenDate(gametime.time+timedelta(days=self.datePad.getValue()))-gametime.time).days# gets the number of days from the current date to the new date (trading day)
+                self.datePad.setValue(newNumDays)
+
 
             drawCenterTxt(screen, f"{self.datePad.getNumstr('Day',upperCase=False)}", 55, (200, 200, 200), (1860, 500),centerX=False,centerY=False,fullX=True)
 
@@ -168,7 +173,7 @@ class CustomOptionCreator:
             drawCenterTxt(screen, f'No Saved {stock.name} Options', 40, (200, 200, 200), (1700, y+30), centerY=False)
             return None
         # DRAWING THE LATTER SCROLL
-        daysLeft = lambda option: f'{option.daysToExpiration(gametime.time)} Day{"s" if option.daysToExpiration(gametime.time) > 1 else ""}'
+        daysLeft = lambda option: f'{option.daysToExpiration()} Day{"s" if option.daysToExpiration() > 1 else ""}'
         get_text = lambda option : [f'${limit_digits(option.getStrike(),12)} ',f'{option.getType().capitalize()}',f'{daysLeft(option)}']# returns the text for the stock
         textlist = [get_text(option) for option in optionList]# stores 3 texts for each asset in the stocks list
 
@@ -229,25 +234,24 @@ class Optiontrade(Menu):
         self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
     def removeSelc(self):
         self.selcOption = None
-    def fillPreMadeOptions(self):
 
-        def getRandomStrike(stock:Stock,optiontype:str):
-            return random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
-            # self.calloptions.append(OptionAsset(player,stock,strikeprice,extime,'call',str(gametime),1))
-
+    def createRandomOption(self,stock:Stock):
         def getRandomDate(gametime):
             extime = str(gametime.time+timedelta(days=random.randint(3,400)))
             while gametime.isOpen(datetime.strptime(extime, "%Y-%m-%d %H:%M:%S")) == False:#  Makes sure the expiration date is a trading day
                 extime = str(gametime.time+timedelta(days=random.randint(3,400)))
             return extime
+        optionType = random.choice(['call','put'])
+        strikeprice = random.randint(math.floor(stock.price*0.8)*100,math.ceil(stock.price*1.05)*100)/100
+        extime = getRandomDate(self.gametime)
+        oObj = OptionAsset(self.player,stock,strikeprice,extime,optionType,str(self.gametime),1)
+        return oObj
+
+    def fillPreMadeOptions(self):        
         for stock in self.stocklist:
             self.preMadeOptions[stock] = []
             for _ in range(8):
-                optionType = random.choice(['call','put'])
-                strikeprice = getRandomStrike(stock,optionType)
-                extime = getRandomDate(self.gametime)
-                oObj = OptionAsset(self.player,stock,strikeprice,extime,optionType,str(self.gametime),1)
-                self.preMadeOptions[stock].append(oObj)
+                self.preMadeOptions[stock].append(self.createRandomOption(stock))
 
     def drawAvailableOptions(self,screen:pygame.Surface,mousebuttons:int,gametime:GameTime,stock:Stock):
         
@@ -261,8 +265,8 @@ class Optiontrade(Menu):
         optionList = self.preMadeOptions[stock]
         # determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
         # dateText = lambda date: f'{date.month}/{date.day}/{date.year}'# returns the date in the format mm/dd/yyyy
-        daysLeft = lambda option: f'{option.daysToExpiration(gametime.time)} Day{"s" if option.daysToExpiration(gametime.time) > 1 else ""}'
-        get_text = lambda option : [f'${limit_digits(option.getValue(),15)} ',f'{option.getType().capitalize()}',f'{daysLeft(option)}',f'{option.getExpDate()}']# returns the text for the stock
+        daysLeft = lambda option: f'{option.daysToExpiration()} Day{"s" if option.daysToExpiration() > 1 else ""}'
+        get_text = lambda option : [f'${limit_digits(option.getValue(fullvalue=False),15)} ',f'{option.getType().capitalize()}',f'{daysLeft(option)}',f'{option.getExpDate()}']# returns the text for the stock
         textlist = [get_text(option) for option in optionList]# stores 3 texts for each asset in the stocks list
 
         textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
@@ -325,7 +329,7 @@ class Optiontrade(Menu):
         values = [
             f"${self.selcOption.getStrike()}",
             f"{self.selcOption.getExpDate()}",
-            f"{self.selcOption.daysToExpiration(gametime.time)}",
+            f"{self.selcOption.daysToExpiration()}",
             f"{limit_digits(stock.dividend,12)}%",
             f"{limit_digits(stock.getVolatility()*100,12)}%",
             f"{limit_digits(getAllo(self.selcOption.getValue()),12)}%"
@@ -364,13 +368,16 @@ class Optiontrade(Menu):
 
         drawCenterTxt(screen, f"Total: ${limit_digits(totalCost,17)}", 65, (200, 200, 200), (1275, 815), centerY=False)
 
-        result = drawClickableBox(screen, (1275, 880), "Confirm Purchase", 55, (200,200,200), (0,225,0), mousebuttons,centerX=True)# draw the buy button
-        if result:
-            self.selcOption.setValues(quantity=self.quantNumPad.getValue())# set the quantity of the option
+        result = drawClickableBox(screen, (1275, 880), "Confirm Purchase", 55, (200,200,200), (0,225,0) if self.quantNumPad.getValue() > 0 else (0,0,0), mousebuttons,centerX=True)# draw the buy button
+        if result and self.quantNumPad.getValue() > 0:
+            self.selcOption.setValues(quantity=self.quantNumPad.getValue(),creationDate=gametime.time)# set the quantity of the option
+            print(self.quantNumPad.getValue(),"is the selected quantity")
             self.player.buyAsset(self.selcOption)
             print(self.selcOption.savingInputs())
+            self.selcOption.setValues(quantity=1)# set back to 1
             self.selcOption = None
             self.quantNumPad.reset()
+            
 
 
 
@@ -381,24 +388,35 @@ class Optiontrade(Menu):
             return
         # if self.newOptionInfo == None or (self.newOptionInfo and type(self.strikePrice) != bool) and (self.newOptionInfo and type(self.newOptionInfo[1]) != bool):
         if self.customOptionSc.numPadDisplay == None and self.selcOption == None:   
-            strings = ["Open","High (1W)","Low (1W)","Dividend","Volatility"]
+            strings = ["Open","High (1M)","Low (1M)","Dividend","Volatility"]
             g = gametime.time
             marketOpenTime = datetime.strptime(f"{g.month}/{g.day}/{g.year} 9:30:00 AM", "%m/%d/%Y %I:%M:%S %p")
             values = [
                 f"${limit_digits(stock.getPointDate(marketOpenTime,gametime),12)}",
-                f"${limit_digits(max(stock.graphs['1W']),12)}",
-                f"${limit_digits(min(stock.graphs['1W']),12)}",
+                f"${limit_digits(max(stock.graphs['1M']),12)}",
+                f"${limit_digits(min(stock.graphs['1M']),12)}",
                 f"{limit_digits(stock.dividend,12)}%",
                 f"{limit_digits(stock.getVolatility()*100,12)}%"
             ]
             # info = {key:value for key,value in zip(keys,values)}
             info = [(string,value) for string,value in zip(strings,values)]
             drawLinedInfo(screen,(1055,220),(435,370),info,40,TXTCOLOR)
-
+    def checkOptionDates(self):
+        """Checks if the options are still live, if not then it replaces them"""
+        for option in self.savedOptions:
+            if not option.optionLive():
+                self.savedOptions.remove(option)
+        for key,options in self.preMadeOptions.items():
+            for i in range(len(options)):
+                if not options[i].optionLive():# if the option is not live
+                    self.preMadeOptions[key][i] = self.createRandomOption(key)# create a new random option
+        if self.selcOption != None and not self.selcOption.optionLive():
+            self.selcOption = None
+            
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
         
-        # print(self.savedOptions,self.selcOption)
-        # screen.blit(s_render('Select a Stock', 36, (255, 255, 255)), (220, 110))
+        self.checkOptionDates()# Ensures that the options are still live
+
         if self.stockSelection.draw(screen, [stock.name for stock in stocklist], [200, 105], [1700, 50], colors=[stock.color for stock in stocklist],txtsize=35):
             self.newOptionInfo = None
             self.newOptionObj = None

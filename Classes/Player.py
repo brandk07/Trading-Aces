@@ -45,7 +45,7 @@ class Player(Stock):
             option.getValue(bypass=True)
         for i in range(len(self.options)-1,-1,-1):
             # print(self.options[i].name,self.options[i].daysToExpiration(gametime.time))
-            if self.options[i].daysToExpiration(gametime.time) <= 0:
+            if self.options[i].daysToExpiration() <= 0:
                 self.options[i].option.t = 0
                 self.cash += self.options[i].option.getPrice(method="BSM",iteration=1)*self.options[i].quantity
                 self.options.pop(i)
@@ -85,8 +85,8 @@ class Player(Stock):
                 if newasset == a:# use the __eq__ method to compare the assets
                     a += newasset# use the __iadd__ method to add the assets together
                     return# return if the asset is already in the list``
-                
-            assetlist.append(newasset)# if the asset is not in the list, add it to the list
+            
+            assetlist.append(newasset.copy())# if the asset is not in the list, add it to the list
             # print(asset.quantity)
             # print(asset.getValue())
             # print(f'buying {asset} for {asset.getValue(True):.2f}')
@@ -128,7 +128,14 @@ class Player(Stock):
 
         if assetlist[assetlist.index(asset)].quantity <= 0:# if the quantity of the asset is 0 or less, remove the asset from the list
             assetlist.remove(asset)
+    def exerciseOption(self,optionasset:OptionAsset):
+        """Exercises the option"""
+        print(f"Exercising Option {optionasset.name} for {optionasset.option.k} at {optionasset.option.s0}, value of ${optionasset.option.getPrice(method='BSM',iteration=1)}")
+        self.cash += optionasset.option.getPrice(method="BSM",iteration=1)*optionasset.quantity
+        self.options.remove(optionasset)
+
         
+
         
     def getNetworth(self):
         """returns the networth of the player"""

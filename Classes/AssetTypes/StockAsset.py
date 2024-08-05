@@ -19,6 +19,8 @@ class StockAsset(Asset):
     #     return (self.stockObj,self.date.getTime(),self.name,self.ogValue,self.color,self.quantity)
     def savingInputs(self):
         return (self.stockObj.name,self.date,float(self.ogValue),self.quantity,self.dividends,self.portfolioPercent)
+    def copy(self):
+        return StockAsset(self.playerObj,self.stockObj,self.date,self.ogValue,self.quantity,self.dividends,self.portfolioPercent)
     def getValue(self,bypass=False,fullvalue=True):
         """returns the value of the stock, bypass is used to force a recalculation of the stock value, fullvalue is value*quantity otherwise it is just the value of the stock"""
         # print(self.stockObj.price)

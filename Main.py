@@ -2,7 +2,7 @@ import pygame
 from random import randint
 import time
 from Defs import *
-from Classes.Stock import Stock
+from Classes.Stock import Stock,POINTSPERGRAPH
 from Classes.UIControls import UIControls
 from Classes.Gametime import GameTime
 from Classes.Player import Player
@@ -84,10 +84,13 @@ pygame.mixer.music.set_volume(0)
 # LAST DECLARATIONS
 lastfps = deque(maxlen=300)
 mousebuttons = 0
-# timer = timeit.default_timer()
-# for stock in stocklist:
-#     stock.fill_graphs()
-# print('time to fill graphs',timeit.default_timer()-timer)
+# print(stocklist[0].graphs)
+timer = timeit.default_timer()
+
+if not all([len(graph) == POINTSPERGRAPH for graph in stocklist[0].graphs.values()]):
+    for stock in stocklist:
+        stock.fill_graphs()
+    print('time to fill graphs',timeit.default_timer()-timer)
 tmarket.fill_graphs(stocklist)
 
 

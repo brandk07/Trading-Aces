@@ -26,6 +26,10 @@ class Numpad:
         if num.count('.') == 0:# if there are no decimal points
             return int(num)
         return round(float(num),self.maxDecimals)
+    def setValue(self,value):
+        """Sets the value of the numpad"""	
+        self.numstr = str(value)
+        self.value = value
     
     def reset(self):
         self.numstr = str(self.defaultVal)

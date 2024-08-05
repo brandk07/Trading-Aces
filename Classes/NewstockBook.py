@@ -328,13 +328,13 @@ class Stockbook2(Menu):
 
     def drawBuySellInfo(self,screen:pygame.Surface,gametime):
         """Draws the info underneath the stock graph on the left"""
-        strings = ["Open","High (1W)","Low (1W)","Dividend","Volatility"]
+        strings = ["Open","High (1M)","Low (1M)","Dividend","Volatility"]
         g = gametime.time
         marketOpenTime = datetime.datetime.strptime(f"{g.month}/{g.day}/{g.year} 9:30:00 AM", "%m/%d/%Y %I:%M:%S %p")
         values = [
             f"${limit_digits(self.selectedStock.getPointDate(marketOpenTime,gametime),12)}",
-            f"${limit_digits(max(self.selectedStock.graphs['1W']),12)}",
-            f"${limit_digits(min(self.selectedStock.graphs['1W']),12)}",
+            f"${limit_digits(max(self.selectedStock.graphs['1M']),12)}",
+            f"${limit_digits(min(self.selectedStock.graphs['1M']),12)}",
             f"{limit_digits(self.selectedStock.dividend,12)}%",
             f"{limit_digits(self.selectedStock.getVolatility()*100,12)}%"
         ]
