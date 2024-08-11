@@ -41,8 +41,11 @@ class CEO():
         self.age = randint(30,70)
         self.image = generate_8bit_character(gender)
         self.image = pygame.transform.scale(self.image,(100,100))
-        self.slogan = slogans[randint(0,len(slogans)-1)].replace('\n','')
-
+        sloganInd = randint(0,len(slogans)-1)
+        self.slogan = slogans[sloganInd].replace('\n','')
+        self.volatility = sloganInd*15+700
+    def getVolatility(self):
+        return self.volatility
     @lru_cache(maxsize=5)
     def getSloganLines(self,lines):
         """Returns the slogan of the CEO with the amount of lines specified"""
@@ -60,29 +63,29 @@ class Stock():
     """Class contains the points and ability to modify the points of the stock
     an object of stockVisualizer is created to visualize the stock"""
 
-    def __init__(self,name,volatility,color,gametime) -> None:
+    def __init__(self,name,color,gametime) -> None:
         self.color,self.name = color,name
         self.ceo = CEO()
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
-        self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"1Y":5_896_800,"5Y":29_484_000}
-        # self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"3M":1_474_200,"1Y":5_896_800,"5Y":29_484_000}
+        self.graphrangeoptions = {"1D":23_400,"5D":117_000,"1M":491_400,"6M":2_946_000,"1Y":5_896_800,"5Y":29_484_000}
+        # self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"3M":1_474_200,"1Y":5_896_800,"5Y":29_484_000,"10Y":58_968_000}
         self.condensefacs = {key:value/POINTSPERGRAPH for key,value in self.graphrangeoptions.items()}#the amount of points that each index of the graph has
         # self.graphrange = '1H' # H, D, W, M, 3M, Y
         self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
         
-        self.bTrendRanges = [[(-i,i),(100000-(i*8000),500000-(i*41000))] for i in range(12)]
+        # self.bTrendRanges = [[(-i,i),(100000-(i*8000),500000-(i*41000))] for i in range(12)]
+        self.bTrendRanges = [[(-i,i),(randint(1,300),randint(301,50000))] for i in range(12)]
         # self.bTrendRanges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]# the ranges for the bonus trends
         # self.bTrendRanges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]# the ranges for the bonus trends
         self.bTrends = [[randint(*x[0]),randint(*x[1])] for x in self.bTrendRanges]# the trends for the stock
 
-        self.datafromfile()# Retrieves the data from the file
-        self.price = self.graphs['1H'][-1]# the price of the stock at the last graphed point
+        self.datafromfile(gametime)# Retrieves the data from the file
+        self.price = self.graphs[MINRANGE][-1]# the price of the stock at the last graphed point
         self.dividend = 0
-        self.volatility = volatility
+        self.volatility = self.ceo.getVolatility()
         self.recentrenders = {}# a dict of the renders of the recent prices
-        self.priceEffects = StockPriceEffects(self,gametime)
         self.graph = Graph()
         # print()
     
@@ -168,12 +171,12 @@ class Stock():
         
     # def reset_graphs(self):
     #     """resets the graphs to be empty"""
-    #     # for i in ["1H","1D","1W","1M","3M","1Y","trends"]:
+    #     # for i in ["MINRANGE","1D","1W","1M","3M","1Y","trends"]:
     #     newprice = randint(*self.starting_value_range)
-    #     for grange in self.graphs.keys():# for each graph range, ["1H","1D","1W","1M","3M","1Y","trends"], assign the new price to each graph
+    #     for grange in self.graphs.keys():# for each graph range, ["MINRANGE","1D","1W","1M","3M","1Y","trends"], assign the new price to each graph
     #         self.graphs[grange] = np.array([newprice])
 
-    def datafromfile(self):
+    def datafromfile(self,gametime):
         """gets the data from each file and puts it into the graphlist"""
         with open(f'Assets/Stockdata/{self.name}/data.json', 'r')as f:
             data = [json.loads(line) for line in f]
@@ -183,6 +186,11 @@ class Stock():
                     self.graphs[grange] = np.array(data[i])# add the contents to the graphs
                 else:
                     self.graphs[grange] = np.array([100])# if the file is empty then set the graph to 100
+            if len(data[-2]) > 0:
+                self.priceEffects = StockPriceEffects(self,gametime,fileData=data[-2]) 
+            else:
+                self.priceEffects = StockPriceEffects(self,gametime)
+
             if len(data[-1]) > 0:
                 self.bTrends = data[-1]
             else:
@@ -198,34 +206,46 @@ class Stock():
                 json_item = json.dumps(item.tolist())  # Convert the list to a JSON string
                 file.write(json_item + '\n')  # Write the JSON string to the file with a newline character
             
+            d1 = [d.savingInputs() for d in self.priceEffects.pastReports]
+            d2 = [d.savingInputs() for d in self.priceEffects.futureReports]
+            file.write(json.dumps([d1,d2])+'\n')
+
             file.write(json.dumps(self.bTrends))
+
         
 
-    # def addpoint(self, lastprice, multiplier=1,maxstep=25):
-    #     """returns the new price of the stock
-    #     maxstep is the maximum multiplier added to 1 price movement, a lower value will make it more accurate but slower"""
-    #     vol = int(self.volatility+self.priceEffects._modifers["volatility"])# the volatility of the stock
-    #     tempP = self.priceEffects._modifers["priceTrend"]# the temporary price trend
-    #     while multiplier > 0:
-    #         step = multiplier % maxstep if multiplier < maxstep else maxstep# how much to multiply the movement by
+    def addpoint(self, lastprice, multiplier=1,maxstep=25):
+        """returns the new price of the stock
+        maxstep is the maximum multiplier added to 1 price movement, a lower value will make it more accurate but slower"""
+        vol = int(self.volatility+self.priceEffects._modifers["volatility"])# the volatility of the stock
+        tempP = self.priceEffects._modifers["priceTrend"]# the temporary price trend
+        while multiplier > 0:
+            step = multiplier % maxstep if multiplier < maxstep else maxstep# how much to multiply the movement by
 
-    #         for i, bonustrend in enumerate(self.bTrends):# for each bonus trend
-    #             if bonustrend[1] <= 0:  # if the time is out
-    #                 self.bTrends[i] = [randint(*self.bTrendRanges[i][0]), randint(*self.bTrendRanges[i][1])]
-    #             else:
-    #                 bonustrend[1] -= step
+            for i, bonustrend in enumerate(self.bTrends):# for each bonus trend
+                if bonustrend[1] <= 0:  # if the time is out
+                    self.bTrends[i] = [randint(*self.bTrendRanges[i][0]), randint(*self.bTrendRanges[i][1])]
+                else:
+                    bonustrend[1] -= step
 
-    #         total_trend = sum(trend[0] for trend in self.bTrends)# the total trend of all the bonus trends
-    #         total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)# if the total trend is negative, then divide it by 2
-    #         total_trend += tempP# add the temporary price trend to the total
-    #         highvolitity = vol + total_trend# the highest volitility that the stock can have
-    #         lowvolitity = -vol + total_trend# the lowest volitility that the stock can have
+            total_trend = sum(trend[0] for trend in self.bTrends)# the total trend of all the bonus trends
+            # total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)# if the total trend is negative, then divide it by 2
+            total_trend += tempP# add the temporary price trend to the total
+            highvolitity = vol + total_trend# the highest volitility that the stock can have
+            lowvolitity = -vol + total_trend# the lowest volitility that the stock can have
             
-    #         factor = (randint(lowvolitity, highvolitity) / 500_000) * step# the factor that the price will be multiplied by
-    #         lastprice = lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
-    #         multiplier -= step
+            # factor = (randint(lowvolitity, highvolitity) / 500_000) * step# the factor that the price will be multiplied by
+            try:   
+                factor = (randint(lowvolitity, highvolitity) / 20_000_000) * step# the factor that the price will be multiplied by
+            except:
+                print(highvolitity,lowvolitity,total_trend,vol,tempP)
+                print(self.name,sum(trend[0] for trend in self.bonustrends))
+                quit()
+            # lastprice = lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
+            lastprice = lastprice * (1 + factor)
+            multiplier -= step
 
-    #     return lastprice
+        return lastprice
     
     def resetTrends(self):
         """Sets/resets the trends for the stock"""
@@ -238,6 +258,7 @@ class Stock():
         """Returns the new price of the stock for really long periods like adding 5 years of points right away"""
         if distance == 0:
             return lastprice
+        # print(distance,condenseFactor)
         totalTrend = 0
         emPoints = 0# Emulated points
         while emPoints < distance:
@@ -251,26 +272,33 @@ class Stock():
                 runVal += val
             self.resetTrend(resetInd)
             totalTrend += runVal*runDistance
-            print(runVal,"is the runval",runVal*runDistance)
+            # print(runVal,"is the runval",runVal*runDistance)
             emPoints += runDistance
 
-        print(f"distance was, {distance} and total trend is {totalTrend}, total trend will be {totalTrend / emPoints}, emPoints was {emPoints}")
+        # print(f"distance was, {distance} and total trend is {totalTrend}, total trend will be {totalTrend / emPoints}, emPoints was {emPoints}")
         totalTrend /= emPoints
         
-        print(f"Total trend is {totalTrend}")
+        # print(f"Total trend is {totalTrend}")
         # Now that we have total trend we can calculate the price
-        totalTrend = totalTrend if totalTrend >= 0 else -1 * totalTrend# if the total trend is negative, then divide it by 2
+        # totalTrend = totalTrend if totalTrend >= 0 else -1 * totalTrend# if the total trend is negative, then divide it by 2
         highvolitity = int(totalTrend + self.volatility/distance)# the highest volitility that the stock can have
         lowvolitity = int(totalTrend - self.volatility/distance)# the lowest volitility that the stock can have
         
-        factor = (randint(lowvolitity, highvolitity) / 500_000) * distance # the factor that the price will be multiplied by
+        # factor = (randint(lowvolitity, highvolitity) / 500_000) * distance # the factor that the price will be multiplied by
         # lastprice = lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
-        print(factor,lastprice * (1 + factor),lastprice * (1 - factor))
-        lastprice = lastprice * (1 + factor)  # returns the new price of the stock
-        print(lastprice,self.name)
-        if lastprice > 1000000:
-            print("Price is too high")
+        # print(factor,lastprice * (1 + factor),lastprice * (1 - factor))
+        # lastprice = lastprice * (1 + factor)  # returns the new price of the stock
+        try:
+            factor = (randint(lowvolitity, highvolitity) / 20_000_000) * distance# the factor that the price will be multiplied by
+        except:
+            print(highvolitity,lowvolitity,totalTrend,self.volatility/distance)
+            print(self.name,sum(trend[0] for trend in self.bTrends))
             quit()
+        lastprice = lastprice * (1 + factor)
+        # print(lastprice,self.name)
+        # if lastprice > 1000000:
+        #     print("Price is too high")
+        #     quit()
         return lastprice
 
             # for i, (val,time) in enumerate(self.bTrends):
@@ -282,23 +310,15 @@ class Stock():
         
 
     def fill_graphs(self):
-        # def get_lowestgraph(pointsmade):
-        #     for name,points in self.graphs.items():
-        #         """Returns the name of the lowest graph that should get points added to it"""
-        #         # the line below figures out if the amount of points made is greater than the amount of points that the graph can have
-        #         if (diff:=self.graphrangeoptions["5Y"]-self.graphrangeoptions[name]) <= pointsmade:
-        #             # figuring out the amount of points that each index of the graph has
-        #             condensefactor = self.condensefacs[name]
-        #             # if the amount of points made is greater than or equal to t he amount of points that the graph can have
-        #             if pointsmade-diff >= condensefactor*len(points):
-        #                 return name
+        
         def getNextLowest(pointsmade):
+            
             pointsUntil = []
             for name,points in self.graphs.items():
                 """Returns the amount of points needed until the next graph point will come
                 Returns (points "distance", name)"""
                 # the line below figures out if the amount of points made is greater than the amount of points that the graph can have
-                if (diff:=self.graphrangeoptions["5Y"]-self.graphrangeoptions[name]) <= pointsmade:
+                if (diff:=self.graphrangeoptions[MAXRANGE]-self.graphrangeoptions[name]) <= pointsmade+self.condensefacs[MAXRANGE]:
                     # figuring out the amount of points that each index of the graph has
                     condensefactor = self.condensefacs[name]
                     # if the amount of points made is greater than or equal to t he amount of points that the graph can have
@@ -307,25 +327,30 @@ class Stock():
                     # Diff is the "starting" amount of points that need to be filled before the graph should even be touched
                     # then the condensefactor * len(points) shows how many have been added
                     # Then just find the distance (-) between the two and return the lowest distance
-                    distance = (diff+(condensefactor*len(points)))-pointsmade
-                    pointsUntil.append((distance,name))
-
+                    pointAmt = min(POINTSPERGRAPH,len(points))
+                    distance = (diff+(condensefactor*pointAmt))-pointsmade
+                    # print(distance,name,diff,condensefactor*len(points),pointsmade)
+                    
+                    # print(f"Diff : {diff:,.2f}, Name: {name}, Dis: {distance:,.2f} mulit : {condensefactor*pointAmt:,.2f}, pointsm : {pointsmade:,.2f}")
+                    if distance >= 0:
+                        pointsUntil.append((distance,name))
+            # print(pointsUntil)
             return min(pointsUntil,key=lambda x:x[0])
 
-        self.graphs = {key:np.array([100],dtype=object) for key in self.graphrangeoptions.keys()}# reset the graphs
-
-        lastgraphed = "1H"
+        self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}# reset the graphs
+        self.graphs[MAXRANGE] = np.array([self.price])
+        lastgraphed = MAXRANGE
         pointsmade = 0
-        while len(self.graphs['1H']) < POINTSPERGRAPH:
+        while len(self.graphs[MINRANGE]) < POINTSPERGRAPH:
             distance,name = getNextLowest(pointsmade)
-
+            # print(distance,name,self.graphs[name].size)
 
             newpoint = self.addPointLong(self.graphs[lastgraphed][-1],distance,self.condensefacs[name])
             lastgraphed = name
             self.graphs[name] = np.append(self.graphs[name],newpoint)
             pointsmade += distance
         
-        self.price = self.graphs['1H'][-1]
+        self.price = self.graphs[MINRANGE][-1]
         
 
     # def fill_graphs(self):
@@ -395,7 +420,7 @@ class Stock():
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             for _ in range(gamespeed):
                 self.update_range_graphs()
-            self.price = self.graphs["1H"][-1]
+            self.price = self.graphs[MINRANGE][-1]
         elif type(self) == PlayerClass:# if Player object
 
             # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])

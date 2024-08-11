@@ -87,6 +87,7 @@ import numpy as np
 import timeit
 import os
 import shutil
+from Defs import GRAPHRANGES
 # data = [[100, [0,0,0,0,0,0,0]]]*10
 data = []
 # stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth',"Total Market"]
@@ -119,7 +120,7 @@ for name in stocknames:
         # json.dump([], f)
         f.seek(0)  # go to the start of the file
         f.truncate()  # clear the file
-        for i in range(len(["1H","1D","1W","1M","3M","1Y",'trends'])):
+        for i in range(len(GRAPHRANGES+["trends"])):
             json_item = json.dumps([])  # Convert the list to a JSON string
             f.write(json_item + '\n') 
 

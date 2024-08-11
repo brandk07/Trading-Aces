@@ -107,7 +107,7 @@ class UIControls():
                 
                 color = (0,200,0) if self.percentchanges[i] >= 0 else (200,0,0)
 
-                stocklist[i].baredraw(self.stockbarsurf,(x,0),(100,wh[1]),'1H')# draws the graph
+                stocklist[i].baredraw(self.stockbarsurf,(x,0),(100,wh[1]),MINRANGE)# draws the graph
                 self.stockbarsurf.blit(self.namerenders[i],(x-70,10))# draws the name of the stock
                 ptext = fontlist[28].render(limit_digits(stock.price,9),color)[0]# renders the price of the stock
                 self.stockbarsurf.blit(ptext,(x-42-(ptext.get_width()/2),50))# draws the price of the stock

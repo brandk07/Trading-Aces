@@ -25,7 +25,7 @@ class Stockbook2(Menu):
         self.stocktext = {name:[] for name in stocknames}# a dictionary containing the stock names as keys and the stock descriptions as values
         self.createDescriptions(stocknames)
         self.selectedStock : Stock = stocklist[0]
-        self.menudrawn = False
+        self.menudrawn = True
         self.stocklist = stocklist
         self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
         self.quantitybar : SliderBar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
@@ -152,8 +152,8 @@ class Stockbook2(Menu):
         pygame.draw.rect(screen,(0,0,0),(190,690,350,275),5,10)
         pygame.draw.rect(screen,(0,0,0),(555,690,350,275),5,10)
         
-        pastListl = [(f'Q{report[1]}',f'{getDate(report[0])}') for report in self.selectedStock.priceEffects.pastReports[:4]]
-        pastListr =[(f'{"Beat" if report[2] > 0 else "Miss"}', f'{"+" if report[2] > 0 else ""}{limit_digits(report[2],15)}%') for report in self.selectedStock.priceEffects.pastReports[:4]]
+        pastListl = [(f'Q{report.getQ()}',f'{getDate(report.getTime())}') for report in self.selectedStock.priceEffects.pastReports[:4]]
+        pastListr =[(f'{"Beat" if report.getPerf() > 0 else "Miss"}', f'{"+" if report.getPerf() > 0 else ""}{limit_digits(report.getPerf(),15)}%') for report in self.selectedStock.priceEffects.pastReports[:4]]
         colors = [(200,0,0) if val[0] == "Miss" else (0,190,0) for val in pastListr]
         # print('dicts are',pastListl,pastListr)
         drawLinedInfoBigColored(screen,(200,710),(330,280),pastListl,pastListr,45,25,colors)
@@ -161,9 +161,9 @@ class Stockbook2(Menu):
         # drawLinedInfo(screen,(200,710),(330,280),pastDict,30,TXTCOLOR)
         # drawLinedInfo(screen,(760,640),(330,280),pastDict,30,TXTCOLOR)
         # drawLinedInfo(screen,(1100,640),(330,280),futureDict,30,TXTCOLOR)
-        futureListl = [(f'Q{report[1]}',f'{getDate(report[0])}') for report in self.selectedStock.priceEffects.futureReports]
-        futureListr = [(f'{(report[0]-gametime.time).days}',f'Day{"s" if (report[0]-gametime.time).days+1 > 1 else ""} Away') for report in self.selectedStock.priceEffects.futureReports]
-        colors = [p3choice((200,0,0),(190,190,190),(190,0,0),(val[0]-gametime.time).days-25) for val in self.selectedStock.priceEffects.futureReports]
+        futureListl = [(f'Q{report.getQ()}',f'{getDate(report.getTime())}') for report in self.selectedStock.priceEffects.futureReports]
+        futureListr = [(f'{(report.getTime()-gametime.time).days}',f'Day{"s" if (report.getTime()-gametime.time).days+1 > 1 else ""} Away') for report in self.selectedStock.priceEffects.futureReports]
+        colors = [p3choice((200,0,0),(190,190,190),(190,0,0),(val.getTime()-gametime.time).days-25) for val in self.selectedStock.priceEffects.futureReports]
         drawLinedInfoBigColored(screen,(565,710),(330,280),futureListl,futureListr,45,25,colors)
         # drawLinedInfo(screen,(540,710),(330,280),futureDict,30,TXTCOLOR)
         screen.blit(s_render("PAST",50,(220,220,220)),(205,645))
@@ -276,13 +276,48 @@ class Stockbook2(Menu):
         # newselected = self.pastRepLS.draw_polys(screen, (750, 160), (350,425), mousebuttons, None, False)# draws the latter scroll and returns the selected asset
         
         # self.selectedStock = self.selectedStock if newselected == None else self.stocklist[newselected]# Changes selected stock if the new selected has something
-    def drawCompanyInfo(self,screen:pygame.Surface,stockname:str,coords:tuple):
+    def drawVolatilityElement(self,screen:pygame.Surface):
+        def colorShifter(degree):
+            """Returns a color based on the degree
+            0 should be green, as you go closer to 180 it should turn yellow, then red"""
+            
+            # Ensure degree is within the range [0, 180]
+            degree = max(0, min(180, degree))
+            
+            max_value = 180
+            
+            if degree <= 90:
+                # Interpolate between green (0, 200, 0) and yellow (200, 200, 0)
+                red = int((degree / 90) * max_value)
+                green = max_value
+                blue = 0
+            else:
+                # Interpolate between yellow (200, 200, 0) and red (200, 0, 0)
+                red = max_value
+                green = int((1 - (degree - 90) / 90) * max_value)
+                blue = 0
+            
+            return (red, green, blue)
+        
+        pygame.draw.rect(screen,(0,0,0),(760,625,400,315),5,10)
+        for degree in range(180,360):
+            x = 960+int(180*math.cos(math.radians(degree)))
+            y = 910+int(220*math.sin(math.radians(degree)))
+            pygame.draw.line(screen,colorShifter(degree-180),(960,910),(x,y),7)
+        
+        currentAngle = (((self.selectedStock.ceo.getVolatility()-700)/15)/25)*180+180
+        x = 960+int(180*math.cos(math.radians(currentAngle)))
+        y = 910+int(220*math.sin(math.radians(currentAngle)))
+        pygame.draw.line(screen,(0,0,0),(960,910),(x,y),8)
+        screen.blit(s_render(f"Volatility {self.selectedStock.ceo.getVolatility()}",50,(220,220,220)),(760,630))
+
+    def drawCompanyInfo(self,screen:pygame.Surface,stockname:str,coords:tuple,player):
         """Draws the company info for the stock on the right middle """
         # def pil_to_pygame(image):
         #     """Convert a PIL Image to a Pygame Surface."""
         #     return pygame.image.fromstring(image.tobytes(), image.size, image.mode)
         
-        
+        self.drawVolatilityElement(screen)
         # Draw the stock name & description
         
         pygame.draw.rect(screen,(20,20,20),(200,625,550,325),border_radius=10)
@@ -358,7 +393,7 @@ class Stockbook2(Menu):
         if drawClickableBox(screen,(879,420),"Create Order",95,(130,130,130),(0,170,0),mousebuttons):
             self.oScreenDisp = True 
 
-        self.barSelection.draw(screen,self.middleDisplays,(195,560),(545,45),txtsize=35)
+        self.barSelection.draw(screen,self.middleDisplays,(195,560),(545,45),mousebuttons,txtsize=35)
         # result = checkboxOptions(screen,self.middleDisplays,self.currentMDisp,(190,550),(680,50),mousebuttons,txtSize=35)
         # self.currentMDisp = result[0] if result else self.currentMDisp
 
@@ -367,7 +402,7 @@ class Stockbook2(Menu):
         # match self.currentMDisp:
         match self.barSelection.getSelected():
             case "Info":
-                self.drawCompanyInfo(screen,self.selectedStock.name,(190,100))
+                self.drawCompanyInfo(screen,self.selectedStock.name,(190,100),player)
                 pass
             case "News":
                 # self.drawNews(screen,self.selectedStock.name,(190,100))

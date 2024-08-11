@@ -13,12 +13,12 @@ class Player(Stock):
     def __init__(self,stocknames,color,transact,gametime) -> None:
         """Player class is a child of the Stock class price is the networth of the player"""
         name = 'Net Worth'
-        super().__init__(name,0,color,gametime)
+        super().__init__(name,color,gametime)
         
         self.name = name
         
         self.cash = 25000
-        if self.graphs["1H"].size == 1:
+        if self.graphs[MINRANGE].size == 1:
             print('cash is',self.cash)
             self.graphs = {key:np.array([self.cash],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         # for (key,graph) in self.graphs.items():

@@ -135,6 +135,8 @@ the vs market doesn't work since getPercent for an asset will always give the to
 
 Add cost to purchase under the purachase details in the portoflio selected asset (6/5/2024)
 
+Make sure if you do a long price over with the total market it doesn't cause an error (8/11/2024)
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am

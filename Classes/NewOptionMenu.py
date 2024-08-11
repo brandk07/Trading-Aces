@@ -36,10 +36,10 @@ class CustomOptionCreator:
     def stopCreating(self):
         self.creatingOption = False
     
-    def drawType(self,screen):
+    def drawType(self,screen,mousebuttons):
         drawCenterTxt(screen, 'Type', 45, (200, 200, 200), (1700, 275), centerY=False)
         
-        self.oTypeSelect.draw(screen, ["Call","Put"], (1575, 315), (250, 50), colors=[(50, 180, 169),(127,25,255)],txtsize=35)
+        self.oTypeSelect.draw(screen, ["Call","Put"], (1575, 315), (250, 50), mousebuttons, colors=[(50, 180, 169),(127,25,255)],txtsize=35)
     
     def drawStrike(self,screen,mousebuttons,stock:Stock):
         drawCenterTxt(screen, 'Strike', 45, (180, 180, 180), (1530, 427), centerX=False)
@@ -140,7 +140,7 @@ class CustomOptionCreator:
             for i,coord in enumerate(coords):
                 pygame.draw.rect(screen,(0,0,0),pygame.Rect(1510,coord[0],375,coord[1]),5,10)
 
-            self.drawType(screen)# Draws, and handles the logic for setting the option type
+            self.drawType(screen,mousebuttons)# Draws, and handles the logic for setting the option type
 
             self.drawStrike(screen,mousebuttons,stock)# Draws, and handles the logic for setting the strike price
             
@@ -218,7 +218,7 @@ class Optiontrade(Menu):
         self.stocklist = stocklist
         self.gametime = gametime
         self.preMadeOptions = {}
-        self.menudrawn = True
+        self.menudrawn = False
         self.fillPreMadeOptions()
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockSelection : SelectionBar = SelectionBar()
@@ -417,7 +417,7 @@ class Optiontrade(Menu):
         
         self.checkOptionDates()# Ensures that the options are still live
 
-        if self.stockSelection.draw(screen, [stock.name for stock in stocklist], [200, 105], [1700, 50], colors=[stock.color for stock in stocklist],txtsize=35):
+        if self.stockSelection.draw(screen, [stock.name for stock in stocklist], [200, 105], [1700, 50], mousebuttons, colors=[stock.color for stock in stocklist],txtsize=35):
             self.newOptionInfo = None
             self.newOptionObj = None
             self.selcOption = None

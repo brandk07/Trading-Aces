@@ -8,7 +8,7 @@ class SelectionBar:
         self.selected = None
     def getSelected(self):
         return self.selected
-    def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],colors:list[tuple]=None,txtsize:int=36):
+    def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],mousebuttons,colors:list[tuple]=None,txtsize:int=36):
         """Data is a list of strings that can be selected
         the length of data can be changed, but it must be at least 1
         will auto select the first element in the list"""	
@@ -39,7 +39,8 @@ class SelectionBar:
             txty = y+(h//2)-(rtxt.get_height()//2)
             screen.blit(rtxt,(txtx,txty))
             if pygame.Rect(x+(i*spacing),y,spacing,h).collidepoint(pygame.mouse.get_pos()):
-                if pygame.mouse.get_pressed()[0]:
+                if mousebuttons == 1:
+                    soundEffects['clickbutton2'].play()
                     self.selected = txt
                     changed = True
         return changed

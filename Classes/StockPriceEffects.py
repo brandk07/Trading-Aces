@@ -4,25 +4,65 @@ from Classes.Gametime import GameTime
 from Defs import *
 import calendar
 
+class Report:
+    def __init__(self,time:datetime,quarter:int,performance:float=None) -> None:
+        self.quarter = quarter
+        self.time = datetime.strptime(time, "%Y-%m-%d %H:%M:%S") if isinstance(time,str) else time
+        assert isinstance(self.time,datetime), f"Time must be a datetime object : Currently {type(self.time)}"
+        if performance:
+            self.type = "past"
+            self.performance = performance
+        else:
+            self.type = "future"
+            self.performance = None
+        
+    def getTime(self):
+        return self.time
+    def getQ(self):
+        return self.quarter
+    def getPerf(self):
+        assert self.type == "past", "Performance is only available for past reports"
+        return self.performance
+    def savingInputs(self):
+        return (str(self.time),self.quarter,self.performance)
+
 class StockPriceEffects:
-    def __init__(self,parentStock,gametime:GameTime) -> None:
+    def __init__(self,parentStock,gametime:GameTime,fileData=None) -> None:
         self._effectsDict = {}# {modiferName : [modifierAmount,duration:int,decayRate]} DON'T USE THIS DIRECTLY
 
         self.getQuart = lambda timeobj : (timeobj.month-1)//3+1
         currQ = self.getCurrentQuarter(gametime)
-        print(currQ,[(i%4)+1 for i in range(currQ-2,currQ-6,-1)])
-        # self.pastReports = []# [time of report,quarter of report [1,2,3,4],performance]
+        if fileData == None:
+            # [time of report,quarter of report,performance]
+            self.pastReports:list[Report] = self.createPastReports(gametime,currQ)# Creates past reports if none are given
+            self.futureReports:list[Report] = self.createFutureReports(gametime,currQ)# [time of report,quarter]
+        else: 
+            self.pastReports,self.futureReports = self.dataFromFile(fileData)
+        
 
-        self.pastReports = [(self.randomQuartDate((i%4)+1,gametime,True),(i%4)+1,randint(-1000,1000)/100) for i in range(currQ-2,currQ-6,-1)]# [time of report,quarter of report,performance]
-        # self.futureReports:list[datetime,int] = [(self.randomQuartDate((i)%4+1,gametime),(i)%4+1) for i in range(currQ,currQ-4,-1)]# [time of report,quarter]
-        self.futureReports:list[datetime,int] = [(self.randomQuartDate((i)%4+1,gametime),(i)%4+1) for i in range(currQ-5,currQ-1)]# [time of report,quarter]
-        # self.pastReports.sort(key=lambda x: x[0],reverse=True)
-        # self.futureReports.sort(key=lambda x: x[0])
         self._modifers = {"priceTrend":0,"volatility":0}
         self.parentStock = parentStock
-        # for report in self.pastReports:
-        #     print(report)
-        
+
+    def createPastReports(self,gametime:GameTime,currQ:int):
+        """Creates the past reports for the stock"""
+        pastList = []
+        for i in range(currQ-2,currQ-6,-1):
+            pastList.append(Report(self.randomQuartDate((i%4)+1,gametime,True),(i%4)+1,randint(-1000,1000)/100))
+        return pastList
+    
+    def createFutureReports(self,gametime:GameTime,currQ:int):
+        """Creates the future reports for the stock"""
+        futureList = []
+        for i in range(currQ-1,currQ+3):
+            futureList.append(Report(self.randomQuartDate((i%4)+1,gametime),(i%4)+1,None))
+        return futureList
+
+    def dataFromFile(self,fileData):
+        """Returns the past and future reports from a file"""
+        pastReports = [Report(*data) for data in fileData[0]]
+        futureReports = [Report(*data) for data in fileData[1]]
+        return pastReports,futureReports
+    
     def getCurrentQuarter(self,gametime:GameTime):
         """Returns the current quarter [1,2,3,4]"""
         return (gametime.time.month-1)//3+1
@@ -50,7 +90,7 @@ class StockPriceEffects:
         january_1st = datetime(gametime.time.year, 1, 1)# Really a placeholder datetime object
 
         timeOff = (timedelta(days=daysInQuarter(quarter,gametime)))+timedelta(days=randint(0,90))#Normal time offset
-        if not past and quarter == self.getCurrentQuarter(gametime) and self.pastReports[0][1] != self.getCurrentQuarter(gametime):# if the report is in the current quarter
+        if not past and quarter == self.getCurrentQuarter(gametime) and self.pastReports[0].getQ() != self.getCurrentQuarter(gametime):# if the report is in the current quarter
             # print(f"Current quarter {quarter} {daysInQuarter(quarter,gametime)}, {daysInMonthRange(1,gametime.time.month-1,gametime)} {gametime.time.day}")
             daysPastQuart = daysInMonthRange(1,gametime.time.month-1,gametime)-daysInQuarter(quarter,gametime)+gametime.time.day
             # daysPastQuart = int((gametime.time.month-1)*32+gametime.time.day-((quarter-1)*90))+1
@@ -70,7 +110,7 @@ class StockPriceEffects:
         # if not past:
             # print('/'*10,'\n',quartTime, gametime)
             # print(self.pastReports[0][1], self.getCurrentQuarter(gametime), self.pastReports[0][1] == self.getCurrentQuarter(gametime),not past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) )
-        if not past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) and self.pastReports[0][1] == self.getCurrentQuarter(gametime) and quartTime.year == gametime.time.year:# if the report is in the same quarter
+        if not past and self.getQuart(quartTime) == self.getCurrentQuarter(gametime) and self.pastReports[0].getQ() == self.getCurrentQuarter(gametime) and quartTime.year == gametime.time.year:# if the report is in the same quarter
             # print(gametime.time,quartTime,(gametime.time-quartTime).days,'Same quarter')
             quartTime = quartTime + timedelta(days=365)# move the report to next year at that time
 
@@ -100,11 +140,11 @@ class StockPriceEffects:
         # self.__effectsDict["priceTrend"] = [performance,performance,randint(100,1800),0]# New  price trend that will last for 30 seconds
         if len(self.pastReports) == 5:# if there are 8 reports
             self.pastReports.pop(0)# remove the oldest report
-        newQuarter = self.futureReports[-1][1] % 4 + 1
+        newQuarter = self.futureReports[-1].getQ() % 4 + 1
 
         # extraYears = 1 if self.pastReports[0][0].year == gametime.time.year else 0# if the report is in the same year as the last report, add a year
-        self.pastReports.insert(0,[self.futureReports[0][0],self.futureReports[0][1],performance])
-        self.futureReports.append((self.randomQuartDate(newQuarter,gametime),newQuarter))
+        self.pastReports.insert(0,Report(self.futureReports[0].getTime(),self.futureReports[0].getQ(),performance))
+        self.futureReports.append(Report(self.randomQuartDate(newQuarter,gametime),newQuarter))
         self.futureReports.pop(0)
 
         self.applyPriceChange(performance)
@@ -134,11 +174,11 @@ class StockPriceEffects:
         [0] is the % that comes from the reports that met expectations
         [1] is the % that comes from the stock performance since the last report and over the last year"""
         perfEquation = lambda x : 2*x+70
-        tempP = ((self.parentStock.price/self.parentStock.getPointDate(self.pastReports[0][0],gametime))-1)*50# half from last report
+        tempP = ((self.parentStock.price/self.parentStock.getPointDate(self.pastReports[0].getTime(),gametime))-1)*50# half from last report
         tempP += self.parentStock.getPercent("1Y")/2# half from the last year
         perlikelyhood = max(0,min(88,perfEquation(tempP)))# the stock performance over the last quarter
 
-        return 3*len([p for (t,q,p) in self.pastReports[:4] if p > 0]), perlikelyhood
+        return 3*len([report.getPerf() for report in self.pastReports[:4] if report.getPerf() > 0]), perlikelyhood
 
     def getQuarterlyLikelyhood(self,gametime:GameTime):
         """Gives the likelyhood that the quarterly report will meet expectations"""
@@ -186,7 +226,7 @@ class StockPriceEffects:
         
         
         # print(gametime.time < self.futureReports[0][0],self.parentStock.name)
-        if gametime.time > self.futureReports[0][0]:
+        if gametime.time > self.futureReports[0].getTime():# if it is time for the next report
             print("Generating Quarterly Report",self.parentStock.name)
             self.generateQuarterlyReport(gametime)
             # self.futureReports.pop(0)

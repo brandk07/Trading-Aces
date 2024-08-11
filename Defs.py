@@ -39,7 +39,9 @@ fontlist = [fonts(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistcry = [crystalfonts(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistpix = [pixfonts(num) for num in range(0,201)]#list of fonts from 0-100
 font45 = fonts(45)
-GRAPHRANGES = ["1H","1D","1W","1M","1Y","5Y"]
+GRAPHRANGES = ["1D","5D","1M","6M","1Y","5Y"]
+MINRANGE = GRAPHRANGES[0]
+MAXRANGE = GRAPHRANGES[-1]
 
 
 @lru_cache(maxsize=250)
