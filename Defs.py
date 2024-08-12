@@ -7,7 +7,7 @@ from Classes.AssetTypes.StockAsset import StockAsset
 import numpy as np
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw
-from Classes.imports.errorMessage import ErrorMessageHandler
+from Classes.imports.ErrorMessage import ErrorMessageHandler
 from functools import lru_cache 
 pygame.font.init()
 pygame.mixer.init()

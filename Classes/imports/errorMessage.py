@@ -46,13 +46,19 @@ class ErrorMessageHandler:
     def __init__(self,s_render) -> None:
         self.messageList : list[ErrorMessage] = [] 
         self.sRender = s_render
+        self.framesAgoAdd = 0
 
     def addMessage(self,txt:str,txtColor=(190,190,190),backColor=(160,10,10),txtSize=35,coords:list=None):
         """If coords aren't given, the message will be displayed at the mouse position"""
-        coords = pygame.mouse.get_pos() if coords == None else coords
-        self.messageList.append(ErrorMessage(coords,txt,txtSize,txtColor,backColor,self.sRender))
+        if self.framesAgoAdd == 0:
+            coords = pygame.mouse.get_pos() if coords == None else coords
+            self.messageList.append(ErrorMessage(coords,txt,txtSize,txtColor,backColor,self.sRender))
+            self.framesAgoAdd = 30
+
     
     def update(self,screen):
+        if self.framesAgoAdd > 0:
+            self.framesAgoAdd -= 1
         for i in range(len(self.messageList)-1,0,-1):
             message = self.messageList[i]
             if not message.draw(screen):# draws the message and checks if the message has life left

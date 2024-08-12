@@ -48,7 +48,7 @@ class StockGraphManager:
         }
         # self.mcontrolstext = [[fontlist[45].render(text,(220,220,220))[0],text.lower()] for text in ["1H","1D","1W","1M","3M","1Y","Custom"]]
         self.renderedstocknames = {name:fontlist[25].render(name,(255,255,255))[0] for name in self.allstocks}
-        self.masterRange = "1H"
+        self.masterRange = MINRANGE
         self.dragstock = [None,None,None]# [stock object, xoffset, yoffset]
 
     def draw_ui(self,screen,mousebuttons:int,stocklist:list):

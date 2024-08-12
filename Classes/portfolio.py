@@ -137,7 +137,7 @@ class Portfolio(Menu):
         """returns a sorted list of the currently displayed assets of the player"""
         def get_second(asset):
             text = s.classtext[type(asset)]
-            return f"{asset.quantity} {text}{'' if asset.quantity == 1 else 's'}"
+            return f"{limit_digits(asset.quantity,20,truncate=True)} {text}{'' if asset.quantity == 1 else 's'}"
             
         # asset is [class, secondarytext]
         # stockassets,optionassets = [],[]

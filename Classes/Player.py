@@ -1,7 +1,7 @@
 import pygame
 from random import randint
 import time
-from Classes.Stock import Stock
+from Classes.Stock import Stock,POINTSPERGRAPH
 from Defs import *
 from pygame import gfxdraw
 import numpy as np
@@ -18,9 +18,17 @@ class Player(Stock):
         self.name = name
         
         self.cash = 25000
-        if self.graphs[MINRANGE].size == 1:
-            print('cash is',self.cash)
-            self.graphs = {key:np.array([self.cash],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+        # if self.graphs[MINRANGE].size == 1:
+        if  not all([len(graph) == POINTSPERGRAPH for graph in self.graphs.values()]):
+            # print('cash is',self.cash)
+            for key in self.graphs.keys():
+                self.graphs[key] = np.array([],dtype=object)
+                for _ in range(POINTSPERGRAPH):
+                    self.graphs[key] = np.append(self.graphs[key],self.cash)
+
+            # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+            
+           
         # for (key,graph) in self.graphs.items():
         #     if graph.size == 1:
         #         self.graphs[key] = np.array([self.cash],dtype=object)
@@ -141,7 +149,14 @@ class Player(Stock):
     def getNetworth(self):
         """returns the networth of the player"""
         allassets = self.stocks + self.options
-        return self.cash + sum([asset.getValue() for asset in allassets])
+        networth = self.cash + sum([asset.getValue() for asset in allassets])
+        if networth < 0.01:
+            errors.addMessage('Bankrupt',txtSize=100,coords=[960,540])
+            time.sleep(3)
+            pygame.quit()
+            quit()
+        else:
+            return networth
         # return self.cash + sum([stock[0].cash*stock[2] for stock in self.stocks]) + sum([option.get_value() for option in self.options])
     def getAssets(self,amount:int=0):
         """returns the assets of the player, returns all of them if amount is 0 else returns the top [amount] assets"""
