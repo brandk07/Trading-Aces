@@ -7,6 +7,7 @@ from Classes.AssetTypes.StockAsset import StockAsset
 import numpy as np
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw
+from Classes.imports.errorMessage import ErrorMessageHandler
 from functools import lru_cache 
 pygame.font.init()
 pygame.mixer.init()
@@ -44,6 +45,8 @@ MINRANGE = GRAPHRANGES[0]
 MAXRANGE = GRAPHRANGES[-1]
 
 
+
+
 @lru_cache(maxsize=250)
 def s_render(string:str, size, color,font='reg') -> pygame.Surface:
     """Caches the renders of the strings, and returns the rendered surface"""
@@ -55,10 +58,15 @@ def s_render(string:str, size, color,font='reg') -> pygame.Surface:
         text = fontlistcry[size].render(string, (color))[0]
     return text
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+errors = ErrorMessageHandler(s_render)# error messages DO errors.addMessage(txt:str,coords:list=None)
 
-soundEffects = {
-    'clickbutton': pygame.mixer.Sound(r'Assets\Soundeffects\clickbutton.wav'),
-    'clickbutton2': pygame.mixer.Sound(r'Assets\Soundeffects\clickbutton2.wav'),
+soundEffects = {# soundEffects['generalClick'].play()
+    'menuClick': pygame.mixer.Sound(r'Assets\Soundeffects\menuClick.wav'),
+    'generalClick': pygame.mixer.Sound(r'Assets\Soundeffects\generalClick.wav'),
+    'error' : pygame.mixer.Sound(r'Assets\Soundeffects\error.wav'),
+    'buy': pygame.mixer.Sound(r'Assets\Soundeffects\buy.wav'),
+
+
 }
 musicThemes = {}
 for song in os.listdir(r'Assets\Music\themes'):
@@ -161,7 +169,7 @@ def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,colo
             valueText = s_render(text,textsize,color2)# re-render the text with a different color
 
         if mousebuttons == 1:
-            soundEffects['clickbutton2'].play()
+            soundEffects['generalClick'].play()
             return True
         
     screen.blit(valueText,(x+25,y+15))
@@ -185,7 +193,7 @@ def drawClickableBoxWH(screen,coords:tuple,wh:tuple,text:str,textsize:int,color1
             valueText = s_render(text,textsize,color2)# re-render the text with a different color
 
         if mousebuttons == 1:
-            soundEffects['clickbutton2'].play()
+            soundEffects['generalClick'].play()
             return True
         
     screen.blit(valueText,(x+(w//2)-(valueText.get_width()//2),y+(h//2)-(valueText.get_height()//2)))
@@ -220,7 +228,7 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         if point_in_polygon((mousex, mousey), totalpolyon):  # check if mouse is inside the polygon
             hover = True
             if mousebuttons == 1:
-                soundEffects['clickbutton2'].play()
+                soundEffects['generalClick'].play()
                 selected_value = ioffset
 
         polycolor = (30, 30, 30) if not hover else (80, 80, 80)
@@ -293,7 +301,7 @@ def checkboxOptions(screen,options,selectedOptions,pos,wh,mousebuttons,disabledO
             color = (160,160,160) if not option in disabledOptions else (200,0,0)
             pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
             if mousebuttons == 1:
-                soundEffects['clickbutton2'].play()
+                soundEffects['generalClick'].play()
                 return (option, i)
                 # screen.blit(s_render(disabledOptions[option], 40, (180,0,0)), (x,y-20))
 

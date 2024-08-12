@@ -17,6 +17,7 @@ from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
 from Classes.NewstockBook import Stockbook2
 from Classes.NewOptionMenu import Optiontrade
+
 GAMESPEED = 250
 FASTFORWARDSPEED = 1000
 pygame.init()
@@ -129,6 +130,7 @@ if __name__ == "__main__":
 # 
  
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
+        errors.update(screen)# draws the error messages
 
         uiControls.bar.changeMaxValue(GAMESPEED)
         mousebuttons = 0

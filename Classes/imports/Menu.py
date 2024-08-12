@@ -30,7 +30,7 @@ class Menu():
             gfxdraw.filled_polygon(screen,[(25,ypos-15),(width1+35,ypos-15),(width1+35,ypos+height1+height2),(25,ypos+height1+height2)],(110,110,110))
             if mousebuttons == 1:
                 self.menudrawn = not self.menudrawn
-                soundEffects['clickbutton'].play()
+                soundEffects['menuClick'].play()
                 if self.menudrawn:#if the menu is drawn, then set all the other menus to not drawn
                     for menu in menulist:
                         if menu != self: menu.menudrawn = False

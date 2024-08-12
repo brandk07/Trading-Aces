@@ -133,6 +133,7 @@ class Numpad:
                             '0.'
                         else:
                             if float(self.numstr) > maxvalue:
+                                errors.addMessage(f"Max Quantity = {maxvalue}")
                                 self.numstr = str(maxvalue)
 
                 # gfxdraw.box(screen,rect,color)

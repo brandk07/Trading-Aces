@@ -63,6 +63,7 @@ class Player(Stock):
         self.update_price(gamespeed,Player)
 
     def buyAsset(self,newasset):
+        
         if newasset.quantity <= 0:
             return
         if isinstance(newasset,StockAsset):
@@ -90,7 +91,7 @@ class Player(Stock):
             # print(asset.quantity)
             # print(asset.getValue())
             # print(f'buying {asset} for {asset.getValue(True):.2f}')
-
+            soundEffects['buy'].play()
             print('cash is',self.cash)
 
     def sellAsset(self,asset,quantity):

@@ -138,7 +138,7 @@ class Stockbook(Menu):
                 if mousebuttons == 1:#if the mouse is hovering over the stock
                     self.selectedStock = i
                     self.stockGraph.setStockObj(stocklist[self.selectedStock])# change the stock object in the stock graph
-                    soundEffects['clickbutton2'].play()
+                    soundEffects['generalClick'].play()
                     self.quantity = 0
 
             change = stock.price - stock.graphs["1D"][0]

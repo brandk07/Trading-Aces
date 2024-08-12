@@ -40,7 +40,7 @@ class SelectionBar:
             screen.blit(rtxt,(txtx,txty))
             if pygame.Rect(x+(i*spacing),y,spacing,h).collidepoint(pygame.mouse.get_pos()):
                 if mousebuttons == 1:
-                    soundEffects['clickbutton2'].play()
+                    soundEffects['generalClick'].play()
                     self.selected = txt
                     changed = True
         return changed

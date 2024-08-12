@@ -190,7 +190,7 @@ class LatterScroll():
                         selectedVal = None
                     else:
                         selectedVal = numdrawn+self.omittedstocks[0]
-                    soundEffects['clickbutton2'].play()
+                    soundEffects['generalClick'].play()
             
             # draw the polygon
             # gfxdraw.filled_polygon(screen, points, (60,60,60,150) if hover or numdrawn == selectedVal else (25,25,25,150 ))

@@ -261,7 +261,7 @@ class Optiontrade(Menu):
         screen.blit(self.refresh_text, (1050,135))
         if point_in_polygon((mousex,mousey),[(1000,120),(1015,190),(1455,190),(1440,120)]):
             if mousebuttons == 1:
-                soundEffects['clickbutton2'].play()
+                soundEffects['generalClick'].play()
                 self.refreshOptions(stocklist,gametime,player)
 
         percents = []; alltexts = []
@@ -310,17 +310,17 @@ class Optiontrade(Menu):
         pygame.draw.line(screen,(0,0,0),(735,110),(750,170),5)
         if point_in_polygon(pygame.mouse.get_pos(),ownedPoints):
             if mousebuttons == 1:
-                soundEffects['clickbutton2'].play()
+                soundEffects['generalClick'].play()
                 self.view = "Owned"
                 for option in player.options:option.getValue()# recalculate the option values
         elif point_in_polygon(pygame.mouse.get_pos(),availablePoints):
             if mousebuttons == 1:
-                soundEffects['clickbutton2'].play()
+                soundEffects['generalClick'].play()
                 self.view = "Available"
                 for option in (self.putoptions+self.calloptions):option.getValue()# recalculate the option values
         elif point_in_polygon(pygame.mouse.get_pos(),customPoints):
             if mousebuttons == 1:
-                soundEffects['clickbutton2'].play()
+                soundEffects['generalClick'].play()
                 self.view = "Custom"
 
         if self.view == "Owned":

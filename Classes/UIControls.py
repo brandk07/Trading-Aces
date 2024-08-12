@@ -59,7 +59,7 @@ class UIControls():
             stocks_color = (80, 0, 0) if stocks_color == (120, 0, 0) else (20,20,20)
             if mousebuttons == 1:
                 self.view = "home"
-                soundEffects['clickbutton2'].play()
+                soundEffects['generalClick'].play()
                 return True
 
         if point_in_triangle(mouse_pos, stockstri):
@@ -68,7 +68,7 @@ class UIControls():
             
             if mousebuttons == 1:
                 self.view = "stock"
-                soundEffects['clickbutton2'].play()
+                soundEffects['generalClick'].play()
                 return True
 
         # Draw the triangles

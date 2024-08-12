@@ -117,7 +117,7 @@ class OrderScreen:
         if pygame.Rect.collidepoint(pygame.Rect(wh[0]+x-cancelButton.get_width()-10,610+y,cancelButton.get_width(),cancelButton.get_height()),mousex,mousey):# if the mouse is colliding with the cancel button
             cancelButton = s_render('Cancel',40,(180,0,0))
             if mousebuttons == 1:
-                soundEffects['clickbutton2'].play()
+                soundEffects['generalClick'].play()
                 self.lastMousePos = None
                 return False
         
@@ -126,10 +126,13 @@ class OrderScreen:
         
         confirmColor = TXTCOLOR
         if pygame.Rect.collidepoint(pygame.Rect(x+50, y+380, 350, 50),mousex,mousey):
-            confirmColor = (0,180,0)
+            confirmColor = (0,180,0) if self.numPad.getValue() > 0 else (180,0,0)
             if mousebuttons == 1:
-                soundEffects['clickbutton2'].play()
-                self.executeOrder(player,stockObj,gametime)
+                if self.numPad.getValue() == 0:
+                    errors.addMessage("Please Enter a Value")
+                else:
+                    soundEffects['generalClick'].play()
+                    self.executeOrder(player,stockObj,gametime)
 
         confirmtxt = s_render('Confirm Order',40,confirmColor)
         screen.blit(confirmtxt,(-5+x+225-confirmtxt.get_width()/2,380+y+10))
