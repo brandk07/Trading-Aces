@@ -131,6 +131,8 @@ if __name__ == "__main__":
  
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
         errors.update(screen)# draws the error messages
+        for animation in animationList:
+            animation.update(screen)
 
         uiControls.bar.changeMaxValue(GAMESPEED)
         mousebuttons = 0

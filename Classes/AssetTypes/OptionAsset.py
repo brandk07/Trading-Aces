@@ -39,11 +39,69 @@ def getCloseOpenDate(time : datetime) -> datetime:
     # print(f"closest is {extime}, for time, {time}")
     return extime
 
+# @lru_cache(maxsize=128)
+#         def getDays(year,month,day,hour):
+#             print(f"getting days for {year,month,day,hour}")
+#             print()
+#             currentTime = datetime(year,month,day,9,30)
+#             d = currentTime
+#             daysPast = 0
+#             while d < self.expirationDate:
+#                 d += timedelta(days=1)
+#                 if isOpen(d):
+#                     daysPast += 1
+#             hours = 0
+#             if isOpen(self.gametime.time):
+#                 minutes = self.gametime.time.minute/60
+#                 hours = max(1-((hour + minutes - 9)/6.5),.1)
+#             return round(daysPast + hours,1)
+class TimeGetter:
+    def __init__(self,optionAsset,gametime) -> None:
+        self.lastinputs = []
+        self.gametime = gametime
+        self.lastvalue = None
+        self.optionAsset : OptionAsset = optionAsset
+
+    def __call__(self,year,month,day,hour):
+        if self.lastinputs == (year,month,day,hour):
+            # print("done this", self.lastvalue)
+            return self.lastvalue
+        currentTime = datetime(year,month,day,9,30)
+        d = currentTime
+        daysPast = 0
+        while d < self.optionAsset.expirationDate:
+            d += timedelta(days=1)
+            if isOpen(d):
+                daysPast += 1
+        # hours = 1
+        hours = 1
+        
+        if isOpen(self.gametime.time):
+            # print("open")
+            minutes = self.gametime.time.minute/60
+            hours = 1-((hour + minutes - 9)/6.5)
+        # print(f"is Open current {currentTime}, {isOpen(currentTime)} hour {hour}")
+        if isOpen(currentTime) and hour >= 16:
+            
+            daysPast -= 1
+        if not isOpen(currentTime):
+            daysPast -= 1
+
+        # print(f"hour {hour}, {isOpen(self.gametime.time)}, {self.gametime.time} hours -> {hours}, {daysPast}")
+            
+            
+        self.lastinputs = (year,month,day,hour)
+        self.lastvalue = round(daysPast + hours - 1,1)
+        # print("did it ", self.lastvalue)
+        return self.lastvalue
+
+
 class OptionAsset(Asset):
     def __init__(self,player,stockObj,strikePrice:int,expirationDate:datetime,optionType:str,creationDate:str,quantity:int,porfolioPercent=None,ogValue=None,color=None) -> None:
         super().__init__(player,stockObj, creationDate, " "+optionType, ogValue, quantity, porfolioPercent, color=color)
         
         self.gametime : datetime = player.gametime
+        self.timeGetter = TimeGetter(self,self.gametime)
         self.strikePrice = strikePrice
         self.expirationDate = datetime.strptime(expirationDate, "%Y-%m-%d %H:%M:%S") if isinstance(expirationDate,str) else expirationDate
         self.expirationDate = getCloseOpenDate(self.expirationDate)# Makes sure the expiration date is a trading day
@@ -93,35 +151,15 @@ class OptionAsset(Asset):
     def getExpDate(self):
         return self.expirationDate.strftime(DFORMAT)
     
-    
-    def getDaysSelf(self,year,month,day,hour):
-        @lru_cache(maxsize=128)
-        def getDays(year,month,day,hour):
-            print(f"getting days for {year,month,day,hour}")
-            print()
-            currentTime = datetime(year,month,day,9,30)
-            d = currentTime
-            daysPast = 0
-            while d < self.expirationDate:
-                d += timedelta(days=1)
-                if isOpen(d):
-                    daysPast += 1
-            hours = 0
-            if isOpen(self.gametime.time):
-                minutes = self.gametime.time.minute/60
-                hours = max(1-((hour + minutes - 9)/6.5),.1)
-            return round(daysPast + hours,1)
-        return getDays(year,month,day,hour)
-    
     def daysToExpiration(self):
         # assert isinstance(gametimeTime,datetime), "gametimeTime must be a datetime object Use .time"
         
-        
-        daysPast = self.getDaysSelf(self.gametime.time.year,self.gametime.time.month,self.gametime.time.day,self.gametime.time.hour)
-        # daysPast = 1
+        # if self in self.playerObj.options:
+        # daysPast = self.getDaysSelf(self.gametime.time.year,self.gametime.time.month,self.gametime.time.day,self.gametime.time.hour)
+        daysPast = self.timeGetter(self.gametime.time.year,self.gametime.time.month,self.gametime.time.day,self.gametime.time.hour)
         return daysPast
     def optionLive(self):
-        return self.daysToExpiration() >= 0
+        return self.daysToExpiration() > 0
     def getValue(self,bypass=False,fullvalue=True):
         """""Bypass is used to force a recalculation of the option value
         Full value is value*quantity otherwise it is just the value of the option"""

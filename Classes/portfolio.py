@@ -362,7 +362,7 @@ class Portfolio(Menu):
         mousex, mousey = pygame.mouse.get_pos()
         
         sortedassets = s.get_allassets()# gets the sorted assets of the player
-        screen.blit(s_render(f"{None if s.selectedAsset == None else s.selectedAsset[1]}", 70, (210, 210, 210)), (200, 1000))
+        # screen.blit(s_render(f"{None if s.selectedAsset == None else s.selectedAsset[1]}", 70, (210, 210, 210)), (200, 1000))
         if s.selectedAsset != None and s.selectedAsset not in sortedassets:# if the selected asset is not in the sorted assets
             if len(sortedassets) > 0:# if there are assets
                 s.selectedAsset = sortedassets[0]# set the selected asset to the first asset in the sorted assets

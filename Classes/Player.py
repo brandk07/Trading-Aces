@@ -89,6 +89,8 @@ class Player(Stock):
                 f"Balance ${limit_digits(self.cash-newasset.getValue(bypass=True),12)}"
             ]
             self.transact.addTransaction(*text)
+            soundEffects['buy'].play()
+            animationList.append(BuyAnimation(pygame.mouse.get_pos(),100,animationList))
             self.cash -= newasset.getValue()# fullvalue is True by default
             for a in assetlist:# if the asset is already in the list, add the new asset to the old one
                 if newasset == a:# use the __eq__ method to compare the assets
@@ -99,7 +101,7 @@ class Player(Stock):
             # print(asset.quantity)
             # print(asset.getValue())
             # print(f'buying {asset} for {asset.getValue(True):.2f}')
-            soundEffects['buy'].play()
+            
             print('cash is',self.cash)
 
     def sellAsset(self,asset,quantity):

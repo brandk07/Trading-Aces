@@ -8,6 +8,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw
 from Classes.imports.ErrorMessage import ErrorMessageHandler
+from Classes.imports.Animations import BuyAnimation
 from functools import lru_cache 
 pygame.font.init()
 pygame.mixer.init()
@@ -59,6 +60,7 @@ def s_render(string:str, size, color,font='reg') -> pygame.Surface:
     return text
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 errors = ErrorMessageHandler(s_render)# error messages DO errors.addMessage(txt:str,coords:list=None)
+animationList = []
 
 soundEffects = {# soundEffects['generalClick'].play()
     'menuClick': pygame.mixer.Sound(r'Assets\Soundeffects\menuClick.wav'),
