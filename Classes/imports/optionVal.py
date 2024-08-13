@@ -44,9 +44,9 @@ class OptionVal:
         self.sigma = sigma
         self.r = r 
         self.dv = dv
-        self.start = np.datetime64(start,'D') if start else np.datetime64('today', 'D') 
-        self.end = np.datetime64(end,'D') if end else np.datetime64('today', 'D') + np.timedelta64(t,'D')
-        self.t = (self.end - self.start).astype(int) / 365
+        # self.start = np.datetime64(start,'D') if start else np.datetime64('today', 'D') 
+        # self.end = np.datetime64(end,'D') if end else np.datetime64('today', 'D') + np.timedelta64(t,'D')
+        self.t = t/365
 
     """
     function: calculate the option price

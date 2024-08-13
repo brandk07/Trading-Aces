@@ -4,6 +4,7 @@ import numpy as np
 from collections import deque
 from random import randint,random
 from datetime import timedelta,datetime
+from functools import lru_cache 
 
 # ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
 DFORMAT = "%m/%d/%Y"
@@ -23,6 +24,8 @@ def isOpen(time:datetime):
     if not(((time.hour == 9 and time.minute >= 30) or time.hour > 9) and time.hour < 16):
         return False
     return True
+
+
 
 
 def getCloseOpenDate(time : datetime) -> datetime:
@@ -89,9 +92,34 @@ class OptionAsset(Asset):
         return (self.stockObj.name,self.strikePrice,str(self.expirationDate),self.optionType,self.date,self.quantity,self.portfolioPercent,self.ogValue,self.color)
     def getExpDate(self):
         return self.expirationDate.strftime(DFORMAT)
+    
+    
+    def getDaysSelf(self,year,month,day,hour):
+        @lru_cache(maxsize=128)
+        def getDays(year,month,day,hour):
+            print(f"getting days for {year,month,day,hour}")
+            print()
+            currentTime = datetime(year,month,day,9,30)
+            d = currentTime
+            daysPast = 0
+            while d < self.expirationDate:
+                d += timedelta(days=1)
+                if isOpen(d):
+                    daysPast += 1
+            hours = 0
+            if isOpen(self.gametime.time):
+                minutes = self.gametime.time.minute/60
+                hours = max(1-((hour + minutes - 9)/6.5),.1)
+            return round(daysPast + hours,1)
+        return getDays(year,month,day,hour)
+    
     def daysToExpiration(self):
         # assert isinstance(gametimeTime,datetime), "gametimeTime must be a datetime object Use .time"
-        return (self.expirationDate - self.gametime.time).days
+        
+        
+        daysPast = self.getDaysSelf(self.gametime.time.year,self.gametime.time.month,self.gametime.time.day,self.gametime.time.hour)
+        # daysPast = 1
+        return daysPast
     def optionLive(self):
         return self.daysToExpiration() >= 0
     def getValue(self,bypass=False,fullvalue=True):

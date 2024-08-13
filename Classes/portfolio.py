@@ -353,7 +353,7 @@ class Portfolio(Menu):
             # 870/3 = 290
             # if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),mousebuttons,0,rangecontroldisp=False,graphrange="1D") and mousebuttons == 1:# if the stock name is clicked
             coords = (1400,100+(i*290))
-            stock.drawFull(screen,coords,wh,f"PortfolioExtra{i}",True,"hoverName")
+            stock.drawFull(screen,coords,wh,f"PortfolioExtra{i}",True,"Normal")
 
         
 

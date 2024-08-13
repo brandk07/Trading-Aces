@@ -2,15 +2,21 @@
 
 
 # # Scale down the prices for numerical stability
-# # stock_price = 4_750_000
-# # strike_price = 5_000_000
-# stock_price = 170.71
-# strike_price = 120
-# time_to_expiration = 17  # 10 days
-# risk_free_rate = 0.05  # You should use the actual risk-free rate
-# volatility = .3994
-# option_type = "call"
+# stock_price = 4_750_000
+# strike_price = 5_000_000
+from Classes.imports.optionVal import OptionVal as Op
 
+stock_price = 239.31
+strike_price = 250
+time_to_expiration = 49.5  # 10 days
+risk_free_rate = 0.05  # You should use the actual risk-free rate
+volatility = .106
+option_type = "put"
+
+
+optionObj = Op(european=True,kind=option_type,s0=float(stock_price)*100,k=strike_price*100,t=time_to_expiration,sigma=volatility,r=0.05)
+print(optionObj.getPrice(method="BSM",iteration=1))
+# print(optionObj.getPrice(method="BT",iteration=1000))
 # # stock_price = 4_050_000
 # # time_to_expiration = 8
 # # Calculate the option cost
@@ -90,60 +96,60 @@
 #     print(string)
 #     return reverse(string[1:]) + string[0]
 
-from random import randint
+# from random import randint
 
-volatility = 10
-bonustrendranges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]
-# bonustrendranges = [[((-1,1)),((140_400,421_200))],[((-3,3)),((59400,81000))],[((-8,8)),((8100,21600))],[((-12,12)),((150,3600))]]
-bonustrends = [[randint(*x[0]),randint(*x[1])] for x in bonustrendranges]
+# volatility = 10
+# bonustrendranges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]
+# # bonustrendranges = [[((-1,1)),((140_400,421_200))],[((-3,3)),((59400,81000))],[((-8,8)),((8100,21600))],[((-12,12)),((150,3600))]]
+# bonustrends = [[randint(*x[0]),randint(*x[1])] for x in bonustrendranges]
 
 
-from random import randint
+# from random import randint
 
-def addpoint_optimized(lastprice):
-    """returns the new price of the stock"""
+# def addpoint_optimized(lastprice):
+#     """returns the new price of the stock"""
 
-    global bonustrends, bonustrendranges
+#     global bonustrends, bonustrendranges
 
-    # bonustrends = [[randint(*bonustrendranges[i][0]), randint(*bonustrendranges[i][1])] if trend[1] <= 0 else [trend[0], trend[1] - 1] for i, trend in enumerate(bonustrends)]
-    for i,bonustrend in enumerate(bonustrends):
-        if bonustrend[1] <= 0:#if the time is out
-            bonustrends[i] = [randint(*bonustrendranges[i][0]),randint(*bonustrendranges[i][1])]
+#     # bonustrends = [[randint(*bonustrendranges[i][0]), randint(*bonustrendranges[i][1])] if trend[1] <= 0 else [trend[0], trend[1] - 1] for i, trend in enumerate(bonustrends)]
+#     for i,bonustrend in enumerate(bonustrends):
+#         if bonustrend[1] <= 0:#if the time is out
+#             bonustrends[i] = [randint(*bonustrendranges[i][0]),randint(*bonustrendranges[i][1])]
 
-        else:
-            bonustrend[1] -= 1
+#         else:
+#             bonustrend[1] -= 1
 
-    total_trend = sum(trend[0] for trend in bonustrends)
-    total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)
-    highvolitity = volatility + total_trend
-    lowvolitity = -volatility + total_trend
+#     total_trend = sum(trend[0] for trend in bonustrends)
+#     total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)
+#     highvolitity = volatility + total_trend
+#     lowvolitity = -volatility + total_trend
     
-    factor = randint(lowvolitity, highvolitity) / 350_000
-    return lastprice * (1 + factor) if randint(0, 1) else lastprice * (1 - factor)# returns the new price of the stock
+#     factor = randint(lowvolitity, highvolitity) / 350_000
+#     return lastprice * (1 + factor) if randint(0, 1) else lastprice * (1 - factor)# returns the new price of the stock
 
-def points100(lastprice,iteration):
-    for _ in range(iteration):
-        lastprice = addpoint_optimized(lastprice)
-    return lastprice
+# def points100(lastprice,iteration):
+#     for _ in range(iteration):
+#         lastprice = addpoint_optimized(lastprice)
+#     return lastprice
     
-points = [addpoint_optimized(100) for i in range(100000)]
+# points = [addpoint_optimized(100) for i in range(100000)]
 
-print("New Run "*5)
-print(sum(points)/len(points))
+# print("New Run "*5)
+# print(sum(points)/len(points))
 
-print("*"*50)
-points = [points100(100,5_873_400)for i in range(100)]
-print(sum(points)/len(points),'Average')
-print(min(points),'Min')
-print(max(points),'Max')
-print(max(points)-min(points),'Deviation')
-# standard deviation
-import statistics
-std_dev = statistics.stdev(points)
-print("Standard Deviation:", std_dev)
-avrpoints = [point/100 for point in points]
-print(avrpoints)
-print((sum(avrpoints)/len(avrpoints))*100,'Average %')
+# print("*"*50)
+# points = [points100(100,5_873_400)for i in range(100)]
+# print(sum(points)/len(points),'Average')
+# print(min(points),'Min')
+# print(max(points),'Max')
+# print(max(points)-min(points),'Deviation')
+# # standard deviation
+# import statistics
+# std_dev = statistics.stdev(points)
+# print("Standard Deviation:", std_dev)
+# avrpoints = [point/100 for point in points]
+# print(avrpoints)
+# print((sum(avrpoints)/len(avrpoints))*100,'Average %')
 
 # with volatility = 5
 # 100.0014068216595 Average
