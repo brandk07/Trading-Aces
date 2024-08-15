@@ -209,12 +209,13 @@ class Portfolio(Menu):
         
         s.numpad.draw(screen,(200,610),(275,350),extratext,mousebuttons,asset.quantity)
         # s.numpad.draw(screen,(870,620),(300,330),extratext,mousebuttons,asset.quantity)
-        
+        yamt = int(780/len(asset.getStockObj().graphrangeoptions))
         for i,graphname in enumerate(asset.getStockObj().graphrangeoptions):# 1H, 1D, etc...
             # asset.getStockObj().baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
-            s.selectedGraph.drawBare(screen,(1630,200+(i*125)),(270,115),graphname,True,"None")
+            s.selectedGraph.drawBare(screen,(1630,200+(i*(yamt))),(270,yamt-10),graphname,True,"Normal")
+            
             text = s_render(graphname, 40, (230, 230, 230))
-            screen.blit(text, (1640, 325+(i*125)-text.get_height()-20))
+            screen.blit(text, (1640, 315+(i*(yamt))-text.get_height()-20))
 
         # color = ((200,0,0) if asset.getPercent() < 0 else (0,200,0)) if asset.getPercent() != 0 else (200,200,200)
         quantity = s.numpad.getValue()# gets the quantity from the numpad
@@ -396,7 +397,7 @@ class Portfolio(Menu):
             s.drawStockGraphs(screen,stocklist,mousebuttons)# draws the stock graphs on the right side of the screen
             # for stock in s.displayedStocks:
             #     stock.draw(screen,player,(1400,stock.y),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
-                
+ 
             # stocklist[0].draw(screen,player,(1400,200),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
             # stocklist[1].draw(screen,player,(1400,455),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
             # stocklist[2].draw(screen,player,(1400,710),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
@@ -405,16 +406,20 @@ class Portfolio(Menu):
         
         else:# if the selected asset is NOT None
             # stockgraph = s.selectedAsset[0].stockobj
-            s.selectedGraph.setStockObj(s.selectedAsset[0].getStockObj())
+
+            
 
             # stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
             # stockgraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
-            s.selectedGraph.drawFull(screen,(190,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
+            s.selectedGraph.setStockObj(s.selectedAsset[0].getStockObj())
+            s.selectedGraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
 
-            selectedindex = sortedassets.index(s.selectedAsset)
-            s.drawselectedScroll(screen,sortedassets[selectedindex],mousebuttons)# draws the selected asset scroll on the right
+            # selectedindex = sortedassets.index(s.selectedAsset)
+            s.draw_selected_description(screen,s.selectedAsset,mousebuttons,player,gametime)# draws the description of the selected asset
+            if s.selectedAsset != None:
+                s.drawselectedScroll(screen,s.selectedAsset,mousebuttons)# draws the selected asset scroll on the right
 
-            s.draw_selected_description(screen,sortedassets[selectedindex],mousebuttons,player,gametime)# draws the description of the selected asset
+            
         s.assetscroll_controls(screen,mousebuttons)
 
         

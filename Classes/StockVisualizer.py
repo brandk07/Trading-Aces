@@ -12,18 +12,21 @@ class StockVisualizer:
         self.graph : Graph = Graph()
         self.stockObj = stockobj#stock object it will start with
         self.storedRanges = {}# all the ranges that different places need, different key for each range
+        self.longHovers = {}# all the long hovers that different places need, different key for each range
+        self.longHover = None# the index of the point that is being hovered over
         self.stocklist = stocklist
 
         # Used since when calling a draw function you can give a key rather than a graphrange and then that key will be stored in this class
         # if a parameter is truegraphrange then it has used the getVaildRange function to get the true graphrange
         self.getValidRange = lambda graphrange: graphrange if graphrange in GRAPHRANGES else self.storedRanges.setdefault(graphrange,"1D")
 
-        self.longHover = None# the index of the point that is being hovered over
+        
     def setStockObj(self,stockobj):
         """Changes the stock object that the visualizer is using"""
         if stockobj == None or type(stockobj) != type(self.stockObj):
             return
         self.stockObj = stockobj
+    
     def calculateTime(self,truegraphrange,mousepoint:int):
         graphed_seconds = mousepoint*(self.stockObj.graphrangeoptions[truegraphrange]/POINTSPERGRAPH)# the amount of seconds that the stock has been graphed
         grapheddays = graphed_seconds//self.stockObj.graphrangeoptions["1D"]# the amount of days that the stock has been graphed
@@ -116,28 +119,29 @@ class StockVisualizer:
 
                 
     
-    def longPriceOver(self,screen:pygame.Surface,graphpoints,spacing,coords,wh,truegraphrange):
-        
+    def longPriceOver(self,screen:pygame.Surface,graphpoints,spacing,coords,wh,graphrange):
+        longHover = self.longHover if graphrange in GRAPHRANGES else self.longHovers.setdefault(graphrange,None)
+        truegraphrange = self.getValidRange(graphrange)
         mousex,mousey = pygame.mouse.get_pos()
         blnkspacex = ((coords[0]+wh[0]-coords[0])//10)
         blnkspacey = ((coords[1]+wh[1]-coords[1])//10)
         coords = (coords[0]+blnkspacex,coords[1])
         wh = (wh[0]-blnkspacex*2,wh[1]-blnkspacey)
         if not (collide:=pygame.Rect(coords[0],coords[1],wh[0],wh[1]).collidepoint(mousex,mousey)) and not pygame.mouse.get_pressed()[0]:
-            self.longHover = None
+            longHover = None
         elif not pygame.Rect(coords[0]-blnkspacex,coords[1],wh[0]+blnkspacex*2,wh[1]).collidepoint(mousex,mousey):#if it left the entire graph and surrounding area
-            self.longHover = None
+            longHover = None
         else:# if the mouse is in the range of the graph
             if not pygame.mouse.get_pressed()[0] and collide:# if the mouse is not being clicked
-                self.longHover = None
+                longHover = None
                 self.priceMouseOver(screen,graphpoints,spacing,coords,wh,truegraphrange)
 
             else:# if the mouse is being clicked
-                if self.longHover == None:# If the mouse hadn't been clicked before
-                    self.longHover = max(coords[0],min(coords[0]+wh[0],mousex))
+                if longHover == None:# If the mouse hadn't been clicked before
+                    longHover = max(coords[0],min(coords[0]+wh[0],mousex))
                     # self.priceMouseOver(screen,graphpoints,spacing,coords,wh,truegraphrange)
                 else:
-                    x1 = self.longHover
+                    x1 = longHover
                     x2 = max(coords[0],min(coords[0]+wh[0],mousex))
                     if x1 > x2:
                         x1,x2 = x2,x1
@@ -190,7 +194,12 @@ class StockVisualizer:
                     # pygame.draw.rect(screen,(0,0,0),pygame.Rect(rectX-5,coords[1]+5,maxWidth+25,105),5,10)
                     # screen.blit(valsTxt,(rectX+8,coords[1]+15))# the value of the stock
                     # screen.blit(timeTxt1,(rectX+8,coords[1]+50))# blits the cursor time to the screen
-                    # screen.blit(timeTxt2,(rectX+8,coords[1]+80))# blits the cursor time to the screen                      
+                    # screen.blit(timeTxt2,(rectX+8,coords[1]+80))# blits the cursor time to the screen     
+        if graphrange in GRAPHRANGES:# if it is a valid graphrange
+            self.longHover = longHover    
+        else:# if it is a key for a dict
+            self.longHovers[graphrange] = longHover  
+                       
                 
     
     def drawPriceLines(self,screen,truegraphrange,coords,wh,graphingpoints):
@@ -281,7 +290,7 @@ class StockVisualizer:
         graphingpoints,spacing,minmax_same = self._defaultDraw(screen,coords,wh,graphrange,False)# draw the basic graph, no range controls
 
         if detectmouseover:
-            self.longPriceOver(screen,graphingpoints,spacing,coords,wh,truegraphrange)
+            self.longPriceOver(screen,graphingpoints,spacing,coords,wh,graphrange)
             # self.priceMouseOver(screen,graphingpoints,spacing,coords,wh,truegraphrange)
 
         # return self.drawNamePreset(screen,coords,wh,truegraphrange,preset)
@@ -308,7 +317,7 @@ class StockVisualizer:
             self.drawPriceLines(screen,truegraphrange,coords,wh,graphingpoints)# draw the price lines
 
         if detectmouseover:
-            self.longPriceOver(screen,graphingpoints,spacing,coords,wh,truegraphrange)# display the price of the stock where the mouse is hovering
+            self.longPriceOver(screen,graphingpoints,spacing,coords,wh,graphrange)# display the price of the stock where the mouse is hovering
             # self.priceMouseOver(screen,graphingpoints,spacing,coords,graphwh,truegraphrange)# display the price of the stock where the mouse is hovering
         
   
