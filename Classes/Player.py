@@ -6,6 +6,7 @@ from Defs import *
 from pygame import gfxdraw
 import numpy as np
 from datetime import datetime, timedelta
+from Classes.imports.BigMessage import OptionMessage
 
 class Player(Stock):
     
@@ -52,12 +53,18 @@ class Player(Stock):
         for option in self.options:
             option.getValue(bypass=True)
         for i in range(len(self.options)-1,-1,-1):
+            print("Option has expired")
+            if not self.options[i].optionLive():
+                if not bigMessageList:
+                    bigMessageList.append(OptionMessage(self.options[i]))
+            # self.options.pop(i)
             # print(self.options[i].name,self.options[i].daysToExpiration(gametime.time))
-            if self.options[i].daysToExpiration() <= 0:
-                self.options[i].option.t = 0
-                self.cash += self.options[i].option.getPrice(method="BSM",iteration=1)*self.options[i].quantity
-                self.options.pop(i)
+            # if self.options[i].daysToExpiration() <= 0:
+            #     self.options[i].option.t = 0
+            #     self.cash += self.options[i].option.getPrice(method="BSM",iteration=1)*self.options[i].quantity
+            #     self.options.pop(i)
         # print('new day')
+        
         
 
     def gameTick(self,gamespeed:int):
@@ -70,8 +77,9 @@ class Player(Stock):
 
         self.update_price(gamespeed,Player)
 
-    def buyAsset(self,newasset):
-        
+    def buyAsset(self,newasset,customValue=None):
+        """Custom Value will override the current value (Per Share Not Fullvalue)"""
+        value = newasset.getValue(bypass=True,fullvalue=False) if customValue == None else customValue
         if newasset.quantity <= 0:
             return
         if isinstance(newasset,StockAsset):
@@ -79,32 +87,29 @@ class Player(Stock):
         elif isinstance(newasset,OptionAsset):
             assetlist = self.options
 
-        if self.cash >= newasset.getValue(bypass=True):
+        if self.cash >= value*newasset.getQuantity():# if the player has enough money to buy the asset
             # ["Sold 39 Shares of","KSTON for $5,056.93","Balance $26,103.18"]
             text = [
                 f"Added {newasset.quantity} {newasset.getStockObj().name} {'' if type(newasset) == StockAsset else newasset.getType()} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
                 f"{self.gametime.getDate()}",
-                f"${limit_digits(newasset.getValue(bypass=True,fullvalue=False),12)} Per Share",
+                f"${limit_digits(value,12)} Per Share",
                 f"Cost -${limit_digits(newasset.getValue(bypass=True),12)}",
                 f"Balance ${limit_digits(self.cash-newasset.getValue(bypass=True),12)}"
             ]
             self.transact.addTransaction(*text)
             soundEffects['buy'].play()
             animationList.append(BuyAnimation(pygame.mouse.get_pos(),100,animationList))
-            self.cash -= newasset.getValue()# fullvalue is True by default
+            self.cash -= value*newasset.getQuantity()# fullvalue is True by default
             for a in assetlist:# if the asset is already in the list, add the new asset to the old one
                 if newasset == a:# use the __eq__ method to compare the assets
                     a += newasset# use the __iadd__ method to add the assets together
                     return# return if the asset is already in the list``
             
             assetlist.append(newasset.copy())# if the asset is not in the list, add it to the list
-            # print(asset.quantity)
-            # print(asset.getValue())
-            # print(f'buying {asset} for {asset.getValue(True):.2f}')
             
             print('cash is',self.cash)
 
-    def sellAsset(self,asset,quantity):
+    def sellAsset(self,asset,quantity,feePercent=1):
         """sells the quantity number of the asset object given
         won't sell more than the quantity of the asset"""
         quantity = int(quantity)
@@ -133,17 +138,18 @@ class Player(Stock):
         ]
         self.transact.addTransaction(*text)
         
-        self.cash += asset.getValue(bypass=True,fullvalue=False)*quantity# add the value of the asset to the cash
-
+        self.cash += asset.getValue(bypass=True,fullvalue=False)*quantity*feePercent# add the value of the asset to the cash
+        print('cash is',self.cash,asset.getValue(bypass=True,fullvalue=False)*quantity)
         assetlist[assetlist.index(asset)].quantity -= quantity# subtract the quantity from the asset
 
         if assetlist[assetlist.index(asset)].quantity <= 0:# if the quantity of the asset is 0 or less, remove the asset from the list
             assetlist.remove(asset)
-    def exerciseOption(self,optionasset:OptionAsset):
-        """Exercises the option"""
-        print(f"Exercising Option {optionasset.name} for {optionasset.option.k} at {optionasset.option.s0}, value of ${optionasset.option.getPrice(method='BSM',iteration=1)}")
-        self.cash += optionasset.option.getPrice(method="BSM",iteration=1)*optionasset.quantity
-        self.options.remove(optionasset)
+        
+    # def exerciseOption(self,optionasset:OptionAsset):
+    #     """Exercises the option"""
+    #     print(f"Exercising Option {optionasset.name} for {optionasset.option.k} at {optionasset.option.s0}, value of ${optionasset.option.getPrice(method='BSM',iteration=1)}")
+    #     self.cash += optionasset.option.getPrice(method="BSM",iteration=1)*optionasset.quantity
+    #     self.options.remove(optionasset)
 
         
 

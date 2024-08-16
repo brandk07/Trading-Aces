@@ -300,11 +300,15 @@ class UIControls():
         self.draw_accbar_middle(screen,stocklist,mousebuttons,player)# draws the stock events (On the right of the portfolio)
         self.draw_accbar_right(screen,stocklist,player,mousebuttons)# draws the stock events (On the very right of the screen)
         # self.newsobj.draw(screen)
-        
+    def drawBigMessage(self,screen,mousebuttons,player):
+        if bigMessageList:# if there is a big message
+            bigMessageList[0].draw(screen,self,mousebuttons,player)
 
     def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist,tmarket):
         if self.drawIcon(screen,mousebuttons):
             for i in range(len(menulist)):menulist[i].menudrawn = False
+        
+
         if not any(menu.menudrawn for menu in menulist):# if any of the menus are drawn, then don't draw
             self.marketStatus(screen,gametime)
             if self.view == "home":
@@ -327,7 +331,8 @@ class UIControls():
                 stockgraphmanager.draw_graphs(screen,stocklist,player,mousebuttons,gametime)
                 # player.draw(screen,player,(1920,0),(1600,400),stocklist,mousebuttons)
                 self.gameplay_speed = self.bar.draw_bar(screen,[1620,575],[125,400],'vertical',text=gametime.skipText())
-
+        
+        
             
 
 

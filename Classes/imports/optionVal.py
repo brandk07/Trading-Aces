@@ -39,11 +39,11 @@ class OptionVal:
             raise TypeError("dv should be either True or False")
         self.european = european
         self.kind = 1 if kind.lower() == 'call' else -1
-        self.s0 = s0
-        self.k = k
+        self.s0 = s0# 1 share price
+        self.k = k# strike price
         self.sigma = sigma
-        self.r = r 
-        self.dv = dv
+        self.r = r# risk free rate
+        self.dv = dv# dividend rate
         # self.start = np.datetime64(start,'D') if start else np.datetime64('today', 'D') 
         # self.end = np.datetime64(end,'D') if end else np.datetime64('today', 'D') + np.timedelta64(t,'D')
         self.t = t/365

@@ -133,8 +133,9 @@ if __name__ == "__main__":
         errors.update(screen)# draws the error messages
         for animation in animationList:
             animation.update(screen)
-
+        uiControls.drawBigMessage(screen,mousebuttons,player)
         uiControls.bar.changeMaxValue(GAMESPEED)
+
         mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.USEREVENT:

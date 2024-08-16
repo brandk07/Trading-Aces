@@ -9,13 +9,13 @@ class Asset:
         """Parent class for all assets"""
         self.stockObj = stockObj
         self.playerObj = player
-        self.date = creationDate
+        self.date = creationDate if isinstance(creationDate,str) else creationDate.strftime("%m/%d/%Y %I:%M:%S %p")
         self.portfolioPercent = portfolioPercent
         self.ogValue = ogValue# ogValue is the value the asset orginally had, just for 1 asset
         self.color = (randint(50,255),randint(50,255),randint(50,255)) if color == None else color
         self.name = f'{self.stockObj.name}{nameText}'# nameText for options is the option type
         self.quantity = int(quantity)
-        self.dateobj = datetime.datetime.strptime(creationDate, "%m/%d/%Y %I:%M:%S %p")
+        self.dateobj = datetime.datetime.strptime(self.date, "%m/%d/%Y %I:%M:%S %p")
         
 
     def __str__(self) -> str:
