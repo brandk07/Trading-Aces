@@ -47,6 +47,10 @@ class Player(Stock):
         self.updateOptions = 0# used to update the options every 120 frames
 
         # self.recent_movementvar = (None,None,(180,180,180)
+    def getOptions(self):
+        return self.options
+    def getStocks(self):
+        return self.stocks
     def newDay(self,gametime:datetime):
         """Called at the start of a new day"""
         self.updateOptions = 0

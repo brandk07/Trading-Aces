@@ -150,8 +150,11 @@ class OptionAsset(Asset):
         self.ogValue = self.getValue(bypass=True,fullvalue=False); self.portfolioPercent = self.getValue(bypass=True,fullvalue=True)/(self.playerObj.getNetworth())
     def savingInputs(self):
         return (self.stockObj.name,self.strikePrice,str(self.expirationDate),self.optionType,self.date,self.quantity,self.portfolioPercent,self.ogValue,self.color)
-    def getExpDate(self):
-        return self.expirationDate.strftime(DFORMAT)
+    def getExpDate(self,string=True):
+        return self.expirationDate.strftime(DFORMAT) if string else self.expirationDate
+    def getPurchaseDate(self):
+        """returns the date (Date Obj) the option was purchased"""
+        return self.dateobj
     def getExerciseStock(self):
         return StockAsset(self.playerObj,self.stockObj,self.gametime.time,self.strikePrice,self.quantity*100)
     def daysToExpiration(self):

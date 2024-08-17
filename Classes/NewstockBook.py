@@ -25,7 +25,7 @@ class Stockbook2(Menu):
         self.stocktext = {name:[] for name in stocknames}# a dictionary containing the stock names as keys and the stock descriptions as values
         self.createDescriptions(stocknames)
         self.selectedStock : Stock = stocklist[0]
-        self.menudrawn = True
+        self.menudrawn = False
         self.stocklist = stocklist
         self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
         self.quantitybar : SliderBar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
