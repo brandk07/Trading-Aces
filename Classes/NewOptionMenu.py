@@ -15,6 +15,7 @@ from Classes.imports.BarGraph import BarGraph
 from Classes.imports.Numpad import Numpad
 from Classes.imports.SelectionBar import SelectionBar
 from datetime import timedelta,datetime
+from Classes.imports.OrderBox import OrderBox
 
 class CustomOptionCreator:
     def __init__(self,player,optionObj) -> None:
@@ -220,30 +221,39 @@ class SellOptionScreen:
         self.numpad = Numpad(displayText=False)
         self.screenSelection : SelectionBar = screenSelection# stores the screen selection object from the main game screen
         self.exerciseMenu : ExerciseOptionScreen = ExerciseOptionScreen(stocklist,gametime,player)
+        self.orderBox = OrderBox((1030,615),(385,345))
         
         self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
 
     def drawSellingMechanics(self,screen:pygame.Surface,mousebuttons:int,gametime:GameTime,stock:Stock):
-        
+
+        pricePer = limit_digits(self.selectOption.getValue(bypass=True,fullvalue=False),15)
+ 
+        data = [("Value",f"${pricePer}","x"),(f"Fee", f"{2}%","x")]
+        totalCost = self.selectOption.getValue(bypass=True,fullvalue=False)*self.numpad.getValue()*(1-2/100)
+
         self.numpad.draw(screen,(670,600),(375,375),"Option",mousebuttons,self.selectOption.getQuantity())# draw the numpad
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(685, 615, 340, 335),5,10)# draw the box for the numpad
 
-        drawCenterTxt(screen, f"{self.numpad.getNumstr('Option')}", 65, (200, 200, 200), (1180, 630), centerY=False)
-
+        self.orderBox.loadData(self.numpad.getNumstr('Option'),f"${limit_digits(totalCost,22)}",data)
+        
+        
+        result = self.orderBox.draw(screen,mousebuttons)
+        # # drawCenterTxt(screen, f"{self.numpad.getNumstr('Option')}", 65, (200, 200, 200), (1180, 630), centerY=False)
   
-        drawCenterTxt(screen, f"x ${limit_digits(self.selectOption.getValue(bypass=True,fullvalue=False),15)}", 55, (200, 200, 200), (1080, 710), centerX=False,centerY=False)
+        # drawCenterTxt(screen, f"x ${limit_digits(self.selectOption.getValue(bypass=True,fullvalue=False),15)}", 55, (200, 200, 200), (1080, 710), centerX=False,centerY=False)
 
-        # fee = 0 if self.selectOption in self.preMadeOptions[stock] else 2 
-        screen.blit(s_render(f"x {2}% fee", 55, (200, 200, 200)), (1085, 770))
+        
+        # screen.blit(s_render(f"x {2}% fee", 55, (200, 200, 200)), (1085, 770))
 
-        # line inbetween 
-        pygame.draw.rect(screen,(200,200,200),pygame.Rect(1035, 820, 290, 5))
+        # # line inbetween 
+        # pygame.draw.rect(screen,(200,200,200),pygame.Rect(1035, 820, 290, 5))
 
-        totalCost = self.selectOption.getValue(bypass=True,fullvalue=False)*self.numpad.getValue()*(1+2/100)
+       
 
-        drawCenterTxt(screen, f"Total: ${limit_digits(totalCost,17)}", 65, (200, 200, 200), (1180, 845), centerY=False)
+        # drawCenterTxt(screen, f"Total: ${limit_digits(totalCost,17)}", 65, (200, 200, 200), (1180, 845), centerY=False)
 
-        result = drawClickableBox(screen, (1180, 900), "Sell Quantity", 55, (200,200,200), (0,225,0) if self.numpad.getValue() > 0 else (0,0,0), mousebuttons,centerX=True)# draw the sell button
+        # result = drawClickableBox(screen, (1180, 900), "Sell Quantity", 55, (200,200,200), (0,225,0) if self.numpad.getValue() > 0 else (0,0,0), mousebuttons,centerX=True)# draw the sell button
 
         if result and self.numpad.getValue() > 0:
             self.player.sellAsset(self.selectOption,self.numpad.getValue(),feePercent=1.02)
@@ -396,6 +406,7 @@ class SellOptionScreen:
                 # self.netWorthGraph.drawFull(screen, (1350,350),(550,250),"SellNetWorth",True,"Normal")
 
 class ExerciseOptionScreen:
+
     def __init__(self,stocklist,gametime,player) -> None:
         self.player = player
         self.stocklist:list = stocklist

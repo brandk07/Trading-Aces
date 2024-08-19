@@ -138,17 +138,20 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
             renderlist[position].pop(text)
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
-def drawCenterTxt(screen,text:str,size:int,color:tuple,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False) -> None:
+def drawCenterTxt(screen,text:str,txtSize:int,color:tuple,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False,outline=False) -> None:
     """Draws text centered on the screen, 
     centerx and y will minus half the wh of the txt,
     full will minus the full width of the txt (drawing from the top left)"""
-    valueText = s_render(text,size,color)
+    valueText = s_render(text,txtSize,color)
     x,y = coords
     if centerX: x -= valueText.get_width()//2
     if centerY: y -= valueText.get_height()//2
     if fullX: x -= valueText.get_width()
     if fullY: y -= valueText.get_height()
     screen.blit(valueText,(x,y))
+    if outline:
+        pygame.draw.rect(screen, (0,0,0), (x-5,y-5,valueText.get_width()+10,valueText.get_height()+10), 5, 10)
+
 def drawCenterRendered(screen,renderedTxt,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False) -> None:
     """Works same as drwaCenterTxt but with pre-rendered text
     centerx and y will minus half the wh of the txt,
@@ -212,7 +215,6 @@ def drawClickableBoxWH(screen,coords:tuple,wh:tuple,text:str,textsize:int,color1
         
     screen.blit(valueText,(x+(w//2)-(valueText.get_width()//2),y+(h//2)-(valueText.get_height()//2)))
     return False
-
 def drawBoxedText(screen,text,size,boxcolor,textcolor,pos):
     valueText = s_render(text,size,textcolor)
     x = pos[0]-(valueText.get_width()//2)-25; y = pos[1]-(valueText.get_height()//2)-15
@@ -221,6 +223,22 @@ def drawBoxedText(screen,text,size,boxcolor,textcolor,pos):
     pygame.draw.rect(screen, (1,1,1), (x,y,w,h), 5, 10)
     
     screen.blit(valueText,(pos[0]-(valueText.get_width()//2),pos[1]-(valueText.get_height()//2)))
+
+def drawBoxedTextWH(screen,coords,wh,text,size,textcolor,centerX=False,centerY=False,fill=None) -> None:
+    """Fill should be the color it is filled with, if None, it will just be the text and outline"""
+    x,y = coords
+    if centerX: x -= wh[0]//2
+    if centerY: y -= wh[1]//2
+
+    w,h = wh
+    
+    if fill != None:
+        pygame.draw.rect(screen, fill, (x,y,w,h), border_radius=10)
+    pygame.draw.rect(screen, (0,0,0), (x,y,w,h), 5, border_radius=10)
+
+    
+    drawCenterTxt(screen,text,size,textcolor,(x+w//2,y+h//2),centerX=True,centerY=True)
+
 
 def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:int,getpoints,shifts:tuple,selected_value:int,mousebuttons:int,defaultHeight:int,alltexts,percents) -> list:
     """Draws the scroll bar for the latter menu"""
@@ -327,15 +345,19 @@ def checkboxOptions(screen,options,selectedOptions,pos,wh,mousebuttons,disabledO
             pygame.draw.rect(screen, (200,200,200), [x+13,y+wh[1]/2-5,10,10])
     
 
-def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list,size,color):
+def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list,txtsize,color,middleData=None):
     """Draws the info in infoList [str (left side), value:int/str (right side)], in the box at coord with width and height wh"""
+    if middleData != None:
+        assert len(infoList) == len(middleData), 'The middleData must be the same length as the infoList'
     sep = wh[1]//len(infoList)
     x,y = coord
     for i, (string,value) in enumerate(infoList):
         newY = y+(i*sep)
-        screen.blit(s_render(string,size,color),(x+10,newY))
-        valueText = s_render(str(value),size,color)
+        screen.blit(s_render(string,txtsize,color),(x+10,newY))
+        valueText = s_render(str(value),txtsize,color)
         screen.blit((valueText),(x+wh[0]-valueText.get_width()-10,newY))
+        if middleData != None and middleData[i] != "":
+            drawCenterTxt(screen,middleData[i],txtsize,color,(x+wh[0]//2,newY),centerX=True,centerY=False)
         if i != len(infoList)-1:
             pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x, newY+(sep/2)*1.2, wh[0], 3))
 
