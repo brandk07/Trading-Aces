@@ -208,7 +208,7 @@ class CustomOptionCreator:
         return self.selectOption
 
 class SellOptionScreen:
-    def __init__(self,stocklist,gametime,player) -> None:
+    def __init__(self,stocklist,gametime,player,screenSelection) -> None:
         self.player = player
         self.stocklist:list = stocklist
         self.gametime = gametime
@@ -217,26 +217,79 @@ class SellOptionScreen:
         self.netWorthGraph : StockVisualizer = StockVisualizer(gametime,player,stocklist)
         self.selectOption = None
         self.sortby = "Expiration"
+        self.numpad = Numpad(displayText=False)
+        self.screenSelection : SelectionBar = screenSelection# stores the screen selection object from the main game screen
+        self.exerciseMenu : ExerciseOptionScreen = ExerciseOptionScreen(stocklist,gametime,player)
         
         self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
 
     def drawSellingMechanics(self,screen:pygame.Surface,mousebuttons:int,gametime:GameTime,stock:Stock):
-        pass
+        
+        self.numpad.draw(screen,(670,600),(375,375),"Option",mousebuttons,self.selectOption.getQuantity())# draw the numpad
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(685, 615, 340, 335),5,10)# draw the box for the numpad
+
+        drawCenterTxt(screen, f"{self.numpad.getNumstr('Option')}", 65, (200, 200, 200), (1180, 630), centerY=False)
+
+  
+        drawCenterTxt(screen, f"x ${limit_digits(self.selectOption.getValue(bypass=True,fullvalue=False),15)}", 55, (200, 200, 200), (1080, 710), centerX=False,centerY=False)
+
+        # fee = 0 if self.selectOption in self.preMadeOptions[stock] else 2 
+        screen.blit(s_render(f"x {2}% fee", 55, (200, 200, 200)), (1085, 770))
+
+        # line inbetween 
+        pygame.draw.rect(screen,(200,200,200),pygame.Rect(1035, 820, 290, 5))
+
+        totalCost = self.selectOption.getValue(bypass=True,fullvalue=False)*self.numpad.getValue()*(1+2/100)
+
+        drawCenterTxt(screen, f"Total: ${limit_digits(totalCost,17)}", 65, (200, 200, 200), (1180, 845), centerY=False)
+
+        result = drawClickableBox(screen, (1180, 900), "Sell Quantity", 55, (200,200,200), (0,225,0) if self.numpad.getValue() > 0 else (0,0,0), mousebuttons,centerX=True)# draw the sell button
+
+        if result and self.numpad.getValue() > 0:
+            self.player.sellAsset(self.selectOption,self.numpad.getValue(),feePercent=1.02)
+
+
     def drawSellingInfo(self,screen:pygame.Surface,mousebuttons:int,gametime:GameTime,stock:Stock):
-        pass
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(1435, 105, 455, 520),5,10)# box around all the info
+        drawCenterTxt(screen, 'Selling Info', 55, (0, 0, 0), (1662, 115),centerY=False)
+        pygame.draw.line(screen, (0, 0, 0), (1450, 165), (1450+425, 165), 5)# line under selling info title
+
+        sellInfotxts = ['Allows you to sell the option', 'before date of expiration at a', f"2% fee of it's estimated value"]
+        
+        for i,string in enumerate(sellInfotxts):
+            drawCenterTxt(screen, string, 35, (200, 200, 200), (1662, 175+40*i),centerY=False)
+        
+        drawCenterTxt(screen, 'Exercise Info', 55, (0, 0, 0), (1662, 300), centerY=False)
+        pygame.draw.line(screen, (0, 0, 0), (1450, 350), (1450+425, 350), 5)# line under exercise info title
+
+        if self.selectOption != None:
+            result = drawClickableBoxWH(screen, (1460, 520), (405,90), "EXERCISE SCREEN", 55, (0,0,0), (200,200,200), mousebuttons,fill=True)
+            if result:
+                self.exerciseMenu.setSelected(self.selectOption)
+
+            exerciseInfotxts = f"When the option reaches it's expiration date, it can be exercised to "
+            amt = self.selectOption.getQuantity()*100
+            if self.selectOption.getType() == "call":
+                exerciseInfotxts += f"buy {limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name} at ${self.selectOption.getStrike()} a share for a cost of ${limit_digits(amt*self.selectOption.getStrike(),20)}"
+            else:# if the option is a put
+                exerciseInfotxts += f"sell {limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name} at ${self.selectOption.getStrike()} a share"
+            # print(separate_strings(exerciseInfotxts,5))
+            for i,string in enumerate(separate_strings(exerciseInfotxts,4)):
+                drawCenterTxt(screen, string, 35, (200, 200, 200), (1662, 365+40*i),centerY=False)
+
     def drawOptionInfo(self,screen:pygame.Surface, gametime):
         option = self.selectOption
         stockNameTxt = s_render(option.stockObj.name, 120, option.stockObj.color)
         optionTypeTxt = s_render(option.getType().capitalize(), 120, self.determineColor(option.getType()))
         totalWidth = stockNameTxt.get_width()+optionTypeTxt.get_width()+30
-        screen.blit(stockNameTxt, (nameTxtX:=962-totalWidth/2, 110))
+        screen.blit(stockNameTxt, (nameTxtX:=1047-totalWidth/2, 110))
         
         screen.blit(optionTypeTxt, (nameTxtX+stockNameTxt.get_width()+30, 110))
 
         # EXPIRATION INFO
-        drawCenterTxt(screen, 'Expiration Info', 50, (0, 0, 0), (775, 220), centerY=False)
+        drawCenterTxt(screen, 'Expiration Info', 50, (0, 0, 0), (865, 220), centerY=False)
         # line under the title
-        pygame.draw.line(screen, (0, 0, 0), (600, 270), (600+350, 270), 5)
+        pygame.draw.line(screen, (0, 0, 0), (690, 270), (690+350, 270), 5)
 
         strings = ["Trading Days","Actual Days","Exp Date","Purchased"]
         g = gametime.time
@@ -248,12 +301,12 @@ class SellOptionScreen:
         ]
         # info = {key:value for key,value in zip(keys,values)}
         info = [(string,value) for string,value in zip(strings,values)]
-        drawLinedInfo(screen,(590,290),(370,315),info,37,TXTCOLOR)
+        drawLinedInfo(screen,(680,290),(370,360),info,37,TXTCOLOR)
         
 
         # Other Info
-        drawCenterTxt(screen, 'Other Info', 50, (0, 0, 0), (1155, 220), centerY=False)
-        pygame.draw.line(screen, (0, 0, 0), (980, 270), (980+350, 270), 5)
+        drawCenterTxt(screen, 'Other Info', 50, (0, 0, 0), (1245, 220), centerY=False)
+        pygame.draw.line(screen, (0, 0, 0), (1070, 270), (1070+350, 270), 5)
 
         strings = ["Strike","Type","Dividend","Volatility"]
         values = [
@@ -263,19 +316,16 @@ class SellOptionScreen:
             f"{limit_digits(option.stockObj.getVolatility()*100,12)}%"
         ]
         info = [(string,value) for string,value in zip(strings,values)]
-        drawLinedInfo(screen,(970,290),(370,315),info,37,TXTCOLOR)
-
-
-
+        drawLinedInfo(screen,(1060,290),(370,360),info,37,TXTCOLOR)
 
     def drawOwnedOptions(self,screen:pygame.Surface,mousebuttons:int):
 
-        strike = drawClickableBoxWH(screen, (210, 910), (175,50), "Value", 45, (0,0,0), (200,200,200), mousebuttons,fill=True)
-        exp = drawClickableBoxWH(screen, (400, 910), (175,50),"Expiration", 45, (0,0,0), (200,200,200), mousebuttons,fill=True)
+        strike = drawClickableBoxWH(screen, (210, 910), (220,50), "Value", 45, (0,0,0), (200,200,200), mousebuttons,fill=True)
+        exp = drawClickableBoxWH(screen, (455, 910), (220,50),"Expiration", 45, (0,0,0), (200,200,200), mousebuttons,fill=True)
         self.sortby = "Value" if strike else self.sortby
         self.sortby = "Expiration" if exp else self.sortby
 
-        pygame.draw.rect(screen,(0,0,0),pygame.Rect(200,210,380,665),5,10)# draws the box around the latter scroll
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(200,210,465,665),5,10)# draws the box around the latter scroll
         drawCenterTxt(screen, 'Owned Options', 45, (180, 180, 180), (390, 220), centerY=False)
 
         
@@ -291,7 +341,7 @@ class SellOptionScreen:
         # determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
         # dateText = lambda date: f'{date.month}/{date.day}/{date.year}'# returns the date in the format mm/dd/yyyy
         daysLeft = lambda option: f'{option.daysToExpiration()} Day{"s" if option.daysToExpiration() > 1 else ""}'
-        get_text = lambda option : [f'{option.stockObj.name} {option.getType().capitalize()}',f"{option.getQuantity()} Option{'s' if option.getQuantity() != 1 else ''}",f'${limit_digits(option.getValue(fullvalue=False),15)} ',f'{daysLeft(option)}']# returns the text for the stock
+        get_text = lambda option : [f'{option.stockObj.name} {option.getType().capitalize()}',f"{limit_digits(option.getQuantity(),20,True)} Option{'s' if option.getQuantity() != 1 else ''}",f'${limit_digits(option.getValue(fullvalue=True),20)} ',f'{daysLeft(option)}']# returns the text for the stock
         textlist = [get_text(option) for option in optionList]# stores 3 texts for each asset in the stocks list
 
         textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
@@ -302,45 +352,159 @@ class SellOptionScreen:
                 option.getValue(bypass=True)
 
             polytexts = []# temporary list to store the text info for each asset  - self.determineColor(option.getType())
-            polytexts.extend([[text[0],45,option.stockObj.color],[text[1],40,(190,190,190)],[text[2],45,(255,255,255)],[text[3],40,(190,190,190)]])# appends the text info for the asset            
+            polytexts.extend([[text[0],45,option.stockObj.color],[text[1],40,(190,190,190)],[text[2],45,(220,220,220)],[text[3],40,(190,190,190)]])# appends the text info for the asset            
             textinfo.append(polytexts)
-            coords[i].append(((text[1],115),15))
-            coords[i].append(((text[1],120),60))
+            coords[i].append((220,15))
+            coords[i].append((230,60))
 
         self.ownedScroll.storetextinfo(textinfo); self.ownedScroll.set_textcoords(coords)# stores the text info and the coords for the latter scroll
-        ommitted = self.ownedScroll.store_rendercoords((205, 270), (370,875),145,0,0,updatefreq=60)
+        ommitted = self.ownedScroll.store_rendercoords((205, 270), (455,875),145,0,0,updatefreq=120)
     
         select = self.selectOption if self.selectOption in optionList else None# Ensuring that the selected stock is in the optionlist
         selectedindex = None if select == None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
 
         # newselected = self.ownedScroll.draw_polys(screen, (205, 270), (370,950), mousebuttons, selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
-        newselected = self.ownedScroll.draw_polys(screen, (205, 270), (370,875), mousebuttons, selectedindex, True, *[brightenCol(self.determineColor(option.getType()),0.25) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.ownedScroll.draw_polys(screen, (205, 270), (455,875), mousebuttons, selectedindex, True, *[brightenCol(self.determineColor(option.getType()),0.25) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
 
         if select == None:# if the latterscroll didn't contain the selected asset before
             self.selectOption = self.selectOption if newselected == None else optionList[newselected]# Changes selected stock if the new selected has something
         else:# if the latterscroll contained the selected asset before, then it can set it to none if you select it again
             self.selectOption = None if newselected == None else optionList[newselected]
 
-        txt = s_render(f"{ommitted[0]} - {ommitted[1]-1} out of {len(optionList)} Options",35,(0,0,0))
-        screen.blit(txt,(390-txt.get_width()/2,875))
+        drawCenterTxt(screen, f"{ommitted[0]} - {ommitted[1]-1} out of {len(optionList)} Options", 35, (0, 0, 0), (432, 875), centerY=False)
 
     def drawScreen(self,screen,mousebuttons):
         
-        if self.selectOption != None and self.selectOption not in self.player.getOptions():
-            self.selectOption = None
+        if self.exerciseMenu.drawn():# if the exercise menu is drawn
+            self.exerciseMenu.drawScreen(screen,mousebuttons)
+        else:# if the exercise menu is not drawn
+            if self.selectOption != None and self.selectOption not in self.player.getOptions():
+                self.selectOption = None
 
 
+            if self.selectOption == None:
+                self.netWorthGraph.drawFull(screen, (1350,100),(550,500),"SellNetWorth",True,"Normal")
 
-        self.drawOwnedOptions(screen,mousebuttons)
-        if self.selectOption != None:
-            self.drawOptionInfo(screen,self.gametime)
-            
-            self.selectedGraph.setStockObj(self.selectOption.stockObj)
-            self.selectedGraph.drawFull(screen, (1350,100),(550,250),"SellSelected",True,"Normal")
-            self.netWorthGraph.drawFull(screen, (1350,350),(550,250),"SellNetWorth",True,"Normal")
+            self.drawOwnedOptions(screen,mousebuttons)
+            self.drawSellingInfo(screen,mousebuttons,self.gametime,self.stocklist[0])
+            if self.selectOption != None:
+                self.drawOptionInfo(screen,self.gametime)
+                
+                self.drawSellingMechanics(screen,mousebuttons,self.gametime,self.stocklist[0])
+                self.selectedGraph.setStockObj(self.selectOption.stockObj)
+                self.selectedGraph.drawFull(screen, (1435,630),(465,345),"SellSelected",True,"Normal")
+                # self.netWorthGraph.drawFull(screen, (1350,350),(550,250),"SellNetWorth",True,"Normal")
 
+class ExerciseOptionScreen:
+    def __init__(self,stocklist,gametime,player) -> None:
+        self.player = player
+        self.stocklist:list = stocklist
+        self.gametime = gametime
+        self.selectedGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
 
+        self.selectOption = None
+
+        self.exerciseSelection : SelectionBar = SelectionBar()# Exercise, Sell, or Dimiss
         
+        self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
+    def drawn(self):
+        return self.selectOption != None
+
+    def setSelected(self,option):
+        """Sets the exercise option to the given option"""
+        self.selectOption = option
+
+    def drawOptionInfo(self,screen:pygame.Surface, gametime):
+        option = self.selectOption; stock = option.stockObj
+
+        stockNameTxt = s_render(f"{stock.name}", 100, stock.color)# renders the stock name
+        screen.blit(stockNameTxt, (205, 560))
+
+        optionTypeTxt = s_render(f"({option.getType().capitalize()})", 60, self.determineColor(option.getType()))# renders the option type
+        screen.blit(optionTypeTxt, (215+stockNameTxt.get_width(), 570+stockNameTxt.get_height()/2-optionTypeTxt.get_height()/2))
+
+
+        strings = ["Strike","Trading Days","Exp Date","Purchased"]
+        values = [
+            f"${option.getStrike()}",
+            f"{option.daysToExpiration()} Day{'s' if option.daysToExpiration() != 1 else ''}",
+            f"{option.getExpDate()}",
+            f"{option.getPurchaseDate().strftime('%m/%d/%Y')}",
+        ]
+        info = [(string,value) for string,value in zip(strings,values)]
+        drawLinedInfo(screen,(200,640),(435,300),info,37,TXTCOLOR)
+    
+    def drawExerciseOptions(self,screen:pygame.Surface,mousebuttons:int):
+
+        drawCenterTxt(screen, 'EXERCISE OPTIONS', 120, (180, 180, 180), (1257, 105), centerY=False)
+
+        self.exerciseSelection.draw(screen,["Exercise","Sell","Dismiss"],(650, 210),(1250,100),mousebuttons,txtsize=75)
+
+        seperatedTxts = []
+
+        if self.exerciseSelection.getSelected() == "Exercise":
+            exerciseInfotxts = f"Executes the option and gives the right to "
+            amt = self.selectOption.getQuantity()*100
+            if self.selectOption.getType() == "call":
+                exerciseInfotxts += f"buy {limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name} at ${self.selectOption.getStrike()} a share for a cost of ${limit_digits(amt*self.selectOption.getStrike(),20)}"
+            else:# if the option is a put
+                exerciseInfotxts += f"sell {limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name} at ${self.selectOption.getStrike()} a share"
+            seperatedTxts = separate_strings(exerciseInfotxts,4)
+        
+        elif self.exerciseSelection.getSelected() == "Sell":
+            sellInfotxts = f"Allows you to sell the option for it's estimated value instead of exercising it, 2% fee of it's estimated value"
+            seperatedTxts = separate_strings(sellInfotxts,4)
+       
+        elif self.exerciseSelection.getSelected() == "Dismiss":
+            seperatedTxts = f"Dismisses and removes the option without any action,","-Useful if the option is worthless"
+
+        for i,string in enumerate(seperatedTxts):# loop through the textlist and store the text info in the textinfo list
+            drawCenterTxt(screen, string, 65, (200, 200, 200), (1265, 350+50*i),centerY=False)
+    
+    def drawReqAndPay(self,screen:pygame.Surface,mousebuttons:int):
+        """Draws the requirements and payment info for the exercise option"""
+        
+        drawCenterTxt(screen, 'Requirements', 65, (0, 0, 0), (850, 640), centerY=False)
+        pygame.draw.line(screen, (0, 0, 0), (675, 690), (675+350, 690), 5)# line under requirements title
+
+        drawCenterTxt(screen, 'Payment', 65, (0, 0, 0), (1285, 640), centerY=False)
+        pygame.draw.line(screen, (0, 0, 0), (1110, 690), (1110+350, 690), 5)# line under payment title
+        
+        req = "None"
+        if self.exerciseSelection.getSelected() == "Exercise":
+            
+            amt = self.selectOption.getQuantity()*100
+            if self.selectOption.getType() == "call":
+                req = f"${limit_digits(amt*self.selectOption.getStrike(),20)}"# cost to buy the shares
+            else:# if the option is a put
+                req = f"{limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name}"# shares to sell
+
+        drawCenterTxt(screen, req, 55, (200, 200, 200), (850, 720), centerY=False)
+
+        payment = "None"
+        if self.exerciseSelection.getSelected() == "Exercise":
+            amt = self.selectOption.getQuantity()*100
+            if self.selectOption.getType() == "call":
+                payment = f"{limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name}"
+            else:# if the option is a put
+                payment = f"{limit_digits(amt*self.selectOption.getStrike(),20)}"
+        elif self.exerciseSelection.getSelected() == "Sell":
+            payment = f"{limit_digits(self.selectOption.getValue(fullvalue=False),20)}"
+        drawCenterTxt(screen, payment, 55, (200, 200, 200), (1285, 720), centerY=False)
+        
+
+    def drawScreen(self,screen,mousebuttons):
+        
+        
+        self.selectedGraph.setStockObj(self.selectOption.stockObj)
+        self.selectedGraph.drawFull(screen, (200,210),(450,340),"SellSelected",True,"Normal")
+
+        self.drawOptionInfo(screen,self.gametime)
+        self.drawExerciseOptions(screen,mousebuttons)
+        self.drawReqAndPay(screen,mousebuttons)
+        
+
+
 
 
 class Optiontrade(Menu):
@@ -358,10 +522,11 @@ class Optiontrade(Menu):
         self.fillPreMadeOptions()
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockSelection : SelectionBar = SelectionBar()
-        self.screenSelection : SelectionBar = SelectionBar()# Buy, Sell, Exercise
+        self.screenSelection : SelectionBar = SelectionBar()# Buy or Sell
+        self.screenSelection.setSelected("Sell")
 
         self.customOptionSc = CustomOptionCreator(player,self)    
-        self.sellingScreen = SellOptionScreen(stocklist,gametime,player)    
+        self.sellingScreen = SellOptionScreen(stocklist,gametime,player,self.screenSelection)    
         
         self.quantNumPad : Numpad = Numpad(displayText=False,nums=('DEL','0','MAX'))
         stocknames = [stock.name for stock in stocklist]
@@ -554,7 +719,7 @@ class Optiontrade(Menu):
             
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
         
-        self.screenSelection.draw(screen, ["Buy","Sell","Exercise"], (200, 105), (375, 50), mousebuttons, colors=[(0,225,0),(225,0,0),(225,255,0)],txtsize=40)
+        self.screenSelection.draw(screen, ["Buy","Sell"], (200, 105), (375, 50), mousebuttons, colors=[(0,225,0),(225,0,0),(225,255,0)],txtsize=40)
         if self.screenSelection.getSelected() == "Buy":
             self.checkOptionDates()# Ensures that the options are still live
 

@@ -562,7 +562,7 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords):
         totaltext = fontlist[45].render(f'${total:,.2f}', (0, 0, 0))[0]
         renderedtext.append([totaltext,f'${total:,.2f}'])
         screen.blit(totaltext, (corners[0][0]+radius-(totaltext.get_width()/2), corners[0][1]+radius-(totaltext.get_height()/2)))
-
+@lru_cache(maxsize=10)
 def separate_strings(text:str, lines:int) -> list:
     """Returns list of lines number of equal strings - based on # of chars not words"""
     separated_events = []

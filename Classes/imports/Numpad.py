@@ -109,7 +109,8 @@ class Numpad:
                 if rect.collidepoint(pygame.mouse.get_pos()):
                     
                     color = (135,135,135,120)
-                    pygame.gfxdraw.filled_polygon(screen,[(x,y),(x+w,y),(x+w,y+h),(x,y+h)],color)
+                    # pygame.gfxdraw.filled_polygon(screen,[(x,y),(x+w,y),(x+w,y+h),(x,y+h)],color)
+                    pygame.draw.rect(screen,color,rect,border_radius=10)
                     if mousebuttons == 1:
                         if self.nums[ind] == 'DEL' and len(self.numstr) > 1:
                             self.numstr = self.numstr[:-1]

@@ -8,6 +8,9 @@ class SelectionBar:
         self.selected = None
     def getSelected(self):
         return self.selected
+    def setSelected(self,selected):
+        self.selected = selected
+        
     def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],mousebuttons,colors:list[tuple]=None,txtsize:int=36):
         """Data is a list of strings that can be selected
         the length of data can be changed, but it must be at least 1
