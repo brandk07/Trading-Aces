@@ -345,7 +345,7 @@ def checkboxOptions(screen,options,selectedOptions,pos,wh,mousebuttons,disabledO
             pygame.draw.rect(screen, (200,200,200), [x+13,y+wh[1]/2-5,10,10])
     
 
-def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list,txtsize,color,middleData=None):
+def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsize,color,middleData=None):
     """Draws the info in infoList [str (left side), value:int/str (right side)], in the box at coord with width and height wh"""
     if middleData != None:
         assert len(infoList) == len(middleData), 'The middleData must be the same length as the infoList'
