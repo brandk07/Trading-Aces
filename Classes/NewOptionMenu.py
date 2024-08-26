@@ -40,7 +40,7 @@ class CustomOptionCreator:
     def drawType(self,screen,mousebuttons):
         drawCenterTxt(screen, 'Type', 45, (200, 200, 200), (1700, 275), centerY=False)
         
-        self.oTypeSelect.draw(screen, ["Call","Put"], (1575, 315), (250, 50), mousebuttons, colors=[(50, 180, 169),(127,25,255)],txtsize=35)
+        self.oTypeSelect.draw(screen, ["call","put"], (1575, 315), (250, 50), mousebuttons, colors=[(50, 180, 169),(127,25,255)],txtsize=35)
     
     def drawStrike(self,screen,mousebuttons,stock:Stock):
         drawCenterTxt(screen, 'Strike', 45, (180, 180, 180), (1530, 427), centerX=False)
@@ -228,9 +228,10 @@ class SellOptionScreen:
     def drawSellingMechanics(self,screen:pygame.Surface,mousebuttons:int,gametime:GameTime,stock:Stock):
 
         pricePer = limit_digits(self.selectOption.getValue(bypass=True,fullvalue=False),15)
- 
-        data = [("Value",f"${pricePer}","x"),(f"Fee", f"{2}%","x")]
-        totalCost = self.selectOption.getValue(bypass=True,fullvalue=False)*self.numpad.getValue()*(1-2/100)
+        fee = self.selectOption.getValue(bypass=False,fullvalue=False)*self.numpad.getValue()*2/100
+        data = [("Value",f"${pricePer}","x"),(f"{2}% Fee", f"${limit_digits(fee,22)}","-")]
+
+        totalCost = self.selectOption.getValue(bypass=False,fullvalue=False)*self.numpad.getValue()*(1-2/100)
 
         self.numpad.draw(screen,(670,600),(375,375),"Option",mousebuttons,self.selectOption.getQuantity())# draw the numpad
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(685, 615, 340, 335),5,10)# draw the box for the numpad
@@ -664,7 +665,11 @@ class Optiontrade(Menu):
         screen.blit(optionTypeTxt, (595+stockNameTxt.get_width(), 565+stockNameTxt.get_height()/2-optionTypeTxt.get_height()/2))
 
         self.drawOptionInfo(screen,gametime,stock)# draws the info underneath the stock graph for the selected option
-        maxQuant = int(self.player.cash//option.getValue(bypass=True,fullvalue=False))
+        # print(self.player.cash,option.getValue(bypass=True,fullvalue=False))
+        if option.getValue(bypass=True,fullvalue=False) > 0.01:
+            maxQuant = int(self.player.cash//option.getValue(bypass=True,fullvalue=False))
+        else:
+            maxQuant = 0
         self.quantNumPad.draw(screen,(1050,190),(450,340),"Option",mousebuttons,maxQuant)# draw the numpad
         # self.selectOption.setValues(quantity=self.quantNumPad.getValue())# set the quantity of the option
 

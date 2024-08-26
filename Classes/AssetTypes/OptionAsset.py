@@ -101,13 +101,14 @@ class TimeGetter:
 class OptionAsset(Asset):
     def __init__(self,player,stockObj,strikePrice:int,expirationDate:datetime,optionType:str,creationDate:str,quantity:int,porfolioPercent=None,ogValue=None,color=None) -> None:
         super().__init__(player,stockObj, creationDate, " "+optionType, ogValue, quantity, porfolioPercent, color=color)
-        
+        assert optionType in ["call","put"], "optionType must be either 'call' or 'put' CASE SENSITIVE!!"
+
         self.gametime : datetime = player.gametime
         self.timeGetter = TimeGetter(self,self.gametime)
         self.strikePrice = strikePrice
         self.expirationDate = datetime.strptime(expirationDate, "%Y-%m-%d %H:%M:%S") if isinstance(expirationDate,str) else expirationDate
         self.expirationDate = getCloseOpenDate(self.expirationDate)# Makes sure the expiration date is a trading day
-        self.optionType = optionType
+        self.optionType = optionType# "call" or "put"
     
         self.option = Op(european=True,kind=self.optionType,s0=float(self.stockObj.price)*100,k=self.strikePrice*100,t=self.daysToExpiration(),sigma=self.getVolatility(),r=0.05)
         self.ogValue = self.ogValue if self.ogValue != None else self.getValue(bypass=True,fullvalue=False)# ogValue is the value the asset orginally had, just for 1 asset

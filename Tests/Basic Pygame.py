@@ -17,17 +17,19 @@ while True:
     errors.update(screen)
     screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(850,0),(850,30),(850,60)]))
     pygame.display.flip()
-
+    
+    mousebuttons = 0
     for event in pygame.event.get():
         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
             pygame.quit()
             quit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            print("Mouse button pressed",pygame.mouse.get_pos())
+            mousebuttons = event.button
+            if mousebuttons == 1:
+                print("Mouse button pressed",pygame.mouse.get_pos())
             
         elif event.type == pygame.KEYDOWN and event.key == pygame.K_j:
             print("Pressed the J key")
-
 
     clock.tick(60)
 
