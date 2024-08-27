@@ -6,7 +6,7 @@ from Defs import *
 from pygame import gfxdraw
 import numpy as np
 from datetime import datetime, timedelta
-from Classes.imports.BigMessage import OptionMessage
+# from Classes.imports.Messages import OptionMessage
 
 class Player(Stock):
     
@@ -59,8 +59,9 @@ class Player(Stock):
         for i in range(len(self.options)-1,-1,-1):
             print("Option has expired")
             if not self.options[i].optionLive():
-                if not bigMessageList:
-                    bigMessageList.append(OptionMessage(self.options[i]))
+                print("Option has expired for the player")
+                # if not bigMessageList:
+                    # bigMessageList.append(OptionMessage(self.options[i]))
             # self.options.pop(i)
             # print(self.options[i].name,self.options[i].daysToExpiration(gametime.time))
             # if self.options[i].daysToExpiration() <= 0:

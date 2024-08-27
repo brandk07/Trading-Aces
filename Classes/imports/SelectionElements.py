@@ -56,12 +56,13 @@ class MenuSelection:
         self.coords = coords
         self.wh = wh
         self.colors = colors if colors else [(0,0,0) for _ in range(len(choices))]
+        self.choiceTxts = choices
         self.choices = [s_render(choice,txtsize,self.colors[i]) for i,choice in enumerate(choices)]
-        self.selectedChoices = [s_render(choice,txtsize,(255,255,255)) for choice in choices]
+        
         self.selected = 0# the index of the selected choice
     def getSelected(self,index=False):
         """Returns the selected choice or its index"""
-        return self.choices[self.selected] if not index else self.selected
+        return self.choiceTxts[self.selected] if not index else self.selected
     def setSelected(self,index):
         """Sets the selected choice"""
         self.selected = index

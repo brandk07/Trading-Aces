@@ -300,9 +300,9 @@ class UIControls():
         self.draw_accbar_middle(screen,stocklist,mousebuttons,player)# draws the stock events (On the right of the portfolio)
         self.draw_accbar_right(screen,stocklist,player,mousebuttons)# draws the stock events (On the very right of the screen)
         # self.newsobj.draw(screen)
-    def drawBigMessage(self,screen,mousebuttons,player):
-        if bigMessageList:# if there is a big message
-            bigMessageList[0].draw(screen,self,mousebuttons,player)
+    # def drawBigMessage(self,screen,mousebuttons,player):
+    #     if bigMessageList:# if there is a big message
+    #         bigMessageList[0].draw(screen,self,mousebuttons,player)
 
     def draw_ui(self,screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menulist,tmarket):
         if self.drawIcon(screen,mousebuttons):

@@ -325,7 +325,7 @@ class PieChartSideInfo:
             screen.blit(percentText, (boxRect.centerx-(percentText.get_width()/2), boxRect.y+20+nameH+10))
             if name == "Cash" or name == "Other":
                 return
-            nameList = ["Buy","Sell","Speculate"]
+            nameList = ["Buy","Sell","Speculate","Bank"]
             for i,image in enumerate(s.menuIcons):
                 y = boxRect.y+nameH+percentText.get_height()+40+(i*65)
                 screen.blit(image, (boxRect.x+15, y+5))

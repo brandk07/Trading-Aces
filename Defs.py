@@ -1,13 +1,14 @@
 import pygame,time
 from pygame import gfxdraw,freetype
-import os,re,random,json,math,timeit
+import os,re,json,math,timeit,random
+from random import randint
 from collections import deque
 from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.AssetTypes.StockAsset import StockAsset
 import numpy as np
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw
-from Classes.imports.ErrorMessage import ErrorMessageHandler
+from Classes.imports.Messages import ErrorMessageHandler
 from Classes.imports.Animations import BuyAnimation
 from functools import lru_cache 
 pygame.font.init()
@@ -61,7 +62,7 @@ def s_render(string:str, size, color,font='reg') -> pygame.Surface:
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 errors = ErrorMessageHandler(s_render)# error messages DO errors.addMessage(txt:str,coords:list=None)
 animationList = []
-bigMessageList = []
+# bigMessageList = []
 
 soundEffects = {# soundEffects['generalClick'].play()
     'menuClick': pygame.mixer.Sound(r'Assets\Soundeffects\menuClick.wav'),

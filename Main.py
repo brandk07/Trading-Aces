@@ -7,7 +7,6 @@ from Classes.UIControls import UIControls
 from Classes.Gametime import GameTime
 from Classes.Player import Player
 from Classes.StockGraphManager import StockGraphManager
-from Classes.Stockbook import Stockbook
 from Classes.Portfolio import Portfolio
 # from Classes.OptionMenu import Optiontrade
 from collections import deque
@@ -17,6 +16,7 @@ from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
 from Classes.NewstockBook import Stockbook2
 from Classes.NewOptionMenu import Optiontrade
+from Classes.BankMenu import BankMenu
 
 GAMESPEED = 250
 FASTFORWARDSPEED = 1000
@@ -28,9 +28,9 @@ monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.
 window_width, window_height = (monitor_width, monitor_height)
 
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
-screen = pygame.display.set_mode((window_width, window_height-100),pygame.NOFRAME|pygame.HWSURFACE|pygame.SRCALPHA)
+screen = pygame.display.set_mode((window_width, window_height-100),pygame.NOFRAME|pygame.HWSURFACE)
 pygame.display.set_caption("Trading Aces")
-pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
 
 clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
@@ -61,8 +61,9 @@ orderScreen = OrderScreen(uiControls)
 stockbook = Stockbook2(stocklist,gametime,orderScreen)
 portfolio = Portfolio(stocklist,player,gametime,tmarket,menuList)
 optiontrade = Optiontrade(stocklist,gametime,player)
+bank = BankMenu(stocklist,gametime,player,transact,tmarket)
 
-menuList.extend([stockbook,portfolio,optiontrade])
+menuList.extend([stockbook,portfolio,optiontrade,bank])
 # VARS FROM SETTINGS
 autofastforward = True
 
@@ -133,7 +134,7 @@ if __name__ == "__main__":
         errors.update(screen)# draws the error messages
         for animation in animationList:
             animation.update(screen)
-        uiControls.drawBigMessage(screen,mousebuttons,player)
+        # uiControls.drawBigMessage(screen,mousebuttons,player)
         uiControls.bar.changeMaxValue(GAMESPEED)
 
         mousebuttons = 0
