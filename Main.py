@@ -28,7 +28,7 @@ monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.
 window_width, window_height = (monitor_width, monitor_height)
 
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
-screen = pygame.display.set_mode((window_width, window_height-100),pygame.NOFRAME|pygame.HWSURFACE)
+screen = pygame.display.set_mode((window_width, window_height-100),pygame.NOFRAME|pygame.HWSURFACE|pygame.SRCALPHA)
 pygame.display.set_caption("Trading Aces")
 pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 

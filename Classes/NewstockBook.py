@@ -11,7 +11,7 @@ from Classes.imports.Latterscroll import PortfolioLatter,LatterScroll
 from Classes.Stock import Stock
 from Classes.imports.PieChart import PieChart
 from Classes.imports.BarGraph import BarGraph
-from Classes.imports.SelectionBar import SelectionBar
+from Classes.imports.SelectionElements import SelectionBar
 import datetime
 
 TXTCOLOR = (220,220,220)

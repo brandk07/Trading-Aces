@@ -13,7 +13,7 @@ from Classes.imports.PieChart import PieChart
 from Classes.Gametime import GameTime
 from Classes.imports.BarGraph import BarGraph
 from Classes.imports.Numpad import Numpad
-from Classes.imports.SelectionBar import SelectionBar
+from Classes.imports.SelectionElements import SelectionBar
 from datetime import timedelta,datetime
 from Classes.imports.OrderBox import OrderBox
 
