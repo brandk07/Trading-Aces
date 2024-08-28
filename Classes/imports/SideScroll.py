@@ -14,8 +14,9 @@ class CdCard(ScrollCard):
         """Needs to be given the sideScroll object that will be used to draw the card"""
         super().__init__(wh)
         self.name = name
-        self.image = pygame.transform.scale(image,((self.wh[1]//4)*3-30,(self.wh[1]//4)*3-30))
-        self.image.set_alpha(70) 
+        # self.image = pygame.transform.scale(image,((self.wh[1]//4)*3-30,(self.wh[1]//4)*3-30))
+        self.image = pygame.transform.scale(image,self.wh)
+        self.image.set_alpha(120) 
         self.sideScroll = sideScroll
         self.surf = pygame.Surface(self.wh).convert_alpha()
         # self.data = {
@@ -69,7 +70,8 @@ class CdCard(ScrollCard):
         # self.surf.fill((60,60,60,120))
         self.surf.fill((0,0,0,0))
         gfxdraw.filled_polygon(self.surf,[(0,0),(self.wh[0],0),(self.wh[0],self.wh[1]),(0,self.wh[1])],(60,60,60,120))
-        self.surf.blit(self.image,(0+self.wh[0]//8,0))
+        # self.surf.blit(self.image,(0+self.wh[0]//8,0))
+        self.surf.blit(self.image,(0,0))    
         pygame.draw.rect(self.surf,(0,0,0),pygame.Rect(0,0,self.wh[0],self.wh[1]),5)
 
         self.surf.blit(s_render("CD",120,(0,0,0)),(0+10,0+10))
@@ -79,7 +81,8 @@ class CdCard(ScrollCard):
         drawCenterTxt(self.surf,f"{round(self.data['apr'],2)}%",130,(225,225,225),(0+self.wh[0]//2,0+self.wh[1]//2))
 
         x,y = 0+10,0+(self.wh[1]//4)*3-20
-        info = [("Name",self.name),("Min Balance",f"${limit_digits(self.data['minBalance'],20,True)}"),("Risk",self.data['risk'])]
+        info = [("Min Balance",f"${limit_digits(self.data['minBalance'],20,True)}"),("Risk",self.data['risk'])]
+        # info = [("Name",self.name),("Min Balance",f"${limit_digits(self.data['minBalance'],20,True)}"),("Risk",self.data['risk'])]
 
         drawLinedInfo(self.surf,(x,y),(self.wh[0]-20,self.wh[1]//4+40),info,30,(0,0,0))
 

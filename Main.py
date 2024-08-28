@@ -10,7 +10,7 @@ from Classes.StockGraphManager import StockGraphManager
 from Classes.Portfolio import Portfolio
 # from Classes.OptionMenu import Optiontrade
 from collections import deque
-from Classes.smallClasses.TotalMarket import TotalMarket
+from Classes.smallClasses.IndexFunds import TotalMarket,IndexFund
 import timeit
 from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
@@ -46,6 +46,8 @@ player = Player(stocknames,stockcolors[-1],transact,gametime)
 # stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stockdict = {name:Stock(name,stockcolors[i],gametime) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
+indexfundColors = [(217, 83, 149),(64, 192, 128),(138, 101, 235)]
+indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(['Velocity Ventures','Adaptive Allocation','Reliable Returns'])]# high,med,low risk
 
 # GETTING DATA FROM FILE
 
@@ -61,7 +63,7 @@ orderScreen = OrderScreen(uiControls)
 stockbook = Stockbook2(stocklist,gametime,orderScreen)
 portfolio = Portfolio(stocklist,player,gametime,tmarket,menuList)
 optiontrade = Optiontrade(stocklist,gametime,player)
-bank = BankMenu(stocklist,gametime,player,transact,tmarket)
+bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
 
 menuList.extend([stockbook,portfolio,optiontrade,bank])
 # VARS FROM SETTINGS
@@ -94,6 +96,8 @@ if not all([len(graph) == POINTSPERGRAPH for graph in stocklist[0].graphs.values
         stock.fill_graphs()
     print('time to fill graphs',timeit.default_timer()-timer)
 tmarket.fill_graphs(stocklist)
+for indexfund in indexFunds:
+    indexfund.fill_graphs(stocklist)
 
 
 screen.fill((30,30,30))
@@ -121,6 +125,8 @@ if __name__ == "__main__":
                 # player.update_price(uiControls.gameplay_speed,Player)
                 player.gameTick(uiControls.gameplay_speed)
                 tmarket.updategraphs(stocklist,uiControls.gameplay_speed)
+                for indexfund in indexFunds:
+                    indexfund.updategraphs(uiControls.gameplay_speed)
 
                 # for stock in stocklist:
                     
