@@ -139,6 +139,8 @@ Make sure if you do a long price over with the total market it doesn't cause an 
 
 Market sentiment into option pricing (just the probability of a stock hitting it's quarterly) (8/19/2024)
 
+Use the perfchart for the past performances in stockbook (8/29/2024)
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am

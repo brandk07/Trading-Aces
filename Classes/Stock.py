@@ -76,7 +76,7 @@ class Stock():
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
         
         # self.bTrendRanges = [[(-i,i),(100000-(i*8000),500000-(i*41000))] for i in range(12)]
-        self.bTrendRanges = [[(-i,i),(randint(1,300),randint(301,50000))] for i in range(12)]
+        self.bTrendRanges = [[(-i,i),(randint(1,300),randint(301,500000))] for i in range(12)]
         # self.bTrendRanges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]# the ranges for the bonus trends
         # self.bTrendRanges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]# the ranges for the bonus trends
         self.bTrends = [[randint(*x[0]),randint(*x[1])] for x in self.bTrendRanges]# the trends for the stock
