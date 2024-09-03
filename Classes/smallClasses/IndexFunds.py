@@ -4,25 +4,24 @@ import pygame
 from random import randint
 from Classes.Stock import Stock
 
-POINTSPERGRAPH = 200
 
 class TotalMarket(Stock):
-    def __init__(self,gametime) -> None:
+    def __init__(self,gametime,stocklist) -> None:
         # name,volatility,color,gametime
         super().__init__('Total Market',(213, 219, 44),gametime)
-
+        self.stocks = stocklist.copy()
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
     def datafromfile(self,gametime):
         # this child class does not need to read data from a file
         self.graphs = {key:np.array([100],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
-    def fill_graphs(self,stocklist):
+    def fill_graphs(self):
         """Fills the graphs with the stock's prices"""
         # equivalent to the datafromfile method, but it wasn't necessary to store stuff in a file since it can be loaded fast 
         for key in self.graphrangeoptions:
             self.graphs[key] = np.array([],dtype=object)
-            for point in range(stocklist[0].graphs[key].size):
+            for point in range(self.stocks[0].graphs[key].size):
                 
-                value = sum([stock.graphs[key][point] for stock in stocklist])/9
+                value = sum([stock.graphs[key][point] for stock in self.stocks])/9
                 self.graphs[key] = np.append(self.graphs[key],value)
         self.price = self.graphs[MINRANGE][-1]
             
@@ -43,14 +42,14 @@ class TotalMarket(Stock):
                 self.graphs[key] = np.delete(self.graphs[key],0)
         self.price = value
 
-    def updategraphs(self,stocklist:list,gameplay_speed:int):
+    def updategraphs(self,gameplay_speed:int):
         """Updates the graphs for the stocks"""
         for i in range(gameplay_speed):
             value = 0
-            for stock in stocklist:
+            for stock in self.stocks:
                 value += stock.graphs[MINRANGE][-1]# adds the last value of the stock to the value
             
-            value = value/len(stocklist)# gets the average value of the stocks
+            value = value/len(self.stocks)# gets the average value of the stocks
             # self.graphs["1H"] = np.append(self.graphs["1H"],value)# adds the value to the graph
 
             self.update_range_graphs(value)
@@ -65,7 +64,7 @@ class IndexFund(Stock):
         # this child class does not need to read data from a file
         self.graphs = {key:np.array([100],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
 
-    def fill_graphs(self,stocklist):
+    def fill_graphs(self):
         """Fills the graphs with the stock's prices"""
         # equivalent to the datafromfile method, but it wasn't necessary to store stuff in a file since it can be loaded fast 
         for key in self.graphrangeoptions:

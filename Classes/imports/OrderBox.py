@@ -9,6 +9,7 @@ class OrderBox:
         self.extraData = []
         self.stage = 0# 0 is the first stage (proceeding to confirm screen), 1 is the second stage (confirming the order)
         self.middleData = []
+        
     def loadData(self,quantStr:str,totalStr:str,extraData:list[tuple[str,str,str]]):
         """extraData is [(key,value,middleVal)]"""
         self.extraData = extraData

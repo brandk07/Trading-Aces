@@ -1,13 +1,9 @@
 import pygame
 from Defs import *
 
-pygame.init()
-screen = pygame.display.set_mode([900,900])
-pygame.display.set_caption("Pygame Shell")
-
 class PerfChart:
-    def __init__(self) -> None:
-        self.wh = (450,200)
+    def __init__(self,wh) -> None:
+        self.wh = wh
         self.coords = []
         self.data : dict[str:float|int] = {}# {name:double|str|int}
         self.needToUpdate = True
@@ -15,8 +11,10 @@ class PerfChart:
 
 
     def updateData(self,data:dict[str:float|int]):
+        """Data is {str:float|int} a dictionary with the key being the name of the data and the value being the value of the data
+            The value can be a float or an int"""
         assert isinstance(data,dict), "Data must be a dictionary"
-        assert all([isinstance(value,(float,int)) for value in data.values()]), "All values in the data dictionary must be either a float or an int"
+        assert all([isinstance(value,(float,int,str)) for value in data.values()]), "All values in the data dictionary must be either a float or an int or str"
 
         self.data = data
         self.needToUpdate = True
@@ -32,13 +30,6 @@ class PerfChart:
             self.updateSurf(coords)
             
 
-        # xwidth = (self.wh[0]-5)//len(self.data)
-        # for index,(name,value) in enumerate(self.data.items()):
-        #     if pygame.Rect(coords[0]+index*xwidth+10,coords[1]+5,xwidth,self.wh[1]-10).collidepoint(pygame.mouse.get_pos()):
-        #         # print(name,value)
-        #         screen.blit(s_render(f"{value}%",45,(255,255,255)),(mousex+10,mousey))   SS
-            
-
         screen.blit(self.surf,coords)
     def updateSurf(self,coords=None):
         """Coords is just the current coords on the screen (No self.coords attribute)
@@ -47,16 +38,16 @@ class PerfChart:
         self.surf.fill((0,0,0,0))
         
 
-        maxValue = max([abs(value) for value in self.data.values()])*1.05
+        maxValue = max([abs(float(value)) for value in self.data.values()])*1.05
         xwidth = (self.wh[0])/len(self.data)
         collideValue = None
         for index,(name,value) in enumerate(self.data.items()):
 
-            height = 5 if maxValue == 0 else int((abs(value)/maxValue)*(self.wh[1]//2-10))
+            height = 5 if maxValue == 0 else int((abs(float(value))/maxValue)*(self.wh[1]//2-10))
             height = max(3,height)
             
             collide = coords and pygame.Rect(coords[0]+index*xwidth,coords[1]+5,xwidth,self.wh[1]-10).collidepoint(pygame.mouse.get_pos())# if the mouse is over the bar
-            color = p3choice((175,0,0),(0,175,0),(175,175,175),value)
+            color = p3choice((175,0,0),(0,175,0),(175,175,175),float(value))
             if collide:
                 collideValue = name
                 color = brightenCol(color,1.5)
@@ -64,7 +55,7 @@ class PerfChart:
 
             barWidth = xwidth*.7
             barXPos =  index*xwidth+xwidth*.5-barWidth*.5
-            if value >= 0:
+            if float(value) >= 0:
                 pygame.draw.rect(self.surf,color,pygame.Rect(barXPos,self.wh[1]//2-height+5,barWidth,height),border_top_left_radius=10,border_top_right_radius=10)
             else:
                 pygame.draw.rect(self.surf,color,pygame.Rect(barXPos,self.wh[1]//2+5,barWidth,height),border_bottom_left_radius=10,border_bottom_right_radius=10)                
@@ -79,37 +70,37 @@ class PerfChart:
 
         pygame.draw.rect(self.surf,(0,0,0),pygame.Rect(0,0,self.wh[0],self.wh[1]),5,border_radius=15)
 
-perfChart = PerfChart()
-# perfChart.updateData({"Stock1":100,"Stock2":-50,"Stock3":75,"Stock4":-25,"Stock5":0})
-perfChart.updateData({"Q1":4.56,"Q2":-0.99,"Q3":2.34,"Q4":1.23,"Q5":-3.2})
+# perfChart = PerfChart()
+# # perfChart.updateData({"Stock1":100,"Stock2":-50,"Stock3":75,"Stock4":-25,"Stock5":0})
+# perfChart.updateData({"Q1":4.56,"Q2":-0.99,"Q3":2.34,"Q4":1.23,"Q5":-3.2})
 
-lastfps = deque(maxlen=300)
-clock = pygame.time.Clock()
-mousebuttons = 0
-while True:
-    screen.fill((60,60,60))
-    # pygame.event.pump()
-    # pygame.draw.circle(screen, (255,255,255), (450,450), 100)
-    # for i in range(100):
-    perfChart.draw(screen,(100,100))
+# lastfps = deque(maxlen=300)
+# clock = pygame.time.Clock()
+# mousebuttons = 0
+# while True:
+#     screen.fill((60,60,60))
+#     # pygame.event.pump()
+#     # pygame.draw.circle(screen, (255,255,255), (450,450), 100)
+#     # for i in range(100):
+#     perfChart.draw(screen,(100,100))
 
-    screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(850,0),(850,30),(850,60)]))
-    pygame.display.flip()
+#     screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(850,0),(850,30),(850,60)]))
+#     pygame.display.flip()
     
-    mousebuttons = 0
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-            pygame.quit()
-            quit()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            mousebuttons = event.button
-            if mousebuttons == 1:
-                print("Mouse button pressed",pygame.mouse.get_pos())
+#     mousebuttons = 0
+#     for event in pygame.event.get():
+#         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
+#             pygame.quit()
+#             quit()
+#         elif event.type == pygame.MOUSEBUTTONDOWN:
+#             mousebuttons = event.button
+#             if mousebuttons == 1:
+#                 print("Mouse button pressed",pygame.mouse.get_pos())
             
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_j:
-            print("Pressed the J key")
+#         elif event.type == pygame.KEYDOWN and event.key == pygame.K_j:
+#             print("Pressed the J key")
 
-    clock.tick(60)
+#     clock.tick(60)
 
 
 

@@ -3,7 +3,7 @@ from Classes.Gametime import GameTime
 from Defs import *
 from datetime import datetime,timedelta
 
-POINTSPERGRAPH = 500
+
 class StockVisualizer:
     """Anytime a Stock needs to be drawn to screen an instance of this class can be used,
     should be used for one specific graph on the screen, can switch stock classes and has multiple drawing options"""

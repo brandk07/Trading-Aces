@@ -5,6 +5,7 @@ from random import randint
 from collections import deque
 from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.AssetTypes.StockAsset import StockAsset
+from Classes.AssetTypes.IndexFunds import IndexFundAsset
 import numpy as np
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw
@@ -16,6 +17,7 @@ pygame.mixer.init()
 pygame.init()
 
 TXTCOLOR = (220,220,220)
+POINTSPERGRAPH = 500
 
 def timing_decorator(func):
     def wrapper(*args, **kwargs):

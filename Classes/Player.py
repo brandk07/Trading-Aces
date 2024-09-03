@@ -6,6 +6,7 @@ from Defs import *
 from pygame import gfxdraw
 import numpy as np
 from datetime import datetime, timedelta
+# from Classes.AssetTypes.
 # from Classes.imports.Messages import OptionMessage
 
 class Player(Stock):
@@ -35,13 +36,15 @@ class Player(Stock):
         #         self.graphs[key] = np.array([self.cash],dtype=object)
         self.stocks = []# list of lists containing the stockAsset objects
         self.options = []#list of option objects
+        self.indexFunds = []#list of index fund objects
         self.stockvalues = []
         self.messagedict = {}
         self.taxrate = 0.15
         self.transact = transact
         self.assetText = {
             StockAsset:'Share',
-            OptionAsset:'Option'
+            OptionAsset:'Option',
+            IndexFundAsset:'Share'
         }
         self.gametime = gametime
         self.updateOptions = 0# used to update the options every 120 frames
@@ -51,6 +54,8 @@ class Player(Stock):
         return self.options
     def getStocks(self):
         return self.stocks
+    def getIndexFunds(self):
+        return self.indexFunds
     def newDay(self,gametime:datetime):
         """Called at the start of a new day"""
         self.updateOptions = 0
@@ -91,11 +96,13 @@ class Player(Stock):
             assetlist = self.stocks 
         elif isinstance(newasset,OptionAsset):
             assetlist = self.options
+        elif isinstance(newasset,IndexFundAsset):
+            assetlist = self.indexFunds
 
         if self.cash >= value*newasset.getQuantity():# if the player has enough money to buy the asset
             # ["Sold 39 Shares of","KSTON for $5,056.93","Balance $26,103.18"]
             text = [
-                f"Added {newasset.quantity} {newasset.getStockObj().name} {'' if type(newasset) == StockAsset else newasset.getType()} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
+                f"Added {newasset.quantity} {newasset.getStockObj().name} {newasset.getType() if type(newasset) == OptionAsset else ''} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
                 f"{self.gametime.getDate()}",
                 f"${limit_digits(value,12)} Per Share",
                 f"Cost -${limit_digits(newasset.getValue(bypass=True),12)}",
@@ -122,6 +129,8 @@ class Player(Stock):
             assetlist = self.stocks 
         elif isinstance(asset,OptionAsset):
             assetlist = self.options
+        elif isinstance(asset,IndexFundAsset):
+            assetlist = self.indexFunds
 
         if quantity > (quant:=assetlist[assetlist.index(asset)].quantity):# if the quantity is greater than the quantity of the asset
             quantity = quant
@@ -161,7 +170,7 @@ class Player(Stock):
         
     def getNetworth(self):
         """returns the networth of the player"""
-        allassets = self.stocks + self.options
+        allassets = self.stocks + self.options + self.indexFunds
         networth = self.cash + sum([asset.getValue() for asset in allassets])
         if networth < 0.01:
             errors.addMessage('Bankrupt',txtSize=100,coords=[960,540])
@@ -174,9 +183,9 @@ class Player(Stock):
     def getAssets(self,amount:int=0):
         """returns the assets of the player, returns all of them if amount is 0 else returns the top [amount] assets"""
         if amount == 0:
-            return self.stocks + self.options
+            return self.stocks + self.options + self.indexFunds
 
-        allassets = self.stocks + self.options
+        allassets = self.stocks + self.options + self.indexFunds
         allassets.sort(key=lambda x:x.getValue(),reverse=True)
     
         return allassets[:amount]

@@ -530,7 +530,7 @@ class Optiontrade(Menu):
         self.stocklist = stocklist
         self.gametime = gametime
         self.preMadeOptions = {}
-        self.menudrawn = True
+        self.menudrawn = False
         self.fillPreMadeOptions()
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockSelection : SelectionBar = SelectionBar()

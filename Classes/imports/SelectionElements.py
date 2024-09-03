@@ -4,9 +4,10 @@ import math
 
 class SelectionBar:
     """A bar that allows the user to select from a list of strings"""
-    def __init__(self) -> None:
+    def __init__(self,horizontal=True) -> None:
         # self.__annotations__
         self.selected = None
+        self.horizontal = horizontal
     def getSelected(self):
         return self.selected
     def setSelected(self,selected):
@@ -26,22 +27,29 @@ class SelectionBar:
 
         x,y = coords
         w,h = wh
-        spacing = math.ceil(w/len(data))
+        spacing = math.ceil(w/len(data)) if self.horizontal else math.ceil(h/len(data))
         # pygame.draw.rect(screen,(20,20,20),pygame.Rect(x,y,w,h),border_radius=25)# Ovalish shape that all elements will be drawn on
         changed = False
         for i,txt in enumerate(data):
             rtxt = s_render(txt,txtsize,colors[i])
 
-            if txt == self.selected:
-                pygame.draw.rect(screen,(10,10,10),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),border_radius=25)
-
-            pygame.draw.rect(screen,(0,0,0),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),width=5,border_radius=25)
-            
-                
-            txtx = x+(i*spacing)+(spacing//2)-(rtxt.get_width()//2)
-            txty = y+(h//2)-(rtxt.get_height()//2)
+            if self.horizontal:
+                if txt == self.selected:
+                    pygame.draw.rect(screen,(10,10,10),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),border_radius=25)
+                pygame.draw.rect(screen,(0,0,0),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),width=5,border_radius=25)
+                txtx = x+(i*spacing)+(spacing//2)-(rtxt.get_width()//2)
+                txty = y+(h//2)-(rtxt.get_height()//2)
+                rect = pygame.Rect(x+(i*spacing),y,spacing,h)
+            else:
+                if txt == self.selected:
+                    pygame.draw.rect(screen,(10,10,10),pygame.Rect(x,y+(i*spacing)+5,w,spacing-10),border_radius=25)
+                pygame.draw.rect(screen,(0,0,0),pygame.Rect(x,y+(i*spacing)+5,w,spacing-10),width=5,border_radius=25)
+                txtx = x+(w//2)-(rtxt.get_width()//2)
+                txty = y+(i*spacing)+(spacing//2)-(rtxt.get_height()//2)
+                rect = pygame.Rect(x,y+(i*spacing),w,spacing)
             screen.blit(rtxt,(txtx,txty))
-            if pygame.Rect(x+(i*spacing),y,spacing,h).collidepoint(pygame.mouse.get_pos()):
+
+            if rect.collidepoint(pygame.mouse.get_pos()):
                 if mousebuttons == 1:
                     soundEffects['generalClick'].play()
                     self.selected = txt

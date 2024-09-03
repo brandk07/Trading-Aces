@@ -2,7 +2,7 @@ import pygame
 from random import randint
 import time
 from Defs import *
-from Classes.Stock import Stock,POINTSPERGRAPH
+from Classes.Stock import Stock
 from Classes.UIControls import UIControls
 from Classes.Gametime import GameTime
 from Classes.Player import Player
@@ -56,7 +56,8 @@ menuList = []
 
 # CREATING OBJECTS
 stockgraphmanager = StockGraphManager(stocklist,gametime)
-tmarket = TotalMarket(gametime)
+tmarket = TotalMarket(gametime,stocklist)
+indexFunds.append(tmarket)
 uiControls = UIControls(stocklist,GAMESPEED,gametime,tmarket,player)
 orderScreen = OrderScreen(uiControls)
 # stockbook = Stockbook(stocklist,gametime,orderScreen)
@@ -91,13 +92,13 @@ mousebuttons = 0
 # print(stocklist[0].graphs)
 timer = timeit.default_timer()
 
-if not all([len(graph) == POINTSPERGRAPH for graph in stocklist[0].graphs.values()]):
+if not all([all([len(graph) == POINTSPERGRAPH for graph in stock.graphs.values()]) for stock in stocklist]):
     for stock in stocklist:
         stock.fill_graphs()
     print('time to fill graphs',timeit.default_timer()-timer)
-tmarket.fill_graphs(stocklist)
+
 for indexfund in indexFunds:
-    indexfund.fill_graphs(stocklist)
+    indexfund.fill_graphs()
 
 
 screen.fill((30,30,30))
@@ -124,7 +125,6 @@ if __name__ == "__main__":
                     
                 # player.update_price(uiControls.gameplay_speed,Player)
                 player.gameTick(uiControls.gameplay_speed)
-                tmarket.updategraphs(stocklist,uiControls.gameplay_speed)
                 for indexfund in indexFunds:
                     indexfund.updategraphs(uiControls.gameplay_speed)
 

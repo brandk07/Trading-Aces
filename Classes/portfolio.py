@@ -51,12 +51,12 @@ class Portfolio(Menu):
 
         # for the asset type selection which sorts the latterscroll
         # s.assetoptions = ["Stocks","Options","Other"]# future, Crypto, bonds, minerals, real estate, etc
-        s.assetoptions = ["Stocks","Options","Other"]
-        s.displayed_asset_type = ["Stocks","Options","Other"]
+        s.assetoptions = ["Stocks","Options","Index Funds","Other"]
+        s.displayed_asset_type = ["Stocks","Options","Index Funds","Other"]
 
         
 
-        s.classtext = {StockAsset:"Share",OptionAsset:"Option"}# Used quite a bit and saves an if statement every time I need class specific text
+        s.classtext = {StockAsset:"Share",OptionAsset:"Option",IndexFundAsset:"Share"}# Used quite a bit and saves an if statement every time I need class specific text
 
         # s.latterScrollsurf = pygame.Surface((730,730))
         s.latterscrollnorm = PortfolioLatter()
@@ -143,7 +143,7 @@ class Portfolio(Menu):
         # stockassets,optionassets = [],[]
         # if "Stocks" in s.displayed_asset_type: stockassets = [[stock, get_second(stock)] for stock in s.player.stocks]# gets the stock assets
         # if "Options" in s.displayed_asset_type: optionassets = [[option, get_second(option)] for option in s.player.options]# gets the option assets
-        nameDict = {StockAsset:"Stocks",OptionAsset:"Options"}
+        nameDict = {StockAsset:"Stocks",OptionAsset:"Options",IndexFundAsset:"Index Funds"}
         allassets = s.player.getAssets()# gets all the assets
         allassets = [[asset, get_second(asset)] for asset in allassets if nameDict.get(type(asset)) in s.displayed_asset_type]# gets the assets that are in the displayed asset type
         # sortedstocks = sorted(player.stocks,key=lambda stock: stock[0].price*stock[2],reverse=True)
@@ -267,10 +267,16 @@ class Portfolio(Menu):
         elif isinstance(asset,OptionAsset):
             strValue = f"{asset.daysToExpiration()} Days"
             color = p3choice((160,10,10),(10,160,10),(190,190,190),asset.daysToExpiration()-5)
+
+        elif isinstance(asset,IndexFundAsset):
+            strValue = f"${limit_digits(asset.dividends,15)}"
+            color = (0, 190, 0) if asset.dividends > 0 else (190, 190, 190)
+        else:
+            raise Exception("Asset type not recognized")
         
         
         valueText = s_render(strValue, 50, (0,0,0))# the value for the dividend / expiration date
-        nameText = s_render({StockAsset:"Dividends",OptionAsset:"Expiration"}.get(type(asset)),47,(0,0,0))
+        nameText = s_render({StockAsset:"Dividends",OptionAsset:"Expiration",IndexFundAsset:"Dividends"}.get(type(asset)),47,(0,0,0))
         x = 1425+175/2-valueText.get_width()/2; y = 400+175/2-20
         pygame.draw.rect(screen, color, pygame.Rect(1425,y-30,175,valueText.get_height()+60), border_radius=10)
         pygame.draw.rect(screen, (0,0,0), pygame.Rect(1425,y-30,175,valueText.get_height()+60), width=5, border_radius=10)

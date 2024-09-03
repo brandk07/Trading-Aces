@@ -12,6 +12,7 @@ from Classes.StockVisualizer import StockVisualizer,POINTSPERGRAPH
 from functools import lru_cache
 from faker import Faker
 from Classes.StockPriceEffects import StockPriceEffects
+import calendar
 
 @lru_cache(maxsize=20)
 def calculate_volatility(points) -> float:
@@ -156,6 +157,25 @@ class Stock():
         diff = gametime.time-date
         return getClosestDate(diff.total_seconds())
         
+    def getQuarterReturns(self,quarter:int,gametime:GameTime):
+        """Returns the returns of a specific quarter this year"""
+        assert quarter in range(1,5), "quarter must be between 0 and 4"
+        
+        start = datetime(gametime.time.year,3*quarter-2,1)
+        
+        if start > gametime.time:
+            start -= timedelta(days=365)
+        end = datetime(gametime.time.year,3*quarter,calendar.monthrange(gametime.time.year, 3*quarter)[1])
+        if end > gametime.time and (gametime.time.month-1)//3+1 != quarter:# if the quarter is not the current quarter and the end is after the current date
+            end -= timedelta(days=365)
+        # if end.month == 12:
+        #     end = datetime(gametime.time.year,12,31)
+        # print(start,end,gametime.time)
+        
+        p1 = self.getPointDate(start,gametime)
+        p2 = self.getPointDate(end,gametime)
+        # print(f"Quarter {quarter} returns are {p2/p1}, p1:{p1}, p2:{p2}, start {3*quarter-2}, end {3*quarter}")
+        return ((p2/p1)-1)*100
 
 
     def getPercent(self,graphrange="1Y"):
