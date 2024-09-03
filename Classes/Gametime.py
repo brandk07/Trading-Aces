@@ -34,6 +34,10 @@ class GameTime:
     def setTimeStr(self,time:str):
         self.time = datetime.strptime(time,DFORMAT)
     
+    def getCurrentQuarter(self):
+        """"Returns the current quarter of the year : 1-4"""
+        return (self.time.month-1)//3+1
+
     def advanceTime(self,speed:int,autoFastForward:bool,fastforwardspeed:int):
         """Advances the time by a certain amount of seconds and returns if it is a new day"""
         fastforward = self.fastforwarding

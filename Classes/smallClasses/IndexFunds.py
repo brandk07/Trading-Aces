@@ -8,7 +8,7 @@ from Classes.Stock import Stock
 class TotalMarket(Stock):
     def __init__(self,gametime,stocklist) -> None:
         # name,volatility,color,gametime
-        super().__init__('Total Market',(213, 219, 44),gametime)
+        super().__init__('Total',(213, 219, 44),gametime)
         self.stocks = stocklist.copy()
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
     def datafromfile(self,gametime):

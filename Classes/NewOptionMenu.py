@@ -13,7 +13,7 @@ from Classes.imports.PieChart import PieChart
 from Classes.Gametime import GameTime
 from Classes.imports.BarGraph import BarGraph
 from Classes.imports.Numpad import Numpad
-from Classes.imports.SelectionElements import SelectionBar
+from Classes.imports.SelectionElements import SelectionBar,MenuSelection
 from datetime import timedelta,datetime
 from Classes.imports.OrderBox import OrderBox
 
@@ -534,7 +534,7 @@ class Optiontrade(Menu):
         self.fillPreMadeOptions()
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockSelection : SelectionBar = SelectionBar()
-        self.screenSelection : SelectionBar = SelectionBar()# Buy or Sell
+        self.screenSelection : MenuSelection = MenuSelection((200, 105), (375, 100),["Buy","Sell"],45,colors=[(100,200,100),(200,100,100)])
         self.screenSelection.setSelected("Sell")
 
         self.customOptionSc = CustomOptionCreator(player,self)    
@@ -735,7 +735,7 @@ class Optiontrade(Menu):
             
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
         
-        self.screenSelection.draw(screen, ["Buy","Sell"], (200, 105), (375, 50), mousebuttons, colors=[(0,225,0),(225,0,0),(225,255,0)],txtsize=40)
+        self.screenSelection.draw(screen,mousebuttons)
         if self.screenSelection.getSelected() == "Buy":
             self.checkOptionDates()# Ensures that the options are still live
 

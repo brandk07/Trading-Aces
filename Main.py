@@ -47,7 +47,8 @@ player = Player(stocknames,stockcolors[-1],transact,gametime)
 stockdict = {name:Stock(name,stockcolors[i],gametime) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 indexfundColors = [(217, 83, 149),(64, 192, 128),(138, 101, 235)]
-indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(['Velocity Ventures','Adaptive Allocation','Reliable Returns'])]# high,med,low risk
+indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(["V & V","A & A", "R & R"])]# high,med,low risk
+# indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(['Velocity Ventures','Adaptive Allocation','Reliable Returns'])]# high,med,low risk
 
 # GETTING DATA FROM FILE
 

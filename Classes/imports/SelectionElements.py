@@ -59,12 +59,12 @@ class SelectionBar:
 
 class MenuSelection:
     """Similar to SelectionBar, but with a different design more suited for switching between menus"""
-    def __init__(self,coords,wh,choices,txtsize,colors=None) -> None:
+    def __init__(self,coords,wh,choices:list,txtsize,colors=None) -> None:
         assert len(choices) == len(colors) if colors else True
         self.coords = coords
         self.wh = wh
         self.colors = colors if colors else [(0,0,0) for _ in range(len(choices))]
-        self.choiceTxts = choices
+        self.choiceTxts : list = choices
         self.choices = [s_render(choice,txtsize,self.colors[i]) for i,choice in enumerate(choices)]
         
         self.selected = 0# the index of the selected choice
@@ -73,7 +73,11 @@ class MenuSelection:
         return self.choiceTxts[self.selected] if not index else self.selected
     def setSelected(self,index):
         """Sets the selected choice"""
-        self.selected = index
+        if type(index) == int:
+            self.selected = index
+        else:
+            assert index in self.choiceTxts, "The index must be in the list of choices"
+            self.selected = self.choiceTxts.index(index)
     def draw(self,screen,mousebuttons):
         """Draws the menu selection onto the screen"""
         width  = self.wh[0]//len(self.choices)
