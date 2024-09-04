@@ -53,13 +53,14 @@ class OverView:
 class InvestmentScreen:
     def __init__(self,stocklist,gametime,player,tmarket,indexFunds) -> None:
         self.player = player
-        self.sideScroll = SideScroll((200,235),(1120,365),(315,315))
+        self.sideScroll = SideScroll((200,210),(1200,450),(375,400))
         bankIcons = {}
         data = {"duration":12,"apr":7.63,"minBalance":16000,"risk":"High (3.82%)"}
         self.assetSelection = MenuSelection((1580,105),(320,100),["CD","Index Funds"],45)
         for file in os.listdir(r"Assets\bankIcons"):
             image = pygame.image.load(r"Assets\bankIcons\{}".format(file)).convert_alpha()
-            bankIcons[file.split(".")[0]] = CdCard(image,file.split(".")[0],self.sideScroll,data,(315,315))
+            bankIcons[file.split(".")[0]] = CdCard(image,file.split(".")[0],self.sideScroll,data,(375,400))
+        
         self.sideScroll.loadCards(list(bankIcons.values()))
 
         self.fundNumpad = Numpad(False,maxDecimals=0)
@@ -69,13 +70,10 @@ class InvestmentScreen:
         self.indexGraphs : dict[str:StockVisualizer] = {}
         for indexFund in self.indexFunds:
             self.indexGraphs[indexFund.name] = StockVisualizer(gametime,indexFund,stocklist)
-        # self.indexGraphs["Total Market"] = StockVisualizer(gametime,tmarket,stocklist)
 
         self.fundSelection = SelectionBar(horizontal=False)
         self.fundPerfChart = PerfChart((620,300))
-        # self.totalGraph = StockVisualizer(gametime,tmarket,[tmarket,player])
-        # self.networthGraph = StockVisualizer(gametime,player,stocklist)
-        # self.getRealSelc = lambda fakeSelect: list(self.indexGraphs.keys())[["V & V","A & A", "R & R", "Total"].index(fakeSelect)]# Need since the namse in fundSelection are abbreviated
+        
         self.getRealSelc = lambda fakeSelect: ['Velocity Ventures','Adaptive Allocation','Reliable Returns',"Total Market"][["V & V","A & A", "R & R", "Total"].index(fakeSelect)]# Need since the fund names are abbreviated
         self.updateCards([])
 
@@ -85,6 +83,7 @@ class InvestmentScreen:
         for _ in self.sideScroll.cards:
             newData.append({"duration":randint(3,36),"apr":randint(200,900)/100,"minBalance":randint(500,25000),"risk":f"{random.choice(["High","Medium","Low"])} (??%)"})
         self.sideScroll.updateCards(newData)
+        
     def drawAssetInfo(self,screen,mousebuttons,gametime,assetType):
         if assetType == "CD":
             txt = "A certificate of deposit (CD) is a type of savings account that has a fixed interest rate and fixed date of withdrawal, known as the maturity date. CDs also typically don’t have monthly fees. You agree to keep the full deposit in the account for the term length, and the bank agrees to pay you a fixed interest rate during that time."
@@ -111,7 +110,7 @@ class InvestmentScreen:
         if self.fundSelection.getSelected() != None:
             # realName = self.getRealSelc(self.fundSelection.getSelected())# get the real name of the fund
             fund = [fund for fund in self.indexFunds if fund.name == self.fundSelection.getSelected()][0]# get the fund object
-            self.indexGraphs[self.fundSelection.getSelected()].drawFull(screen,(305,210),(620,455),self.fundSelection.getSelected(),True,"Normal")# draw the graph for the fund
+            self.indexGraphs[self.fundSelection.getSelected()].drawFull(screen,(305,210),(620,450),self.fundSelection.getSelected(),True,"Normal")# draw the graph for the fund
 
             currentQ = gametime.getCurrentQuarter()# current game quarter
 
@@ -125,7 +124,7 @@ class InvestmentScreen:
             data = [("Value",f"${pricePer}","x")]# data for the order box
             totalCost = fund.getValue()*self.fundNumpad.getValue()*(1-2/100)# total cost of the shares
 
-            self.fundOrderBox.loadData(self.fundNumpad.getNumstr('Option'),f"${limit_digits(totalCost,22)}",data)# load the data into the order box
+            self.fundOrderBox.loadData(self.fundNumpad.getNumstr('Share'),f"${limit_digits(totalCost,22)}",data)# load the data into the order box
             result = self.fundOrderBox.draw(screen,mousebuttons)# draw the order box
 
             self.drawIndexFundInfo(screen,mousebuttons,gametime,fund)
@@ -143,6 +142,14 @@ class InvestmentScreen:
         match self.assetSelection.getSelected():
             case "CD":
                 self.sideScroll.draw(screen,mousebuttons)
+                # (self,screen,coords,mousebuttons,minX,maxX
+                self.sideScroll.getCard().draw(screen,(200,670),mousebuttons,customWh=(375,300))# Draw the selected card 
+
+                pygame.draw.rect(screen,(0,0,0),(585,670,375,300),5,border_radius=10)# box for extra cD info
+
+                data = [("Duration",f"{self.sideScroll.getCard().data['duration']} Months"),("APR",f"{round(self.sideScroll.getCard().data['apr'],2)}%"),("Min Balance",f"${limit_digits(self.sideScroll.getCard().data['minBalance'],20,True)}"),("Risk",self.sideScroll.getCard().data['risk'])]
+                drawLinedInfo(screen,(585,670),(375,300),data,30,(255,255,255))# draw the extra info for the CD
+
 
             case "Index Funds":
                 pygame.draw.rect(screen,(0,0,0),(930,210,475,450),5,border_radius=10)# for the indexFund info (deeper in depth for specific fund)

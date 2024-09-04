@@ -375,7 +375,7 @@ class Stockbook2(Menu):
         ]
         # info = {key:value for key,value in zip(keys,values)}
         info = [(string,value) for string,value in zip(strings,values)]
-        drawLinedInfo(screen,(750,120),(700,300),info,40,TXTCOLOR)
+        drawLinedInfo(screen,(750,100),(700,300),info,40,TXTCOLOR)
 
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
         mousex, mousey = pygame.mouse.get_pos()

@@ -16,7 +16,7 @@ class CdCard(ScrollCard):
         self.name = name
         # self.image = pygame.transform.scale(image,((self.wh[1]//4)*3-30,(self.wh[1]//4)*3-30))
         self.image = pygame.transform.scale(image,self.wh)
-        self.image.set_alpha(120) 
+        self.image.set_alpha(80) 
         self.sideScroll = sideScroll
         self.surf = pygame.Surface(self.wh).convert_alpha()
         # self.data = {
@@ -28,11 +28,13 @@ class CdCard(ScrollCard):
         self.data = data
         self.needToUpdate = True# if the card surf needs to be updated
         
-
+    def getData(self) -> dict:
+        return self.data
+    
     def updateData(self,data:dict):
         self.data = data
         self.needToUpdate = True
-    @lru_cache(maxsize=1)
+    @lru_cache(maxsize=3)
     def getPartialSurf(self,cutOff,direction):
         """Returns a surface that has cutOff pixels cut off from the direction"""
         if direction == "left":
@@ -41,15 +43,21 @@ class CdCard(ScrollCard):
             return self.surf.subsurface(pygame.Rect(0,0,self.wh[0]-cutOff,self.wh[1]))
         
         # return self.surf.subsurface(pygame.Rect(0,0,cutOff,self.wh[1]))
-    def draw(self,screen,coords,mousebuttons,minX,maxX) -> bool:
+    def draw(self,screen,coords,mousebuttons,minX=None,maxX=None,customWh=None) -> bool:
         """Draws the card onto the screen at the given coords"""
+        if minX == None and maxX == None:
+            minX,maxX = 0,screen.get_width()
+        if customWh != None:# if the card was resized, then the card needs to be updated (temporarily)
+            self.needToUpdate = True
+
         coords = list(coords)
         if coords[0]+self.wh[0] < minX+20 or coords[0] > maxX:
             return False
 
         if self.needToUpdate:
-            self.updateSurf()
-            self.needToUpdate = False
+            self.updateSurf(customWh)# update the card's surface
+            if customWh == None:# if the card was resized, then the coords need to be updated again
+                self.needToUpdate = False
 
         newSurf = self.surf
         if coords[0] < minX and coords[0]+self.wh[0] > minX:
@@ -60,31 +68,35 @@ class CdCard(ScrollCard):
         screen.blit(newSurf,coords)
         
         if pygame.Rect(coords[0],coords[1],self.wh[0],self.wh[1]).collidepoint(pygame.mouse.get_pos()):
-            
             if mousebuttons == 1:
                 return True
         return False
-    def updateSurf(self):
+    
+    def updateSurf(self,wh=None):
         """Draws Everything onto the card's surface - Only needs to be called when data changes"""
         # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
         # self.surf.fill((60,60,60,120))
+        if wh == None:
+            wh = self.wh
+        self.surf = pygame.Surface(wh).convert_alpha()
+        
         self.surf.fill((0,0,0,0))
-        gfxdraw.filled_polygon(self.surf,[(0,0),(self.wh[0],0),(self.wh[0],self.wh[1]),(0,self.wh[1])],(60,60,60,120))
-        # self.surf.blit(self.image,(0+self.wh[0]//8,0))
+        gfxdraw.filled_polygon(self.surf,[(0,0),(wh[0],0),(wh[0],wh[1]),(0,wh[1])],(60,60,60,120))
+        # self.surf.blit(self.image,(0+wh[0]//8,0))
         self.surf.blit(self.image,(0,0))    
-        pygame.draw.rect(self.surf,(0,0,0),pygame.Rect(0,0,self.wh[0],self.wh[1]),5)
+        pygame.draw.rect(self.surf,(0,0,0),pygame.Rect(0,0,wh[0],wh[1]),5)
 
         self.surf.blit(s_render("CD",120,(0,0,0)),(0+10,0+10))
 
-        drawCenterTxt(self.surf,f"{self.data['duration']} Months",55,(0,0,0),(0+self.wh[0]-15,0+30),centerX=False,centerY=False,fullX=True)
+        drawCenterTxt(self.surf,f"{self.data['duration']} Months",55,(0,0,0),(0+wh[0]-15,0+30),centerX=False,centerY=False,fullX=True)
 
-        drawCenterTxt(self.surf,f"{round(self.data['apr'],2)}%",130,(225,225,225),(0+self.wh[0]//2,0+self.wh[1]//2))
+        drawCenterTxt(self.surf,f"{round(self.data['apr'],2)}%",130,(225,225,225),(0+wh[0]//2,0+wh[1]//2))
 
-        x,y = 0+10,0+(self.wh[1]//4)*3-20
+        x,y = 0+10,0+(wh[1]//4)*3-20
         info = [("Min Balance",f"${limit_digits(self.data['minBalance'],20,True)}"),("Risk",self.data['risk'])]
         # info = [("Name",self.name),("Min Balance",f"${limit_digits(self.data['minBalance'],20,True)}"),("Risk",self.data['risk'])]
 
-        drawLinedInfo(self.surf,(x,y),(self.wh[0]-20,self.wh[1]//4+40),info,30,(0,0,0))
+        drawLinedInfo(self.surf,(x,y),(wh[0]-20,wh[1]//4+20),info,30,(0,0,0))
 
         
 

@@ -354,6 +354,7 @@ def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsi
         assert len(infoList) == len(middleData), 'The middleData must be the same length as the infoList'
     sep = wh[1]//len(infoList)
     x,y = coord
+    y += sep/3
     for i, (string,value) in enumerate(infoList):
         newY = y+(i*sep)
         screen.blit(s_render(string,txtsize,color),(x+10,newY))

@@ -312,7 +312,7 @@ class SellOptionScreen:
         ]
         # info = {key:value for key,value in zip(keys,values)}
         info = [(string,value) for string,value in zip(strings,values)]
-        drawLinedInfo(screen,(680,290),(370,360),info,37,TXTCOLOR)
+        drawLinedInfo(screen,(680,270),(370,360),info,37,TXTCOLOR)
         
 
         # Other Info
@@ -327,7 +327,7 @@ class SellOptionScreen:
             f"{limit_digits(option.stockObj.getVolatility()*100,12)}%"
         ]
         info = [(string,value) for string,value in zip(strings,values)]
-        drawLinedInfo(screen,(1060,290),(370,360),info,37,TXTCOLOR)
+        drawLinedInfo(screen,(1060,270),(370,360),info,37,TXTCOLOR)
 
     def drawOwnedOptions(self,screen:pygame.Surface,mousebuttons:int):
 
@@ -652,7 +652,7 @@ class Optiontrade(Menu):
         ]
         # info = {key:value for key,value in zip(keys,values)}
         info = [(string,value) for string,value in zip(strings,values)]
-        drawLinedInfo(screen,(590,660),(435,330),info,35,TXTCOLOR)
+        drawLinedInfo(screen,(590,620),(435,330),info,35,TXTCOLOR)
 
     def drawselectOption(self,screen:pygame.Surface,mousebuttons:int,gametime:GameTime,stock:Stock):
         if self.selectOption == None:
@@ -720,7 +720,7 @@ class Optiontrade(Menu):
             ]
             # info = {key:value for key,value in zip(keys,values)}
             info = [(string,value) for string,value in zip(strings,values)]
-            drawLinedInfo(screen,(1055,220),(435,370),info,40,TXTCOLOR)
+            drawLinedInfo(screen,(1055,200),(435,370),info,40,TXTCOLOR)
     def checkOptionDates(self):
         """Checks if the options are still live, if not then it replaces them"""
         for option in self.savedOptions:

@@ -27,8 +27,8 @@ class OrderBox:
             drawBoxedTextWH(screen,(x,y),(w,h),self.quantStr,50,(0,0,0),centerX=True)
 
             # DRAWING THE EXTRA DATA
-            x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)+25
-            w,h = self.wh[0]-20,(self.wh[1]//5)*3
+            x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)+10
+            w,h = self.wh[0]-20,(self.wh[1]//5)*3-15
             data = [(key,value) for key,value,middle in self.extraData]
             middle = [middle for key,value,middle in self.extraData]
             drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middle)
@@ -45,7 +45,7 @@ class OrderBox:
             result = drawClickableBoxWH(screen,(x,y),(w,h),"Confirm",35,(0,0,0),(255,255,255),mousebuttons,fill=True)
 
             # DRAWING THE EXTRA DATA
-            x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)+25
+            x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)+10
             w,h = self.wh[0]-20,(self.wh[1]//5)*4
             self.extraData.insert(0,("Quantity",self.quantStr,""))
             data = [(key,value) for key,value,middle in self.extraData]
