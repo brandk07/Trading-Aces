@@ -64,10 +64,10 @@ class Transactions:
 
 
 
-    def addTransaction(self,Date:str,Action:str,ProfitUnit:str,Balance:str):
-        """Date, Action, Profit/Unit Cost, Balance
-            Action - Sold 1 STAR call Option"""
-        self.transactlog.insert(0,[Date,Action,ProfitUnit,Balance])
+    def addTransaction(self,Date:str,Action:str,balanceChange:str,ProfitUnit:str,Balance:str):
+        """Date, Action, BalanceChange,Profit/Unit Cost, Balance
+            Action Ex. = Sold 1 STAR call Option"""
+        self.transactlog.insert(0,[Date,Action,balanceChange,ProfitUnit,Balance])
 
     # def draw(self,screen,mousebuttons,coords:tuple,wh:tuple,polywh):
     #     if self.transactlog:

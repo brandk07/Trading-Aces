@@ -51,11 +51,11 @@ class TransactionScreen:
     def __init__(self,transactions,player) -> None:
         self.player = player    
         self.transactions = transactions
-        self.linedLatter = LinedLatter((1175,655),120)
+        self.linedLatter = LinedLatter((1245,655),120)
     def draw(self,screen,mousebuttons,gametime):
         # screen.blit(s_render("STATS",70,(255,255,255)),(200,210))
-        drawCenterTxt(screen,"STATS",70,(255,255,255),(457,210),centerY=False)
-        pygame.draw.rect(screen,(0,0,0),(200,265,515,700),5,border_radius=10)
+        drawCenterTxt(screen,"STATS",70,(255,255,255),(415,210),centerY=False)
+        pygame.draw.rect(screen,(0,0,0),(200,265,430,705),5,border_radius=10)# rect for the stats
 
         vals = [10_710_000,10_500,8_050_000,2_050_000,850]
         # for i in range(5):
@@ -67,32 +67,40 @@ class TransactionScreen:
 
         #     drawCenterTxt(screen,valTxt,size,(0,0,0),(357,275+(i*140)+10),centerY=False)
         strs = ["Lifetime Volume","Gains (Unrealized)","Gains (Realized)","Taxes Paid","Debt"]
-        drawLinedInfo(screen,(210,275),(495,680),[(string,"$"+limit_digits(val,15,val > 10000)) for string,val in zip(strs,vals)],50,(255,255,255),diffSizes=(40,65))
+        drawLinedInfo(screen,(210,275),(410,680),[(string,"$"+limit_digits(val,15,val > 10000)) for string,val in zip(strs,vals)],50,(255,255,255),diffSizes=(35,55))
 
 
 
 
-        drawCenterTxt(screen,"TRANSACTIONS",70,(255,255,255),(735,210),centerX=False,centerY=False)
-        pygame.draw.rect(screen,(0,0,0),(725,265,1175,705),5,border_radius=10)
+        drawCenterTxt(screen,"TRANSACTIONS",70,(255,255,255),(1267,210),centerX=True,centerY=False)
+        pygame.draw.rect(screen,(0,0,0),(635,265,1265,705),5,border_radius=10)# rect for the transactions
 
-        txts = ["Date","Action","Profit/Unit Cost","Balance"]
-        coords = [(800,275),(1105,275),(1465,275),(1710,275)]
+        txts = ["Date","Action","Balance Change","Profit/Unit Cost","Balance"]
+        coords = [(705,275),(935,275),(1230,275),(1495,275),(1760,275)]
         for i,txt in enumerate(txts):
             drawCenterTxt(screen,txt,40,(255,255,255),coords[i],centerY=False)
-        coords = [(800-730,20),(1105-730,20),(1465-730,20),(1710-730,20)]
-        self.linedLatter.setStrCoords(coords)
+        coords = [(705-635,20),(935-635,20),(1230-635,20),(1495-635,20),(1760-635,20)]
 
-        data = []
-        for line in self.transactions.getTransactions():
-            data.append([])
-            for i,string in enumerate(line):
-                color = (255,255,255)
-                if i == 2:
-                    color = (230,10,10) if "-" in string else (10,230,10)
-                data[-1].append((string,40,color))
-                
-        self.linedLatter.setStrings(data)
-        self.linedLatter.draw(screen,mousebuttons,(730,315))
+        if self.transactions.getTransactions() == []:
+            self.linedLatter.setStrCoords([(1267-635,20)])
+            self.linedLatter.setStrings([[["No Transactions",65,(255,255,255)]]])
+        else:
+            self.linedLatter.setStrCoords(coords)
+            data = []
+            for line in self.transactions.getTransactions():
+                data.append([])
+                for i,string in enumerate(line):
+                    color = (255,255,255)
+                    if i == 2:
+                        color = (230,10,10) if "-" in string else (10,230,10)
+                    elif i == 3:
+                        if '-' in string: color = (230,10,10)
+                        elif '+' in string: color = (10,230,10)
+                    
+                    data[-1].append((string,40,color))
+                    
+            self.linedLatter.setStrings(data)
+        self.linedLatter.draw(screen,mousebuttons,(640,315))
 
         # # print(self.transactions.getTransactions())
         # for i,transaction in enumerate(self.transactions.getTransactions()):
@@ -105,7 +113,7 @@ class TransactionScreen:
         #         color = (255,255,255)
         #         if ii == 2:
         #             color = (230,10,10) if "-" in txt else (10,230,10)
-        #         drawCenterTxt(screen,txt,32,color,(coords[ii][0],330+(i*75)),centerY=False)
+        #         drawCenterTxt(screen,txt,32,color,(coords[ii][0],330+(i*75)),centerY=False)+
 
 
 

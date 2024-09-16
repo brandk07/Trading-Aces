@@ -41,6 +41,9 @@ class Player(Stock):
         self.messagedict = {}
         self.taxrate = 0.15
         self.transact = transact
+        self.lifeTimeVolume = 0
+        self.realizedGains = 0
+        self.taxesPaid = 0
         self.assetText = {
             StockAsset:'Share',
             OptionAsset:'Option',
@@ -102,11 +105,11 @@ class Player(Stock):
         if self.cash >= value*newasset.getQuantity():# if the player has enough money to buy the asset
             # ["Sold 39 Shares of","KSTON for $5,056.93","Balance $26,103.18"]
             text = [
-                f"Added {newasset.quantity} {newasset.getStockObj().name} {newasset.getType() if type(newasset) == OptionAsset else ''} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
                 f"{self.gametime.getDate()}",
-                f"${limit_digits(value,12)} Per Share",
-                f"Cost -${limit_digits(newasset.getValue(bypass=True),12)}",
-                f"Balance ${limit_digits(self.cash-newasset.getValue(bypass=True),12)}"
+                f"Added {newasset.quantity} {newasset.getStockObj().name} {newasset.getType() if type(newasset) == OptionAsset else ''} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
+                f"-${limit_digits(newasset.getValue(bypass=True),12)}",
+                f"${limit_digits(value,12)}",
+                f"${limit_digits(self.cash-newasset.getValue(bypass=True),12)}"
             ]
             self.transact.addTransaction(*text)
             soundEffects['buy'].play()
@@ -144,11 +147,11 @@ class Player(Stock):
         loss_gain = loss_gain if loss_gain <= 0 else loss_gain*(1-self.taxrate)
         value = (asset.getValue(bypass=True,fullvalue=False)*quantity)-taxes
         text = [
-            f"Sold {quantity} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
             f"{self.gametime.getDate()}",
-            f"{'Lost' if loss_gain < 0 else 'Profited'} ${limit_digits(abs(loss_gain),12) if loss_gain != 0 else '0'}",
-            f"Value +${limit_digits(value,12)}",
-            f"Balance ${limit_digits(self.cash+value,12)}"
+            f"Sold {quantity} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
+             f"+${limit_digits(value,12)}",
+            f"{'-' if loss_gain < 0 else '+'} ${limit_digits(abs(loss_gain),12) if loss_gain != 0 else '0'}",
+            f"${limit_digits(self.cash+value,12)}"
         ]
         self.transact.addTransaction(*text)
         
