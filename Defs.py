@@ -348,17 +348,19 @@ def checkboxOptions(screen,options,selectedOptions,pos,wh,mousebuttons,disabledO
             pygame.draw.rect(screen, (200,200,200), [x+13,y+wh[1]/2-5,10,10])
     
 
-def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsize,color,middleData=None):
-    """Draws the info in infoList [str (left side), value:int/str (right side)], in the box at coord with width and height wh"""
+def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsize,color,middleData=None,diffSizes=None):
+    """Draws the info in infoList [str (left side), value:int/str (right side)], in the box at coord with width and height wh
+    Diff sizes can be a tuple containing the sizes of the left and right side text"""
     if middleData != None:
         assert len(infoList) == len(middleData), 'The middleData must be the same length as the infoList'
+
     sep = wh[1]//len(infoList)
     x,y = coord
     y += sep/3
     for i, (string,value) in enumerate(infoList):
         newY = y+(i*sep)
-        screen.blit(s_render(string,txtsize,color),(x+10,newY))
-        valueText = s_render(str(value),txtsize,color)
+        screen.blit(s_render(string,txtsize if not diffSizes else diffSizes[0],color),(x+10,newY))# display the string on the left
+        valueText = s_render(str(value),txtsize if not diffSizes else diffSizes[1],color)# render the value
         screen.blit((valueText),(x+wh[0]-valueText.get_width()-10,newY))
         if middleData != None and middleData[i] != "":
             drawCenterTxt(screen,middleData[i],txtsize,color,(x+wh[0]//2,newY),centerX=True,centerY=False)

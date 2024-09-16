@@ -13,7 +13,7 @@ mousebuttons = 0
 while True:
     screen.fill((60,60,60))
     # pygame.event.pump()
-    # pygame.draw.circle(screen, (255,255,255), (450,450), 100)
+    pygame.draw.circle(screen, (255,255,255), (450,450), 100)
 
     screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(850,0),(850,30),(850,60)]))
     pygame.display.flip()

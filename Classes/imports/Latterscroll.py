@@ -210,7 +210,9 @@ class LatterScroll():
                 # self.get_textcoord(self.textcoords[i],points[0],self.texts[numdrawn])
                 screen.blit(render,(points[0][0]+self.textcoords[numdrawn][i][0],points[0][1]+self.textcoords[numdrawn][i][1]))
             # pygame.draw.polygon(screen, (0, 0, 1), points, 5)
+
             pygame.draw.rect(screen,(0,0,0),pygame.Rect(points[0][0],points[0][1],points[2][0]-points[0][0],points[1][1]-points[0][1]),5,10)
+
         # screen.blit(self.surf,coords)
         return selectedVal
     
@@ -251,4 +253,66 @@ class PortfolioLatter(LatterScroll):
             elif percentchange == 0: bottomcolor = (dull, dull, dull)
             else: bottomcolor = (dull, 0, 0)
         return bottomcolor
-            
+    
+class LinedLatter(): 
+    def __init__(self,wh,elementHeight) -> None:
+        self.data = []
+        self.elementHeight = elementHeight
+        self.strings = []
+        self.wh = wh
+        self.coords = []
+        self.surf = pygame.Surface((self.wh[0],self.wh[1])).convert_alpha()
+        self.needToUpdate = True
+        self.scrollvalue = 0
+    
+    def setStrings(self,stringData:list[list[str,int,tuple]]):
+        """string Data should be [[string,size,color],n times]"""
+        assert stringData, "String data is empty"
+        assert len(stringData[0][0]) == 3, f"Each index in String data should have 3 elements [string,size,color] {stringData[0]}"
+
+        if len(stringData) == len(self.strings):# if the data is the same
+            same = True
+            for element in stringData:
+                if element[0] not in self.strings:
+                    same = False
+                    break
+            if same:
+                return
+        self.strings = [[string for (string,size,color) in element] for element in stringData]
+        self.data = [[(string,size,color) for (string,size,color) in element] for element in stringData]
+        self.needToUpdate = True
+    
+    def setStrCoords(self,coords:list):
+        """Coords relative to each box in the latter
+        all the elements in strings will use just this 1 list of coords [(x,y),(x,y),n times]"""
+        assert coords, "Coords is empty"
+        self.coords = coords
+        self.needToUpdate = True
+
+    def updateSurf(self):
+        self.surf.fill((0,0,0,0))
+        self.needToUpdate = False
+
+        for i,element in enumerate(self.data):
+            y = (i*self.elementHeight)+self.scrollvalue
+            if y < self.wh[1] or y+self.elementHeight > 0:
+                if i != 0:
+                    pygame.draw.line(self.surf,(0,0,0),(15,y-20),(self.wh[0]-15,y-20),3)
+
+                for ii,(string,size,color) in enumerate(element):
+                    drawCenterTxt(self.surf,string,size,color,(self.coords[ii][0],self.coords[ii][1]+y),centerY=False)
+
+    def scrollcontrols(self, mousebuttons, coords, wh):
+        mousex,mousey = pygame.mouse.get_pos()
+        if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]),mousex,mousey):
+            if mousebuttons == 4 and (self.scrollvalue+len(self.data)*self.elementHeight)-self.elementHeight > 0:
+                self.scrollvalue -= 30; self.needToUpdate = True
+            elif mousebuttons == 5 and self.scrollvalue < self.elementHeight:
+                self.scrollvalue += 30; self.needToUpdate = True
+
+    def draw(self,screen,mousebuttons:int,coords:tuple):
+        if self.needToUpdate:
+            self.updateSurf()
+        # pygame.draw.rect(screen,(0,0,0),pygame.Rect(0,0,self.wh[0],self.wh[1]))
+        screen.blit(self.surf,(coords))
+        self.scrollcontrols(mousebuttons,coords,self.wh)

@@ -14,6 +14,7 @@ from Classes.imports.PerfChart import PerfChart
 from Classes.imports.Numpad import Numpad
 from Classes.imports.OrderBox import OrderBox
 from Classes.AssetTypes.IndexFunds import IndexFundAsset
+from Classes.imports.Latterscroll import LinedLatter
 
 import datetime
 from Classes.imports.SideScroll import SideScroll,CdCard
@@ -24,8 +25,10 @@ class BankMenu(Menu):
         self.icon = pygame.image.load(r'Assets\Menu_Icons\bankIcon.jpg').convert_alpha()
         self.icon = pygame.transform.scale(self.icon,(140,100))
         super().__init__(self.icon)
-        self.menuSelection = MenuSelection((200,105),(520,100),["Overview","Investments","Loans"],45)
-        self.overView = OverView(player,transactions)
+        self.menuSelection = MenuSelection((200,105),(520,100),["Investments","Loans","Transactions"],45)
+        # self.overView = OverView(player,transactions)
+        self.menuSelection.setSelected("Transactions")
+        self.transactionScreen = TransactionScreen(transactions,player)
         self.investScreen = InvestmentScreen(stocklist.copy(),gametime,player,tmarket,indexFunds.copy())
         self.menudrawn = True
 
@@ -35,20 +38,85 @@ class BankMenu(Menu):
 
 
         match self.menuSelection.getSelected():
-            case "Overview":
-                self.overView.draw(screen)
+            # case "Overview":
+            #     self.overView.draw(screen)
+            case "Transactions":
+                self.transactionScreen.draw(screen,mousebuttons,gametime)
             case "Investments":
                 self.investScreen.draw(screen,mousebuttons,gametime)
             case "Loans":
                 pass
 
-
-class OverView:
-    def __init__(self,player,transactions) -> None:
-        self.player = player
+class TransactionScreen:
+    def __init__(self,transactions,player) -> None:
+        self.player = player    
         self.transactions = transactions
-    def draw(self,screen):
-        pass
+        self.linedLatter = LinedLatter((1175,655),120)
+    def draw(self,screen,mousebuttons,gametime):
+        # screen.blit(s_render("STATS",70,(255,255,255)),(200,210))
+        drawCenterTxt(screen,"STATS",70,(255,255,255),(457,210),centerY=False)
+        pygame.draw.rect(screen,(0,0,0),(200,265,515,700),5,border_radius=10)
+
+        vals = [10_710_000,10_500,8_050_000,2_050_000,850]
+        # for i in range(5):
+        #     pygame.draw.rect(screen,(10,160,10),(210,275+(i*140),495,120),border_radius=10)
+        #     pygame.draw.rect(screen,(0,0,0),(210,275+(i*140),495,120),5,border_radius=10)
+
+        #     valTxt = "$"+limit_digits(vals[i],15,vals[i] > 10000) 
+        #     size = min(getTSizeNums(valTxt,275),90)
+
+        #     drawCenterTxt(screen,valTxt,size,(0,0,0),(357,275+(i*140)+10),centerY=False)
+        strs = ["Lifetime Volume","Gains (Unrealized)","Gains (Realized)","Taxes Paid","Debt"]
+        drawLinedInfo(screen,(210,275),(495,680),[(string,"$"+limit_digits(val,15,val > 10000)) for string,val in zip(strs,vals)],50,(255,255,255),diffSizes=(40,65))
+
+
+
+
+        drawCenterTxt(screen,"TRANSACTIONS",70,(255,255,255),(735,210),centerX=False,centerY=False)
+        pygame.draw.rect(screen,(0,0,0),(725,265,1175,705),5,border_radius=10)
+
+        txts = ["Date","Action","Profit/Unit Cost","Balance"]
+        coords = [(800,275),(1105,275),(1465,275),(1710,275)]
+        for i,txt in enumerate(txts):
+            drawCenterTxt(screen,txt,40,(255,255,255),coords[i],centerY=False)
+        coords = [(800-730,20),(1105-730,20),(1465-730,20),(1710-730,20)]
+        self.linedLatter.setStrCoords(coords)
+
+        data = []
+        for line in self.transactions.getTransactions():
+            data.append([])
+            for i,string in enumerate(line):
+                color = (255,255,255)
+                if i == 2:
+                    color = (230,10,10) if "-" in string else (10,230,10)
+                data[-1].append((string,40,color))
+                
+        self.linedLatter.setStrings(data)
+        self.linedLatter.draw(screen,mousebuttons,(730,315))
+
+        # # print(self.transactions.getTransactions())
+        # for i,transaction in enumerate(self.transactions.getTransactions()):
+        #     # pygame.draw.rect(screen,(0,0,0),(735,315+(i*75),1155,65),3,border_radius=10)
+        #     # draw a line between each one
+        #     if i != 0:
+        #         pygame.draw.line(screen,(0,0,0),(745,310+(i*75)),(1845,310+(i*75)),3)
+
+        #     for ii,txt in enumerate(transaction):
+        #         color = (255,255,255)
+        #         if ii == 2:
+        #             color = (230,10,10) if "-" in txt else (10,230,10)
+        #         drawCenterTxt(screen,txt,32,color,(coords[ii][0],330+(i*75)),centerY=False)
+
+
+
+
+
+# class OverView:
+#     def __init__(self,player,transactions) -> None:
+#         self.player = player
+#         self.transactions = transactions
+#     def draw(self,screen):
+#         pass
 
 class InvestmentScreen:
     def __init__(self,stocklist,gametime,player,tmarket,indexFunds) -> None:

@@ -147,7 +147,7 @@ class SideScroll:
         index = self.getCard(index=True)
         offset = -(self.scroll%self.cardWH[0])
         #draw a rect for the selected card
-        pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-10+offset+self.cardWH[0],ypos-10,self.cardWH[0]+20,self.cardWH[1]+20),10)
+        pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
         minX,maxX = self.coords[0]+20,self.coords[0]+self.wh[0]-20
         self.cards[index].draw(screen,(middle+offset,ypos),mousebuttons,minX,maxX)
         for i,card in enumerate(self.cards):
