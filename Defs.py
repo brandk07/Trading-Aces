@@ -346,6 +346,33 @@ def checkboxOptions(screen,options,selectedOptions,pos,wh,mousebuttons,disabledO
         if option in selectedOptions:
             pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
             pygame.draw.rect(screen, (200,200,200), [x+13,y+wh[1]/2-5,10,10])
+
+def drawBoxedLines(screen,coords:tuple,txt:str,linesNum:int,txtSize:int,color:tuple,centerX=False,centerY=False,fullX=False,fullY=False) -> None:
+    """Draws a box with lines of text in it"""
+    x,y = coords
+
+    txtLines = separate_strings(txt,linesNum)
+    txtLines = [s_render(line,txtSize,color) for line in txtLines]
+    maxX = max([line.get_width() for line in txtLines])
+    w,h = maxX+40, (txtLines[0].get_height()+10)*linesNum+20
+    if centerX: x -= w//2
+    if centerY: y -= h//2
+    if fullX: x -= w
+    if fullY: y -= h
+    if x+w > screen.get_width():
+        x = screen.get_width()-w
+    if y+h > screen.get_height():
+        y = screen.get_height()-h
+    if x < 0:
+        x = 0
+    if y < 0:
+        y = 0
+    pygame.draw.rect(screen, (40,40,40), (x,y,w,h), border_radius=10)
+    pygame.draw.rect(screen, (0,0,0), (x,y,w,h), 3, 10)
+    for i, line in enumerate(txtLines):
+        # screen.blit(line,(x+20,y+10+(i*(txtLines[0].get_height()+10))))
+        drawCenterRendered(screen,line,(x+w//2,y+10+(i*(txtLines[0].get_height()+10))),centerX=True,centerY=False)
+
     
 
 def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsize,color,middleData=None,diffSizes=None):
