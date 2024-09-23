@@ -99,7 +99,7 @@ getTSizeCharsAndNums = lambda chars, xSpace : int(((xSpace/chars)-0.9506)/0.2347
 # returns the font size that will fit the text in the xSpace
 strSizes = {str(num):[fontlist[i].get_rect(str(num)) for i in range(1,199)] for num in range(10)}
 strSizes['.'] = ([fontlist[i].get_rect('.') for i in range(1,199)])
-def getTSizeNums(chars:str, xSpace:int):
+def getTSizeNums(chars:str, xSpace:int,maxsize:int=199) -> int:
     """Returns the font size that will fit the text in the xSpace"""
     xSpace*=.7
     def getSize(size, totalSpace, chars, lastwidth:int):
@@ -110,18 +110,25 @@ def getTSizeNums(chars:str, xSpace:int):
         elif newSum < totalSpace and lastwidth > totalSpace:# if the current is under, but the last was too big, than current is best
             return size
         elif newSum > totalSpace and lastwidth < totalSpace:# If the current is too big, but the last was smaller, than last is best
-            return size-1
+            return size-1 if size > 1 else 1
         elif newSum < totalSpace and lastwidth < totalSpace:
+            if size >= maxsize:
+                if size >= 199:
+                    print("Max txt size reached from (getTSizeNums in Defs)")# Won't raise an error, but will return the max size
+                return maxsize
             return getSize(size+1, totalSpace, chars, newSum)
         elif newSum > totalSpace and lastwidth > totalSpace:
+            if size <= 1:
+                print("Min size reached from (getTSizeNums in Defs)")# Won't raise an error, but will return the min size
             return getSize(size-1, totalSpace, chars, newSum)
         else:
             print(newSum, totalSpace, lastwidth, size, chars, fontlist[size].get_rect(chars).width)
         
     getTSizeNum = lambda chars, xSpace : int(((xSpace/len(chars))+0.8)/0.225)
-    return getSize(getTSizeNum(chars, xSpace), xSpace, chars, 0)
+    testSize = max(min(getTSizeNum(chars, xSpace),maxsize),1)
+    return getSize(testSize, xSpace, chars, 0)
 
-brightenCol = lambda color, multiplier : tuple([min(255, c*multiplier) for c in color])# brightens the color by the multiplier
+brightenCol = lambda color, multiplier : tuple([min(255, c*multiplier) for c in color])# brightens the color by the multiplieron
 
 def reuserenders(renderlist,texts,textinfo,position) -> list:
     """renderlist is a list of dicts, 

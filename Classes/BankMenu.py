@@ -17,7 +17,7 @@ from Classes.AssetTypes.IndexFunds import IndexFundAsset
 from Classes.imports.Latterscroll import LinedLatter
 
 import datetime
-from Classes.imports.SideScroll import SideScroll,CdCard
+from Classes.imports.SideScroll import SideScroll,CdCard,LoanCard
 
 
 class BankMenu(Menu):
@@ -27,8 +27,9 @@ class BankMenu(Menu):
         super().__init__(self.icon)
         self.menuSelection = MenuSelection((200,105),(520,100),["Investments","Loans","Transactions"],45)
         # self.overView = OverView(player,transactions)
-        self.menuSelection.setSelected("Transactions")
+        self.menuSelection.setSelected("Loans")
         self.transactionScreen = TransactionScreen(transactions,player)
+        self.loanScreen = LoanScreen(gametime,player)
         self.investScreen = InvestmentScreen(stocklist.copy(),gametime,player,tmarket,indexFunds.copy())
         self.menudrawn = True
 
@@ -45,7 +46,7 @@ class BankMenu(Menu):
             case "Investments":
                 self.investScreen.draw(screen,mousebuttons,gametime)
             case "Loans":
-                pass
+                self.loanScreen.draw(screen,mousebuttons)
 
 class TransactionScreen:
     def __init__(self,transactions,player) -> None:
@@ -76,14 +77,14 @@ class TransactionScreen:
         pygame.draw.rect(screen,(0,0,0),(635,265,1265,705),5,border_radius=10)# rect for the transactions
 
         txts = ["Date","Action","Balance Change","Profit/Unit Cost","Balance"]
-        coords = [(705,275),(935,275),(1230,275),(1495,275),(1760,275)]
+        coords = [(705,275),(950,275),(1240,275),(1500,275),(1760,275)]
         for i,txt in enumerate(txts):
             drawCenterTxt(screen,txt,40,(255,255,255),coords[i],centerY=False)
-        coords = [(705-635,20),(935-635,20),(1230-635,20),(1495-635,20),(1760-635,20)]
+        coords = [(705-635,20),(950-635,20),(1240-635,20),(1500-635,20),(1760-635,20)]
 
         if self.transactions.getTransactions() == []:
             self.linedLatter.setStrCoords([(1267-635,20)])
-            self.linedLatter.setStrings([[["No Transactions",65,(255,255,255)]]])
+            self.linedLatter.setStrings([[["No Transactions",55,(255,255,255)]]])
         else:
             self.linedLatter.setStrCoords(coords)
             data = []
@@ -117,6 +118,52 @@ class TransactionScreen:
 
 
 
+class LoanScreen:
+    def __init__(self,gametime,player) -> None:
+        self.player = player
+        self.gametime = gametime
+        self.sideScroll = SideScroll((200,555),(1240,415),(375,375))
+        
+        data = {"term":12,"monthly payment":random.randint(10,250_000),"principal":10000,"remaining":16000}
+        cardList = []
+        for i in range(35):
+            data = {"term":random.randint(1,78),"monthly payment":random.randint(10,10000),"principal":random.randint(10,1000000),"remaining":random.randint(10,1000000)}
+            cardList.append(LoanCard(f"Loan {i}",self.sideScroll,data,(375,375)))
+        self.sideScroll.loadCards(cardList)
+        self.numpad = Numpad(False,maxDecimals=0)
+        
+
+
+    def draw(self,screen,mousebuttons):
+        
+        pygame.draw.rect(screen,(0,0,0),(200,215,350,335),5,border_radius=10)# box for the numpad
+        self.numpad.draw(screen,(200,215),(350,335),"Loan Amount",mousebuttons,0)
+
+        pygame.draw.rect(screen,(0,0,0),(555,215,885,335),5,border_radius=10)# box for the loan Modifications
+
+        # pygame.draw.rect(screen,(0,0,0),(200,555,1240,415),5,border_radius=10)# box for the loan sideScroll
+        self.sideScroll.draw(screen,mousebuttons)
+
+        pygame.draw.rect(screen,(0,0,0),(1445,215,455,335),5,border_radius=10)# box for the proceed and Confirmation
+        pygame.draw.rect(screen,(0,0,0),(1445,555,455,415),5,border_radius=10)# box for the loan info
+
+        txts = ["Loan Amount","Loan Term","Interest Rate"]
+        for i,txt in enumerate(txts):
+            screen.blit(s_render(txt,40,(255,255,255)),(565,225+(i*105)))
+            pygame.draw.rect(screen,(0,0,0),(565,260+(i*105),300,65),5,border_radius=10)
+            if i != 2:
+                drawClickableBoxWH(screen,(565,260+(i*105)),(300,65),"Set Value",45, (0,0,0), (160,160,160), mousebuttons,fill=True)
+            else:
+                drawCenterTxt(screen,"5.5%",45,(255,255,255),(565+150,260+(i*105)+20),centerY=False)
+        
+        # screen.blit(s_render("Monthly Payment",40,(255,255,255)),(885,275))
+        drawCenterTxt(screen,"Monthly Payment",40,(180,180,180),(885,295),centerX=False)
+        # screen.blit(s_render("$4,346",100,(255,255,255)),(885,275))
+        drawCenterTxt(screen,"$4,346",115,(255,255,255),(1115,295),centerX=False)
+
+        info = [("Principal",f"${limit_digits(250000,20,True)}"),("Interest",f"${limit_digits(100000,20,True)}"),("Total",f"${limit_digits(350000,20,True)}")]
+        pygame.draw.rect(screen,(0,0,0),(870,350,555,190),5,border_radius=10)# box for the loan info
+        drawLinedInfo(screen,(880,355),(535,180),info,38,(255,255,255))
 
 
 # class OverView:
@@ -163,11 +210,11 @@ class InvestmentScreen:
     def drawAssetInfo(self,screen,mousebuttons,gametime,assetType):
         if assetType == "CD":
             txt = "A certificate of deposit (CD) is a type of savings account that has a fixed interest rate and fixed date of withdrawal, known as the maturity date. CDs also typically don’t have monthly fees. You agree to keep the full deposit in the account for the term length, and the bank agrees to pay you a fixed interest rate during that time."
-            screen.blit(s_render("CD",70,(255,255,255)),(1425,220))
+            screen.blit(s_render("CD",70,(180,180,180)),(1425,220))
 
         elif assetType == "Index Funds":
             txt = "An index fund is an investment that tracks the performance of an entire market, rather than a single stock. It accomplishes this by holding a portfolio of multiple companies within the market. This diversification helps to reduce risk and volatility, making index funds a popular choice for long-term investors."
-            screen.blit(s_render("Index Funds",60,(255,255,255)),(1425,220))
+            screen.blit(s_render("Index Funds",60,(180,180,180)),(1425,220))
         txt = separate_strings(txt,7)
         for i,line in enumerate(txt):
             # screen.blit(s_render(line,30,(255,255,255)),(1425,300+(i*40)))

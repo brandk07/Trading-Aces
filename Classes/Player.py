@@ -148,7 +148,7 @@ class Player(Stock):
         value = (asset.getValue(bypass=True,fullvalue=False)*quantity)-taxes
         text = [
             f"{self.gametime.getDate()}",
-            f"Sold {quantity} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
+            f"Sold {limit_digits(quantity,15)} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
              f"+${limit_digits(value,12)}",
             f"{'-' if loss_gain < 0 else '+'} ${limit_digits(abs(loss_gain),12) if loss_gain != 0 else '0'}",
             f"${limit_digits(self.cash+value,12)}"
