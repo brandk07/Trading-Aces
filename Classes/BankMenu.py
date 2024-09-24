@@ -18,7 +18,146 @@ from Classes.imports.Latterscroll import LinedLatter
 
 import datetime
 from Classes.imports.SideScroll import SideScroll,CdCard,LoanCard
+class CustomLoanCreator:
+    def __init__(self,player,optionObj) -> None:
+        # self.newOptionInfo = None# list containing info for the new option that is being created, [strikePrice, expirationDate]
+        self.strikePrice,self.expDate = None,None
+        self.creatingOption = False
+        self.player = player
+        self.optionObj:Optiontrade = optionObj
+        self.strikePad : Numpad = Numpad(displayText=False,nums=('DEL','0','.'))
+        self.datePad : Numpad = Numpad(displayText=False,nums=('DEL','0','MAX'))
+        self.oTypeSelect : SelectionBar = SelectionBar()
+        self.cucOptionScrll = CustomColorLatter()
+        self.numPadDisplay = None# Strike, or Date
+        self.newOptionObj = None
+        self.savedOptions : list[OptionAsset] = []# stores the saved options OptionAsset objects
+        self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
+    def removeSelc(self):
+        self.selectOption = None
+    def stopCreating(self):
+        self.creatingOption = False
+    
+    def drawType(self,screen,mousebuttons):
+        drawCenterTxt(screen, 'Type', 45, (200, 200, 200), (1700, 275), centerY=False)
+        
+        self.oTypeSelect.draw(screen, ["call","put"], (1575, 315), (250, 50), mousebuttons, colors=[(50, 180, 169),(127,25,255)],txtsize=35)
+    
+    def drawStrike(self,screen,mousebuttons,stock:Stock):
+        drawCenterTxt(screen, 'Strike', 45, (180, 180, 180), (1530, 427), centerX=False)
 
+        if self.strikePrice == None and self.numPadDisplay != "Strike":# if the strike price has not been set
+            result = drawClickableBox(screen, (1875, 427), "Set Value", 45, (0,0,0), (160,160,160), mousebuttons,centerY=True,fill=True,topLeftX=True)
+            if result:# if the box has been clicked to set the value (numpad displayed)
+                self.numPadDisplay = "Strike"# changing it to strike so that the numpad will be displayed
+        
+        elif self.numPadDisplay == "Strike" and self.strikePrice == None:# if the box has been clicked, but no value has been confirmed
+            self.strikePad.draw(screen,(1050,190),(450,340),"",mousebuttons,stock.price*2)# draw the numpad
+            result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Strike Value", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
+
+            self.strikePrice = self.strikePad.getValue() if result else self.strikePrice
+            self.numPadDisplay = None if result else self.numPadDisplay
+            drawCenterTxt(screen, f"${self.strikePad.getNumstr(haveSes=False)}", 55, (200, 200, 200), (1850, 428),centerX=False,fullX=True)
+
+            if self.strikePrice == 0: self.strikePrice = None# if the value is 0, then it is not a valid value
+        
+        else:# if the value has been confirmed
+            
+            result = drawClickableBox(screen, (1862, 428), f"${self.strikePad.getValue()}", 55, (200,200,200), (0,0,0), mousebuttons,centerY=True,border=False,topLeftX=True)
+            if result: 
+                self.numPadDisplay = "Strike"; self.strikePrice = None
+
+    def drawDate(self,screen,mousebuttons,gametime:GameTime):
+        dateTxt = s_render('Exp Date', 40, (200, 200, 200))
+        screen.blit(dateTxt, (1530, 537-dateTxt.get_height()/2))
+        # print(self.expDate)
+        if self.expDate == None and self.numPadDisplay != "Date":
+            result = drawClickableBox(screen, (1875, 537), "Set Date", 45, (0,0,0), (170,170,170),mousebuttons,centerY=True,fill=True,topLeftX=True)
+            if result:# if the box has been clicked to set the date (numpad displayed)
+                self.numPadDisplay = "Date"# changing it to date so that the numpad will be displayed
+
+        elif self.numPadDisplay == "Date" and self.expDate == None:# if the box has been clicked, but no value has been confirmed
+            
+            self.datePad.draw(screen,(1050,190),(450,340),"Day",mousebuttons,365*3)# draw the numpad, max value of 3 years
+            result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Date", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
+
+            self.expDate = self.datePad.getValue() if result else self.expDate
+            self.numPadDisplay = None if result else self.numPadDisplay
+            if result:
+                newNumDays = (getCloseOpenDate(gametime.time+timedelta(days=self.datePad.getValue()))-gametime.time).days# gets the number of days from the current date to the new date (trading day)
+                self.datePad.setValue(newNumDays)
+
+
+            drawCenterTxt(screen, f"{self.datePad.getNumstr('Day',upperCase=False)}", 55, (200, 200, 200), (1860, 500),centerX=False,centerY=False,fullX=True)
+
+            timeOffset = gametime.time+timedelta(days=self.datePad.getValue())
+            drawCenterTxt(screen, f"{timeOffset.strftime('%m/%d/%Y')}", 40, (175, 175, 175), (1860, 545),centerX=False,centerY=False,fullX=True)
+
+            if self.expDate == 0: self.expDate = None
+        else:# if the value has been confirmed
+            result = drawClickableBox(screen, (1885, 485), f"{self.datePad.getNumstr('Day',upperCase=False)}", 55, (200,200,200), (0,0,0), mousebuttons,border=False,topLeftX=True)
+            if result: 
+                self.numPadDisplay = "Date"; self.expDate = None
+            timeOffset = gametime.time+timedelta(days=self.datePad.getValue())
+            drawCenterTxt(screen, f"{timeOffset.strftime('%m/%d/%Y')}", 40, (120, 120, 120), (1860, 545),centerX=False,centerY=False,fullX=True)
+    
+    def drawEstPrice(self,screen,saveResult:bool,gametime:GameTime,stock:Stock):
+        drawCenterTxt(screen, 'Est Price', 40, (200, 200, 200), (1530, 642), centerX=False)
+            
+        if self.strikePrice != None and self.expDate != None:# if the strike price and expiration date have been set
+            if self.numPadDisplay == None:# if the value has been confirmed
+                timeOffset = (gametime.time+timedelta(days=self.datePad.getValue()))
+                
+                if self.newOptionObj == None:# if the new option object has not been created
+                    self.newOptionObj = OptionAsset(self.player,stock,self.strikePrice,timeOffset,self.oTypeSelect.getSelected(),str(gametime),1)
+                else:# if the new option object has been created
+                    self.newOptionObj.setValues(strikePrice=self.strikePrice,expDate=timeOffset,optionType=self.oTypeSelect.getSelected())
+                
+                price = self.newOptionObj.getValue(bypass=True)
+                drawCenterTxt(screen, f"${limit_digits(price,15)}", 55, (200, 200, 200), (1860, 620), centerX=False, centerY=False,fullX=True)
+                
+                if saveResult:# if the save button has been clicked
+                    self.savedOptions.append(self.newOptionObj)# save the new option
+                    self.selectOption = self.newOptionObj# select the new option
+                    self.strikePrice,self.newOptionObj,self.expDate = None, None, None# reset the new option info
+                    self.datePad.reset(); self.strikePad.reset()# reset the numpad
+                    self.creatingOption = False# stop creating the option
+
+        if self.strikePrice == None or self.expDate == None or self.numPadDisplay != None:# if the strike price or expiration date have not been set
+            drawCenterTxt(screen, f"N/A", 55, (200, 200, 200), (1860, 620), centerX=False, centerY=False,fullX=True)
+
+    def drawCustOptions(self,screen:pygame.Surface,mousebuttons:int,gametime:GameTime,stock:Stock):
+        """Handles the logic for creating a custom option"""
+
+        
+        if not self.creatingOption:# if there is no new option being created (display the create new option button)
+
+            result = drawClickableBox(screen, (1700, 270), "+ Create New", 50, (200,200,200), (0,80,0), mousebuttons,centerX=True,fill=True)
+            if result:
+                self.creatingOption = True; self.selectOption = None; self.optionObj.removeSelc()
+                
+        else:# if there is a new option being created
+            self.selectOption = None
+            coords = [(265,110),(380,95),(480,115),(600,85)]# stores the y and height of the boxes [Type, strike, exp date, est price]
+            for i,coord in enumerate(coords):
+                pygame.draw.rect(screen,(0,0,0),pygame.Rect(1510,coord[0],375,coord[1]),5,10)
+
+            self.drawType(screen,mousebuttons)# Draws, and handles the logic for setting the option type
+
+            self.drawStrike(screen,mousebuttons,stock)# Draws, and handles the logic for setting the strike price
+            
+            self.drawDate(screen,mousebuttons,gametime)# Draws, and handles the logic for setting the expiration date
+            
+            saveResult = drawClickableBox(screen, (1515, 690), "Save", 45, (200,200,200), (0,225,0), mousebuttons)# draw the save button
+
+            self.drawEstPrice(screen,saveResult,gametime,stock)# Draws, and handles the logic for setting the estimated price
+
+            cancelResult = drawClickableBox(screen, (1750, 690), "Cancel", 45, (200,200,200), (225,0,0), mousebuttons)# draw the cancel button
+            if cancelResult:
+                self.strikePrice,self.expDate = None,None
+                self.newOptionObj = None
+                self.creatingOption = False
+        return self.savedOptions
 
 class BankMenu(Menu):
     def __init__(self,stocklist,gametime,player,transactions,tmarket,indexFunds:list) -> None:
