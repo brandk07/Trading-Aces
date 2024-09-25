@@ -1,10 +1,18 @@
 import numpy_financial as npf
+from Classes.AssetTypes.LoanAsset import LoanAsset
 
 loan_amount = 5000  # The total amount of the loan
 annual_interest_rate = 0.045  # 5% annual interest rate
 loan_term_years = 12  # Loan term in years
 payments_per_year = 12  # Monthly payments
 
+# Create a loan asset
+# loan = LoanAsset(None, "01/01/2022", loan_amount, loan_term_years, annual_interest_rate)
+loan = LoanAsset(annual_interest_rate, 12, loan_amount)
+
+print(loan.getLoanCalc())
+print(loan.getInterestPaid())
+print(loan.getPrincipalPaid())
 # Calculate the periodic interest rate
 periodic_interest_rate = annual_interest_rate / payments_per_year
 

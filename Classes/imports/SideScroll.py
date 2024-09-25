@@ -151,6 +151,9 @@ class SideScroll:
     def setCard(self,index):
         """Sets the card that is currently in the center of the screen"""
         self.scroll = index*self.cardWH[0]+self.cardWH[0]//2
+    def addCard(self,card:ScrollCard):
+        """Adds a card to the list of cards"""
+        self.cards.append(card)
     def loadCards(self,cards:list[ScrollCard]):
         """Needs to be called before the draw method"""
         self.cards : ScrollCard = cards
@@ -175,13 +178,14 @@ class SideScroll:
         index = self.getCard(index=True)
         offset = -(self.scroll%self.cardWH[0])
         #draw a rect for the selected card
-        pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
-        minX,maxX = self.coords[0]+20,self.coords[0]+self.wh[0]-20
-        self.cards[index].draw(screen,(middle+offset,ypos),mousebuttons,minX,maxX)
-        for i,card in enumerate(self.cards):
-            if i != index:
-                if card.draw(screen,(middle+(i-index)*(self.cardWH[0]+25)+offset,ypos),mousebuttons,minX,maxX):
-                    self.setCard(i)
+        if self.cards:
+            pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
+            minX,maxX = self.coords[0]+20,self.coords[0]+self.wh[0]-20
+            self.cards[index].draw(screen,(middle+offset,ypos),mousebuttons,minX,maxX)
+            for i,card in enumerate(self.cards):
+                if i != index:
+                    if card.draw(screen,(middle+(i-index)*(self.cardWH[0]+25)+offset,ypos),mousebuttons,minX,maxX):
+                        self.setCard(i)
 
 
         

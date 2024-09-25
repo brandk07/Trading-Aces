@@ -6,6 +6,7 @@ from Defs import *
 from pygame import gfxdraw
 import numpy as np
 from datetime import datetime, timedelta
+from Classes.AssetTypes.LoanAsset import LoanAsset
 # from Classes.AssetTypes.
 # from Classes.imports.Messages import OptionMessage
 
@@ -38,6 +39,7 @@ class Player(Stock):
         self.options = []#list of option objects
         self.indexFunds = []#list of index fund objects
         self.stockvalues = []
+        self.loans = []
         self.messagedict = {}
         self.taxrate = 0.15
         self.transact = transact
@@ -170,7 +172,7 @@ class Player(Stock):
 
         
 
-        
+    
     def getNetworth(self):
         """returns the networth of the player"""
         allassets = self.stocks + self.options + self.indexFunds
@@ -192,7 +194,45 @@ class Player(Stock):
         allassets.sort(key=lambda x:x.getValue(),reverse=True)
     
         return allassets[:amount]
-        
+    
+    def addLoan(self,loanObj):
+        """adds a loan to the player"""
+        self.loans.append(loanObj)
+        text = [
+            f"{self.gametime.getDate()}",
+            f"Added a Loan ",
+             f"+${limit_digits(loanObj.principal,20,loanObj.principal>1000)}",
+            f"N/A",
+            f"${limit_digits(self.cash+loanObj.principal,20)}"
+        ]
+        self.transact.addTransaction(*text)
+        soundEffects['buy'].play()
+        animationList.append(BuyAnimation(pygame.mouse.get_pos(),100,animationList))
+        self.cash += loanObj.principal
+
+    def getMaxLoan(self):
+        """returns the maximum amount of money the player can borrow"""
+        est = self.getNetworth()*0.2
+        return est if est > 5000 else 5000 # 20% of the networth of the player or 5000 whichever is greater
+    def getCurrentDebt(self):
+        """returns the total amount of money owed by the player"""
+        return sum([loan.getPrincipalLeft() for loan in self.loans])
+    def getCurrentMaxLoan(self):
+        """returns the maximum amount of money the player can borrow minus the total amount of money owed"""
+        est = self.getMaxLoan()-sum([loan.getPrincipalLeft() for loan in self.loans])
+        return est
+    def getMonthlyPayment(self):
+        """returns the total monthly payment of all the loans"""
+        return sum([loan.getLoanCalc() for loan in self.loans])
+    def getAvgInterest(self):
+        """returns the weighted average interest rate of all the loans"""
+        total_principal = sum(loan.principal for loan in self.loans)
+        weighted_sum = sum(loan.rate * loan.principal for loan in self.loans)
+        return weighted_sum / total_principal if total_principal != 0 else 0
+    def getCurrentInterestRate(self):
+        """returns the interest rate of the most recent loan"""
+        return 4.5# ACTUALLY NEED TO CODE THIS SOME OTHER TIME IN THE FUTURE THANKS
+            
     
     # def message(self,screen:pygame.Surface):
     #     """displays everything in the self.messagedict, key is the text, value is (time,color))]"""

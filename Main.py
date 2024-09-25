@@ -132,7 +132,7 @@ if __name__ == "__main__":
                 # for stock in stocklist:
                     
 
-        
+         
         for i,menu in enumerate(menuList):
             menu.draw_icon(screen,mousebuttons,stocklist,player,menuList,(30,165+(i*175)),uiControls,gametime)
 # 

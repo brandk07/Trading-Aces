@@ -201,6 +201,20 @@ def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,colo
         
     screen.blit(valueText,(x+25,y+15))
     return False
+def drawClickableTxt(screen,coords,text,textsize,color1,color2,mousebuttons,centerX=False,centerY=False):
+    """Draws a clickable text on the screen, returns True if the text is clicked"""
+    valueText = s_render(text,textsize,color1)
+    x,y = coords
+    if centerX: x -= valueText.get_width()//2
+    if centerY: y -= valueText.get_height()//2
+    myrect = pygame.Rect(x,y,valueText.get_width(),valueText.get_height())
+
+    if myrect.collidepoint(pygame.mouse.get_pos()):
+        valueText = s_render(text,textsize,color2)# re-render the text with a different color
+        if mousebuttons == 1:
+            soundEffects['generalClick'].play()
+            return True
+    screen.blit(valueText,(x,y))
 def drawClickableBoxWH(screen,coords:tuple,wh:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,fill=False) -> bool:
     """Same as drawClickable Box, but you give width and height and the text will be centered"""
     
