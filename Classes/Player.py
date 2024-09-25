@@ -224,6 +224,9 @@ class Player(Stock):
     def getMonthlyPayment(self):
         """returns the total monthly payment of all the loans"""
         return sum([loan.getLoanCalc() for loan in self.loans])
+    def getDebtUtilization(self):
+        """returns the debt utilization of the player"""
+        return (self.getCurrentDebt()/self.getMaxLoan())*100
     def getAvgInterest(self):
         """returns the weighted average interest rate of all the loans"""
         total_principal = sum(loan.principal for loan in self.loans)
