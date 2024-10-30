@@ -228,7 +228,7 @@ class Player(Stock):
         """returns the weighted average interest rate of all the loans"""
         total_principal = sum(loan.principal for loan in self.loans)
         weighted_sum = sum(loan.rate * loan.principal for loan in self.loans)
-        return weighted_sum / total_principal if total_principal != 0 else 0
+        return (weighted_sum / total_principal)*100 if total_principal != 0 else 0
     def getCurrentInterestRate(self):
         """returns the interest rate of the most recent loan"""
         return 4.5# ACTUALLY NEED TO CODE THIS SOME OTHER TIME IN THE FUTURE THANKS

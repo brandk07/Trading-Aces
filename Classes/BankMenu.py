@@ -328,6 +328,8 @@ class CustomLoanCreator:
                 self.loanObj.setValues(interestRate,self.loanTerm,self.loanAmt)
             else:
                 self.loanObj = LoanAsset(interestRate,self.loanTerm,self.loanAmt)
+        else:
+            self.loanObj = None
             
         
 
@@ -339,7 +341,7 @@ class LoanScreen:
         self.customLoanCreator = CustomLoanCreator(self.numpad,player)
         self.sideScroll = SideScroll((200,555),(1240,415),(375,375))
         self.orderBox = OrderBox((1445,215),(455,335))
-        
+        self.state = "View"# Creation, View, Modify
         # data = {"term":12,"monthly payment":random.randint(10,250_000),"principal":10000,"remaining":16000}
         cardList = []
         # for i in range(35):
@@ -380,6 +382,18 @@ class LoanScreen:
         pygame.draw.rect(screen,(0,0,0),(870,350,555,190),5,border_radius=10)# box for the loan info
         drawLinedInfo(screen,(880,355),(535,180),info,38,(255,255,255))
 
+    def veiwState(self,screen,mousebuttons):
+
+        drawCenterTxt(screen,"Select A Loan",70,(255,255,255),(210,225),centerY=False)
+        drawCenterTxt(screen,"to Modify",70,(255,255,255),(210,300),centerY=False)
+        drawCenterTxt(screen,"or Create New",70,(255,255,255),(210,375),centerY=False)
+
+
+
+
+        result = drawClickableBox(screen, (375, 450), "+ Create New", 50, (200,200,200), (0,80,0), mousebuttons,centerX=True,fill=True)
+        if result:
+            self.state = "Creation"
 
     def draw(self,screen,mousebuttons):
 
@@ -391,6 +405,7 @@ class LoanScreen:
         pygame.draw.rect(screen,(0,0,0),(555,215,885,335),5,border_radius=10)# box for the loan Modifications
 
         # pygame.draw.rect(screen,(0,0,0),(200,555,1240,415),5,border_radius=10)# box for the loan sideScroll
+        drawCenterTxt(screen,"Owned Loans",70,(255,255,255),(210,565),centerX=False,centerY=False)
         self.sideScroll.draw(screen,mousebuttons)
 
         
@@ -404,7 +419,10 @@ class LoanScreen:
         ]
         drawLinedInfo(screen,(1455,615),(435,355),info,40,(255,255,255))
 
-        self.drawLoanCreation(screen,mousebuttons,loanObj)
+        
+
+        if self.state == "Creation":
+            self.drawLoanCreation(screen,mousebuttons,loanObj)
         
         # screen.blit(s_render("Monthly Payment",40,(255,255,255)),(885,275))
         
