@@ -261,7 +261,7 @@ class TransactionScreen:
 class CustomLoanCreator:
     def __init__(self,numpad,player) -> None:
         self.loanAmt, self.loanTerm = None, None
-        self.creatingLoan = False
+        self.creatingLoan = True
         self.player = player
         self.loanObj : LoanAsset = None
         self.numpad : Numpad = numpad
@@ -269,6 +269,7 @@ class CustomLoanCreator:
     
     def stopCreating(self):
         self.creatingLoan = False
+        self.loanAmt, self.loanTerm, self.loanObj, self.numpadDisplay = None, None, None, None
     def getLoanObj(self):
         return self.loanObj
     
@@ -330,6 +331,15 @@ class CustomLoanCreator:
                 self.loanObj = LoanAsset(interestRate,self.loanTerm,self.loanAmt)
         else:
             self.loanObj = None
+        if self.creatingLoan:
+            self.drawLoanAmt(screen,mousebuttons)
+            self.drawLoanTerm(screen,mousebuttons)
+            
+            if self.loanAmt and self.loanTerm:
+                if self.loanObj:
+                    self.loanObj.setValues(interestRate,self.loanTerm,self.loanAmt)
+                else:
+                    self.loanObj = LoanAsset(interestRate,self.loanTerm,self.loanAmt)
             
         
 
@@ -366,13 +376,15 @@ class LoanScreen:
 
             info = [("Principal",f"${limit_digits(loanObj.principal,20,loanObj.principal>1000)}"),("Interest",f"${limit_digits(totalInterest,20,totalInterest>1000)}"),("Total",f"${limit_digits(total,20,total>1000)}")]
             debtLimitPercent = ((loanObj.principal/self.player.getMaxLoan())*100)
-            self.orderBox.loadData("1 Loan",f"$0",[("Instant Cash",f"${limit_digits(loanObj.principal,20,loanObj.principal>1000)}",""),("Debt Limit %",f"{limit_digits(debtLimitPercent,20)}%","")])
+            self.orderBox.loadData("1 Loan",f"$0",[("Principal",f"${limit_digits(loanObj.principal,20,loanObj.principal>1000)}",""),("Debt Limit %",f"{limit_digits(debtLimitPercent,20)}%","")])
             result = self.orderBox.draw(screen,mousebuttons)
             if result:
                 self.player.addLoan(loanObj)
+                self.customLoanCreator.stopCreating()
                 # {"term":12,"monthly payment":random.randint(10,250_000),"principal":10000,"remaining":16000}
                 data = {"term":loanObj.term,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}
                 self.sideScroll.addCard(LoanCard(f"Loan {len(self.player.loans)}",self.sideScroll,data,(375,375)))
+                loanObj = None
                 # self.sideScroll.addCard(LoanCard(f"Loan {len(self.player.loans)}",self.sideScroll,{"term":loanObj.term,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}))
                 # self.customLoanCreator.stopCreating()
         else:
@@ -407,11 +419,16 @@ class LoanScreen:
         # pygame.draw.rect(screen,(0,0,0),(200,555,1240,415),5,border_radius=10)# box for the loan sideScroll
         drawCenterTxt(screen,"Owned Loans",70,(255,255,255),(210,565),centerX=False,centerY=False)
         self.sideScroll.draw(screen,mousebuttons)
+        if not self.sideScroll.cards:# if there are no cards
+            drawCenterTxt(screen,"No Current Loans",110,(255,255,255),(820,555),centerY=False)
+
 
         
         pygame.draw.rect(screen,(0,0,0),(1445,555,455,415),5,border_radius=10)# box for the loan info
         drawCenterTxt(screen,"Debt Info",55,(0,0,0),(1445+227,565),centerY=False)
+        
         info = [
+            ("Debt Utilization",f"{limit_digits(self.player.getDebtUtilization(),20)}%"),
             ("Total Debt",f"${limit_digits(self.player.getCurrentDebt(),20,self.player.getCurrentDebt()>1000)}"),
             ("# of Loans",f"{len(self.player.loans)}"),
             ("Monthly Payment",f"${limit_digits(self.player.getMonthlyPayment(),20,self.player.getMonthlyPayment()>1000)}"),
@@ -529,7 +546,8 @@ class InvestmentScreen:#
             case "CD":
                 self.sideScroll.draw(screen,mousebuttons)
                 # (self,screen,coords,mousebuttons,minX,maxX
-                self.sideScroll.getCard().draw(screen,(200,670),mousebuttons,customWh=(375,300))# Draw the selected card 
+                if self.sideScroll.getCard() != None:
+                    self.sideScroll.getCard().draw(screen,(200,670),mousebuttons,customWh=(375,300))# Draw the selected card 
 
                 pygame.draw.rect(screen,(0,0,0),(585,670,375,300),5,border_radius=10)# box for extra cD info
 

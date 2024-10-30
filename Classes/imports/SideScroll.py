@@ -136,7 +136,7 @@ class SideScroll:
         self.wh = wh
         self.scroll = 0
         self.mouseScrollTime = 0
-        self.lastSelected = -1# the index of the last selected card
+        self.lastSelected = None
         self.scrollSpeed = 35
     def getCard(self,index=False):
         """Returns the card that is currently in the center of the screen
@@ -144,6 +144,8 @@ class SideScroll:
         newSelected = self.scroll//self.cardWH[0]
         # if self.lastSelected != newSelected:
         #     self.scroll = newSelected*self.cardWH[0]+self.cardWH[0]//2
+        if self.lastSelected == None:
+            return None
         self.lastSelected = self.scroll//self.cardWH[0]
         if index:
             return self.lastSelected
@@ -175,17 +177,30 @@ class SideScroll:
         
         middle = self.coords[0]+self.wh[0]//2
         ypos = self.coords[1]+20
-        index = self.getCard(index=True)
+
+        
+
         offset = -(self.scroll%self.cardWH[0])
-        #draw a rect for the selected card
-        if self.cards:
+    
+        if self.cards:# if there are no cards, 
+            return
+        
+        index = self.getCard(True)
+
+        if index != None:
             pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
             minX,maxX = self.coords[0]+20,self.coords[0]+self.wh[0]-20
             self.cards[index].draw(screen,(middle+offset,ypos),mousebuttons,minX,maxX)
-            for i,card in enumerate(self.cards):
-                if i != index:
-                    if card.draw(screen,(middle+(i-index)*(self.cardWH[0]+25)+offset,ypos),mousebuttons,minX,maxX):
-                        self.setCard(i)
+
+        for i,card in enumerate(self.cards):
+
+            # if i != index:
+            if card.draw(screen,(middle+(i-index)*(self.cardWH[0]+25)+offset,ypos),mousebuttons,minX,maxX):# if the card is clicked
+                if self.lastSelected != i:
+                    self.setCard(i)
+                else:
+                    self.lastSelected = None
+
 
 
         

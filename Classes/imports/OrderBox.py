@@ -16,8 +16,8 @@ class OrderBox:
         self.extraData.append(("Total",totalStr,""))
         self.quantStr = quantStr
 
-    def draw(self,screen:pygame.Surface,mousebuttons:int) -> bool:
-        """Returns True if the confirm button is pressed"""
+    def draw(self,screen:pygame.Surface,mousebuttons:int,resetClicked=True) -> bool:
+        """Returns True if the confirm button is pressed resets after confirm button is pressed"""
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(self.coords[0],self.coords[1],self.wh[0],self.wh[1]),5,15)
 
         if self.stage == 0:
@@ -56,6 +56,7 @@ class OrderBox:
             if self.stage == 0: self.stage = 1# if the proceed button is pressed, move to the next stage
             elif self.stage == 1:
                 self.stage = 0
+                self.extraData = []
                 return True# if the confirm button is pressed, return True
             
         return False
