@@ -340,6 +340,8 @@ class CustomLoanCreator:
                     self.loanObj.setValues(interestRate,self.loanTerm,self.loanAmt)
                 else:
                     self.loanObj = LoanAsset(interestRate,self.loanTerm,self.loanAmt)
+            else:
+                self.loanObj = None
             
         
 
