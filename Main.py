@@ -126,7 +126,7 @@ if __name__ == "__main__":
                     stock.priceEffects.update(gametime,screen)
                     
                 # player.update_price(uiControls.gameplay_speed,Player)
-                player.gameTick(uiControls.gameplay_speed)
+                player.gameTick(uiControls.gameplay_speed,gametime)
                 for indexfund in indexFunds:
                     indexfund.updategraphs(uiControls.gameplay_speed)
 

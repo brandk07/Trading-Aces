@@ -492,6 +492,7 @@ def Getfromfile(stockdict:dict,player,gametime):
             # player.graphrange = data[3]
             player.cash = data[3] if data[3] != 0 else 2500
             musicdata = (data[4])
+            player.lastPayment.setTimeStr(data[5])
             # for i,stockobj in enumerate(stockdict.values()):
             #     stockobj.graphrange = data[i+6]
             return musicdata

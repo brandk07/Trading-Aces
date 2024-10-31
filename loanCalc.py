@@ -13,15 +13,17 @@ loan = LoanAsset(annual_interest_rate, 12, loan_amount)
 print(loan.getLoanCalc())
 print(loan.getInterestPaid())
 print(loan.getPrincipalPaid())
+loan.
 # Calculate the periodic interest rate
-periodic_interest_rate = annual_interest_rate / payments_per_year
+# periodic_interest_rate = annual_interest_rate / payments_per_year
 
-# Calculate the total number of payments
-total_payments = loan_term_years * payments_per_year
+# # Calculate the total number of payments
+# total_payments = loan_term_years * payments_per_year
 
-# Calculate the payment amount
-payment = npf.pmt(periodic_interest_rate, total_payments, -loan_amount)
+# # Calculate the payment amount
+# payment = npf.pmt(periodic_interest_rate, total_payments, -loan_amount)
 
-print(f"Monthly payment: ${payment:.2f}")
-print(f"Total payment: ${payment * total_payments:.2f}")
-print(f"Total interest: ${payment * total_payments - loan_amount:.2f}")
+# print(f"Monthly payment: ${payment:.2f}")
+# print(f"Total payment: ${payment * total_payments:.2f}")
+# print(f"Total interest: ${payment * total_payments - loan_amount:.2f}")
+

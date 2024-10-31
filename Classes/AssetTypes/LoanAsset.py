@@ -6,51 +6,59 @@ import numpy_financial as npf
 import numpy_financial as npf
 
 class LoanAsset:
-    def __init__(self, rate, term, principal, paymentsMade=0,loanType="Fixed"):
+    def __init__(self, rate, term, principal, principalLeft=None,interestPaid=None,termLeft=None) -> None:
         self.rate : float = rate# annual interest rate - ex. 5% = 0.05
         self.term : int = term# in months
-        self.principal : float = principal
-        self.paymentsMade : int = paymentsMade
-        self.loanType : str = loanType# fixed
-    def setValues(self,rate,term,principal,paymentsMade=0,loanType="Fixed"):
+        self.termLeft : int = termLeft if termLeft != None else term
+        self.principal : float = principal# original loan amount
+        self.principalLeft : float = principalLeft if principalLeft != None else principal
+        self.interestPaid : float = interestPaid if interestPaid != None else 0
+
+    def setValues(self,rate,term,principal):
         self.rate = rate
         self.term = term
         self.principal = principal
-        self.paymentsMade = paymentsMade
-        self.loanType = loanType
+
+
     def __eq__(self,other):
-        return self.rate == other.rate and self.term == other.term and self.principal == other.principal and self.paymentsMade == other.paymentsMade and self.loanType == other.loanType
+        pass
     def savingInputs(self):
-        return (self.rate,self.term,self.principal,self.paymentsMade,self.loanType)
+        return (self.rate,self.term,self.principal)
     def copy(self):
-        return LoanAsset(self.rate,self.term,self.principal,self.paymentsMade,self.loanType)
+        return LoanAsset(self.rate,self.term,self.principal)
     def getLoanCalc(self):
         # Calculate the monthly payment
-        return npf.pmt(self.rate / 12, self.term, -self.principal)
+        return npf.pmt(self.rate / 12, self.termLeft, -self.principalLeft)
     def getOGVals(self) -> tuple:
         """Returns the values when the loan was created -> (monthly payment, total payment, total interest)"""
         payment = self.getLoanCalc()
         totalPayment = payment * self.term
         totalInterest = totalPayment - self.principal
         return (payment,totalPayment,totalInterest)
-    
-    def getInterestPaid(self):
-        """Calculate the total interest paid up to a certain period"""
-        total_interest_paid = 0
-        for p in range(1, self.paymentsMade + 1):
-            interest_payment = npf.ipmt(self.rate / 12, p, self.term, -self.principal)
-            total_interest_paid += interest_payment
-        return total_interest_paid
 
     def getPrincipalPaid(self):
         """Calculate the total principal paid up to a certain period"""
-        interest = self.getInterestPaid()
-        return self.getLoanCalc() * self.paymentsMade - interest
+        return self.principal - self.principalLeft
 
     def getTotalLeftInterest(self):
         """Calculate how much will be paid at current rate with interest"""
-        return self.getLoanCalc() * (self.term - self.paymentsMade)
-    def getPrincipalLeft(self):
-        """Calculate how much principal is left"""
-        return self.principal - self.getPrincipalPaid()
+        # return self.getLoanCalc() * (self.term - self.paymentsMade)
+        return self.getLoanCalc() * self.termLeft+self.interestPaid
     
+    def addMonthlyPayment(self,player) -> float:
+        """Add monthly payment to the loan - SHOULD BE CALLED BY THE PLAYER SO THAT THE MONEY COMES THROUGHT THE PLAYER CLASS"""
+        payment = self.getLoanCalc()
+        interest = self.principalLeft * self.rate / 12
+        self.interestPaid += interest
+        self.principalLeft -= payment - interest
+        self.termLeft -= 1
+        if self.principalLeft <= 0:
+            player.removeLoan(self)
+        return payment
+
+    def addPayment(self,amount,player) -> float:
+        """Add One time payment to the loan - SHOULD BE CALLED BY THE PLAYER SO THAT THE MONEY COMES THROUGHT THE PLAYER CLASS"""
+        if amount > self.principalLeft:
+            player.removeLoan(self)
+        self.principalLeft -= amount
+        return amount

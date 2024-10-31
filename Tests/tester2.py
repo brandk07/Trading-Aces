@@ -3,7 +3,11 @@
 
 # ytime = datetime(2023, 1, 1, 17, 30, 0)
 # mytime2 = datetime(2023, 1, 2, 9, 30, 0)
-
+t= "hello"
+h = "flipper"
+y = set(t)
+u = set(h)
+print(y.union(u))
 # difference = mytime2 - ytime
 # difference_in_seconds = difference.total_seconds()
 

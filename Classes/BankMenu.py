@@ -223,7 +223,7 @@ class TransactionScreen:
             drawCenterTxt(screen,txt,40,(255,255,255),coords[i],centerY=False)
         coords = [(705-635,20),(950-635,20),(1240-635,20),(1500-635,20),(1760-635,20)]
 
-        if len(self.transactions.getTransactions()):
+        if len(self.transactions.getTransactions()) == 0:
             self.linedLatter.setStrCoords([(1267-635,20)])
             self.linedLatter.setStrings([[["No Transactions",55,(255,255,255)]]])
         else:
@@ -330,7 +330,6 @@ class CustomLoanCreator:
                 self.loanObj = LoanAsset(interestRate,self.loanTerm,self.loanAmt)
         else:
             self.loanObj = None
-            
         
 
 class LoanScreen:
@@ -338,6 +337,7 @@ class LoanScreen:
         self.player = player
         self.gametime = gametime
         self.numpad = Numpad(False,maxDecimals=0)
+        self.paymentNumpad = Numpad(False,maxDecimals=0)
         self.customLoanCreator = CustomLoanCreator(self.numpad,player)
         self.loanModifier = CustomLoanCreator(self.numpad,player)
         self.sideScroll = SideScroll((200,555),(1240,415),(375,375))
@@ -349,6 +349,7 @@ class LoanScreen:
         #     data = {"term":random.randint(1,78),"monthly payment":random.randint(10,10000),"principal":random.randint(10,1000000),"remaining":random.randint(10,1000000)}
         #     cardList.append(LoanCard(f"Loan {i}",self.sideScroll,data,(375,375)))
         self.sideScroll.loadCards(cardList)
+        self.addingPayment = False# Adding a payment to a existing loan (only in the modify state)
 
         self.interestRate = 0.055
         
@@ -411,8 +412,24 @@ class LoanScreen:
             self.state = "Creation"
             self.customLoanCreator.stopCreating()
 
+    def addingLoanPayment(self,screen,mousebuttons,loan):
+        if self.addingPayment:
+            self.paymentNumpad.draw(screen,(200,215),(350,280),"",mousebuttons,loan.data['remaining'])
+            val = self.paymentNumpad.getValue()
+            princ = loan.data['principal']
+            # self.orderBox.loadData("1 Loan",f"$0",[("Principal",f"${limit_digits(loanObj.principal,20,loanObj.principal>1000)}",""),("Debt Limit %",f"{limit_digits(debtLimitPercent,20)}%","")])
+            self.orderBox.loadData(f"-${val}",f"${val}",[("Current Principal",f"${limit_digits(princ,20,princ>1000)}",""),("Principal After",f"${limit_digits(princ-val,20,princ-val>1000)}","")])
+            result = self.orderBox.draw(screen,mousebuttons)
+            if result:
+                loan.addPayment(val)
+                self.addingPayment = False
+
+
     def LoanModifyingState(self,screen,mousebuttons):
         loan = self.sideScroll.getCard()
+
+                                ###########################Neeed to exchange loan for the loanObj - then loan.data for loan.getPrincipalLeft() etc
+
         if self.loanModifier.numpadDisplay == None:
             drawCenterTxt(screen,"Modifying Loan",70,(255,255,255),(375,225),centerY=False)
             
@@ -420,6 +437,29 @@ class LoanScreen:
         
         self.loanModifier.drawLoanCreation(screen,mousebuttons,self.interestRate)
 
+        drawCenterTxt(screen, 'One Time Payment', 45, (180, 180, 180), (575,225), centerX=False,centerY=False)
+
+        drawCenterTxt(screen, 'Principal Remaining', 45, (180, 180, 180), (975,225), centerX=False,centerY=False)
+        drawBoxedTextWH(screen, (565,260), (300,65), f"${limit_digits(loan.data['remaining'],20,loan.data['remaining']>1000)}", 55, (255,255,255), (0,0,0), mousebuttons,centerX=True,centerY=True)
+        
+        drawCenterTxt(screen, 'Principal Paid', 45, (180, 180, 180), (975,330), centerX=False,centerY=False)
+        drawBoxedTextWH(screen, (565,365), (300,65), f"${limit_digits(loan.data['principal'],20,loan.data['principal']>1000)}", 55, (255,255,255), (0,0,0), mousebuttons,centerX=True,centerY=True)
+        
+        drawCenterTxt(screen, 'Interest Paid', 45, (180, 180, 180), (975,435), centerX=False,centerY=False)
+        drawBoxedTextWH(screen, (565,470), (300,65), f"${limit_digits(loan.data['interest'],20,loan.data['interest']>1000)}", 55, (255,255,255), (0,0,0), mousebuttons,centerX=True,centerY=True)
+
+        result = drawClickableBoxWH(screen, (565,260), (300,65),"+ Add Payment", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
+        if result:
+            self.addingPayment = True
+        self.addingLoanPayment(screen,mousebuttons,loan)
+    
+    def refillLoanCards(self):
+        cardList = []
+        for i,loan in enumerate(self.player.loans):
+            data = {"term":loan.term,"monthly payment":loan.monthlyPayment,"principal":loan.principal,"remaining":loan.getPrincipalLeft()}
+            cardList.append(LoanCard(f"Loan {i}",self.sideScroll,data,(375,375)))
+
+        self.sideScroll.loadCards(cardList)
 
     def draw(self,screen,mousebuttons):
 
@@ -429,6 +469,8 @@ class LoanScreen:
         # self.numpad.draw(screen,(200,215),(350,335),"Loan Amount",mousebuttons,0)
 
         pygame.draw.rect(screen,(0,0,0),(555,215,885,335),5,border_radius=10)# box for the loan Modifications
+        if len(self.sideScroll.cards) != len(self.player.loans):
+            self.refillLoanCards()
 
         self.sideScroll.draw(screen,mousebuttons)
         if self.sideScroll.getCard() != None:

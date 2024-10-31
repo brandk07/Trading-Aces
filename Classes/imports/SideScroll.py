@@ -191,7 +191,6 @@ class SideScroll:
         # offset = -(self.scroll%self.cardWH[0])
  
         index = self.getCard(True)
-        print(self.scroll)
         
         minX,maxX = self.coords[0]+20,self.coords[0]+self.wh[0]-20
 

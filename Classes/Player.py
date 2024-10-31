@@ -38,6 +38,7 @@ class Player(Stock):
         self.stocks = []# list of lists containing the stockAsset objects
         self.options = []#list of option objects
         self.indexFunds = []#list of index fund objects
+        self.lastLoanPayment = None#gets set right away in defs
         self.stockvalues = []
         self.loans = []
         self.messagedict = {}
@@ -82,7 +83,7 @@ class Player(Stock):
         
         
 
-    def gameTick(self,gamespeed:int):
+    def gameTick(self,gamespeed:int,gametime):
         """Used to update the options every 120 frames"""
         self.updateOptions += gamespeed
         if self.updateOptions >= 512:
@@ -91,6 +92,10 @@ class Player(Stock):
                 option.getValue(bypass=True)
 
         self.update_price(gamespeed,Player)
+        if (self.lastLoanPayment-gametime.time) < timedelta(days=30):
+            self.lastLoanPayment = gametime.time
+            for loan in self.loans:
+                self.addLoanPayment(loan,loan.getLoanCalc()) 
 
     def buyAsset(self,newasset,customValue=None):
         """Custom Value will override the current value (Per Share Not Fullvalue)"""
@@ -235,6 +240,12 @@ class Player(Stock):
     def getCurrentInterestRate(self):
         """returns the interest rate of the most recent loan"""
         return 4.5# ACTUALLY NEED TO CODE THIS SOME OTHER TIME IN THE FUTURE THANKS
+    def removeLoan(self,loanObj:LoanAsset):
+        """removes the loan from the player"""
+        self.loans.remove(loanObj)
+    def addLoanPayment(self,loanObj,amount):
+        """adds a loan payment to the player"""
+        self.cash -= loanObj.addPayment(amount,self)
             
     
     # def message(self,screen:pygame.Surface):
