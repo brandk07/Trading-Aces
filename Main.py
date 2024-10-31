@@ -30,8 +30,8 @@ window_width, window_height = (monitor_width, monitor_height)
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
 screen = pygame.display.set_mode((window_width, window_height-100),pygame.NOFRAME|pygame.HWSURFACE)
 pygame.display.set_caption("Trading Aces")
-# pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED) 
-pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
+pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED) 
+# pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
 
 clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)

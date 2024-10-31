@@ -141,18 +141,21 @@ class SideScroll:
     def getCard(self,index=False):
         """Returns the card that is currently in the center of the screen
         If index is True, it will return the index of the card"""
-        newSelected = self.scroll//self.cardWH[0]
+        # newSelected = self.scroll//self.cardWH[0]
         # if self.lastSelected != newSelected:
         #     self.scroll = newSelected*self.cardWH[0]+self.cardWH[0]//2
+
         if self.lastSelected == None:
             return None
-        self.lastSelected = self.scroll//self.cardWH[0]
+        
+        # self.lastSelected = self.scroll//self.cardWH[0]
         if index:
             return self.lastSelected
         return self.cards[self.lastSelected]
     def setCard(self,index):
         """Sets the card that is currently in the center of the screen"""
-        self.scroll = index*self.cardWH[0]+self.cardWH[0]//2
+        self.lastSelected = index
+        # self.scroll = index*self.cardWH[0]+self.cardWH[0]//2
     def addCard(self,card:ScrollCard):
         """Adds a card to the list of cards"""
         self.cards.append(card)
@@ -169,37 +172,80 @@ class SideScroll:
             self.scroll += self.scrollSpeed
         elif mousebuttons == 5:
             self.scroll -= self.scrollSpeed
-        self.scroll = max(0,min(self.scroll,self.cardWH[0]*(len(self.cards)-1)))
+
+        maxVal = (-self.cardWH[0]*(len(self.cards)-1))+175
+        minVal = max(self.wh[0]-205,self.cardWH[0]*(len(self.cards)-1)-145)
+
+        self.scroll = max(maxVal,min(self.scroll,minVal))
         
     def draw(self,screen,mousebuttons):
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(self.coords[0],self.coords[1],self.wh[0],self.wh[1]),5)
-        self.scrollControls(mousebuttons)
-        
-        middle = self.coords[0]+self.wh[0]//2
-        ypos = self.coords[1]+20
 
-        
-
-        offset = -(self.scroll%self.cardWH[0])
-    
-        if self.cards:# if there are no cards, 
+        if not self.cards:# if there are no cards, then there is nothing to do
             return
         
+        self.scrollControls(mousebuttons)
+        
+        # middle = self.coords[0]+self.wh[0]//2
+        ypos = self.coords[1]+20
+        # offset = -(self.scroll%self.cardWH[0])
+ 
         index = self.getCard(True)
+        print(self.scroll)
+        
+        minX,maxX = self.coords[0]+20,self.coords[0]+self.wh[0]-20
 
-        if index != None:
-            pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
-            minX,maxX = self.coords[0]+20,self.coords[0]+self.wh[0]-20
-            self.cards[index].draw(screen,(middle+offset,ypos),mousebuttons,minX,maxX)
+
 
         for i,card in enumerate(self.cards):
-
-            # if i != index:
-            if card.draw(screen,(middle+(i-index)*(self.cardWH[0]+25)+offset,ypos),mousebuttons,minX,maxX):# if the card is clicked
-                if self.lastSelected != i:
+            xcoord = self.scroll+(i*(self.cardWH[0]+25))
+            if index == i:
+                x,w = xcoord-5,self.cardWH[0]+10
+                if x+w < self.coords[0] or x > self.coords[0]+self.wh[0]:# if the card is not in the screen, then continue
+                    continue 
+                if x < self.coords[0]:
+                    w = self.cardWH[0]+10+x-self.coords[0]
+                    x = self.coords[0]+10
+                elif x+w > self.wh[0]+self.coords[0]:
+                    w = self.wh[0]+self.coords[0]-x-10
+                
+                
+                pygame.draw.rect(screen,(255,255,255),pygame.Rect(x,ypos-5,w,self.cardWH[1]+10),5)
+            if card.draw(screen,(xcoord,ypos),mousebuttons,minX,maxX):# if the card is clicked
+                if self.lastSelected != i:# if the card is not already selected
                     self.setCard(i)
-                else:
+                else:# if the card is already selected - deselect it
                     self.lastSelected = None
+
+        # if index != None:# if there is a selected card, draw a white box around it
+        #     pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
+
+        # elif index == None:
+        #     index = min(len(self.cards)-1,max(0,self.scroll//self.cardWH[0]))
+
+        # for i,card in enumerate(self.cards):
+        #     if card.draw(screen,(middle+(i-index)*(self.cardWH[0]+25)+offset,ypos),mousebuttons,minX,maxX):# if the card is clicked
+        #         if self.lastSelected != i:# if the card is not already selected
+        #             self.setCard(i)
+        #         else:# if the card is already selected - deselect it
+        #             self.lastSelected = None
+
+        # if index != None:
+        #     pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
+        #     minX,maxX = self.coords[0]+20,self.coords[0]+self.wh[0]-20
+        #     self.cards[index].draw(screen,(middle+offset,ypos),mousebuttons,minX,maxX)
+      
+
+        # for i,card in enumerate(self.cards):
+
+        #     if i == index:
+        #         pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
+
+        #     if card.draw(screen,(middle+(i-index)*(self.cardWH[0]+25)+offset,ypos),mousebuttons,minX,maxX):# if the card is clicked
+        #         if self.lastSelected != i:
+        #             self.setCard(i)
+        #         else:
+        #             self.lastSelected = None
 
 
 
