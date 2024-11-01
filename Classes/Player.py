@@ -44,9 +44,7 @@ class Player(Stock):
         self.messagedict = {}
         self.taxrate = 0.15
         self.transact = transact
-        self.lifeTimeVolume = 0
-        self.realizedGains = 0
-        self.taxesPaid = 0
+        self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.taxesPaid,self.underTakenDebt = 0,0,0,0,0# Just some extra stats displayed in transaction menu
         self.assetText = {
             StockAsset:'Share',
             OptionAsset:'Option',
@@ -62,6 +60,19 @@ class Player(Stock):
         return self.stocks
     def getIndexFunds(self):
         return self.indexFunds
+    def extraSavingData(self):
+        data = []
+        data.append(self.lastLoanPayment.strftime("%m/%d/%Y %I:%M:%S %p"))
+        for i in [self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.underTakenDebt,self.taxesPaid]:
+            data.append(i)
+        return data
+    def getExtraData(self,data,gametime):
+        if data != None:
+            self.lastLoanPayment = datetime.strptime(data[0],"%m/%d/%Y %I:%M:%S %p")
+            self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.underTakenDebt,self.taxesPaid = data[1:]
+        else:
+            self.lastLoanPayment = gametime.time
+
     def newDay(self,gametime:datetime):
         """Called at the start of a new day"""
         self.updateOptions = 0
@@ -92,7 +103,7 @@ class Player(Stock):
                 option.getValue(bypass=True)
 
         self.update_price(gamespeed,Player)
-        if (self.lastLoanPayment-gametime.time) < timedelta(days=30):
+        if (gametime.time-self.lastLoanPayment) > timedelta(days=30):
             self.lastLoanPayment = gametime.time
             for loan in self.loans:
                 self.addLoanPayment(loan,loan.getLoanCalc()) 
@@ -113,7 +124,7 @@ class Player(Stock):
             # ["Sold 39 Shares of","KSTON for $5,056.93","Balance $26,103.18"]
             text = [
                 f"{self.gametime.getDate()}",
-                f"Added {newasset.quantity} {newasset.getStockObj().name} {newasset.getType() if type(newasset) == OptionAsset else ''} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
+                f"Added {limit_digits(newasset.quantity,15,True)} {newasset.getStockObj().name} {newasset.getType() if type(newasset) == OptionAsset else ''} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
                 f"-${limit_digits(newasset.getValue(bypass=True),12)}",
                 f"${limit_digits(value,12)}",
                 f"${limit_digits(self.cash-newasset.getValue(bypass=True),12)}"
@@ -122,6 +133,8 @@ class Player(Stock):
             soundEffects['buy'].play()
             animationList.append(BuyAnimation(pygame.mouse.get_pos(),100,animationList))
             self.cash -= value*newasset.getQuantity()# fullvalue is True by default
+            self.assetsTraded += newasset.getQuantity()
+            self.lifeTimeVolume += value*newasset.getQuantity()
             for a in assetlist:# if the asset is already in the list, add the new asset to the old one
                 if newasset == a:# use the __eq__ method to compare the assets
                     a += newasset# use the __iadd__ method to add the assets together
@@ -149,13 +162,16 @@ class Player(Stock):
         #     f"{asset.getStockObj().name} for ${limit_digits(asset.getValue(bypass=True,fullvalue=False),12)}",
         #     f"Balance ${limit_digits(self.cash+asset.getValue(bypass=True,fullvalue=False),12)}"
         # ]
+        self.lifeTimeVolume += asset.getValue(bypass=True,fullvalue=False)*quantity
         loss_gain = asset.getValue(bypass=True,fullvalue=False)*quantity-asset.getOgVal()*quantity
         taxes = loss_gain*self.taxrate if loss_gain > 0 else 0
+        self.taxesPaid += taxes
         loss_gain = loss_gain if loss_gain <= 0 else loss_gain*(1-self.taxrate)
+        self.realizedGains += loss_gain if loss_gain > 0 else 0
         value = (asset.getValue(bypass=True,fullvalue=False)*quantity)-taxes
         text = [
             f"{self.gametime.getDate()}",
-            f"Sold {limit_digits(quantity,15)} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
+            f"Sold {limit_digits(quantity,15,True)} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
              f"+${limit_digits(value,12)}",
             f"{'-' if loss_gain < 0 else '+'} ${limit_digits(abs(loss_gain),12) if loss_gain != 0 else '0'}",
             f"${limit_digits(self.cash+value,12)}"
@@ -165,7 +181,7 @@ class Player(Stock):
         self.cash += asset.getValue(bypass=True,fullvalue=False)*quantity*feePercent# add the value of the asset to the cash
         print('cash is',self.cash,asset.getValue(bypass=True,fullvalue=False)*quantity)
         assetlist[assetlist.index(asset)].quantity -= quantity# subtract the quantity from the asset
-
+        self.assetsTraded += quantity
         if assetlist[assetlist.index(asset)].quantity <= 0:# if the quantity of the asset is 0 or less, remove the asset from the list
             assetlist.remove(asset)
         
@@ -181,12 +197,11 @@ class Player(Stock):
     def getNetworth(self):
         """returns the networth of the player"""
         allassets = self.stocks + self.options + self.indexFunds
-        networth = self.cash + sum([asset.getValue() for asset in allassets])
+        networth = self.cash + sum([asset.getValue() for asset in allassets])-sum([loan.principalLeft for loan in self.loans])
         if networth < 0.01:
             errors.addMessage('Bankrupt',txtSize=100,coords=[960,540])
-            time.sleep(3)
-            pygame.quit()
-            quit()
+            print(Exception('Bankrupt'))
+            return networth
         else:
             return networth
         # return self.cash + sum([stock[0].cash*stock[2] for stock in self.stocks]) + sum([option.get_value() for option in self.options])
@@ -203,6 +218,7 @@ class Player(Stock):
     def addLoan(self,loanObj):
         """adds a loan to the player"""
         self.loans.append(loanObj)
+        self.underTakenDebt += loanObj.principal
         text = [
             f"{self.gametime.getDate()}",
             f"Added a Loan ",
@@ -221,10 +237,11 @@ class Player(Stock):
         return est if est > 5000 else 5000 # 20% of the networth of the player or 5000 whichever is greater
     def getCurrentDebt(self):
         """returns the total amount of money owed by the player"""
-        return sum([loan.getPrincipalLeft() for loan in self.loans])
+        return sum([loan.principalLeft for loan in self.loans])
     def getCurrentMaxLoan(self):
         """returns the maximum amount of money the player can borrow minus the total amount of money owed"""
-        est = self.getMaxLoan()-sum([loan.getPrincipalLeft() for loan in self.loans])
+        est = self.getMaxLoan()-sum([loan.principalLeft for loan in self.loans])
+        est = max(est,0)
         return est
     def getMonthlyPayment(self):
         """returns the total monthly payment of all the loans"""
@@ -243,9 +260,27 @@ class Player(Stock):
     def removeLoan(self,loanObj:LoanAsset):
         """removes the loan from the player"""
         self.loans.remove(loanObj)
+        text = [
+            f"{self.gametime.getDate()}",
+            f"Paid off Loan",
+            f"-${limit_digits(loanObj.principal,20,loanObj.principal>1000)}",
+            f"N/A",
+            f"${limit_digits(self.cash-loanObj.principal,20)}"
+        ]
+        self.transact.addTransaction(*text)
+
     def addLoanPayment(self,loanObj,amount):
-        """adds a loan payment to the player"""
+        """adds a lump sum (one time NOT MONTHLY) loan payment to the loan"""
         self.cash -= loanObj.addPayment(amount,self)
+        text = [
+            f"{self.gametime.getDate()}",
+            f"Paid ${limit_digits(amount,20,amount>1000)} on Loan",
+            f"-${limit_digits(amount,20,amount>1000)}",
+            f"N/A",
+            f"${limit_digits(self.cash+amount,20)}"
+        ]
+        self.transact.addTransaction(*text)
+        
             
     
     # def message(self,screen:pygame.Surface):

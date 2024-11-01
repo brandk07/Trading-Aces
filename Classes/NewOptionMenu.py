@@ -229,32 +229,16 @@ class SellOptionScreen:
 
         pricePer = limit_digits(self.selectOption.getValue(bypass=True,fullvalue=False),15)
         fee = self.selectOption.getValue(bypass=False,fullvalue=False)*self.numpad.getValue()*2/100
-        data = [("Value",f"${pricePer}","x"),(f"{2}% Fee", f"${limit_digits(fee,22)}","-")]
+        
 
         totalCost = self.selectOption.getValue(bypass=False,fullvalue=False)*self.numpad.getValue()*(1-2/100)
 
         self.numpad.draw(screen,(670,600),(375,375),"Option",mousebuttons,self.selectOption.getQuantity())# draw the numpad
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(685, 615, 340, 335),5,10)# draw the box for the numpad
 
+        data = [("Value",f"${pricePer}","x"),(f"{2}% Fee", f"${limit_digits(fee,22)}","-")]
         self.orderBox.loadData(self.numpad.getNumstr('Option'),f"${limit_digits(totalCost,22)}",data)
-        
-        
         result = self.orderBox.draw(screen,mousebuttons)
-        # # drawCenterTxt(screen, f"{self.numpad.getNumstr('Option')}", 65, (200, 200, 200), (1180, 630), centerY=False)
-  
-        # drawCenterTxt(screen, f"x ${limit_digits(self.selectOption.getValue(bypass=True,fullvalue=False),15)}", 55, (200, 200, 200), (1080, 710), centerX=False,centerY=False)
-
-        
-        # screen.blit(s_render(f"x {2}% fee", 55, (200, 200, 200)), (1085, 770))
-
-        # # line inbetween 
-        # pygame.draw.rect(screen,(200,200,200),pygame.Rect(1035, 820, 290, 5))
-
-       
-
-        # drawCenterTxt(screen, f"Total: ${limit_digits(totalCost,17)}", 65, (200, 200, 200), (1180, 845), centerY=False)
-
-        # result = drawClickableBox(screen, (1180, 900), "Sell Quantity", 55, (200,200,200), (0,225,0) if self.numpad.getValue() > 0 else (0,0,0), mousebuttons,centerX=True)# draw the sell button
 
         if result and self.numpad.getValue() > 0:
             self.player.sellAsset(self.selectOption,self.numpad.getValue(),feePercent=1.02)
@@ -394,11 +378,14 @@ class SellOptionScreen:
 
 
             if self.selectOption == None:
-                self.netWorthGraph.drawFull(screen, (1350,100),(550,500),"SellNetWorth",True,"Normal")
+                pygame.draw.rect(screen,(0,0,0),pygame.Rect(670, 210, 675, 550),5,10)# box around the select an option
+                drawCenterTxt(screen, 'Select An Option', 80, (180, 180, 180), (1005, 225), centerY=False)
+                self.netWorthGraph.drawFull(screen, (1350,210),(550,550),"SellNetWorth",True,"Normal")
 
             self.drawOwnedOptions(screen,mousebuttons)
-            self.drawSellingInfo(screen,mousebuttons,self.gametime,self.stocklist[0])
+            
             if self.selectOption != None:
+                self.drawSellingInfo(screen,mousebuttons,self.gametime,self.stocklist[0])
                 self.drawOptionInfo(screen,self.gametime)
                 
                 self.drawSellingMechanics(screen,mousebuttons,self.gametime,self.stocklist[0])
@@ -537,6 +524,8 @@ class Optiontrade(Menu):
         self.screenSelection : MenuSelection = MenuSelection((200, 105), (375, 100),["Buy","Sell"],45,colors=[(100,200,100),(200,100,100)])
         self.screenSelection.setSelected("Sell")
 
+        self.orderBox = OrderBox((1040,570),(450,370))
+
         self.customOptionSc = CustomOptionCreator(player,self)    
         self.sellingScreen = SellOptionScreen(stocklist,gametime,player,self.screenSelection)    
         
@@ -671,29 +660,23 @@ class Optiontrade(Menu):
         else:
             maxQuant = 0
         self.quantNumPad.draw(screen,(1050,190),(450,340),"Option",mousebuttons,maxQuant)# draw the numpad
-        # self.selectOption.setValues(quantity=self.quantNumPad.getValue())# set the quantity of the option
-
-        drawCenterTxt(screen, f"{self.quantNumPad.getNumstr('Option')}", 65, (200, 200, 200), (1275, 600), centerY=False)
-
-        optionValTxt = s_render(f"x ${limit_digits(option.getValue(bypass=True,fullvalue=False),15)}", 55, (200, 200, 200))
-        screen.blit(optionValTxt, (1180, 680))
 
         fee = 0 if self.selectOption in self.preMadeOptions[stock] else 2 
-        screen.blit(s_render(f"x {fee}% fee", 55, (200, 200, 200)), (1180, 740))
 
-        # line inbetween 
-        pygame.draw.rect(screen,(200,200,200),pygame.Rect(1130, 790, 300, 5))
 
         totalCost = self.selectOption.getValue(bypass=True,fullvalue=False)*self.quantNumPad.getValue()*(1+fee/100)
+        feeCost = self.selectOption.getValue(bypass=True,fullvalue=False)*self.quantNumPad.getValue()*(fee/100)
+        # drawCenterTxt(screen, f"Total: ${limit_digits(totalCost,17)}", 65, (200, 200, 200), (1275, 815), centerY=False)
+        data = [("Value",f"${limit_digits(option.getValue(bypass=True,fullvalue=False),15)}","x"),(f"{fee}% Fee", f"${limit_digits(feeCost,22)}","-")]
+        self.orderBox.loadData(self.quantNumPad.getNumstr('Option'),f"${limit_digits(totalCost,22)}",data)
+        result = self.orderBox.draw(screen,mousebuttons)
 
-        drawCenterTxt(screen, f"Total: ${limit_digits(totalCost,17)}", 65, (200, 200, 200), (1275, 815), centerY=False)
-
-        result = drawClickableBox(screen, (1275, 880), "Confirm Purchase", 55, (200,200,200), (0,225,0) if self.quantNumPad.getValue() > 0 else (0,0,0), mousebuttons,centerX=True)# draw the buy button
+        # result = drawClickableBox(screen, (1275, 880), "Confirm Purchase", 55, (200,200,200), (0,225,0) if self.quantNumPad.getValue() > 0 else (0,0,0), mousebuttons,centerX=True)# draw the buy button
         if result and self.quantNumPad.getValue() > 0:
             self.selectOption.setValues(quantity=self.quantNumPad.getValue(),creationDate=gametime.time)# set the quantity of the option
-            print(self.quantNumPad.getValue(),"is the selected quantity")
+            # print(self.quantNumPad.getValue(),"is the selected quantity")
             self.player.buyAsset(self.selectOption)
-            print(self.selectOption.savingInputs())
+            # print(self.selectOption.savingInputs())
             self.selectOption.setValues(quantity=1)# set back to 1
             self.selectOption = None
             self.quantNumPad.reset()

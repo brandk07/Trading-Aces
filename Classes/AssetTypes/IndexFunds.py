@@ -17,6 +17,7 @@ class IndexFundAsset(Asset):
     
     # def getInputs(self):
     #     return (self.stockObj,self.date.getTime(),self.name,self.ogValue,self.color,self.quantity)
+    
     def savingInputs(self):
         return (self.stockObj.name,self.date,float(self.ogValue),self.quantity,self.dividends,self.portfolioPercent)
     def copy(self):
@@ -26,9 +27,4 @@ class IndexFundAsset(Asset):
         # print(self.stockObj.price)
         return ((self.stockObj.price) * self.quantity) if fullvalue else self.stockObj.price
 
-    def giveDividend(self,transact):
-        """gives the stock asset a dividend"""
-        amount = (self.stockObj.dividend*self.getValue())/4# quarterly dividends
-        self.dividends += amount
-        transact.addTransaction(f"Received ${amount} in dividends from",f"{self.stockObj.name}",f"Total Dividends ${self.dividends}")
     

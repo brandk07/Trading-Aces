@@ -205,7 +205,7 @@ class PieChartSideInfo:
         s.radius = radius
         s.coords = coords
         # s.menuIcons = [pygame.image.load(f'Assets/Menu_Icons/{icon}.png').convert_alpha() for icon in ['stockbook','portfolio','option3']]# the icons for the menu
-        s.menuIcons = [menu.icon for menu in menuList]
+        s.menuIcons = [menu.icon for menu in menuList][:-1]
         for i in range(len(s.menuIcons)):
             s.menuIcons[i] = pygame.transform.scale(s.menuIcons[i],(70,40))
         s.pieSegments = []#[[color,points,value]...]
@@ -215,7 +215,7 @@ class PieChartSideInfo:
     def checkMenuList(s):
         """Unfortunately menulist isn't always complete when the init is called, so this function is used to update the menuIcons list"""
         if len(s.menuList) != len(s.menuIcons):
-            s.menuIcons = [menu.icon for menu in s.menuList]
+            s.menuIcons = [menu.icon for menu in s.menuList][:-1]
             for i in range(len(s.menuIcons)):
                 s.menuIcons[i] = pygame.transform.scale(s.menuIcons[i],(50,50))
     

@@ -1,4 +1,4 @@
-
-currentQ = 2
-for i in range(4):
-    print((i+(currentQ+1)-1)%4+1)
+txt = "Loan 67"
+d = lambda x: x.split()[1]
+print(int(txt.split()[1])+1)
+print(d(txt))

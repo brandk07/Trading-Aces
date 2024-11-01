@@ -6,6 +6,7 @@ from collections import deque
 from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.AssetTypes.StockAsset import StockAsset
 from Classes.AssetTypes.IndexFunds import IndexFundAsset
+from Classes.AssetTypes.LoanAsset import LoanAsset
 import numpy as np
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw
@@ -479,7 +480,7 @@ def setGameTime(gametime):
         if data:
             gametime.setTimeStr(data[0])
             # return gametime
-def Getfromfile(stockdict:dict,player,gametime):
+def Getfromfile(stockdict:dict,indexFunds:dict,player,gametime):
     with open('Assets/Stockdata/extradata.json','r') as file:
         data = json.load(file)
         print(data)
@@ -489,13 +490,18 @@ def Getfromfile(stockdict:dict,player,gametime):
             # print(data[1])
             player.stocks = [StockAsset(player,stockdict[stock[0]],stock[1],stock[2],stock[3],dividends=stock[4],portfolioPercent=stock[5]) for stock in data[1]]# [stockobj,creationdate,ogprice,quantity]
             player.options = [OptionAsset(player,stockdict[option[0]],option[1],option[2],option[3],option[4],option[5],porfolioPercent=option[6],ogValue=option[7],color=tuple(option[8])) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity,ogprice]
+            player.loans = [LoanAsset(loan[0],loan[1],loan[2],loan[3],loan[4],loan[5]) for loan in data[3]]# loans storage is [rate,term,principal,principalLeft,interestpaid, termleft]
+            player.indexFunds = [IndexFundAsset(player,indexFunds[indexfund[0]],indexfund[1],indexfund[2],indexfund[3],dividends=indexfund[4],portfolioPercent=indexfund[5]) for indexfund in data[4]]# indexfunds storage is [name,creationdate,ogprice,quantity,dividends]
             # player.graphrange = data[3]
-            player.cash = data[3] if data[3] != 0 else 2500
-            musicdata = (data[4])
-            player.lastPayment.setTimeStr(data[5])
+            player.cash = data[5] if data[5] != 0 else 2500
+            musicdata = (data[6])
+
+            player.getExtraData(data[7],gametime)
             # for i,stockobj in enumerate(stockdict.values()):
             #     stockobj.graphrange = data[i+6]
             return musicdata
+        else:
+            player.getExtraData(None,gametime)
         return [0,0,0]# time, volume, songindex
 
 def Writetofile(stocklist,player,data):

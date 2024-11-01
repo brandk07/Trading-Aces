@@ -16,6 +16,8 @@ class Transactions:
             data = [json.loads(line) for line in f]
             for line in data:
                 self.transactlog.append(line)
+        if len(self.transactlog) == 1 and self.transactlog[0] == []:
+            self.transactlog = []
 
     def storeTransactions(self):
         with open(r'Assets\transactions.json','w') as f:
@@ -24,9 +26,16 @@ class Transactions:
             for line in self.transactlog:
                 f.write(json.dumps(line)+'\n')
         
+            
+        
     def getTransactions(self) -> list:
         """Returns the transactlog"""
         return self.transactlog
+    
+    def addTransaction(self,Date:str,Action:str,balanceChange:str,ProfitUnit:str,Balance:str):
+        """Date, Action, BalanceChange,Profit/Unit Cost, Balance
+            Action Ex. = Sold 1 STAR call Option"""
+        self.transactlog.insert(0,[Date,Action,balanceChange,ProfitUnit,Balance])
      
     # def drawscroll(self,screen,coords:tuple,wholewh:tuple,polywh,mousebuttons:int):
     #     """Wholewh is the wh of the whole element
@@ -64,10 +73,7 @@ class Transactions:
 
 
 
-    def addTransaction(self,Date:str,Action:str,balanceChange:str,ProfitUnit:str,Balance:str):
-        """Date, Action, BalanceChange,Profit/Unit Cost, Balance
-            Action Ex. = Sold 1 STAR call Option"""
-        self.transactlog.insert(0,[Date,Action,balanceChange,ProfitUnit,Balance])
+    
 
     # def draw(self,screen,mousebuttons,coords:tuple,wh:tuple,polywh):
     #     if self.transactlog:

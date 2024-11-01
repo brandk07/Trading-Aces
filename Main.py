@@ -49,17 +49,19 @@ stockdict = {name:Stock(name,stockcolors[i],gametime) for i,name in enumerate(st
 stocklist = [stockdict[name] for name in stocknames]
 indexfundColors = [(217, 83, 149),(64, 192, 128),(138, 101, 235)]
 indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(["V & V","A & A", "R & R"])]# high,med,low risk
+tmarket = TotalMarket(gametime,stocklist)
+indexFunds.append(tmarket)
+indexFundDict = {fund.name: fund for fund in indexFunds}
 # indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(['Velocity Ventures','Adaptive Allocation','Reliable Returns'])]# high,med,low risk
 
 # GETTING DATA FROM FILE
 
-musicdata = Getfromfile(stockdict,player,gametime)# muiscdata = [time, volume, songindex]
+musicdata = Getfromfile(stockdict,indexFundDict,player,gametime)# muiscdata = [time, volume, songindex]
 menuList = []
 
 # CREATING OBJECTS
 stockgraphmanager = StockGraphManager(stocklist,gametime)
-tmarket = TotalMarket(gametime,stocklist)
-indexFunds.append(tmarket)
+
 uiControls = UIControls(stocklist,GAMESPEED,gametime,tmarket,player)
 orderScreen = OrderScreen(uiControls)
 # stockbook = Stockbook(stocklist,gametime,orderScreen)
@@ -162,8 +164,11 @@ if __name__ == "__main__":
                 
                 stockdata = [stock.savingInputs() for stock in player.stocks]
                 optiondata = [option.savingInputs() for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
-
-                data = [str(gametime),stockdata,optiondata,float(player.cash),musicdata]
+                loanData = [loan.savingInputs() for loan in player.loans]
+                indexFundData = [indexfund.savingInputs() for indexfund in player.indexFunds]
+                
+                data = [str(gametime),stockdata,optiondata,loanData,indexFundData,float(player.cash),musicdata]
+                data.append(player.extraSavingData())
                 # data.extend([stockobj.graphrange for stockobj in stocklist])
                 print(data)
                 Writetofile(stocklist,player,data)

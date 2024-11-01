@@ -259,9 +259,7 @@ class Stock():
             try:   
                 factor = (randint(lowvolitity, highvolitity) / 20_000_000) * step# the factor that the price will be multiplied by
             except:
-                print(highvolitity,lowvolitity,total_trend,vol,tempP)
-                print(self.name,sum(trend[0] for trend in self.bonustrends))
-                quit()
+                raise ValueError(f"Highvolitity: {highvolitity}, Lowvolitity: {lowvolitity}, Total trend: {total_trend}, Volatility: {vol}, Temp Price: {tempP}")
             # lastprice = lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
             lastprice = lastprice * (1 + factor)
             multiplier -= step
@@ -312,14 +310,12 @@ class Stock():
         try:
             factor = (randint(lowvolitity, highvolitity) / 20_000_000) * distance# the factor that the price will be multiplied by
         except:
-            print(highvolitity,lowvolitity,totalTrend,self.volatility/distance)
-            print(self.name,sum(trend[0] for trend in self.bTrends))
-            quit()
+            raise ValueError(f"Highvolitity: {highvolitity}, Lowvolitity: {lowvolitity}, Total trend: {totalTrend}, Volatility: {self.volatility}")
         lastprice = lastprice * (1 + factor)
         # print(lastprice,self.name)
         # if lastprice > 1000000:
         #     print("Price is too high")
-        #     quit()
+
         return lastprice
 
             # for i, (val,time) in enumerate(self.bTrends):

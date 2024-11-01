@@ -170,7 +170,7 @@ class BankMenu(Menu):
         # self.overView = OverView(player,transactions)
         self.menuSelection.setSelected("Loans")
         self.transactionScreen = TransactionScreen(transactions,player)
-        self.loanScreen = LoanScreen(gametime,player)
+        self.loanScreen = LoanScreen(gametime,player,stocklist)
         self.investScreen = InvestmentScreen(stocklist.copy(),gametime,player,tmarket,indexFunds.copy())
         self.menudrawn = True
 
@@ -195,44 +195,38 @@ class TransactionScreen:
         self.transactions = transactions
         self.linedLatter = LinedLatter((1245,655),120)
     def draw(self,screen,mousebuttons,gametime):
-        # screen.blit(s_render("STATS",70,(255,255,255)),(200,210))
-        drawCenterTxt(screen,"STATS",70,(255,255,255),(415,210),centerY=False)
+        # screen.blit(s_render("STATS",70,(220,220,220)),(200,210))
+        drawCenterTxt(screen,"STATS",70,(220,220,220),(415,210),centerY=False)
         pygame.draw.rect(screen,(0,0,0),(200,265,430,705),5,border_radius=10)# rect for the stats
 
-        vals = [10_710_000,10_500,8_050_000,2_050_000,850]
-        # for i in range(5):
-        #     pygame.draw.rect(screen,(10,160,10),(210,275+(i*140),495,120),border_radius=10)
-        #     pygame.draw.rect(screen,(0,0,0),(210,275+(i*140),495,120),5,border_radius=10)
+        vals = [self.player.lifeTimeVolume,self.player.realizedGains,self.player.taxesPaid,self.player.underTakenDebt,self.player.assetsTraded]
 
-        #     valTxt = "$"+limit_digits(vals[i],15,vals[i] > 10000) 
-        #     size = min(getTSizeNums(valTxt,275),90)
-
-        #     drawCenterTxt(screen,valTxt,size,(0,0,0),(357,275+(i*140)+10),centerY=False)
-        strs = ["Lifetime Volume","Gains (Unrealized)","Gains (Realized)","Taxes Paid","Debt"]
-        drawLinedInfo(screen,(210,275),(410,680),[(string,"$"+limit_digits(val,15,val > 10000)) for string,val in zip(strs,vals)],50,(255,255,255),diffSizes=(35,55))
+        strs = ["Lifetime Volume","Gains (Realized)","Taxes Paid","Debt UnderTaken","Assets Traded"]
+        data = [(string,("$"+limit_digits(val,20,val > 10000)) if string != strs[-1] else limit_digits(val,25,True)) for string,val in zip(strs,vals)]
+        drawLinedInfo(screen,(210,275),(410,680),data,50,(220,220,220),diffSizes=(35,55))
 
 
 
 
-        drawCenterTxt(screen,"TRANSACTIONS",70,(255,255,255),(1267,210),centerX=True,centerY=False)
+        drawCenterTxt(screen,"TRANSACTIONS",70,(220,220,220),(1267,210),centerX=True,centerY=False)
         pygame.draw.rect(screen,(0,0,0),(635,265,1265,705),5,border_radius=10)# rect for the transactions
 
         txts = ["Date","Action","Balance Change","Profit/Unit Cost","Balance"]
         coords = [(705,275),(950,275),(1240,275),(1500,275),(1760,275)]
         for i,txt in enumerate(txts):
-            drawCenterTxt(screen,txt,40,(255,255,255),coords[i],centerY=False)
+            drawCenterTxt(screen,txt,40,(220,220,220),coords[i],centerY=False)
         coords = [(705-635,20),(950-635,20),(1240-635,20),(1500-635,20),(1760-635,20)]
 
         if len(self.transactions.getTransactions()) == 0:
             self.linedLatter.setStrCoords([(1267-635,20)])
-            self.linedLatter.setStrings([[["No Transactions",55,(255,255,255)]]])
+            self.linedLatter.setStrings([[["No Transactions",55,(220,220,220)]]])
         else:
             self.linedLatter.setStrCoords(coords)
             data = []
             for line in self.transactions.getTransactions():
                 data.append([])
                 for i,string in enumerate(line):
-                    color = (255,255,255)
+                    color = (220,220,220)
                     if i == 2:
                         color = (230,10,10) if "-" in string else (10,230,10)
                     elif i == 3:
@@ -252,7 +246,7 @@ class TransactionScreen:
         #         pygame.draw.line(screen,(0,0,0),(745,310+(i*75)),(1845,310+(i*75)),3)
 
         #     for ii,txt in enumerate(transaction):
-        #         color = (255,255,255)
+        #         color = (220,220,220)
         #         if ii == 2:
         #             color = (230,10,10) if "-" in txt else (10,230,10)
         #         drawCenterTxt(screen,txt,32,color,(coords[ii][0],330+(i*75)),centerY=False)+
@@ -272,7 +266,7 @@ class CustomLoanCreator:
         return self.loanObj
     
     def drawLoanAmt(self,screen,mousebuttons):
-        drawCenterTxt(screen, 'Loan Amount', 45, (180, 180, 180), (565,225), centerX=False,centerY=False)
+        drawCenterTxt(screen, 'Loan Amount', 45, (180, 180, 180), (575,225), centerX=False,centerY=False)
 
         if self.loanAmt == None and self.numpadDisplay != "LoanAmt":# if the loan amount has not been set
             result = drawClickableBoxWH(screen, (565,260), (300,65),"Set Value", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
@@ -295,7 +289,7 @@ class CustomLoanCreator:
             if result: self.numpadDisplay = "LoanAmt"; self.loanAmt = None
 
     def drawLoanTerm(self,screen,mousebuttons):
-        drawCenterTxt(screen, 'Loan Term', 45, (180, 180, 180), (565,330), centerX=False,centerY=False)
+        drawCenterTxt(screen, 'Loan Term', 45, (180, 180, 180), (575,330), centerX=False,centerY=False)
 
         if self.loanTerm == None and self.numpadDisplay != "LoanTerm":
             result = drawClickableBoxWH(screen, (565,365), (300,65),"Set Value", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
@@ -333,16 +327,17 @@ class CustomLoanCreator:
         
 
 class LoanScreen:
-    def __init__(self,gametime,player) -> None:
+    def __init__(self,gametime,player,stocklist) -> None:
         self.player = player
         self.gametime = gametime
         self.numpad = Numpad(False,maxDecimals=0)
-        self.paymentNumpad = Numpad(False,maxDecimals=0)
+        self.paymentNumpad = Numpad(False)
         self.customLoanCreator = CustomLoanCreator(self.numpad,player)
-        self.loanModifier = CustomLoanCreator(self.numpad,player)
         self.sideScroll = SideScroll((200,555),(1240,415),(375,375))
         self.orderBox = OrderBox((1445,215),(455,335))
         self.state = "View"# Creation, View, Modify
+        self.networthGraph = StockVisualizer(gametime,player,stocklist)
+        
         # data = {"term":12,"monthly payment":random.randint(10,250_000),"principal":10000,"remaining":16000}
         cardList = []
         # for i in range(35):
@@ -357,14 +352,16 @@ class LoanScreen:
     def drawLoanCreator(self,screen,mousebuttons,loanObj:LoanAsset):
        
         self.customLoanCreator.drawLoanCreation(screen,mousebuttons,self.interestRate)
-        pygame.draw.rect(screen,(0,0,0),(565,470,300,65),5,border_radius=10)
-        drawCenterTxt(screen,"5.5%",45,(255,255,255),(565+150,490),centerY=False)
-        
+
+        result = drawClickableBoxWH(screen, (565,470), (300,65),"Cancel", 45, (190,0,0), (25,25,25), mousebuttons,fill=True)
+        if result:
+            self.customLoanCreator.stopCreating()
+            self.state = "View"
 
         drawCenterTxt(screen,"Monthly Payment",40,(180,180,180),(885,295),centerX=False)
         if loanObj:
             payment,total,totalInterest = loanObj.getOGVals()
-            drawCenterTxt(screen,f"${limit_digits(payment,20,payment>1000)}",115,(255,255,255),(1115,295),centerX=False)# draw the monthly payment
+            drawCenterTxt(screen,f"${limit_digits(payment,20,payment>1000)}",115,(220,220,220),(1115,295),centerX=False)# draw the monthly payment
 
             info = [("Principal",f"${limit_digits(loanObj.principal,20,loanObj.principal>1000)}"),("Interest",f"${limit_digits(totalInterest,20,totalInterest>1000)}"),("Total",f"${limit_digits(total,20,total>1000)}")]
             debtLimitPercent = ((loanObj.principal/self.player.getMaxLoan())*100)
@@ -375,20 +372,21 @@ class LoanScreen:
                 self.customLoanCreator.stopCreating()
                 self.state = "View"
                 # {"term":12,"monthly payment":random.randint(10,250_000),"principal":10000,"remaining":16000}
-                data = {"term":loanObj.term,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}
-                self.sideScroll.addCard(LoanCard(f"Loan {len(self.player.loans)}",self.sideScroll,data,(375,375)))
+                data = {"term":loanObj.termLeft,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}
+                spot = 1 if not self.sideScroll.cards else max([int(c.name.split()[1]) for c in self.sideScroll.cards])+1
+                self.sideScroll.addCard(LoanCard(f"Loan {spot}",self.sideScroll,data,(375,375)))
                 loanObj = None
                 # self.sideScroll.addCard(LoanCard(f"Loan {len(self.player.loans)}",self.sideScroll,{"term":loanObj.term,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}))
                 # self.customLoanCreator.stopCreating()
         else:
-            drawCenterTxt(screen,"N/A",115,(255,255,255),(1115,295),centerX=False)
+            drawCenterTxt(screen,"N/A",115,(220,220,220),(1115,295),centerX=False)
             info = [("Principal","N/A"),("Interest","N/A"),("Total","N/A")]
 
         pygame.draw.rect(screen,(0,0,0),(870,350,555,190),5,border_radius=10)# box for the loan info
-        drawLinedInfo(screen,(880,355),(535,180),info,38,(255,255,255))
+        drawLinedInfo(screen,(880,355),(535,180),info,38,(220,220,220))
 
         if self.customLoanCreator.numpadDisplay == None:
-            drawCenterTxt(screen,"Custom Loan",70,(255,255,255),(375,225),centerY=False)
+            drawCenterTxt(screen,"Custom Loan",70,(220,220,220),(375,225),centerY=False)
             if not self.customLoanCreator.loanAmt or not self.customLoanCreator.loanTerm:
                 drawCenterTxt(screen,"Need to Set",60,(220,220,220),(375,300),centerY=False)
                 if not self.customLoanCreator.loanAmt:
@@ -399,7 +397,11 @@ class LoanScreen:
                 drawCenterTxt(screen,"All Set",55,(180,180,180),(375,300),centerY=False)
 
     def veiwState(self,screen,mousebuttons):
-        drawCenterTxt(screen,"Loan Controls",70,(255,255,255),(375,225),centerY=False)
+        
+        self.networthGraph.drawFull(screen,(1445,215),(455,335),"Loan Networth",True,"Normal")
+        # drawCenterTxt(screen,"Loan Controls",70,(220,220,220),(375,225),centerY=False)
+
+        drawCenterTxt(screen,"Loan Controls",70,(220,220,220),(375,225),centerY=False)
         drawCenterTxt(screen,"Create a Loan",45,(180,180,180),(375,300),centerY=False)
         drawCenterTxt(screen,"or Modify an",45,(180,180,180),(375,340),centerY=False)
         drawCenterTxt(screen,"Existing Loan",45,(180,180,180),(375,380),centerY=False)
@@ -412,58 +414,60 @@ class LoanScreen:
             self.state = "Creation"
             self.customLoanCreator.stopCreating()
 
-    def addingLoanPayment(self,screen,mousebuttons,loan):
-        if self.addingPayment:
-            self.paymentNumpad.draw(screen,(200,215),(350,280),"",mousebuttons,loan.data['remaining'])
-            val = self.paymentNumpad.getValue()
-            princ = loan.data['principal']
-            # self.orderBox.loadData("1 Loan",f"$0",[("Principal",f"${limit_digits(loanObj.principal,20,loanObj.principal>1000)}",""),("Debt Limit %",f"{limit_digits(debtLimitPercent,20)}%","")])
-            self.orderBox.loadData(f"-${val}",f"${val}",[("Current Principal",f"${limit_digits(princ,20,princ>1000)}",""),("Principal After",f"${limit_digits(princ-val,20,princ-val>1000)}","")])
-            result = self.orderBox.draw(screen,mousebuttons)
-            if result:
-                loan.addPayment(val)
-                self.addingPayment = False
 
 
-    def LoanModifyingState(self,screen,mousebuttons):
-        loan = self.sideScroll.getCard()
+    def loanModifyingState(self,screen,mousebuttons,loan:LoanAsset):
 
-                                ###########################Neeed to exchange loan for the loanObj - then loan.data for loan.getPrincipalLeft() etc
-
-        if self.loanModifier.numpadDisplay == None:
-            drawCenterTxt(screen,"Modifying Loan",70,(255,255,255),(375,225),centerY=False)
+        if not self.addingPayment:
+            drawCenterTxt(screen,"Modifying Loan",70,(220,220,220),(375,225),centerY=False)
             
-            drawCenterTxt(screen,f"{loan.name}",45,(180,180,180),(375,300),centerY=False)
+            drawCenterTxt(screen,f"{self.sideScroll.getCard().name}",45,(180,180,180),(375,300),centerY=False)
         
-        self.loanModifier.drawLoanCreation(screen,mousebuttons,self.interestRate)
 
         drawCenterTxt(screen, 'One Time Payment', 45, (180, 180, 180), (575,225), centerX=False,centerY=False)
 
-        drawCenterTxt(screen, 'Principal Remaining', 45, (180, 180, 180), (975,225), centerX=False,centerY=False)
-        drawBoxedTextWH(screen, (565,260), (300,65), f"${limit_digits(loan.data['remaining'],20,loan.data['remaining']>1000)}", 55, (255,255,255), (0,0,0), mousebuttons,centerX=True,centerY=True)
+        drawCenterTxt(screen, 'Principal Remaining', 45, (180, 180, 180), (1135,225), centerX=False,centerY=False)
+        drawBoxedTextWH(screen, (1130,260), (300,65), f"${limit_digits(loan.principalLeft,20,loan.principalLeft>1000)}", 55, (220,220,220))
         
-        drawCenterTxt(screen, 'Principal Paid', 45, (180, 180, 180), (975,330), centerX=False,centerY=False)
-        drawBoxedTextWH(screen, (565,365), (300,65), f"${limit_digits(loan.data['principal'],20,loan.data['principal']>1000)}", 55, (255,255,255), (0,0,0), mousebuttons,centerX=True,centerY=True)
+        drawCenterTxt(screen, 'Principal Paid', 45, (180, 180, 180), (1135,330), centerX=False,centerY=False)
+        drawBoxedTextWH(screen, (1130,365), (300,65), f"${limit_digits(loan.principal,20,loan.principal>1000)}", 55, (220,220,220))
         
-        drawCenterTxt(screen, 'Interest Paid', 45, (180, 180, 180), (975,435), centerX=False,centerY=False)
-        drawBoxedTextWH(screen, (565,470), (300,65), f"${limit_digits(loan.data['interest'],20,loan.data['interest']>1000)}", 55, (255,255,255), (0,0,0), mousebuttons,centerX=True,centerY=True)
+        drawCenterTxt(screen, 'Interest Paid', 45, (180, 180, 180), (1135,435), centerX=False,centerY=False)
+        drawBoxedTextWH(screen, (1130,470), (300,65), f"${limit_digits(loan.interestPaid,20,loan.interestPaid>1000)}", 55, (220,220,220))
+        if not self.addingPayment:
+            result = drawClickableBoxWH(screen, (565,260), (300,65),"+ Add Payment", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
+            if result: self.addingPayment = True
 
-        result = drawClickableBoxWH(screen, (565,260), (300,65),"+ Add Payment", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
-        if result:
-            self.addingPayment = True
-        self.addingLoanPayment(screen,mousebuttons,loan)
+        if self.addingPayment:# if the user is adding a payment
+            drawBoxedTextWH(screen, (565,260), (300,65), f"${limit_digits(self.paymentNumpad.getValue(),20,self.paymentNumpad.getValue()>1000)}", 55, (220,220,220))
+            self.paymentNumpad.draw(screen,(200,215),(350,280),"",mousebuttons,loan.principalLeft)
+            val = self.paymentNumpad.getValue()
+            princ = loan.principalLeft
+
+            drawCenterTxt(screen, 'New Est Monthly', 45, (180, 180, 180), (575,330), centerX=False,centerY=False)
+            drawBoxedTextWH(screen, (565,365), (300,65), f"${limit_digits(loan.getLoanCalc(principal=loan.principalLeft-val),20,loan.getLoanCalc(principal=loan.principalLeft-val)>1000)}", 55, (220,220,220))
+
+            
+            result = drawClickableBoxWH(screen, (565,470), (300,65),"Cancel", 45, (190,0,0), (25,25,25), mousebuttons,fill=True)
+            if result: self.addingPayment = False
+            
+            self.orderBox.loadData(f"-${limit_digits(val,25)}",f"${limit_digits(val,25)}",[("Principal Remaining ",f"${limit_digits(princ,20,princ>1000)}",""),("Principal After",f"${limit_digits(princ-val,20,princ-val>1000)}","")])
+            result = self.orderBox.draw(screen,mousebuttons)
+            if result:
+                self.player.addLoanPayment(loan,val)# add the payment to the loan
+                self.addingPayment = False
     
     def refillLoanCards(self):
         cardList = []
         for i,loan in enumerate(self.player.loans):
-            data = {"term":loan.term,"monthly payment":loan.monthlyPayment,"principal":loan.principal,"remaining":loan.getPrincipalLeft()}
+            data = {"term":loan.termLeft,"monthly payment":loan.getMonthlyPayment(),"principal":loan.principal,"remaining":loan.principalLeft}
             cardList.append(LoanCard(f"Loan {i}",self.sideScroll,data,(375,375)))
 
         self.sideScroll.loadCards(cardList)
 
     def draw(self,screen,mousebuttons):
 
-        loanObj : LoanAsset = self.customLoanCreator.getLoanObj()
+        
 
         pygame.draw.rect(screen,(0,0,0),(200,215,350,335),5,border_radius=10)# box for the numpad
         # self.numpad.draw(screen,(200,215),(350,335),"Loan Amount",mousebuttons,0)
@@ -471,15 +475,19 @@ class LoanScreen:
         pygame.draw.rect(screen,(0,0,0),(555,215,885,335),5,border_radius=10)# box for the loan Modifications
         if len(self.sideScroll.cards) != len(self.player.loans):
             self.refillLoanCards()
+        for loan,card in zip(self.player.loans,self.sideScroll.cards):# update the loan cards
+            card.updateData({"term":loan.termLeft,"monthly payment":loan.getMonthlyPayment(),"principal":loan.principal,"remaining":loan.principalLeft})
+        
 
         self.sideScroll.draw(screen,mousebuttons)
         if self.sideScroll.getCard() != None:
             self.state = "Modify"
+            loanObj : LoanAsset = self.player.loans[self.sideScroll.getCard(index=True)]
         if self.state == "Modify" and self.sideScroll.getCard() == None:
             self.state = "View"
 
         if not self.sideScroll.cards:# if there are no cards
-            drawCenterTxt(screen,"No Current Loans",110,(255,255,255),(820,700),centerY=False)
+            drawCenterTxt(screen,"No Current Loans",110,(220,220,220),(820,700),centerY=False)
 
 
         
@@ -491,20 +499,22 @@ class LoanScreen:
             ("Total Debt",f"${limit_digits(self.player.getCurrentDebt(),20,self.player.getCurrentDebt()>1000)}"),
             ("# of Loans",f"{len(self.player.loans)}"),
             ("Monthly Payment",f"${limit_digits(self.player.getMonthlyPayment(),20,self.player.getMonthlyPayment()>1000)}"),
-            ("Average Interest",f"{limit_digits(self.player.getAvgInterest(),20)}%")
+            # ("Average Interest",f"{limit_digits(self.player.getAvgInterest(),20)}%")
+            ("Interest Rate",f"{limit_digits(self.interestRate*100,20)}%")
         ]
-        drawLinedInfo(screen,(1455,615),(435,355),info,40,(255,255,255))
+        drawLinedInfo(screen,(1455,615),(435,355),info,40,(215,215,215))
 
         
 
         if self.state == "Creation":
+            loanObj : LoanAsset = self.customLoanCreator.getLoanObj()
             self.drawLoanCreator(screen,mousebuttons,loanObj)
         elif self.state == "View":
             self.veiwState(screen,mousebuttons)
         elif self.state == "Modify":
-            self.LoanModifyingState(screen,mousebuttons)
+            self.loanModifyingState(screen,mousebuttons,loanObj)
         
-        # screen.blit(s_render("Monthly Payment",40,(255,255,255)),(885,275))
+        # screen.blit(s_render("Monthly Payment",40,(220,220,220)),(885,275))
         
         
 
@@ -521,11 +531,6 @@ class InvestmentScreen:#
         self.player = player
         self.sideScroll = SideScroll((200,210),(1200,450),(375,400))
         bankIcons = {}
-        data = {"duration":12,"apr":7.63,"minBalance":16000,"risk":"High (3.82%)"}
-        self.assetSelection = MenuSelection((1580,105),(320,100),["CD","Index Funds"],45)
-        for file in os.listdir(r"Assets\bankIcons"):
-            image = pygame.image.load(r"Assets\bankIcons\{}".format(file)).convert_alpha()
-            bankIcons[file.split(".")[0]] = CdCard(image,file.split(".")[0],self.sideScroll,data,(375,400))
         
         self.sideScroll.loadCards(list(bankIcons.values()))
 
@@ -533,40 +538,44 @@ class InvestmentScreen:#
         self.fundOrderBox = OrderBox((1410,670),(475,300))
 
         self.indexFunds = indexFunds; self.indexFunds.append(tmarket)
-        self.indexGraphs : dict[str:StockVisualizer] = {}
-        for indexFund in self.indexFunds:
-            self.indexGraphs[indexFund.name] = StockVisualizer(gametime,indexFund,stocklist)
+        # self.indexGraphs : dict[str:StockVisualizer] = {}
+        # for indexFund in self.indexFunds:
+        #     self.indexGraphs[indexFund.name] = StockVisualizer(gametime,indexFund,stocklist)
+        self.indexGraph = StockVisualizer(gametime,self.indexFunds[0],stocklist)
 
         self.fundSelection = SelectionBar(horizontal=False)
         self.fundPerfChart = PerfChart((620,300))
         
         self.getRealSelc = lambda fakeSelect: ['Velocity Ventures','Adaptive Allocation','Reliable Returns',"Total Market"][["V & V","A & A", "R & R", "Total"].index(fakeSelect)]# Need since the fund names are abbreviated
- 
-        self.updateCards([])
-
-    def updateCards(self,cardsData:list[dict]):
-        """Updates the CDs in the sidescroll element for cd cards it is [{"duration":int(Months),"apr":float,"minBalance":int,"risk":str}]"""
-        newData = []
-        for _ in self.sideScroll.cards:
-            newData.append({"duration":randint(3,36),"apr":randint(200,900)/100,"minBalance":randint(500,25000),"risk":f"{random.choice(["High","Medium","Low"])} (??%)"})
-        self.sideScroll.updateCards(newData)
+        
+        self.fundDescriptions = {
+            "V & V":"Velocity Ventures is a high risk, high reward index fund that focuses on emerging markets and technology companies. It contains the stocks with the tickers DRON, FACE, FARM.",
+            "A & A":"Adaptive Allocation is a medium risk, medium reward index fund that focuses on a diversified portfolio of companies. It contains the stocks with the tickers HOLO, SUNR, BOTS.",
+            "R & R":"Reliable Returns is a low risk, low reward index fund that focuses on stable companies and industries. It contains the stocks with the tickers GENX, NEUR, STAR",
+            "Total":"Total Market is a index fund that tracks the entire market, providing a diversified portfolio of companies. It contains all 9 stocks in the market."
+        }
         
     def drawAssetInfo(self,screen,mousebuttons,gametime,assetType):
-        if assetType == "CD":
-            txt = "A certificate of deposit (CD) is a type of savings account that has a fixed interest rate and fixed date of withdrawal, known as the maturity date. CDs also typically don’t have monthly fees. You agree to keep the full deposit in the account for the term length, and the bank agrees to pay you a fixed interest rate during that time."
-            screen.blit(s_render("CD",70,(180,180,180)),(1425,220))
+  
 
-        elif assetType == "Index Funds":
+        if assetType == "Index Funds":
             txt = "An index fund is an investment that tracks the performance of an entire market, rather than a single stock. It accomplishes this by holding a portfolio of multiple companies within the market. This diversification helps to reduce risk and volatility, making index funds a popular choice for long-term investors."
-            screen.blit(s_render("Index Funds",60,(180,180,180)),(1425,220))
+            drawCenterTxt(screen,"Index Funds",60,(180,180,180),(1647,220),centerY=False)
         txt = separate_strings(txt,7)
         for i,line in enumerate(txt):
-            # screen.blit(s_render(line,30,(255,255,255)),(1425,300+(i*40)))
-            drawCenterTxt(screen,line,30,(255,255,255),(1647,300+(i*40)))
+            # screen.blit(s_render(line,30,(220,220,220)),(1425,300+(i*40)))
+            drawCenterTxt(screen,line,30,(220,220,220),(1647,300+(i*40)))
         
 
     def drawIndexFundInfo(self,screen,mousebuttons,gametime,fund):
-        screen.blit(s_render(self.getRealSelc(fund.name),60,fund.color),(940,220))
+        drawCenterTxt(screen,self.getRealSelc(fund.name),60,fund.color,(1167,220),centerY=False)
+
+        txt = self.fundDescriptions[fund.name]
+
+        txt = separate_strings(txt,6)
+        for i,line in enumerate(txt):
+            # screen.blit(s_render(line,30,(220,220,220)),(1425,300+(i*40)))
+            drawCenterTxt(screen,line,35,(220,220,220),(1167,300+(i*40)))
 
     def drawIndexFunds(self,screen,mousebuttons,gametime):
 
@@ -576,7 +585,9 @@ class InvestmentScreen:#
         if self.fundSelection.getSelected() != None:
             # realName = self.getRealSelc(self.fundSelection.getSelected())# get the real name of the fund
             fund = [fund for fund in self.indexFunds if fund.name == self.fundSelection.getSelected()][0]# get the fund object
-            self.indexGraphs[self.fundSelection.getSelected()].drawFull(screen,(305,210),(620,450),self.fundSelection.getSelected(),True,"Normal")# draw the graph for the fund
+            # self.indexGraphs[self.fundSelection.getSelected()].drawFull(screen,(305,210),(620,450),self.fundSelection.getSelected(),True,"Normal")# draw the graph for the fund
+            self.indexGraph.setStockObj(fund)
+            self.indexGraph.drawFull(screen,(305,210),(620,450),"Main Investment Graph",True,"Normal")# draw the graph for the fund
 
             currentQ = gametime.getCurrentQuarter()# current game quarter
 
@@ -601,35 +612,9 @@ class InvestmentScreen:#
 
     def draw(self,screen,mousebuttons,gametime):
         
-        self.assetSelection.draw(screen,mousebuttons)
-
         pygame.draw.rect(screen,(0,0,0),(1410,210,475,450),5,border_radius=10)# Describes what an index fund/CD is
-        match self.assetSelection.getSelected():
-            case "CD":
-                self.sideScroll.draw(screen,mousebuttons)
-                # (self,screen,coords,mousebuttons,minX,maxX
-                if self.sideScroll.getCard() != None:
-                    self.sideScroll.getCard().draw(screen,(200,670),mousebuttons,customWh=(375,300))# Draw the selected card 
-                    data = [("Duration",f"{self.sideScroll.getCard().data['duration']} Months"),("APR",f"{round(self.sideScroll.getCard().data['apr'],2)}%"),("Min Balance",f"${limit_digits(self.sideScroll.getCard().data['minBalance'],20,True)}"),("Risk",self.sideScroll.getCard().data['risk'])]
-                    drawLinedInfo(screen,(585,670),(375,300),data,30,(255,255,255))# draw the extra info for the CD
 
-                pygame.draw.rect(screen,(0,0,0),(585,670,375,300),5,border_radius=10)# box for extra cD info
+        pygame.draw.rect(screen,(0,0,0),(930,210,475,450),5,border_radius=10)# for the indexFund info (deeper in depth for specific fund)
+        self.drawIndexFunds(screen,mousebuttons,gametime)
 
-                
-
-
-            case "Index Funds":
-                pygame.draw.rect(screen,(0,0,0),(930,210,475,450),5,border_radius=10)# for the indexFund info (deeper in depth for specific fund)
-                self.drawIndexFunds(screen,mousebuttons,gametime)
-
-        self.drawAssetInfo(screen,mousebuttons,gametime,self.assetSelection.getSelected())
-                
-
-
-        # self.sideScroll.draw(screen,mousebuttons)
-
-        # self.totalGraph.drawFull(screen,(760,610),(550,355),"Total Market Graph",True,"Normal")
-        # self.networthGraph.drawFull(screen,(200,610),(550,355),"Networth Graph",True,"Normal")
-        # for i,graph in enumerate(self.indexGraphs):
-        #     graph.drawFull(screen,(200+(i*570),235),(550,355),f"{i} Graph",True,"Normal")
-
+        self.drawAssetInfo(screen,mousebuttons,gametime,"Index Funds")

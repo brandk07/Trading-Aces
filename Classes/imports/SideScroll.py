@@ -19,8 +19,10 @@ class ScrollCard:
         return self.data
     
     def updateData(self,data:dict):
-        self.data = data
-        self.needToUpdate = True
+        if self.data != data:
+            self.needToUpdate = True
+            self.data = data
+        
     @lru_cache(maxsize=3)
     def getPartialSurf(self,cutOff,direction):
         """Returns a surface that has cutOff pixels cut off from the direction"""
@@ -145,7 +147,8 @@ class SideScroll:
         # if self.lastSelected != newSelected:
         #     self.scroll = newSelected*self.cardWH[0]+self.cardWH[0]//2
 
-        if self.lastSelected == None:
+        if self.lastSelected == None or self.lastSelected >= len(self.cards):
+            self.lastSelected = None
             return None
         
         # self.lastSelected = self.scroll//self.cardWH[0]

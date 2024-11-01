@@ -21,20 +21,29 @@ class LoanAsset:
 
 
     def __eq__(self,other):
-        pass
+        if not isinstance(other,LoanAsset):
+            return False
+        return [self.rate,self.term,self.principal,self.principalLeft,self.interestPaid,self.termLeft] == [other.rate,other.term,other.principal,other.principalLeft,other.interestPaid,other.termLeft]
     def savingInputs(self):
-        return (self.rate,self.term,self.principal)
+        return (self.rate,self.term,self.principal,self.principalLeft,self.interestPaid,self.termLeft)
     def copy(self):
-        return LoanAsset(self.rate,self.term,self.principal)
-    def getLoanCalc(self):
+        return LoanAsset(self.rate,self.term,self.principal,self.principalLeft,self.interestPaid,self.termLeft)
+    def getLoanCalc(self,rate=None,term=None,principal=None) -> float:
         # Calculate the monthly payment
-        return npf.pmt(self.rate / 12, self.termLeft, -self.principalLeft)
+        rate = self.rate if rate == None else rate
+        term = self.termLeft if term == None else term
+        principal = self.principalLeft if principal == None else principal
+        return npf.pmt(rate / 12, term, -principal)
     def getOGVals(self) -> tuple:
         """Returns the values when the loan was created -> (monthly payment, total payment, total interest)"""
         payment = self.getLoanCalc()
         totalPayment = payment * self.term
         totalInterest = totalPayment - self.principal
         return (payment,totalPayment,totalInterest)
+
+    def getMonthlyPayment(self):
+        """Calculate the monthly payment"""
+        return self.getLoanCalc()
 
     def getPrincipalPaid(self):
         """Calculate the total principal paid up to a certain period"""
@@ -52,13 +61,14 @@ class LoanAsset:
         self.interestPaid += interest
         self.principalLeft -= payment - interest
         self.termLeft -= 1
-        if self.principalLeft <= 0:
+        if self.principalLeft < .01:
             player.removeLoan(self)
         return payment
 
     def addPayment(self,amount,player) -> float:
         """Add One time payment to the loan - SHOULD BE CALLED BY THE PLAYER SO THAT THE MONEY COMES THROUGHT THE PLAYER CLASS"""
-        if amount > self.principalLeft:
-            player.removeLoan(self)
+
         self.principalLeft -= amount
+        if self.principalLeft < .01:
+            player.removeLoan(self)
         return amount
