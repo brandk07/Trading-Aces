@@ -203,7 +203,7 @@ class TransactionScreen:
 
         strs = ["Lifetime Volume","Gains (Realized)","Taxes Paid","Debt UnderTaken","Assets Traded"]
         data = [(string,("$"+limit_digits(val,20,val > 10000)) if string != strs[-1] else limit_digits(val,25,True)) for string,val in zip(strs,vals)]
-        drawLinedInfo(screen,(210,275),(410,680),data,50,(220,220,220),diffSizes=(35,55))
+        drawLinedInfo(screen,(210,275),(410,680),data,40,(220,220,220),diffSizes=(35,55))
 
 
 
@@ -405,6 +405,10 @@ class LoanScreen:
         drawCenterTxt(screen,"Create a Loan",45,(180,180,180),(375,300),centerY=False)
         drawCenterTxt(screen,"or Modify an",45,(180,180,180),(375,340),centerY=False)
         drawCenterTxt(screen,"Existing Loan",45,(180,180,180),(375,380),centerY=False)
+
+        txt = f"${limit_digits(self.player.getCurrentDebt(),20,self.player.getCurrentDebt()>1000)}"
+        drawCenterTxt(screen,txt,getTSizeNums(txt,600,155),(210,190,190),(997,382))
+        drawCenterTxt(screen,"Total Debt",55,(180,180,180),(997,225),centerY=False)
 
 
 

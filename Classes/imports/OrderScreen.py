@@ -10,21 +10,22 @@ TXTCOLOR = (220,220,220)
 class OrderScreen:
     """This class will be used in stockbook and porfolio to buy or sell stocks"""
     def __init__(self,uicontrols) -> None:
-        self.orderTypes = ['Market','Limit','Stop']
+        # self.orderTypes = ['Market','Limit','Stop']
+        self.orderTypes = ['Market']
         self.orderType = 'Market'
         self.transactionTypes = ['Buy','Sell']
         self.transactionType = 'Buy'
         background = pygame.image.load(r'Assets\backgrounds\Background (9).png').convert_alpha()
         background = pygame.transform.smoothscale_by(background,2);background.set_alpha(140)
         self.background = background
-        pygame.draw.rect(self.background,(100,100,100),pygame.Rect(0,0,2000,1200))
+        # pygame.draw.rect(self.background,(100,100,100),pygame.Rect(0,0,2000,1200))
         # self.wh = [960,650]
         self.whDict = {'MarketBuy':[550,650],'MarketSell':[960,650],'LimitBuy':[960,650],'LimitSell':[960,650],'StopBuy':[960,650],'StopSell':[960,650]}
 
         # self.surf = pygame.Surface((self.whDict[self.orderType+self.transactionType][0],self.whDict[self.orderType+self.transactionType][1]))
         self.surfs = {key:pygame.Surface((self.whDict[key][0],self.whDict[key][1])) for key in self.whDict.keys()}
         for key in self.surfs.keys():
-            self.surfs[key].fill((0,0,0))
+            self.surfs[key].fill((20,20,20))
             self.surfs[key].blit(self.background,(-750,-200))
         # self.surf.blit(background,(-480,-270))
         self.surfCoords = [750,200]
@@ -36,7 +37,7 @@ class OrderScreen:
     
     def reBlitDisplays(self):
         for key in self.surfs.keys():
-            self.surfs[key].fill((0,0,0))
+            self.surfs[key].fill((20,20,20))
             self.surfs[key].blit(self.background,(-self.surfCoords[0],-self.surfCoords[1]))
 
     def executeOrder(self,player,stockObj,gametime):
@@ -58,15 +59,23 @@ class OrderScreen:
                 pass
             elif self.orderType == 'Stop':
                 pass
-
-    def draw(self,screen,stockObj,mousebuttons:int,player,gametime):
+    
+    def draw(self,screen,stockObj,mousebuttons:int,player,gametime,maxCoords=None,minCoords=None):
         # self.uicontrols.bar.changeMaxValue(5)
         
         mousex,mousey = pygame.mouse.get_pos()
-        x,y = self.surfCoords   
         wh = self.whDict[self.orderType+self.transactionType]
+        if maxCoords != None:
+            self.surfCoords[0] = min(self.surfCoords[0],maxCoords[0]-wh[0])
+            self.surfCoords[1] = min(self.surfCoords[1],maxCoords[1]-wh[1])
+        if minCoords != None:
+            self.surfCoords[0] = max(self.surfCoords[0],minCoords[0])
+            self.surfCoords[1] = max(self.surfCoords[1],minCoords[1])
+
+        x,y = self.surfCoords   
+        
         surf = self.surfs[self.orderType+self.transactionType]
-        points = [(x,y),(wh[0]+x,y),(wh[0]+x,wh[1]+y),(x,wh[1]+y)]  
+        
         collide = pygame.Rect.collidepoint(pygame.Rect(x-20,y-20,wh[0]+40,wh[1]+40),mousex,mousey)
 
         if collide and pygame.mouse.get_pressed()[0]:
@@ -76,18 +85,20 @@ class OrderScreen:
                     self.surfCoords[0] += xdiff
                     self.surfCoords[1] += ydiff
                 
-                    surf.fill((0,0,0))
+                    surf.fill((20,20,20))
                     surf.blit(self.background,(-self.surfCoords[0],-self.surfCoords[1]))
             else:# if there isn't a last mouse pos
                 self.lastMousePos = [mousex,mousey]
-                surf.fill((0,0,0))
+                surf.fill((20,20,20))
                 surf.blit(self.background,(-self.surfCoords[0],-self.surfCoords[1]))
                 
                 
         self.lastMousePos = [mousex,mousey]
         
+
         # gfxdraw.filled_polygon(screen,points,(50,50,50))
         screen.blit(surf,(x,y))    
+        points = [(x,y),(wh[0]+x,y),(wh[0]+x,wh[1]+y),(x,wh[1]+y)]  
         pygame.draw.polygon(screen,(0,0,0),points,10)
         # --------------Title that says what type of order it is--------------
         title = s_render(f'{self.orderType.upper()} Order',85,TXTCOLOR)

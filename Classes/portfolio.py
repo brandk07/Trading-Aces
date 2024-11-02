@@ -16,6 +16,7 @@ from Classes.StockVisualizer import StockVisualizer
 from Classes.imports.PieChart import PieChartSideInfo
 from Classes.imports.BarGraph import BarGraph
 from Classes.imports.OrderBox import OrderBox
+from Classes.imports.SelectionElements import SelectionBar
 import math
 import datetime
 from dateutil import parser
@@ -33,6 +34,7 @@ class Portfolio(Menu):
         # self.bar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         # self.bar.value = 0
         # self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
+
         self.totalmarket = totalmarket
 
         self.sharebackground = pygame.image.load(r"Assets\backgrounds\Background (8).png").convert_alpha()
@@ -50,10 +52,12 @@ class Portfolio(Menu):
         self.piechart = PieChartSideInfo(150, (200, 650),menuList)
         self.barGraphs = [BarGraph("Value",[175,175],[875,400]),BarGraph("Allocation",[175,175],[1150,400])]
         self.orderBox = OrderBox((465,600),(385,360))
+        self.barSelection : SelectionBar = SelectionBar()
+
         # for the asset type selection which sorts the latterscroll
         # self.assetoptions = ["Stocks","Options","Other"]# future, Crypto, bonds, minerals, real estate, etc
-        self.assetoptions = ["Stocks","Options","Index Funds","Other"]
-        self.displayed_asset_type = ["Stocks","Options","Index Funds","Other"]
+        self.assetoptions = ["Stocks","Options","Index"]
+        self.displayed_asset_type = ["Stocks","Options","Index"]
 
         
 
@@ -125,8 +129,10 @@ class Portfolio(Menu):
 
     def assetscroll_controls(self,screen,mousebuttons):
         """Controls for the asset scroll"""
-        screen.blit(s_render("My Assets", 45, (210, 210, 210)), (880, 100))
-        result = checkboxOptions(screen,self.assetoptions,self.displayed_asset_type,(880,160),(500,35),mousebuttons)
+
+        result = checkboxOptions(screen,self.assetoptions,self.displayed_asset_type,(860,160),(530,35),mousebuttons)
+
+
         if result != None:
             if result[0] in self.displayed_asset_type:
                 self.displayed_asset_type.remove(result[0])
@@ -144,7 +150,7 @@ class Portfolio(Menu):
         # stockassets,optionassets = [],[]
         # if "Stocks" in self.displayed_asset_type: stockassets = [[stock, get_second(stock)] for stock in self.player.stocks]# gets the stock assets
         # if "Options" in self.displayed_asset_type: optionassets = [[option, get_second(option)] for option in self.player.options]# gets the option assets
-        nameDict = {StockAsset:"Stocks",OptionAsset:"Options",IndexFundAsset:"Index Funds"}
+        nameDict = {StockAsset:"Stocks",OptionAsset:"Options",IndexFundAsset:"Index"}
         allassets = self.player.getAssets()# gets all the assets
         allassets = [[asset, get_second(asset)] for asset in allassets if nameDict.get(type(asset)) in self.displayed_asset_type]# gets the assets that are in the displayed asset type
         # sortedstocks = sorted(player.stocks,key=lambda stock: stock[0].price*stock[2],reverse=True)
