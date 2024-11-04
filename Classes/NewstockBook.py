@@ -31,7 +31,7 @@ class Stockbook2(Menu):
         self.quantitybar : SliderBar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockLS : PortfolioLatter = PortfolioLatter()
-        self.futureRepLS, self.pastRepLS = LatterScroll(), LatterScroll()
+        # self.futureRepLS, self.pastRepLS = LatterScroll(), LatterScroll()
         self.orderScreen = orderScreen
         # self.middleDisplays = ["Info","Reports","News"]
         self.middleDisplays = ["Info","Reports"]

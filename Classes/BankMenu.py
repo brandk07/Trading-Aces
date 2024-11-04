@@ -454,7 +454,7 @@ class LoanScreen:
 
         if self.addingPayment:# if the user is adding a payment
             drawBoxedTextWH(screen, (565,260), (300,65), f"${limit_digits(self.paymentNumpad.getValue(),20,self.paymentNumpad.getValue()>1000)}", 55, (220,220,220))
-            self.paymentNumpad.draw(screen,(200,215),(350,280),"",mousebuttons,loan.principalLeft)
+            self.paymentNumpad.draw(screen,(200,215),(350,280),"",mousebuttons,min(self.player.cash,loan.principalLeft))
             val = self.paymentNumpad.getValue()
             princ = loan.principalLeft
 
