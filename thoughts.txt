@@ -141,6 +141,9 @@ Market sentiment into option pricing (just the probability of a stock hitting it
 
 Use the perfchart for the past performances in stockbook (8/29/2024)
 
+Make it so the index funds balance out the stocks inside them (11/3/2024)
+    ie if CMDX is trading for 5000 and QSYN and NRLX are below 100 only CMDX's movements really matter
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am

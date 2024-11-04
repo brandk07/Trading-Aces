@@ -48,13 +48,13 @@ class Stockbook2(Menu):
         
 
     def createDescriptions(self,stocknames): 
-        with open(r'Assets\newstockdes.txt','r') as descriptions:
+        with open(r'Assets\stockdes3.txt','r') as descriptions:
             filecontents = descriptions.readlines()
             for i,line in enumerate(filecontents):
                 for stockname in stocknames:
                     if line.replace('\n','') == stockname:
-                        self.stocktext[stockname].append(filecontents[i+1].replace('\n',''))# Full stock name Ex. "Kyronix Solutions Inc. (KSTON)"
-                        seperatatedstrings = separate_strings((filecontents[i+2].replace('\n','')),5)
+                        self.stocktext[stockname].append(filecontents[i-1].replace('\n',''))# Full stock name Ex. "Kyronix Solutions Inc. (KSTON)"
+                        seperatatedstrings = separate_strings((filecontents[i+1].replace('\n','')),5)
                         for string in seperatatedstrings:# a list containing 4 strings 
                             self.stocktext[stockname].append(string)
 
@@ -192,12 +192,12 @@ class Stockbook2(Menu):
         pygame.draw.line(screen, (0, 0, 0), (center_x - radius_x, center_y), (center_x + radius_x, center_y), 7)
 
         
-        currentAngle = (((self.selectedStock.ceo.getVolatility()-700)/15)/25)*180+180
+        currentAngle = (((self.selectedStock.givenVolatility-700)/15)/25)*180+180
         x = 960+int(180*math.cos(math.radians(currentAngle)))
         y = 910+int(220*math.sin(math.radians(currentAngle)))
         pygame.draw.line(screen,(0,0,0),(960,910),(x,y),8)
         # screen.blit(s_render(f"Volatility {self.selectedStock.ceo.getVolatility()}",50,(220,220,220)),(760,630))
-        drawCenterTxt(screen,f"Volatility {self.selectedStock.ceo.getVolatility()}",50,(220,220,220),(960,635),centerY=False)
+        drawCenterTxt(screen,f"Volatility {self.selectedStock.givenVolatility}",50,(220,220,220),(960,635),centerY=False)
 
     def drawCompanyInfo(self,screen:pygame.Surface,stockname:str,coords:tuple,player):
         """Draws the company info for the stock on the right middle """
@@ -214,39 +214,31 @@ class Stockbook2(Menu):
         for i,line in enumerate(self.stocktext[self.selectedStock.name]):
             x,y = (210 if i != 0 else self.renderedstocknames[self.selectedStock.name].get_width()+215),(725+((i-1)*40) if i != 0 else 650)
             screen.blit(line,(x,y))
-        # Draw stuff about CEO
-        ceo = self.selectedStock.ceo
-        xCeo,yCeo = 1165,630
-        wCeo,hCeo = 290,325
+
+        # Draw Company Volaatility Info
+
+        # # Draw stuff about CEO
+        # ceo = self.selectedStock.ceo
+        # xCeo,yCeo = 1165,630
+        # wCeo,hCeo = 290,325
         
-        # ceoInfo = s_render("CEO",50,(220,220,220))
-        # screen.blit(ceoInfo,(xCeo+wCeo/2-ceoInfo.get_width()/2,yCeo+10))
-        drawCenterTxt(screen,"CEO",50,(220,220,220),(xCeo+wCeo/2,yCeo+5),centerY=False)
-        # screen.blit(s_render("CEO INFO",50,(220,220,220)),(1175,630))
-        pygame.draw.rect(screen,(0,0,0),(xCeo+wCeo/2-118/2,yCeo+45,128,110),5)# Box for the CEO image
-        # pygame.draw.rect(screen,(0,0,0),(1175,670,128,110),5)# Box for the CEO image
-        screen.blit(ceo.getImageSize(118,100),(xCeo+(wCeo/2)-(118/2)+5,yCeo+50))
+        # drawCenterTxt(screen,"CEO",50,(220,220,220),(xCeo+wCeo/2,yCeo+5),centerY=False)
+        # pygame.draw.rect(screen,(0,0,0),(xCeo+wCeo/2-118/2,yCeo+45,128,110),5)# Box for the CEO image
+        # screen.blit(ceo.getImageSize(118,100),(xCeo+(wCeo/2)-(118/2)+5,yCeo+50))
 
-        # ceoName = s_render(ceo.name,50,(220,220,220))
-        # screen.blit(ceoName,(xCeo+wCeo/2-ceoName.get_width()/2,yCeo+170))
-        drawCenterTxt(screen,ceo.name,45,(220,220,220),(xCeo+wCeo/2,yCeo+170),centerY=False)
 
-        # ceoAge = s_render(f"{ceo.age} Years Old",40,(220,220,220))
-        # screen.blit(ceoAge,(xCeo+wCeo/2-ceoAge.get_width()/2,yCeo+210))
-        drawCenterTxt(screen,f"{ceo.age} Years Old",35,(180,180,180),(xCeo+wCeo/2,yCeo+210),centerY=False)
-        # screen.blit(s_render(infoListR.name,50,(220,220,220)),(1175,785))
-        # screen.blit(s_render(f"{infoListR.age} Years Old",40,(220,220,220)),(1200,825))
-        # print(ceo.slogan.split(' '),int(len(ceo.slogan.split(' '))/4))
-        # numslines = int(len(ceo.slogan.split(' '))/4)+1
-        numslines = int(len(ceo.slogan)/24)+1
-        # print(numslines)
-        for i,line in enumerate(ceo.getSloganLines(numslines)):
-            ex1 = '"' if i == 0 else ''
-            ex2 = '"' if i == numslines-1 else ''
-            txt = s_render(ex1+line+ex2,30,(220,220,220))
-            screen.blit(txt,(xCeo+(wCeo/2)-(txt.get_width()/2),yCeo+240+(i*35)))
-            # screen.blit(s_render(ex1+line+ex2,30,(220,220,220)),(1180+(i*10),875+(i*35)))
-        pygame.draw.rect(screen,(0,0,0),(1165,625,290,240+35*numslines),5,10)
+        # drawCenterTxt(screen,ceo.name,45,(220,220,220),(xCeo+wCeo/2,yCeo+170),centerY=False)
+        # drawCenterTxt(screen,f"{ceo.age} Years Old",35,(180,180,180),(xCeo+wCeo/2,yCeo+210),centerY=False)
+
+        # numslines = int(len(ceo.slogan)/24)+1
+
+        # for i,line in enumerate(ceo.getSloganLines(numslines)):
+        #     ex1 = '"' if i == 0 else ''
+        #     ex2 = '"' if i == numslines-1 else ''
+        #     txt = s_render(ex1+line+ex2,30,(220,220,220))
+        #     screen.blit(txt,(xCeo+(wCeo/2)-(txt.get_width()/2),yCeo+240+(i*35)))
+        #     # screen.blit(s_render(ex1+line+ex2,30,(220,220,220)),(1180+(i*10),875+(i*35)))
+        # pygame.draw.rect(screen,(0,0,0),(1165,625,290,240+35*numslines),5,10)
         
     def drawNews(self,screen:pygame.Surface,stockname:str,coords:tuple):
         """Draws the news for the stock on the right middle """
@@ -261,7 +253,7 @@ class Stockbook2(Menu):
             f"${limit_digits(self.selectedStock.getPointDate(marketOpenTime,gametime),12)}",
             f"${limit_digits(max(self.selectedStock.graphs['1M']),12)}",
             f"${limit_digits(min(self.selectedStock.graphs['1M']),12)}",
-            f"{limit_digits(self.selectedStock.dividend,12)}%",
+            f"{limit_digits(self.selectedStock.dividendYield,12)}%",
             f"{limit_digits(self.selectedStock.getVolatility()*100,12)}%"
         ]
         # info = {key:value for key,value in zip(keys,values)}

@@ -21,16 +21,23 @@ def calculate_volatility(points) -> float:
     if len(points) < 2:
         return .1
     
-    # Calculate daily returns
-    returns = np.diff(points) / points[:-1]
+    prices = np.array(points)
 
-    # Calculate standard deviation of daily returns
-    daily_volatility = np.std(returns)
+    # Calculate periodic log returns
+    returns = np.log(prices[1:] / prices[:-1])
 
-    # Annualize volatility
-    annualized_volatility = np.sqrt(252) * daily_volatility
+    # Calculate standard deviation of returns (sample standard deviation)
+    std_dev = np.std(returns, ddof=1)
+
+    # Number of periods per year (since data spans one year)
+    n = len(returns)
+
+    # Annualized volatility
+    annualized_volatility = std_dev * np.sqrt(n)
 
     return annualized_volatility
+
+
 fake = Faker()
 with open(r'Assets\ceoSlogans.txt','r') as file:
     slogans = file.readlines()
@@ -44,9 +51,9 @@ class CEO():
         self.image = pygame.transform.scale(self.image,(100,100))
         sloganInd = randint(0,len(slogans)-1)
         self.slogan = slogans[sloganInd].replace('\n','')
-        self.volatility = sloganInd*15+700
+        self.givenVolatility = sloganInd*15+700
     def getVolatility(self):
-        return self.volatility
+        return self.givenVolatility
     @lru_cache(maxsize=5)
     def getSloganLines(self,lines):
         """Returns the slogan of the CEO with the amount of lines specified"""
@@ -64,9 +71,9 @@ class Stock():
     """Class contains the points and ability to modify the points of the stock
     an object of stockVisualizer is created to visualize the stock"""
 
-    def __init__(self,name,color,gametime) -> None:
+    def __init__(self,name,color,gametime,volatility) -> None:
         self.color,self.name = color,name
-        self.ceo = CEO()
+        # self.ceo = CEO()
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
         self.graphrangeoptions = {"1H":3600,"1D":23_400,"5D":117_000,"1M":491_400,"6M":2_946_000,"1Y":5_896_800,"5Y":29_484_000}
@@ -84,12 +91,13 @@ class Stock():
 
         self.datafromfile(gametime)# Retrieves the data from the file
         self.price = self.graphs[MINRANGE][-1]# the price of the stock at the last graphed point
-        self.dividend = 0
-        self.volatility = self.ceo.getVolatility()
+        # self.dividendYield = 0#
+        # self.givenVolatility = self.ceo.getVolatility()
+        self.givenVolatility = volatility# volatility that the stock will trend towards, still use getVolatility to calculate the real volatility
         self.recentrenders = {}# a dict of the renders of the recent prices
         self.graph = Graph()
         # print()
-    
+
 
     def __str__(self) -> str:
         return f'{self.name}'
@@ -97,6 +105,11 @@ class Stock():
     def getVolatility(self,graphrange="1Y"):
         return calculate_volatility(tuple(self.graphs[graphrange]))
     
+    def updateDividendYield(self,gametime):
+        """Updates the dividend percentage 0.02x the percent change from the previous day"""
+        
+        self.dividendYield += 0.0025*self.getPercentDate(gametime.time-timedelta(days=1),gametime)
+        self.dividendYield = max(0,round(self.dividendYield,2))# round and make sure it is not negative
     def getValue(self):
         """Returns the price of the stock"""
         return self.price
@@ -207,6 +220,10 @@ class Stock():
                     self.graphs[grange] = np.array(data[i])# add the contents to the graphs
                 else:
                     self.graphs[grange] = np.array([100])# if the file is empty then set the graph to 100
+            if data[-3] != None and data[-3] != []:
+                self.dividendYield = data[-3]# the dividend yield
+            else:
+                self.dividendYield = randint(0,500)/100# dividend Percentage - starts at a certain amount, every day it is updated each day based how it performed
             if len(data[-2]) > 0:
                 self.priceEffects = StockPriceEffects(self,gametime,fileData=data[-2]) 
             else:
@@ -226,7 +243,8 @@ class Stock():
                     item[i] = float(item[i])
                 json_item = json.dumps(item.tolist())  # Convert the list to a JSON string
                 file.write(json_item + '\n')  # Write the JSON string to the file with a newline character
-            
+
+            file.write(json.dumps(self.dividendYield)+'\n')
             d1 = [d.savingInputs() for d in self.priceEffects.pastReports]
             d2 = [d.savingInputs() for d in self.priceEffects.futureReports]
             file.write(json.dumps([d1,d2])+'\n')
@@ -238,7 +256,7 @@ class Stock():
     def addpoint(self, lastprice, multiplier=1,maxstep=25):
         """returns the new price of the stock
         maxstep is the maximum multiplier added to 1 price movement, a lower value will make it more accurate but slower"""
-        vol = int(self.volatility+self.priceEffects._modifers["volatility"])# the volatility of the stock
+        vol = int(self.givenVolatility+self.priceEffects._modifers["volatility"])# the volatility of the stock
         tempP = self.priceEffects._modifers["priceTrend"]# the temporary price trend
         while multiplier > 0:
             step = multiplier % maxstep if multiplier < maxstep else maxstep# how much to multiply the movement by
@@ -300,8 +318,8 @@ class Stock():
         # print(f"Total trend is {totalTrend}")
         # Now that we have total trend we can calculate the price
         # totalTrend = totalTrend if totalTrend >= 0 else -1 * totalTrend# if the total trend is negative, then divide it by 2
-        highvolitity = int(totalTrend + self.volatility/distance)# the highest volitility that the stock can have
-        lowvolitity = int(totalTrend - self.volatility/distance)# the lowest volitility that the stock can have
+        highvolitity = int(totalTrend + self.givenVolatility/distance)# the highest volitility that the stock can have
+        lowvolitity = int(totalTrend - self.givenVolatility/distance)# the lowest volitility that the stock can have
         
         # factor = (randint(lowvolitity, highvolitity) / 500_000) * distance # the factor that the price will be multiplied by
         # lastprice = lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
@@ -310,7 +328,7 @@ class Stock():
         try:
             factor = (randint(lowvolitity, highvolitity) / 20_000_000) * distance# the factor that the price will be multiplied by
         except:
-            raise ValueError(f"Highvolitity: {highvolitity}, Lowvolitity: {lowvolitity}, Total trend: {totalTrend}, Volatility: {self.volatility}")
+            raise ValueError(f"Highvolitity: {highvolitity}, Lowvolitity: {lowvolitity}, Total trend: {totalTrend}, Volatility: {self.givenVolatility}")
         lastprice = lastprice * (1 + factor)
         # print(lastprice,self.name)
         # if lastprice > 1000000:

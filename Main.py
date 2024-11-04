@@ -35,7 +35,9 @@ pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
 
 clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
-stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
+# stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
+stocknames = ['QSYN','NRLX','CMDX','PRBM','GFRG','ASCS','BGTX','MCAN','VITL']
+stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
 # stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
 stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(218, 112, 214),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 
@@ -45,10 +47,10 @@ gametime = GameTime("01/01/2030 00:00:00")
 setGameTime(gametime)
 player = Player(stocknames,stockcolors[-1],transact,gametime)
 # stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
-stockdict = {name:Stock(name,stockcolors[i],gametime) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+stockdict = {name:Stock(name,stockcolors[i],gametime,stockVolatilities[i]) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 indexfundColors = [(217, 83, 149),(64, 192, 128),(138, 101, 235)]
-indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(["V & V","A & A", "R & R"])]# high,med,low risk
+indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(["TDIF","IEIF", "FHMF"])]# Tech, industrial, health
 tmarket = TotalMarket(gametime,stocklist)
 indexFunds.append(tmarket)
 indexFundDict = {fund.name: fund for fund in indexFunds}
@@ -119,13 +121,13 @@ if __name__ == "__main__":
 
         if gametime.advanceTime(uiControls.gameplay_speed,autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
-            player.newDay(gametime)
+            player.newDay(gametime,stocklist)
         
         if gametime.isOpen()[0]:# if the market is open
             if uiControls.gameplay_speed > 0:# if the game is not paused
                 for stock in stocklist:
                     stock.update_price(uiControls.gameplay_speed,Player)
-                    stock.priceEffects.update(gametime,screen)
+                    stock.priceEffects.update(gametime,screen,player)
                     
                 # player.update_price(uiControls.gameplay_speed,Player)
                 player.gameTick(uiControls.gameplay_speed,gametime)

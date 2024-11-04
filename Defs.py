@@ -5,7 +5,7 @@ from random import randint
 from collections import deque
 from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.AssetTypes.StockAsset import StockAsset
-from Classes.AssetTypes.IndexFunds import IndexFundAsset
+from Classes.AssetTypes.IndexFundsAsset import IndexFundAsset
 from Classes.AssetTypes.LoanAsset import LoanAsset
 import numpy as np
 from datetime import datetime, timedelta
@@ -475,13 +475,13 @@ def time_loop(loop):
         return result
     return wrapper
 def setGameTime(gametime):
-    with open('Assets/Stockdata/extradata.json','r') as file:
+    with open('Assets/extradata.json','r') as file:
         data = json.load(file)
         if data:
             gametime.setTimeStr(data[0])
             # return gametime
 def Getfromfile(stockdict:dict,indexFunds:dict,player,gametime):
-    with open('Assets/Stockdata/extradata.json','r') as file:
+    with open('Assets/extradata.json','r') as file:
         data = json.load(file)
         print(data)
         if data:
@@ -509,7 +509,7 @@ def Writetofile(stocklist,player,data):
         stock.save_data()
     player.save_data()
     
-    with open('Assets/Stockdata/extradata.json','w') as file:
+    with open('Assets/extradata.json','w') as file:
         file.seek(0)# go to the start of the file
         file.truncate()# clear the file
         json.dump(data,file)

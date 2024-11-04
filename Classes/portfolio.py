@@ -303,69 +303,57 @@ class Portfolio(Menu):
             """returns the yearly return of the asset"""
             diff = gametime.time-asset.dateobj
             if diff.days <= 365: return asset.getPercent()
-            # extra = 100 if asset.getPercent() > 0 else -100
-            # percent = abs(asset.getPercent()); days = 365/diff.days
-            # return (((1+(percent/100)) ** days)-1) * extra
+
             if asset.getPercent() < 0:
-                # print(1+((asset.getPercent())/100),365/diff.days,((1+((asset.getPercent())/100))**(365/diff.days)),1-((1+((asset.getPercent())/100))**(365/diff.days)))
                 return (1-((1+((asset.getPercent())/100))**(365/diff.days))) * -100
             return (((1+(asset.getPercent()/100))**(365/diff.days))-1) * 100
         
-        purchaseDetailsText = s_render(f"Purchase Details", 50, (255, 255, 255))
-        screen.blit(purchaseDetailsText, (880, 660))
-        # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(870, 710, purchaseDetailsText.get_width()+30, 10))
+        # purchaseDetailsText = s_render(f"Purchase Details", 50, (255, 255, 255))
+        # screen.blit(purchaseDetailsText, (880, 660))
+        drawCenterTxt(screen,f"Purchase Details",45,(220,220,220),(1047,655),centerY=False)
 
-        # screen.blit(s_render(f"DOP : {asset.date}", 40, (190, 190, 190)), (880, 730))
-        # screen.blit(s_render(f"{(gametime.time-asset.dateobj).days} days ago", 40, (190, 190, 190)), (880, 770))
-        yearlyReturn = getYearlyReturn(asset,gametime); eText = "+" if yearlyReturn > 0 else ""
-        # screen.blit(s_render(f"{eText}{limit_digits(yearlyReturn,15)}% Per Year", 40, (190, 190, 190)), (880, 810))
-        percentDiff = asset.getPercent()-self.totalmarket.getPercentDate(asset.dateobj,gametime); eText = "+" if percentDiff > 0 else ""
-        # screen.blit(s_render(f"{eText}{limit_digits(percentDiff,15)}% Vs Market (1Y)", 40, (190, 190, 190)), (880, 850))
+        yearlyReturn = getYearlyReturn(asset,gametime)
+
+        percentDiff = asset.getPercent()-self.totalmarket.getPercentDate(asset.dateobj,gametime)
+
         info = [
-            (f"DOP",f"{asset.date}"),
+            (f"DOP",f"{asset.dateobj.strftime('%m/%d/%Y')}"),
             (f"Days",f"{(gametime.time-asset.dateobj).days}"),
-            (f"Yearly Return",f"{eText}{limit_digits(yearlyReturn,15)}%"),
-            (f"Vs Market (1Y)",f"{eText}{limit_digits(percentDiff,15)}%"),         
+            (f"Yearly Return",f"{limit_digits(yearlyReturn,15)}%"),       
         ]
         drawLinedInfo(screen,(870,690),(355,260),info,40,(215,215,215))
         # ---------------Right bottom (Asset Specifics)----------------
-        assetSpecificsText = s_render(f"Asset Specifics", 50, (255, 255, 255))
-        screen.blit(assetSpecificsText, (1285, 660))
-        # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(1275, 710, assetSpecificsText.get_width()+30, 10))
+        # assetSpecificsText = s_render(f"Asset Specifics", 50, (255, 255, 255))
+        # screen.blit(assetSpecificsText, (1285, 660))
+        drawCenterTxt(screen,f"Asset Specifics",45,(220,220,220),(1422,655),centerY=False)
+        # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(1275, 710, assetSpecificsText.get_width()+30,10))
 
         if isinstance(asset,StockAsset):
-            dividendYield = (asset.dividends/asset.getOgVal())*100
-            # screen.blit(s_render(f"Total Dividend Yield : {limit_digits(dividendYield,15)}%", 40, (190, 190, 190)), (1285, 730))
 
-            avgYield = 0 if (gametime.time-asset.dateobj).days == 0 else dividendYield/((gametime.time-asset.dateobj).days/365)
-            # screen.blit(s_render(f"Avg Dividend Yield : {limit_digits(avgYield,15)}%", 40, (190, 190, 190)), (1285, 770))
-            # screen.blit(s_render(f"Last Quarter Dividend Yield : N/a", 40, (190,190,190)), (1285, 810))
             info = [
-                (f"Total Dividend Yield", f"{limit_digits(dividendYield,15)}%"),
-                (f"Avg Dividend Yield", f"{limit_digits(avgYield,15)}%"),
-                (f"Last Quarter Dividend Yield", "N/a"),
+                (f"Current Yield", f"{limit_digits(asset.getDividendYield(),15)}%"),
+                (f"Vs Market (1Y)",f"{limit_digits(percentDiff,15)}%"),  
+                (f"Voliatility" ,f"{limit_digits(asset.getVolatility()*100,15)}%"),
             ]
             
         elif isinstance(asset,OptionAsset):
-            # screen.blit(s_render(f"Strike Price : {asset.strikePrice}", 40, (190, 190, 190)), (1285, 730))
-            # screen.blit(s_render(f"Option Type : {asset.getType()}", 40, (190, 190, 190)), (1285, 770))
-            # screen.blit(s_render(f"Voliatility : {limit_digits(asset.getVolatility()*100,15)}%", 40, (190, 190, 190)), (1285, 810))
-            # screen.blit(s_render(f"Exp Date : {asset.getExpDate()}", 40, (190, 190, 190)), (1285, 850))
 
             info = [
                 (f"Strike Price",f"{asset.strikePrice}"),
-                (f"Option Type",f"{asset.getType()}"),
                 (f"Voliatility",f"{limit_digits(asset.getVolatility()*100,15)}%"),
                 (f"Exp Date",f"{asset.getExpDate()}"),
             ]
         elif isinstance(asset,IndexFundAsset):
             # put relevant info for an index fund here
             info = [
-                (f"Total Return" ,f"{limit_digits(asset.getPercent(),15)}%"),
+                (f"Dividend Yield", f"{limit_digits(asset.getDividendYield(),15)}%"),
+                (f"Vs Market (1Y)",f"{limit_digits(percentDiff,15)}%"),  
                 (f"Voliatility" ,f"{limit_digits(asset.getVolatility()*100,15)}%"),
             ]
         drawLinedInfo(screen,(1230,690),(385,260),info,40,(215,215,215))
 
+
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(870, 700, 745, 250), 5, border_radius=10)# border for both the lined infos
         
 
         

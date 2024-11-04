@@ -5,7 +5,7 @@ class IndexFundAsset(Asset):
     def __init__(self,player,stockObj,creationDate,ogValue,quantity,dividends=0,portfolioPercent=None) -> None:
         """Index Fund Asset is a child of the Asset class (StockObj is really a IndexFundObj)"""
         super().__init__(player,stockObj,creationDate,'',ogValue,quantity,portfolioPercent,stockObj.color)
-        self.dividends = 0
+        self.dividends = dividends# the dividends that the stock has given
         
         if portfolioPercent == None:
             self.portfolioPercent = self.getValue(bypass=True)/(player.getNetworth())
@@ -27,4 +27,12 @@ class IndexFundAsset(Asset):
         # print(self.stockObj.price)
         return ((self.stockObj.price) * self.quantity) if fullvalue else self.stockObj.price
 
+    def getDividendYield(self):
+        """returns the dividend yield of the stock"""
+        return round(sum([s.dividendYield for s in self.stockObj.combinStocks])/len(self.stockObj.combinStocks),3)
     
+    def giveDividend(self):
+        """gives the stock asset a dividend"""
+        amount = ((self.getDividendYield()/100)*self.getValue())/12# Monthly dividends
+        self.dividends += amount
+        return amount

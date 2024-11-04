@@ -23,7 +23,7 @@ class StockVisualizer:
         
     def setStockObj(self,stockobj):
         """Changes the stock object that the visualizer is using"""
-        if stockobj == None or type(stockobj) != type(self.stockObj):
+        if stockobj == None:
             return
         self.stockObj = stockobj
     
@@ -53,37 +53,7 @@ class StockVisualizer:
         time_offset -= timedelta(seconds=seconds)# add a day to the time offset
         return time_offset
     
-    # def priceMouseOver(self,screen:pygame.Surface,graphpoints,spacing,coords,wh,truegraphrange):
-    #     """Displays the price of the stock where the mouse is hovering"""
-    #     mousex,mousey = pygame.mouse.get_pos()
-    #     blnkspacex = ((coords[0]+wh[0]-coords[0])//10)
-    #     coords = (coords[0]+blnkspacex+10,coords[1])
-    #     wh = (wh[0],wh[1])
-    #     if pygame.Rect(coords[0],coords[1],wh[0],wh[1]).collidepoint(mousex,mousey):
-
-    #         pos = (mousex-coords[0])//spacing
-    #         if pos < len(self.stockObj.graphs[truegraphrange]):
-    #             mousepoint = (len(self.stockObj.graphs[truegraphrange])-pos)# the amount of points from the mouse to the end of the graph (just the index of the point in the graph list)
-
-    #             time_offset = self.calculateTime(truegraphrange,mousepoint)# gets the time of the stock where the mouse is hovering
-    #             percentchange = round(((self.stockObj.graphs[truegraphrange][int(pos)]/self.stockObj.graphs[truegraphrange][0])-1)*100,2)
-    #             color = p3choice((200,0,0),(0,200,0),(200,200,200),percentchange)
-
-    #             valuetext = s_render(f'${self.stockObj.graphs[truegraphrange][int(pos)]:,.2f}',60,color)# the value of the stock
-    #             timeTxt = s_render(f'{time_offset.strftime("%m/%d/%Y %I:%M %p")}',30,(255,255,255))# renders the cursor time
-    #             # percent = s_render(f'{limit_digits(percentchange,15)}%',30,color)
-                
-
-    #             gfxdraw.line(screen,mousex,coords[1]+wh[1]-5,mousex,coords[1]+5,(255,255,255))
-    #             gfxdraw.filled_circle(screen,mousex,int(graphpoints[int(pos)]),5,(255,255,255))
-
-    #             x = coords[0]+wh[0]-timeTxt.get_width()-30
-    #             pygame.draw.rect(screen,(0,0,0),pygame.Rect(x,coords[1]+5,timeTxt.get_width()+20,95),5,10)
-
-    #             # x = mousex if mousex > coords[0]+110 else coords[0]+110
-    #             # screen.blit(percent,(x+8,coords[1]+15))# the percent change of the stock
-    #             screen.blit(valuetext,(x+8,coords[1]+15))# the value of the stock
-    #             screen.blit(timeTxt,(x+8,coords[1]+70))# blits the cursor time to the screen
+   
     def priceMouseOver(self,screen:pygame.Surface,graphpoints,spacing,coords,wh,truegraphrange):
         """Displays the price of the stock where the mouse is hovering"""
         mousex,mousey = pygame.mouse.get_pos()
@@ -127,9 +97,10 @@ class StockVisualizer:
         blnkspacey = ((coords[1]+wh[1]-coords[1])//10)
         coords = (coords[0]+blnkspacex,coords[1])
         wh = (wh[0]-blnkspacex*2,wh[1]-blnkspacey)
+        
         if not (collide:=pygame.Rect(coords[0],coords[1],wh[0],wh[1]).collidepoint(mousex,mousey)) and not pygame.mouse.get_pressed()[0]:
             longHover = None
-        elif not pygame.Rect(coords[0]-blnkspacex,coords[1],wh[0]+blnkspacex*2,wh[1]).collidepoint(mousex,mousey):#if it left the entire graph and surrounding area
+        elif not pygame.Rect(coords[0]-blnkspacex,coords[1],wh[0]+blnkspacex*2,wh[1]+blnkspacey).collidepoint(mousex,mousey):#if it left the entire graph and surrounding area
             longHover = None
         else:# if the mouse is in the range of the graph
             if not pygame.mouse.get_pressed()[0] and collide:# if the mouse is not being clicked
@@ -261,7 +232,7 @@ class StockVisualizer:
             if pygame.Rect(coords[0]+wh[0],coords[1]+(i*drawingy),blnkspacex,extraheight).collidepoint(pygame.mouse.get_pos()):
                 points = [(coords[0]+wh[0],coords[1]+(i*drawingy)), (coords[0]+wh[0],coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex, coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex,coords[1]+(i*drawingy))]
                 gfxdraw.filled_polygon(screen, points,(100,100,100,150))
-                if pygame.mouse.get_pressed()[0] and self.longHover == None:
+                if pygame.mouse.get_pressed()[0] and self.longHover == None and self.longHovers.get(graphrange) == None:
                     self.storedRanges[graphrange] = txt
           
 

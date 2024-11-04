@@ -13,7 +13,7 @@ from Classes.imports.SelectionElements import SelectionBar,MenuSelection
 from Classes.imports.PerfChart import PerfChart
 from Classes.imports.Numpad import Numpad
 from Classes.imports.OrderBox import OrderBox
-from Classes.AssetTypes.IndexFunds import IndexFundAsset
+from Classes.AssetTypes.IndexFundsAsset import IndexFundAsset
 from Classes.imports.Latterscroll import LinedLatter
 from Classes.AssetTypes.LoanAsset import LoanAsset
 import datetime
@@ -199,10 +199,10 @@ class TransactionScreen:
         drawCenterTxt(screen,"STATS",70,(220,220,220),(415,210),centerY=False)
         pygame.draw.rect(screen,(0,0,0),(200,265,430,705),5,border_radius=10)# rect for the stats
 
-        vals = [self.player.lifeTimeVolume,self.player.realizedGains,self.player.taxesPaid,self.player.underTakenDebt,self.player.assetsTraded]
+        vals = [self.player.lifeTimeVolume,self.player.realizedGains,self.player.taxesPaid,self.player.underTakenDebt,self.player.assetsTraded,self.player.interestPaid]
 
-        strs = ["Lifetime Volume","Gains (Realized)","Taxes Paid","Debt UnderTaken","Assets Traded"]
-        data = [(string,("$"+limit_digits(val,20,val > 10000)) if string != strs[-1] else limit_digits(val,25,True)) for string,val in zip(strs,vals)]
+        strs = ["Lifetime Volume","Gains (Realized)","Taxes Paid","Debt UnderTaken","Assets Traded","Interest Paid"]
+        data = [(string,("$"+limit_digits(val,20,val > 10000)) if string != strs[-2] else limit_digits(val,25,True)) for string,val in zip(strs,vals)]
         drawLinedInfo(screen,(210,275),(410,680),data,40,(220,220,220),diffSizes=(35,55))
 
 
@@ -428,16 +428,26 @@ class LoanScreen:
             drawCenterTxt(screen,f"{self.sideScroll.getCard().name}",45,(180,180,180),(375,300),centerY=False)
         
 
-        drawCenterTxt(screen, 'One Time Payment', 45, (180, 180, 180), (575,225), centerX=False,centerY=False)
+        drawCenterTxt(screen, 'One Time Payment', 45, (180, 180, 180), (715,225), centerY=False)
 
-        drawCenterTxt(screen, 'Principal Remaining', 45, (180, 180, 180), (1135,225), centerX=False,centerY=False)
-        drawBoxedTextWH(screen, (1130,260), (300,65), f"${limit_digits(loan.principalLeft,20,loan.principalLeft>1000)}", 55, (220,220,220))
+        # drawCenterTxt(screen, 'Principal Remaining', 45, (180, 180, 180), (1135,225), centerX=False,centerY=False)
+        # drawBoxedTextWH(screen, (1130,260), (300,65), f"${limit_digits(loan.principalLeft,20,loan.principalLeft>1000)}", 55, (220,220,220))
         
-        drawCenterTxt(screen, 'Principal Paid', 45, (180, 180, 180), (1135,330), centerX=False,centerY=False)
-        drawBoxedTextWH(screen, (1130,365), (300,65), f"${limit_digits(loan.principal,20,loan.principal>1000)}", 55, (220,220,220))
+        # drawCenterTxt(screen, 'Principal Paid', 45, (180, 180, 180), (1135,330), centerX=False,centerY=False)
+        # drawBoxedTextWH(screen, (1130,365), (300,65), f"${limit_digits(loan.principal,20,loan.principal>1000)}", 55, (220,220,220))
         
-        drawCenterTxt(screen, 'Interest Paid', 45, (180, 180, 180), (1135,435), centerX=False,centerY=False)
-        drawBoxedTextWH(screen, (1130,470), (300,65), f"${limit_digits(loan.interestPaid,20,loan.interestPaid>1000)}", 55, (220,220,220))
+        # drawCenterTxt(screen, 'Interest Paid', 45, (180, 180, 180), (1135,435), centerX=False,centerY=False)
+        # drawBoxedTextWH(screen, (1130,470), (300,65), f"${limit_digits(loan.interestPaid,20,loan.interestPaid>1000)}", 55, (220,220,220))
+        info = [
+            ('Principal Remaining',f"${limit_digits(loan.principalLeft,20,loan.principalLeft>1000)}"),
+            ("Principal Paid",f"${limit_digits(loan.principal,20,loan.principal>1000)}"),
+            ("Interest Paid",f"${limit_digits(loan.interestPaid,20,loan.interestPaid>1000)}"),
+            ("Term Remaining",f"{loan.termLeft} Months"),
+            ("Original Term",f"{loan.term} Months"),
+        ]
+        drawLinedInfo(screen,(875,225),(550,300),info,40,(200,200,200))
+        pygame.draw.rect(screen,(0,0,0),(870,225,560,310),5,border_radius=10)# box for the loan info
+
         if not self.addingPayment:
             result = drawClickableBoxWH(screen, (565,260), (300,65),"+ Add Payment", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
             if result: self.addingPayment = True
@@ -503,7 +513,6 @@ class LoanScreen:
             ("Total Debt",f"${limit_digits(self.player.getCurrentDebt(),20,self.player.getCurrentDebt()>1000)}"),
             ("# of Loans",f"{len(self.player.loans)}"),
             ("Monthly Payment",f"${limit_digits(self.player.getMonthlyPayment(),20,self.player.getMonthlyPayment()>1000)}"),
-            # ("Average Interest",f"{limit_digits(self.player.getAvgInterest(),20)}%")
             ("Interest Rate",f"{limit_digits(self.interestRate*100,20)}%")
         ]
         drawLinedInfo(screen,(1455,615),(435,355),info,40,(215,215,215))
@@ -541,21 +550,21 @@ class InvestmentScreen:#
         self.fundNumpad = Numpad(False,maxDecimals=0)
         self.fundOrderBox = OrderBox((1410,670),(475,300))
 
-        self.indexFunds = indexFunds; self.indexFunds.append(tmarket)
+        self.indexFunds = indexFunds.copy(); self.indexFunds.append(tmarket)
         # self.indexGraphs : dict[str:StockVisualizer] = {}
         # for indexFund in self.indexFunds:
         #     self.indexGraphs[indexFund.name] = StockVisualizer(gametime,indexFund,stocklist)
-        self.indexGraph = StockVisualizer(gametime,self.indexFunds[0],stocklist)
+        self.indexGraph = StockVisualizer(gametime,self.indexFunds[0],self.indexFunds)
 
         self.fundSelection = SelectionBar(horizontal=False)
         self.fundPerfChart = PerfChart((620,300))
         
-        self.getRealSelc = lambda fakeSelect: ['Velocity Ventures','Adaptive Allocation','Reliable Returns',"Total Market"][["V & V","A & A", "R & R", "Total"].index(fakeSelect)]# Need since the fund names are abbreviated
+        self.getRealSelc = lambda fakeSelect: ['Tech Digital Innovation Fund','Industrial Evolution Index Fund','Future Health Momentum',"Total Market"][["TDIF","IEIF", "FHMF","Total"].index(fakeSelect)]# Need since the fund names are abbreviated
         
         self.fundDescriptions = {
-            "V & V":"Velocity Ventures is a high risk, high reward index fund that focuses on emerging markets and technology companies. It contains the stocks with the tickers DRON, FACE, FARM.",
-            "A & A":"Adaptive Allocation is a medium risk, medium reward index fund that focuses on a diversified portfolio of companies. It contains the stocks with the tickers HOLO, SUNR, BOTS.",
-            "R & R":"Reliable Returns is a low risk, low reward index fund that focuses on stable companies and industries. It contains the stocks with the tickers GENX, NEUR, STAR",
+            "TDIF":"A specialized technology sector fund tracking emerging tech companies focused on quantum computing, neural interfaces, and cloud solutions, weighted based on market capitalization and innovation potential scores from industry analysts. (QSYN,NRLX,CMDX)",
+            "IEIF":"A comprehensive industrial sector fund following next-generation manufacturing and logistics companies, with emphasis on automation, sustainable materials, and supply chain optimization. Portfolio balanced between established and emerging players. (PRBM, GFRG, ASCS)",
+            "FHMF":"A healthcare sector fund tracking companies in personalized medicine, healthcare analytics, and senior care services. Weighted using a proprietary blend of clinical trial progress, market share, and long-term growth metrics. (BGTX, MCAN, VITL)",
             "Total":"Total Market is a index fund that tracks the entire market, providing a diversified portfolio of companies. It contains all 9 stocks in the market."
         }
         
@@ -572,18 +581,22 @@ class InvestmentScreen:#
         
 
     def drawIndexFundInfo(self,screen,mousebuttons,gametime,fund):
-        drawCenterTxt(screen,self.getRealSelc(fund.name),60,fund.color,(1167,220),centerY=False)
+        """Draws the information for the index fund (middle of the screen)"""
+        drawCenterTxt(screen,self.getRealSelc(fund.name),50 if fund.name != "Total" else 60,fund.color,(1167,220),centerY=False)
+        lines = 7
+        if fund.name == "Total":
+            lines = 5
 
         txt = self.fundDescriptions[fund.name]
 
-        txt = separate_strings(txt,6)
+        txt = separate_strings(txt,lines)
         for i,line in enumerate(txt):
             # screen.blit(s_render(line,30,(220,220,220)),(1425,300+(i*40)))
-            drawCenterTxt(screen,line,35,(220,220,220),(1167,300+(i*40)))
+            drawCenterTxt(screen,line,35,(180,180,180),(1167,300+(i*40)))
 
     def drawIndexFunds(self,screen,mousebuttons,gametime):
 
-        self.fundSelection.draw(screen,["V & V","A & A", "R & R", "Total"],(200,210),(100,355),mousebuttons,colors=[f.color for f in self.indexFunds])
+        self.fundSelection.draw(screen,["TDIF","IEIF", "FHMF","Total"],(200,210),(100,355),mousebuttons,colors=[f.color for f in self.indexFunds])
         
 
         if self.fundSelection.getSelected() != None:

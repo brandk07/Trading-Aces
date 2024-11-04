@@ -84,7 +84,7 @@ class CdCard(ScrollCard):
 
         self.surf.blit(s_render("CD",120,(0,0,0)),(0+10,0+10))
 
-        drawCenterTxt(self.surf,f"{self.data['duration']} Months",55,(0,0,0),(0+wh[0]-15,0+30),centerX=False,centerY=False,fullX=True)
+        drawCenterTxt(self.surf,f"{self.data['duration']} Month{'s' if self.data['duration'] > 0 else ''}",55,(0,0,0),(0+wh[0]-15,0+30),centerX=False,centerY=False,fullX=True)
 
         drawCenterTxt(self.surf,f"{round(self.data['apr'],2)}%",130,(225,225,225),(0+wh[0]//2,0+wh[1]//2))
 

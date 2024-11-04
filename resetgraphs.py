@@ -91,7 +91,8 @@ from Defs import GRAPHRANGES
 # data = [[100, [0,0,0,0,0,0,0]]]*10
 data = []
 # stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO','Net Worth',"Total Market"]
-stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR','Net Worth']
+# stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR','Net Worth']
+stocknames = ['QSYN','NRLX','CMDX','PRBM','GFRG','ASCS','BGTX','MCAN','VITL','Net Worth']
 stockdict = {name:np.array(data,dtype=object) for name in stocknames}
 
 start_time = timeit.default_timer()
@@ -99,15 +100,15 @@ start_time = timeit.default_timer()
 
 
 # # Delete every file in the directory
-# for filename in os.listdir(directory):
-#     file_path = os.path.join(directory, filename)
-#     try:
-#         if os.path.isfile(file_path) or os.path.islink(file_path):
-#             os.unlink(file_path)
-#         elif os.path.isdir(file_path):
-#             shutil.rmtree(file_path)
-#     except Exception as e:
-#         print(f'Failed to delete {file_path}. Reason: {e}')
+for filename in os.listdir(directory):
+    file_path = os.path.join(directory, filename)
+    try:
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.unlink(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+    except Exception as e:
+        print(f'Failed to delete {file_path}. Reason: {e}')
 
 # Now create the new files
 for name in stocknames:
@@ -120,11 +121,11 @@ for name in stocknames:
         # json.dump([], f)
         f.seek(0)  # go to the start of the file
         f.truncate()  # clear the file
-        for i in range(len(GRAPHRANGES+["trends"])):
+        for i in range(len(GRAPHRANGES+["trends"])+1):
             json_item = json.dumps([])  # Convert the list to a JSON string
             f.write(json_item + '\n') 
 
-with open(f"{directory}/extradata.json", "w+") as f:
+with open(f"Assets/extradata.json", "w+") as f:
     json.dump([], f)
 
 with open(r"Assets\\transactions.json", "w+") as f:

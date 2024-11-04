@@ -522,7 +522,7 @@ class Optiontrade(Menu):
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockSelection : SelectionBar = SelectionBar()
         self.screenSelection : MenuSelection = MenuSelection((200, 105), (375, 100),["Buy","Sell"],45,colors=[(100,200,100),(200,100,100)])
-        self.screenSelection.setSelected("Sell")
+        self.screenSelection.setSelected("Buy")
 
         self.orderBox = OrderBox((1040,570),(450,370))
 
@@ -635,7 +635,7 @@ class Optiontrade(Menu):
             f"${self.selectOption.getStrike()}",
             f"{self.selectOption.getExpDate()}",
             f"{self.selectOption.daysToExpiration()}",
-            f"{limit_digits(stock.dividend,12)}%",
+            f"{limit_digits(stock.dividendYield,12)}%",
             f"{limit_digits(stock.getVolatility()*100,12)}%",
             f"{limit_digits(getAllo(self.selectOption.getValue()),12)}%"
         ]
@@ -698,7 +698,7 @@ class Optiontrade(Menu):
                 f"${limit_digits(stock.getPointDate(marketOpenTime,gametime),12)}",
                 f"${limit_digits(max(stock.graphs['1M']),12)}",
                 f"${limit_digits(min(stock.graphs['1M']),12)}",
-                f"{limit_digits(stock.dividend,12)}%",
+                f"{limit_digits(stock.dividendYield,12)}%",
                 f"{limit_digits(stock.getVolatility()*100,12)}%"
             ]
             # info = {key:value for key,value in zip(keys,values)}

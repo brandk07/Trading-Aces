@@ -16,7 +16,7 @@ class Player(Stock):
     def __init__(self,stocknames,color,transact,gametime) -> None:
         """Player class is a child of the Stock class price is the networth of the player"""
         name = 'Net Worth'
-        super().__init__(name,color,gametime)
+        super().__init__(name,color,gametime,0)
         
         self.name = name
         
@@ -44,13 +44,14 @@ class Player(Stock):
         self.messagedict = {}
         self.taxrate = 0.15
         self.transact = transact
-        self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.taxesPaid,self.underTakenDebt = 0,0,0,0,0# Just some extra stats displayed in transaction menu
+        self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.taxesPaid,self.underTakenDebt,self.interestPaid = 0,0,0,0,0,0# Just some extra stats displayed in transaction menu
         self.assetText = {
             StockAsset:'Share',
             OptionAsset:'Option',
             IndexFundAsset:'Share'
         }
         self.gametime = gametime
+        self.dividendYield = None
         self.updateOptions = 0# used to update the options every 120 frames
 
         # self.recent_movementvar = (None,None,(180,180,180)
@@ -63,17 +64,17 @@ class Player(Stock):
     def extraSavingData(self):
         data = []
         data.append(self.lastLoanPayment.strftime("%m/%d/%Y %I:%M:%S %p"))
-        for i in [self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.underTakenDebt,self.taxesPaid]:
+        for i in [self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.underTakenDebt,self.taxesPaid,self.interestPaid]:
             data.append(i)
         return data
     def getExtraData(self,data,gametime):
         if data != None:
             self.lastLoanPayment = datetime.strptime(data[0],"%m/%d/%Y %I:%M:%S %p")
-            self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.underTakenDebt,self.taxesPaid = data[1:]
+            self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.underTakenDebt,self.taxesPaid,self.interestPaid = data[1:]
         else:
             self.lastLoanPayment = gametime.time
 
-    def newDay(self,gametime:datetime):
+    def newDay(self,gametime,stocklist:list):
         """Called at the start of a new day"""
         self.updateOptions = 0
         for option in self.options:
@@ -82,6 +83,8 @@ class Player(Stock):
             print("Option has expired")
             if not self.options[i].optionLive():
                 print("Option has expired for the player")
+        for stock in stocklist:
+            stock.updateDividendYield(gametime)
                 # if not bigMessageList:
                     # bigMessageList.append(OptionMessage(self.options[i]))
             # self.options.pop(i)
@@ -92,7 +95,43 @@ class Player(Stock):
             #     self.options.pop(i)
         # print('new day')
         
-        
+    def payDividend(self,stockObj=None,indexFundObj=None):
+        """Pays the dividend to the player, called by the stock/index object when it reaches a new quarter/Month
+        the stockObj one is called from the stockpriceEffects class in the update() method
+        the indexFundObj is called here in the gameTick() method"""
+        if stockObj == None and indexFundObj == None:
+            return
+        if stockObj != None and (stocksToPay:=[stock for stock in self.stocks if stock.stockObj == stockObj]):# if at least 1 of the stock is in the player's portfolio
+            for stock in stocksToPay:
+                amt = stock.giveDividend()
+
+                for attr in ['cash', 'realizedGains', 'lifeTimeVolume']:
+                    setattr(self, attr, getattr(self, attr) + amt)
+                text = [
+                    f"{self.gametime.getDate()}",
+                    f"Received Dividend from {stockObj.name}",
+                    f"+${limit_digits(amt,12)}",
+                    f"{round(stockObj.dividendYield/4,2)}%",
+                    f"${limit_digits(self.cash,12)}"
+                ]
+                self.transact.addTransaction(*text)
+
+        elif indexFundObj != None and (indexfundsToPay:=[indexfund for indexfund in self.indexFunds if indexfund.stockObj == indexFundObj]):# if at least 1 of the index fund is in the player's portfolio
+            for indexfund in indexfundsToPay:
+                amt = indexfund.giveDividend()
+                indexfund.dividends += amt
+                for attr in ['cash', 'realizedGains', 'lifeTimeVolume']:#
+                    setattr(self, attr, getattr(self, attr) + amt)
+                
+                text = [
+                    f"{self.gametime.getDate()}",
+                    f"Received Dividend from {indexFundObj.name}",
+                    f"+${limit_digits(amt,12)}",
+                    f"{round(indexfund.getDividendYield()/12,2)}%",
+                    f"${limit_digits(self.cash,12)}"
+                ]
+                self.transact.addTransaction(*text)
+
 
     def gameTick(self,gamespeed:int,gametime):
         """Used to update the options every 120 frames"""
@@ -106,7 +145,10 @@ class Player(Stock):
         if (gametime.time-self.lastLoanPayment) > timedelta(days=30):
             self.lastLoanPayment = gametime.time
             for loan in self.loans:
-                self.addLoanPayment(loan,loan.getLoanCalc()) 
+                self.addMonthlyLoanPayment(loan) 
+            for indexfund in self.indexFunds:
+                # indexfund.giveDividend()
+                self.payDividend(indexFundObj=indexfund.stockObj)
 
     def buyAsset(self,newasset,customValue=None):
         """Custom Value will override the current value (Per Share Not Fullvalue)"""
@@ -259,63 +301,43 @@ class Player(Stock):
         return 4.5# ACTUALLY NEED TO CODE THIS SOME OTHER TIME IN THE FUTURE THANKS
     def removeLoan(self,loanObj:LoanAsset):
         """removes the loan from the player"""
-        self.loans.remove(loanObj)
+        
         text = [
             f"{self.gametime.getDate()}",
-            f"Paid off Loan",
-            f"-${limit_digits(loanObj.principal,20,loanObj.principal>1000)}",
-            f"N/A",
-            f"${limit_digits(self.cash-loanObj.principal,20)}"
+            f"Paid off ${limit_digits(loanObj.principal,20,loanObj.principal>1000)} Loan",
+            f"$0",
+            f"-${limit_digits(loanObj.interestPaid,20)}",
+            f"${limit_digits(self.cash,20)}"
         ]
+        self.loans.remove(loanObj)
         self.transact.addTransaction(*text)
 
+    def addMonthlyLoanPayment(self,loanObj):
+        """adds a monthly payment to the loan
+        should be called by the gameTick method
+        This method is purely so that it can minus cash and add the transaction"""
+
+        amount,interest = loanObj.addMonthlyPayment(self)
+        self.cash -= amount
+        self.interestPaid += interest
+        text = [
+            f"{self.gametime.getDate()}",
+            f"Paid ${limit_digits(amount,20,amount>1000)} on Loan",
+            f"-${limit_digits(amount,20,amount>1000)}",
+            f"-${limit_digits(interest,20,interest>1000)}",
+            f"${limit_digits(self.cash,20)}"
+        ]
+        self.transact.addTransaction(*text)
     def addLoanPayment(self,loanObj,amount):
-        """adds a lump sum (one time NOT MONTHLY) loan payment to the loan"""
+        """adds a payment to the loan, NOT A MONTHLY PAYMENT - straight to the principal"""
         self.cash -= loanObj.addPayment(amount,self)
         text = [
             f"{self.gametime.getDate()}",
             f"Paid ${limit_digits(amount,20,amount>1000)} on Loan",
             f"-${limit_digits(amount,20,amount>1000)}",
-            f"N/A",
-            f"${limit_digits(self.cash+amount,20)}"
+            f"0",
+            f"${limit_digits(self.cash,20)}"
         ]
         self.transact.addTransaction(*text)
-        
-            
-    
-    # def message(self,screen:pygame.Surface):
-    #     """displays everything in the self.messagedict, key is the text, value is (time,color))]"""
-    #     keys_to_delete = []
-    #     for i,(text,(starttime,color)) in enumerate(self.messagedict.items()):
-    #         if i < 8 and time.time() < starttime+15:
-    #             #draw a box around the text using gfxdraw filled polygon
-    #             gfxdraw.filled_polygon(screen,[(self.endpos[0],self.endpos[1]+35+(i*40)),(self.startpos[0],self.endpos[1]+35+(i*40)),(self.startpos[0]+10,self.endpos[1]+65+(i*40)),(self.endpos[0]+10,self.endpos[1]+65+(i*40))],color)
-    #             screen.blit(fontlist[25].render(text,(255,255,255))[0],(self.endpos[0]+10,self.endpos[1]+40+(i*40)))
-    #         else:
-    #             if list(self.messagedict.keys())[0] not in keys_to_delete:
-    #                 keys_to_delete.append(list(self.messagedict.keys())[0])
 
-    #     for key in keys_to_delete:
-    #         del self.messagedict[key]
-
-
-    # def graph(self,stocklist:list):
-    #     # print(self.cash,'cash')
-    #     self.stockvalues.clear()
-    #     if self.stocks:#if there are stocks
-    #         bankruptamounts = []#list containing the amount of money lost from each bankrupt stocks - all in 1 message so it doesn't spam the message box
-    #         for stock in self.stocks:
-    #             if isinstance([getStockObj().pricereset_time for getStockObj() in stocklist if getStockObj() == stock[0]][0],float):#checking to see if the getStockObj() has a pricereset_time (if it's bankrupt)
-    #                 if not bankruptamounts:#if there are no amounts in bankruptamounts yet
-    #                     bankruptamounts.append(f'{stock[0]} went bankrupt')#only 1 of these messages
-    #                 bankruptamounts += [stock[1]]#add the amount of money lost from the bankrupt stock to the list
-
-    #                 self.stocks.remove(stock)
-    #             self.stockvalues.append([getStockObj() for getStockObj() in stocklist if getStockObj() == stock[0]][0].price)
-    #         if bankruptamounts:
-    #             self.messagedict[bankruptamounts[0]] = (time.time(),(200,0,0))#add the bankrupt message to the message dict
-    #             bankruptamounts.remove(bankruptamounts[0])#remove the bankrupt message from bankruptamounts
-    #             self.messagedict[f'Lost {round(sum(bankruptamounts),2)} from bankrupt stocks'] = (time.time(),(200,0,0))#add the total amount of money lost from bankrupt stocks to the message dict
-    #         #Make for multiple stocks not just one---------------------------------------------------------------------  probably need a dict instead of banruptamounts list
-            
         

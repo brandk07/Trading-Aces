@@ -19,7 +19,6 @@ class LoanAsset:
         self.term = term
         self.principal = principal
 
-
     def __eq__(self,other):
         if not isinstance(other,LoanAsset):
             return False
@@ -33,6 +32,7 @@ class LoanAsset:
         rate = self.rate if rate == None else rate
         term = self.termLeft if term == None else term
         principal = self.principalLeft if principal == None else principal
+
         return npf.pmt(rate / 12, term, -principal)
     def getOGVals(self) -> tuple:
         """Returns the values when the loan was created -> (monthly payment, total payment, total interest)"""
@@ -57,13 +57,14 @@ class LoanAsset:
     def addMonthlyPayment(self,player) -> float:
         """Add monthly payment to the loan - SHOULD BE CALLED BY THE PLAYER SO THAT THE MONEY COMES THROUGHT THE PLAYER CLASS"""
         payment = self.getLoanCalc()
-        interest = self.principalLeft * self.rate / 12
+        interest = self.principalLeft * (self.rate / 12)
         self.interestPaid += interest
-        self.principalLeft -= payment - interest
+        self.principalLeft -= (payment - interest)
+        print(interest,self.principalLeft, (self.rate / 12),payment,self.interestPaid)
         self.termLeft -= 1
         if self.principalLeft < .01:
             player.removeLoan(self)
-        return payment
+        return payment,interest
 
     def addPayment(self,amount,player) -> float:
         """Add One time payment to the loan - SHOULD BE CALLED BY THE PLAYER SO THAT THE MONEY COMES THROUGHT THE PLAYER CLASS"""
@@ -72,3 +73,5 @@ class LoanAsset:
         if self.principalLeft < .01:
             player.removeLoan(self)
         return amount
+
+    

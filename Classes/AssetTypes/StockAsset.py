@@ -5,7 +5,7 @@ class StockAsset(Asset):
     def __init__(self,player,stockObj,creationDate,ogValue,quantity,dividends=0,portfolioPercent=None) -> None:
         """Stock Asset is a child of the Asset class"""
         super().__init__(player,stockObj,creationDate,'',ogValue,quantity,portfolioPercent,stockObj.color)
-        self.dividends = 0
+        self.dividends = dividends# the dividends that the stock has given
         
         if portfolioPercent == None:
             self.portfolioPercent = self.getValue(bypass=True)/(player.getNetworth())
@@ -26,9 +26,13 @@ class StockAsset(Asset):
         # print(self.stockObj.price)
         return ((self.stockObj.price) * self.quantity) if fullvalue else self.stockObj.price
 
-    def giveDividend(self,transact):
+    def giveDividend(self):
         """gives the stock asset a dividend"""
-        amount = (self.stockObj.dividend*self.getValue())/4# quarterly dividends
+        amount = ((self.stockObj.dividendYield/100)*self.getValue(bypass=True))/4# quarterly dividends
         self.dividends += amount
-        transact.addTransaction(f"Received ${amount} in dividends from",f"{self.stockObj.name}",f"Total Dividends ${self.dividends}")
+        
+        return amount
+    def getDividendYield(self):
+        """returns the dividend yield of the stock"""
+        return round(self.stockObj.dividendYield,3)
     
