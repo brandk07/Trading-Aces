@@ -42,7 +42,9 @@ class StockPriceEffects:
 
         self._modifers = {"priceTrend":0,"volatility":0}
         self.parentStock = parentStock
-
+    def daysTillNextReport(self,gametime:GameTime):
+        """Returns the days until the next report"""
+        return (self.futureReports[0].getTime()-gametime.time).days
     def createPastReports(self,gametime:GameTime,currQ:int):
         """Creates the past reports for the stock"""
         pastList = []

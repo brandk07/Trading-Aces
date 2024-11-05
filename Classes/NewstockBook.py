@@ -38,7 +38,7 @@ class Stockbook2(Menu):
         self.currentMDisp = self.middleDisplays[0]
         self.oScreenDisp = False
         self.reportPieChart : PieChart = PieChart(125,(940,700))
-        self.reportBarGraph : BarGraph = BarGraph("Report Likelyhood",(450,190),(940,740))
+        self.reportBarGraph : BarGraph = BarGraph("Report Outlook",(450,190),(940,740))
         self.barSelection : SelectionBar = SelectionBar()
 
         
@@ -211,6 +211,7 @@ class Stockbook2(Menu):
         pygame.draw.rect(screen,(20,20,20),(200,625,550,325),border_radius=10)
         pygame.draw.rect(screen,(0,0,0),(200,625,550,325),5,10)
         screen.blit(s_render(self.selectedStock.name,90,self.selectedStock.color),(210,635))# blits the stock name to the screen
+        
         for i,line in enumerate(self.stocktext[self.selectedStock.name]):
             x,y = (210 if i != 0 else self.renderedstocknames[self.selectedStock.name].get_width()+215),(725+((i-1)*40) if i != 0 else 650)
             screen.blit(line,(x,y))

@@ -12,9 +12,25 @@ class OrderBox:
         
     def loadData(self,quantStr:str,totalStr:str,extraData:list[tuple[str,str,str]]) -> None:
         """extraData is [(key,value,middleVal)]"""
-        self.extraData = extraData
-        self.extraData.append(("Total",totalStr,""))
-        self.quantStr = quantStr
+        
+        # Condensed code
+        def update_extra_data():
+            self.extraData = extraData
+            self.extraData.append(("Total", totalStr, ""))
+            self.quantStr = quantStr
+
+        if self.stage == 1:
+            if self.extraData[0][0] == "Quantity":
+                extra_slice = self.extraData[1:-1]
+            else:
+                extra_slice = self.extraData[:-1]
+            if extra_slice != extraData or self.quantStr != quantStr:
+                self.stage = 0
+                update_extra_data()
+        else:
+            update_extra_data()
+        
+
 
     def draw(self,screen:pygame.Surface,mousebuttons:int,resetClicked=True) -> bool:
         """Returns True if the confirm button is pressed resets after confirm button is pressed"""
@@ -29,9 +45,10 @@ class OrderBox:
             # DRAWING THE EXTRA DATA
             x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)+10
             w,h = self.wh[0]-20,(self.wh[1]//5)*3-15
-            data = [(key,value) for key,value,middle in self.extraData]
-            middle = [middle for key,value,middle in self.extraData]
-            drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middle)
+            if self.extraData:
+                data = [(key,value) for key,value,middle in self.extraData]
+                middle = [middle for key,value,middle in self.extraData]
+                drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middle)
             
             # DRAWING THE PROCEED BUTTON
             x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)*4-5
@@ -47,7 +64,9 @@ class OrderBox:
             # DRAWING THE EXTRA DATA
             x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)+10
             w,h = self.wh[0]-20,(self.wh[1]//5)*4
-            self.extraData.insert(0,("Quantity",self.quantStr,""))
+            if self.extraData[0][0] == "Quantity":
+                self.extraData[0] = ("Quantity",self.quantStr,"")
+                
             data = [(key,value) for key,value,middle in self.extraData]
             middle = [middle for key,value,middle in self.extraData]
             drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middle)

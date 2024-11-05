@@ -51,11 +51,11 @@ class Portfolio(Menu):
         self.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
         self.piechart = PieChartSideInfo(150, (200, 650),menuList)
         self.barGraphs = [BarGraph("Value",[175,175],[875,400]),BarGraph("Allocation",[175,175],[1150,400])]
-        self.orderBox = OrderBox((465,600),(385,360))
+        self.orderBox = OrderBox((465,605),(385,370))
         self.barSelection : SelectionBar = SelectionBar()
 
         # for the asset type selection which sorts the latterscroll
-        # self.assetoptions = ["Stocks","Options","Other"]# future, Crypto, bonds, minerals, real estate, etc
+        # self.assetoptions = ["Stock","Option","Other"]# future, Crypto, bonds, minerals, real estate, etc
         self.assetoptions = ["Stocks","Options","Index"]
         self.displayed_asset_type = ["Stocks","Options","Index"]
 
@@ -68,7 +68,15 @@ class Portfolio(Menu):
         self.latterscrollselect = PortfolioLatter()
         self.numpad = Numpad()
  
-        
+    def setSelectedAsset(self,asset):
+        """Sets the selected asset"""
+        def get_second(asset):
+            text = self.classtext[type(asset)]
+            return f"{limit_digits(asset.quantity,20,truncate=True)} {text}{'' if asset.quantity == 1 else 's'}"
+        nameDict = {StockAsset:"Stocks",OptionAsset:"Options",IndexFundAsset:"Index"}
+        if nameDict[type(asset)] not in self.displayed_asset_type:# Ensures that the asset type is displayed
+            self.displayed_asset_type.append(nameDict[type(asset)])
+        self.selectedAsset = [asset, get_second(asset)]
     def getpoints(self, w1, w2, w3, x, y):
         """returns the points for the polygon of the portfolio menu""" 
         # top left, top right, bottom right, bottom left
@@ -227,26 +235,25 @@ class Portfolio(Menu):
         # color = ((200,0,0) if asset.getPercent() < 0 else (0,200,0)) if asset.getPercent() != 0 else (200,200,200)
         quantity = self.numpad.getValue()# gets the quantity from the numpad
         netgl = (asset.getValue(bypass=True,fullvalue=False) - asset.getOgVal())*quantity# net gain/loss
-        taxedamt = 0 if netgl <= 0 else netgl*player.taxrate# the amount taxed
-        percent = asset.getPercent()
-        # descriptions = [s_render("Net Gain" if asset.getPercent() > 0 else "Net Loss", 25, (230,230,230)),
-        # descriptions = [s_render(p3choice("Net Loss","Net Gain", "",percent), 25, (230,230,230)),
-        #     s_render(f"Taxes ({player.taxrate*100}%)", 25, (230, 230, 230)),
-        #     s_render("Final Value (After Tax)", 25, (230, 230, 230)),]
+        taxedAmt = 0 if netgl <= 0 else netgl*player.taxrate# the amount taxed
+        value = asset.getValue(fullvalue=False)*quantity
+        feeAmt = value*0.02# the amount taxed
+        value -= taxedAmt
         
-        # texts = [s_render(f"${limit_digits(netgl,10)}", 70, p3choice((200, 0, 0),(0,200,0),(200,200,200),percent)),
-        #     s_render(f"-${limit_digits(abs(taxedamt),10)}", 70, p3choice((200, 0, 0),(0,0,0),(90,90,90),-taxedamt)),
-        #     s_render(f"${limit_digits((asset.getValue(fullvalue=False)*quantity)-taxedamt,15)}", 70, (190, 190, 190)),]
-        
+        if type(asset) == OptionAsset:# Options need the extra fee
+            value -= feeAmt
+            data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),15)}","x"),(f"{(player.taxrate*100)}% Tax", f"${limit_digits(taxedAmt,22)}","-"),(f"2% Option Fee", f"${limit_digits(feeAmt,22)}","-")]
+            self.orderBox.loadData(self.numpad.getNumstr(self.classtext[type(asset)]),f"${limit_digits(value,22)}",data)
+ 
+        else:
+            data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),15)}","x"),(f"{(player.taxrate*100)}% Tax", f"${limit_digits(taxedAmt,22)}","-")]
+            self.orderBox.loadData(self.numpad.getNumstr(self.classtext[type(asset)]),f"${limit_digits(value,22)}",data)
 
-        data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),15)}","x"),(f"{(player.taxrate*100)}% Tax", f"${limit_digits(taxedamt,22)}","-")]
-        self.orderBox.loadData(self.numpad.getNumstr(self.classtext[type(asset)]),f"${limit_digits((asset.getValue(fullvalue=False)*quantity)-taxedamt,22)}",data)
         result = self.orderBox.draw(screen,mousebuttons)
 
-        
-        # if self.drawSellingInfo(screen,descriptions,texts,mousebuttons,quantity):# if the asset should be sold, and drawing the selling info
         if result:
-            asset.sell(player,quantity)
+            # asset.sell(player,quantity,(1.02 if type(asset) == OptionAsset else 1))
+            player.sellAsset(asset,quantity,(1.02 if type(asset) == OptionAsset else 1))
             self.selectedAsset = None
 
         

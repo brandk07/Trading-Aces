@@ -353,7 +353,7 @@ class LoanScreen:
        
         self.customLoanCreator.drawLoanCreation(screen,mousebuttons,self.interestRate)
 
-        result = drawClickableBoxWH(screen, (565,470), (300,65),"Cancel", 45, (190,0,0), (25,25,25), mousebuttons,fill=True)
+        result = drawClickableBoxWH(screen, (565,470), (300,65),"Cancel", 45, (180,180,180), (45,0,0), mousebuttons,fill=True)
         if result:
             self.customLoanCreator.stopCreating()
             self.state = "View"

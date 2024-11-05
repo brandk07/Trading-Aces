@@ -284,7 +284,7 @@ class StockVisualizer:
 
         graphingpoints,spacing,minmax_same = self._defaultDraw(screen,(coords[0]+blnkspacel,coords[1]),graphwh,graphrange,customRange)# draw the basic graph
 
-        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0], coords[1], (coords[0]+wh[0] - coords[0]),(coords[1]+wh[1] - coords[1])), 5)# outline of the whole display
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0], coords[1], (coords[0]+wh[0] - coords[0]+1),(coords[1]+wh[1] - coords[1]+1)), 6)# outline of the whole display
         
         if not minmax_same:# if the min and max are not the same, Otherwise the graph is a straight line
             self.drawPriceLines(screen,truegraphrange,coords,wh,graphingpoints)# draw the price lines

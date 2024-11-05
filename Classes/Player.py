@@ -41,6 +41,7 @@ class Player(Stock):
         self.lastLoanPayment = None#gets set right away in defs
         self.stockvalues = []
         self.loans = []
+        self.menuList = None
         self.messagedict = {}
         self.taxrate = 0.15
         self.transact = transact
@@ -227,14 +228,69 @@ class Player(Stock):
         if assetlist[assetlist.index(asset)].quantity <= 0:# if the quantity of the asset is 0 or less, remove the asset from the list
             assetlist.remove(asset)
         
-    # def exerciseOption(self,optionasset:OptionAsset):
-    #     """Exercises the option"""
-    #     print(f"Exercising Option {optionasset.name} for {optionasset.option.k} at {optionasset.option.s0}, value of ${optionasset.option.getPrice(method='BSM',iteration=1)}")
-    #     self.cash += optionasset.option.getPrice(method="BSM",iteration=1)*optionasset.quantity
-    #     self.options.remove(optionasset)
+    def removeAsset(self,asset):
+        """removes the asset from the player's portfolio"""
+        if isinstance(asset,StockAsset):
+            assetlist = self.stocks 
+        elif isinstance(asset,OptionAsset):
+            assetlist = self.options
+        elif isinstance(asset,IndexFundAsset):
+            assetlist = self.indexFunds
+        text = [
+            f"{self.gametime.getDate()}",
+            f"Removed {asset.getQuantity()} {asset.name} {self.assetText[type(asset)]+('s' if asset.getQuantity() > 1 else '')}",
+            f"0",
+            f"-{asset.ogValue*asset.getQuantity()}",
+            f"${limit_digits(self.cash,12)}"
+        ]
+        self.transact.addTransaction(*text)
+        assetlist.remove(asset)
 
-        
+    def exerciseOption(self,optionObj:OptionAsset,quantity):
+        """Executes the option
+        Assumes that the player has enough money/stocks to execute the option"""
+        if optionObj.optionType == "call":
+            cost = optionObj.getStrike()*quantity
+            self.cash -= cost
+            self.stocks.append(StockAsset(self,optionObj.stockObj,self.gametime.time,optionObj.getStrike(),quantity))
+            text = [
+                f"{self.gametime.getDate()}",
+                f"Executed {optionObj.getQuantity()} {optionObj.stockObj.name} Option{'s' if optionObj.getQuantity() != 1 else ''}",
+                f"-${limit_digits(cost,12)}",
+                f"+{limit_digits(quantity,20,True)} Share{'s' if quantity != 1 else ''} of {optionObj.stockObj.name}",
+                f"${limit_digits(self.cash,12)}"
+            ]
+            self.transact.addTransaction(*text)
+            optionObj.quantity -= quantity
+            if optionObj.getQuantity() == 0:
+                self.options.remove(optionObj)
+                
+        elif optionObj.optionType == "put":   
+            value = optionObj.getStrike()*quantity
+            
+            for stock in [s for s in self.stocks if s.stockObj == optionObj.stockObj]:# all the stocks that match the stock of the option
+                if stock.quantity <= quantity:
+                    quantity -= stock.quantity
+                    self.stocks.remove(stock)
+                else:
+                    stock.quantity -= quantity
+                    break
+            self.cash += value
+            text = [
+                f"{self.gametime.getDate()}",
+                f"Executed {optionObj.getQuantity()} {optionObj.stockObj.name} Option{'s' if optionObj.getQuantity() != 1 else ''}",
+                f"+${limit_digits(value,12)}",
+                f"-{limit_digits(quantity,20,True)} Share{'s' if quantity != 1 else ''} of {optionObj.stockObj.name}",
+                f"${limit_digits(self.cash,12)}"
+            ]
+            self.transact.addTransaction(*text)
+            optionObj.quantity -= quantity
+            if optionObj.getQuantity() == 0:
+                self.options.remove(optionObj)
 
+    def getNumStocks(self,stockObj):
+        """returns the number of stocks the player has of the stockObj"""
+        return sum([stock.quantity for stock in self.stocks if stock.stockObj == stockObj])
     
     def getNetworth(self):
         """returns the networth of the player"""
