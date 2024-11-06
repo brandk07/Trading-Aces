@@ -228,13 +228,11 @@ class SellOptionScreen:
 
     def drawOptionInfo(self,screen:pygame.Surface, gametime):
         option = self.selectOption
-        stockNameTxt = s_render(option.stockObj.name, 120, option.stockObj.color)
-        optionTypeTxt = s_render(option.getType().capitalize(), 120, self.determineColor(option.getType()))
-        totalWidth = stockNameTxt.get_width()+optionTypeTxt.get_width()+30
-        screen.blit(stockNameTxt, (nameTxtX:=1047-totalWidth/2, 110))
-        
-        screen.blit(optionTypeTxt, (nameTxtX+stockNameTxt.get_width()+30, 110))
 
+        drawCenterTxt(screen, option.stockObj.name, 120, option.stockObj.color, (895, 110),centerX=False, centerY=False,fullX=True)
+        drawCenterTxt(screen, option.getType().capitalize(), 120, self.determineColor(option.getType()), (910, 110),centerX=False, centerY=False)
+        
+        
         # EXPIRATION INFO
         drawCenterTxt(screen, 'Expiration Info', 50, (0, 0, 0), (1340, 220), centerY=False)
         # line under the title
@@ -276,13 +274,13 @@ class SellOptionScreen:
         self.sortby = "Expiration" if exp else self.sortby
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(200,210,465,665),5,10)# draws the box around the latter scroll
-        drawCenterTxt(screen, 'Owned Options', 45, (180, 180, 180), (390, 220), centerY=False)
+        drawCenterTxt(screen, 'Owned Options', 45, (180, 180, 180), (432, 220), centerY=False)
 
-        
+
         # DRAWING THE LATTER SCROLL
         optionList = self.player.getOptions()
         if len(optionList) == 0:
-            drawCenterTxt(screen, 'No Owned Options', 40, (200, 200, 200), (390, 300), centerY=False)
+            drawCenterTxt(screen, 'No Owned Options', 45, (200, 200, 200), (432, 390), centerY=False)
             return None
         if self.sortby == "Expiration":
             optionList.sort(key=lambda x: x.daysToExpiration())
@@ -431,7 +429,7 @@ class ExerciseOptionScreen:
         exerciseInfotxts = f"Executes the option and gives the right to "
         exerciseInfotxts += f"buy up to {limit_digits(maxAmt,20,True)} shares of {self.selectOption.stockObj.name} at ${self.selectOption.getStrike()} a share"
         currentAmt = self.numPad.getValue()*100# the current amount of shares that the player is buying throught the exercise
-        self.orderBox.loadData(f"{currentAmt} Shares",f"${limit_digits(cost,20,True)}",[("Purchasing",f"{self.selectOption.stockObj.name}",""),("Cost",f"${limit_digits(cost,20,True)}","")])
+        self.orderBox.loadData(f"{currentAmt} Shares",f"${limit_digits(cost,20,True)}",[("Purchasing",f"{self.selectOption.stockObj.name}",""),("Quantity",f"{currentAmt}",""),("Cost",f"${limit_digits(cost,20,True)}","")])
         return exerciseInfotxts
 
     def exercisePutLogic(self,screen,mousebuttons):
@@ -459,11 +457,13 @@ class ExerciseOptionScreen:
         # Loads the orderBox with the information for the put option based on the numPad's quantity
         sellInfotxts = f"Allows the the option to be sold for it's estimated value instead of exercising it with a 2% fee"
         
-        amt = self.selectOption.getQuantity()
-        value = self.selectOption.getValue(bypass=True,fullvalue=True)
-        tax,fee  = self.player.taxrate*value, value * .02# the tax and fee for selling the option
-        total = value - fee - tax
-        self.orderBox.loadData(f"{limit_digits(amt,20,True)} Share{'s' if amt!=1 else ''}",f"${limit_digits(total,20,True)}",[("Payment",f"${limit_digits(value,20,value>1000)}",""),(f"2% Fee",f"{limit_digits(fee,20)}%","-"),(f"{self.player.taxrate}% Tax",f"${limit_digits(tax,20)}","-")])
+        amt = self.numPad.getValue()# the amount of shares that the player is selling
+        value = self.selectOption.getValue(bypass=True,fullvalue=False)# the value of the option just 1
+        totalVal = value*amt# the total value of the options
+        netgl = (value - self.selectOption.getOgVal())*amt# net gain/loss
+        tax,fee  = self.player.taxrate * (0 if netgl <= 0 else netgl), totalVal * .02# the tax and fee for selling the option
+        totalVal = totalVal - fee - tax
+        self.orderBox.loadData(f"{limit_digits(amt,20,True)} Share{'s' if amt!=1 else ''}",f"${limit_digits(totalVal,20,True)}",[("Value",f"${limit_digits(value,20,value>1000)}","x"),(f"{round(self.player.taxrate*100,2)}% Tax",f"${limit_digits(tax,20)}","-"),(f"2% Fee",f"${limit_digits(fee,20)}","-")])
         return sellInfotxts
     
     def drawExerciseChoices(self,screen:pygame.Surface,mousebuttons:int):

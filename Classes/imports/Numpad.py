@@ -117,6 +117,8 @@ class Numpad:
                         elif self.nums[ind] == 'DEL' and len(self.numstr) == 1:
                             self.numstr = str(self.defaultVal)
                         elif self.nums[ind] == 'MAX':
+                            if maxvalue == 0:
+                                errors.addMessage(f"Max Quantity = {maxvalue}")
                             self.numstr = str(maxvalue)
                         elif self.nums[ind] == '.': 
                             if '.' not in self.numstr:

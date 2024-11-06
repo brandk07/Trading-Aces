@@ -136,7 +136,7 @@ class SideScroll:
         self.coords = coords
         self.cardWH = cardWH
         self.wh = wh
-        self.scroll = 0
+        self.scroll = 600
         self.mouseScrollTime = 0
         self.lastSelected = None
         self.scrollSpeed = 35

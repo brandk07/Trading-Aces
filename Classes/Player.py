@@ -252,7 +252,7 @@ class Player(Stock):
         if optionObj.optionType == "call":
             cost = optionObj.getStrike()*quantity
             self.cash -= cost
-            self.stocks.append(StockAsset(self,optionObj.stockObj,self.gametime.time,optionObj.getStrike(),quantity))
+            self.stocks.append(StockAsset(self,optionObj.stockObj,self.gametime.time,optionObj.getStrike(),quantity*100))
             text = [
                 f"{self.gametime.getDate()}",
                 f"Executed {optionObj.getQuantity()} {optionObj.stockObj.name} Option{'s' if optionObj.getQuantity() != 1 else ''}",
@@ -267,13 +267,13 @@ class Player(Stock):
                 
         elif optionObj.optionType == "put":   
             value = optionObj.getStrike()*quantity
-            
+            stockQuantity = quantity*100# the quantity of stocks that the player will sell
             for stock in [s for s in self.stocks if s.stockObj == optionObj.stockObj]:# all the stocks that match the stock of the option
-                if stock.quantity <= quantity:
-                    quantity -= stock.quantity
+                if stock.quantity <= stockQuantity:
+                    stockQuantity -= stock.quantity
                     self.stocks.remove(stock)
                 else:
-                    stock.quantity -= quantity
+                    stock.quantity -= stockQuantity
                     break
             self.cash += value
             text = [

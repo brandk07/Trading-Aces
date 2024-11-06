@@ -211,7 +211,7 @@ class LatterScroll():
                 screen.blit(render,(points[0][0]+self.textcoords[numdrawn][i][0],points[0][1]+self.textcoords[numdrawn][i][1]))
             # pygame.draw.polygon(screen, (0, 0, 1), points, 5)
 
-            pygame.draw.rect(screen,(0,0,0),pygame.Rect(points[0][0],points[0][1],points[2][0]-points[0][0],points[1][1]-points[0][1]),5,10)
+            pygame.draw.rect(screen,(0,0,0) if numdrawn+self.omittedstocks[0] != selectedVal else (200,200,200),pygame.Rect(points[0][0],points[0][1],points[2][0]-points[0][0],points[1][1]-points[0][1]),5,10)
 
         # screen.blit(self.surf,coords)
         return selectedVal
@@ -242,8 +242,8 @@ class PortfolioLatter(LatterScroll):
 
     def decidebottomcolor(self,hover,selectedVal,numdrawn,percent):
         percentchange = percent
-
-        bright,dull = 175,100
+        
+        bright,dull = 185,100
         if hover or selectedVal == numdrawn:
             if percentchange > 0:bottomcolor = (0, bright, 0)
             elif percentchange == 0:bottomcolor = (bright, bright, bright)
