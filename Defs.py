@@ -70,13 +70,18 @@ animationList = []
 # bigMessageList = []
 
 soundEffects = {# soundEffects['generalClick'].play()
-    'menuClick': pygame.mixer.Sound(r'Assets\Soundeffects\menuClick.wav'),
+    # 'menuClick': pygame.mixer.Sound(r'Assets\Soundeffects\menuClick.wav'),
+    'menuClick': pygame.mixer.Sound(r'Assets\NewSoundEffects\menuClick.wav'),
     'generalClick': pygame.mixer.Sound(r'Assets\Soundeffects\generalClick.wav'),
     'error' : pygame.mixer.Sound(r'Assets\Soundeffects\error.wav'),
-    'buy': pygame.mixer.Sound(r'Assets\Soundeffects\buy.wav'),
-
-
+    # 'buy': pygame.mixer.Sound(r'Assets\Soundeffects\buy.wav'),
+    'buyStock': pygame.mixer.Sound(r'Assets\NewSoundEffects\buyStock.wav'),
+    'buyOption': pygame.mixer.Sound(r'Assets\NewSoundEffects\OptionBuy.wav'),
+    'sellGain' : pygame.mixer.Sound(r'Assets\NewSoundEffects\sellGain.wav'),
+    'sellLoss' : pygame.mixer.Sound(r'Assets\NewSoundEffects\sellLoss.wav'),
+    'buyLoan' : pygame.mixer.Sound(r'Assets\NewSoundEffects\buyStock.wav')
 }
+
 musicThemes = {}
 for song in os.listdir(r'Assets\Music\themes'):
     musicThemes[f'maintheme{song}'] = rf'Assets\Music\themes\{song}'

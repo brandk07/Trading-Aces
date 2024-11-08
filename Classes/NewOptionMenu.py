@@ -429,14 +429,14 @@ class ExerciseOptionScreen:
         exerciseInfotxts = f"Executes the option and gives the right to "
         exerciseInfotxts += f"buy up to {limit_digits(maxAmt,20,True)} shares of {self.selectOption.stockObj.name} at ${self.selectOption.getStrike()} a share"
         currentAmt = self.numPad.getValue()*100# the current amount of shares that the player is buying throught the exercise
-        self.orderBox.loadData(f"{currentAmt} Shares",f"${limit_digits(cost,20,True)}",[("Purchasing",f"{self.selectOption.stockObj.name}",""),("Quantity",f"{currentAmt}",""),("Cost",f"${limit_digits(cost,20,True)}","")])
+        self.orderBox.loadData(f"{limit_digits(self.numPad.getValue(),20,True)} Option{'s' if self.numPad.getValue() > 0 else ''}",f"${limit_digits(cost,20,True)}",[("Purchasing",f"{self.selectOption.stockObj.name}",""),("Quantity",f"{currentAmt}",""),("Cost",f"${limit_digits(cost,20,True)}","")])
         return exerciseInfotxts
 
     def exercisePutLogic(self,screen,mousebuttons):
         """Handles the logic for exercising a put option"""
         # Draws the numpad for the quantity of shares to sell
         numShares = self.player.getNumStocks(self.selectOption.stockObj)
-        maxQuantity = min(int(numShares/100), self.selectOption.getQuantity()*100)# the maximum quantity of options that can be exercised
+        maxQuantity = min(int(numShares/100), self.selectOption.getQuantity())# the maximum quantity of options that can be exercised
         self.numPad.draw(screen,(650,645),(390,345),"Shares",mousebuttons,maxQuantity)# draw the numpad
 
         # Loads the orderBox with the information for the put option based on the numPad's quantity
@@ -445,7 +445,7 @@ class ExerciseOptionScreen:
         exerciseInfotxts = f"Executes the option and gives the right to "
         exerciseInfotxts += f"sell up to {limit_digits(maxAmt,20,True)} shares of {self.selectOption.stockObj.name} at ${self.selectOption.getStrike()} a share"
         value = amt*self.selectOption.getStrike()
-        self.orderBox.loadData(f"{amt} Shares",f"${limit_digits(value,20)}",[("Selling",f"{self.selectOption.stockObj.name}",""),("Payment",f"${limit_digits(amt*self.selectOption.getStrike(),20)}","")])
+        self.orderBox.loadData(f"{limit_digits(self.numPad.getValue(),20,True)} Options",f"${limit_digits(value,20)}",[("Selling",f"{self.selectOption.stockObj.name}",""),("Num Shares",f"{limit_digits(amt,20,True)}","")])
         return exerciseInfotxts
     
     def sellOptionLogic(self,screen,mousebuttons):

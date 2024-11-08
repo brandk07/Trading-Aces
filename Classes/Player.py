@@ -111,9 +111,9 @@ class Player(Stock):
                 text = [
                     f"{self.gametime.getDate()}",
                     f"Received Dividend from {stockObj.name}",
-                    f"+${limit_digits(amt,12)}",
+                    f"+${limit_digits(amt,15)}",
                     f"{round(stockObj.dividendYield/4,2)}%",
-                    f"${limit_digits(self.cash,12)}"
+                    f"${limit_digits(self.cash,15)}"
                 ]
                 self.transact.addTransaction(*text)
 
@@ -127,9 +127,9 @@ class Player(Stock):
                 text = [
                     f"{self.gametime.getDate()}",
                     f"Received Dividend from {indexFundObj.name}",
-                    f"+${limit_digits(amt,12)}",
+                    f"+${limit_digits(amt,15)}",
                     f"{round(indexfund.getDividendYield()/12,2)}%",
-                    f"${limit_digits(self.cash,12)}"
+                    f"${limit_digits(self.cash,15)}"
                 ]
                 self.transact.addTransaction(*text)
 
@@ -162,18 +162,20 @@ class Player(Stock):
             assetlist = self.options
         elif isinstance(newasset,IndexFundAsset):
             assetlist = self.indexFunds
-
+        
         if self.cash >= value*newasset.getQuantity():# if the player has enough money to buy the asset
             # ["Sold 39 Shares of","KSTON for $5,056.93","Balance $26,103.18"]
+            
             text = [
                 f"{self.gametime.getDate()}",
                 f"Added {limit_digits(newasset.quantity,15,True)} {newasset.getStockObj().name} {newasset.getType() if type(newasset) == OptionAsset else ''} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
-                f"-${limit_digits(newasset.getValue(bypass=True),12)}",
-                f"${limit_digits(value,12)}",
-                f"${limit_digits(self.cash-newasset.getValue(bypass=True),12)}"
+                f"-${limit_digits(newasset.getValue(bypass=True),15)}",
+                f"${limit_digits(value,15)}",
+                f"${limit_digits(self.cash-newasset.getValue(bypass=True),15)}"
             ]
             self.transact.addTransaction(*text)
-            soundEffects['buy'].play()
+            soundsDict = {StockAsset:"buyStock",OptionAsset:"buyOption",IndexFundAsset:"buyStock"}
+            soundEffects[soundsDict[type(newasset)]].play()
             animationList.append(BuyAnimation(pygame.mouse.get_pos(),100,animationList))
             self.cash -= value*newasset.getQuantity()# fullvalue is True by default
             self.assetsTraded += newasset.getQuantity()
@@ -187,7 +189,7 @@ class Player(Stock):
             
             print('cash is',self.cash)
 
-    def sellAsset(self,asset,quantity,feePercent=1):
+    def sellAsset(self,asset,quantity,feePercent=1) -> int:
         """sells the quantity number of the asset object given
         won't sell more than the quantity of the asset"""
         quantity = int(quantity)
@@ -212,21 +214,23 @@ class Player(Stock):
         loss_gain = loss_gain if loss_gain <= 0 else loss_gain*(1-self.taxrate)
         self.realizedGains += loss_gain if loss_gain > 0 else 0
         value = (asset.getValue(bypass=True,fullvalue=False)*quantity)-taxes
+        soundEffects['sellGain' if loss_gain > 0 else 'sellLoss'].play()
         text = [
             f"{self.gametime.getDate()}",
             f"Sold {limit_digits(quantity,15,True)} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
-             f"+${limit_digits(value,12)}",
-            f"{'-' if loss_gain < 0 else '+'} ${limit_digits(abs(loss_gain),12) if loss_gain != 0 else '0'}",
-            f"${limit_digits(self.cash+value,12)}"
+             f"+${limit_digits(value,15)}",
+            f"{'-' if loss_gain < 0 else '+'} ${limit_digits(abs(loss_gain),15) if loss_gain != 0 else '0'}",
+            f"${limit_digits(self.cash+value,15)}"
         ]
         self.transact.addTransaction(*text)
-        
-        self.cash += asset.getValue(bypass=True,fullvalue=False)*quantity*feePercent# add the value of the asset to the cash
+        value = asset.getValue(bypass=True,fullvalue=False)*quantity*feePercent
+        self.cash += value# add the value of the asset to the cash
         print('cash is',self.cash,asset.getValue(bypass=True,fullvalue=False)*quantity)
         assetlist[assetlist.index(asset)].quantity -= quantity# subtract the quantity from the asset
         self.assetsTraded += quantity
         if assetlist[assetlist.index(asset)].quantity <= 0:# if the quantity of the asset is 0 or less, remove the asset from the list
             assetlist.remove(asset)
+        return value
         
     def removeAsset(self,asset):
         """removes the asset from the player's portfolio"""
@@ -241,8 +245,9 @@ class Player(Stock):
             f"Removed {asset.getQuantity()} {asset.name} {self.assetText[type(asset)]+('s' if asset.getQuantity() > 1 else '')}",
             f"0",
             f"-{asset.ogValue*asset.getQuantity()}",
-            f"${limit_digits(self.cash,12)}"
+            f"${limit_digits(self.cash,15)}"
         ]
+        soundEffects['sellLoss'].play()
         self.transact.addTransaction(*text)
         assetlist.remove(asset)
 
@@ -250,23 +255,24 @@ class Player(Stock):
         """Executes the option
         Assumes that the player has enough money/stocks to execute the option"""
         if optionObj.optionType == "call":
-            cost = optionObj.getStrike()*quantity
+            cost = optionObj.getStrike()*quantity*100
             self.cash -= cost
             self.stocks.append(StockAsset(self,optionObj.stockObj,self.gametime.time,optionObj.getStrike(),quantity*100))
             text = [
                 f"{self.gametime.getDate()}",
                 f"Executed {optionObj.getQuantity()} {optionObj.stockObj.name} Option{'s' if optionObj.getQuantity() != 1 else ''}",
-                f"-${limit_digits(cost,12)}",
-                f"+{limit_digits(quantity,20,True)} Share{'s' if quantity != 1 else ''} of {optionObj.stockObj.name}",
-                f"${limit_digits(self.cash,12)}"
+                f"-${limit_digits(cost,15)}",
+                f"+{limit_digits(quantity*100,20,True)} Share of {optionObj.stockObj.name}",
+                f"${limit_digits(self.cash,15)}"
             ]
             self.transact.addTransaction(*text)
+            soundEffects['buyStock'].play()
             optionObj.quantity -= quantity
             if optionObj.getQuantity() == 0:
                 self.options.remove(optionObj)
                 
         elif optionObj.optionType == "put":   
-            value = optionObj.getStrike()*quantity
+            value = optionObj.getStrike()*quantity*100
             stockQuantity = quantity*100# the quantity of stocks that the player will sell
             for stock in [s for s in self.stocks if s.stockObj == optionObj.stockObj]:# all the stocks that match the stock of the option
                 if stock.quantity <= stockQuantity:
@@ -279,11 +285,12 @@ class Player(Stock):
             text = [
                 f"{self.gametime.getDate()}",
                 f"Executed {optionObj.getQuantity()} {optionObj.stockObj.name} Option{'s' if optionObj.getQuantity() != 1 else ''}",
-                f"+${limit_digits(value,12)}",
-                f"-{limit_digits(quantity,20,True)} Share{'s' if quantity != 1 else ''} of {optionObj.stockObj.name}",
-                f"${limit_digits(self.cash,12)}"
+                f"+${limit_digits(value,15)}",
+                f"-{limit_digits(stockQuantity,20,True)} Shares of {optionObj.stockObj.name}",
+                f"${limit_digits(self.cash,15)}"
             ]
             self.transact.addTransaction(*text)
+            soundEffects['sellGain'].play()
             optionObj.quantity -= quantity
             if optionObj.getQuantity() == 0:
                 self.options.remove(optionObj)
@@ -325,7 +332,8 @@ class Player(Stock):
             f"${limit_digits(self.cash+loanObj.principal,20)}"
         ]
         self.transact.addTransaction(*text)
-        soundEffects['buy'].play()
+        soundEffects['buyLoan'].play()
+        
         animationList.append(BuyAnimation(pygame.mouse.get_pos(),100,animationList))
         self.cash += loanObj.principal
 
