@@ -241,14 +241,14 @@ class StockVisualizer:
         truegraphrange = self.getValidRange(graphrange)
         backcolor = p3choice((55,0,0),(0,55,0),(55,55,55),self.stockObj.getPercent(truegraphrange))
         # draws the background color for the just graph
-        gfxdraw.filled_polygon(screen, [(coords[0], coords[1]), (coords[0],coords[1]+wh[1]), (coords[0]+wh[0], coords[1]+wh[1]), (coords[0]+wh[0],coords[1])],backcolor)
+        # gfxdraw.filled_polygon(screen, [(coords[0], coords[1]), (coords[0],coords[1]+wh[1]), (coords[0]+wh[0], coords[1]+wh[1]), (coords[0]+wh[0],coords[1])],backcolor)
         
         self.graph.setPoints(self.stockObj.graphs[truegraphrange])# set the list of points
-        color = p3choice((30,0,0),(0,30,0),(30,30,30),self.stockObj.getPercent(truegraphrange))
+        underLineColor = p3choice((30,0,0),(0,30,0),(30,30,30),self.stockObj.getPercent(truegraphrange))
         graphheight = (coords[1]+wh[1]-coords[1])
         graphwidth = (coords[0]+wh[0]-coords[0])
 
-        graphingpoints,spacing,minmax_same = self.graph.draw_graph(screen,(coords[0],coords[1]),(graphwidth,graphheight),color)# graph the points and get needed values
+        graphingpoints,spacing,minmax_same = self.graph.draw_graph(screen,(coords[0],coords[1]),(graphwidth,graphheight),underLineColor,backcolor)# graph the points and get needed values
         
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0],coords[1],graphwidth,graphheight), 5)
         if customRange:

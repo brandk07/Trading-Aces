@@ -84,7 +84,10 @@ class Stock():
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
         
         # self.bTrendRanges = [[(-i,i),(100000-(i*8000),500000-(i*41000))] for i in range(12)]
-        self.bTrendRanges = [[(-i,i),(randint(1,300),randint(301,500000))] for i in range(12)]
+
+        self.bTrendRanges = [[(-int(i**.9),int(i**.9)),(randint(1,300),randint(301,100000))] for i in range(20)]
+        # self.bTrendRanges = [[(i-15,15-i),(randint(1,i*300),randint(i*301,(i**2)*10_000))] for i in range(1,15)]
+
         # self.bTrendRanges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]# the ranges for the bonus trends
         # self.bTrendRanges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]# the ranges for the bonus trends
         self.bTrends = [[randint(*x[0]),randint(*x[1])] for x in self.bTrendRanges]# the trends for the stock
@@ -97,6 +100,7 @@ class Stock():
         self.recentrenders = {}# a dict of the renders of the recent prices
         self.graph = Graph()
         # print()
+
 
 
     def __str__(self) -> str:
@@ -268,17 +272,13 @@ class Stock():
                     bonustrend[1] -= step
 
             total_trend = sum(trend[0] for trend in self.bTrends)# the total trend of all the bonus trends
-            # total_trend = total_trend if total_trend >= 0 else -1 * (total_trend // 2)# if the total trend is negative, then divide it by 2
             total_trend += tempP# add the temporary price trend to the total
             highvolitity = vol + total_trend# the highest volitility that the stock can have
             lowvolitity = -vol + total_trend# the lowest volitility that the stock can have
-            
-            # factor = (randint(lowvolitity, highvolitity) / 500_000) * step# the factor that the price will be multiplied by
             try:   
                 factor = (randint(lowvolitity, highvolitity) / 20_000_000) * step# the factor that the price will be multiplied by
             except:
                 raise ValueError(f"Highvolitity: {highvolitity}, Lowvolitity: {lowvolitity}, Total trend: {total_trend}, Volatility: {vol}, Temp Price: {tempP}")
-            # lastprice = lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
             lastprice = lastprice * (1 + factor)
             multiplier -= step
 
@@ -309,37 +309,17 @@ class Stock():
                 runVal += val
             self.resetTrend(resetInd)
             totalTrend += runVal*runDistance
-            # print(runVal,"is the runval",runVal*runDistance)
             emPoints += runDistance
-
-        # print(f"distance was, {distance} and total trend is {totalTrend}, total trend will be {totalTrend / emPoints}, emPoints was {emPoints}")
         totalTrend /= emPoints
-        
-        # print(f"Total trend is {totalTrend}")
-        # Now that we have total trend we can calculate the price
-        # totalTrend = totalTrend if totalTrend >= 0 else -1 * totalTrend# if the total trend is negative, then divide it by 2
         highvolitity = int(totalTrend + self.givenVolatility/distance)# the highest volitility that the stock can have
         lowvolitity = int(totalTrend - self.givenVolatility/distance)# the lowest volitility that the stock can have
-        
-        # factor = (randint(lowvolitity, highvolitity) / 500_000) * distance # the factor that the price will be multiplied by
-        # lastprice = lastprice * ((1 + factor) if randint(0, 1) else (1 - factor))  # returns the new price of the stock
-        # print(factor,lastprice * (1 + factor),lastprice * (1 - factor))
-        # lastprice = lastprice * (1 + factor)  # returns the new price of the stock
         try:
             factor = (randint(lowvolitity, highvolitity) / 20_000_000) * distance# the factor that the price will be multiplied by
         except:
             raise ValueError(f"Highvolitity: {highvolitity}, Lowvolitity: {lowvolitity}, Total trend: {totalTrend}, Volatility: {self.givenVolatility}")
         lastprice = lastprice * (1 + factor)
-        # print(lastprice,self.name)
-        # if lastprice > 1000000:
-        #     print("Price is too high")
 
         return lastprice
-
-            # for i, (val,time) in enumerate(self.bTrends):
-            #     if time >= condenseFactor:
-            #         self.bTrends[i][1] -= runDistance
-
                     
 
         
@@ -430,7 +410,7 @@ class Stock():
     #     self.price = self.graphs['1H'][-1]
 
     def update_range_graphs(self,stockvalues=0):
-        
+
         for key in self.graphrangeoptions:
             condensefactor = self.condensefacs[key]
             self.graphfillvar[key] += 1
@@ -451,7 +431,7 @@ class Stock():
         #     pass
         
         if type(self) == Stock:#making sure that it is a Stock object and that update is true
-            self.price = self.addpoint(self.price,multiplier=gamespeed,maxstep=5)#updates the price of the stock
+            self.price = self.addpoint(self.price,multiplier=gamespeed,maxstep=250)#updates the price of the stock
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             for _ in range(gamespeed):
                 self.update_range_graphs()

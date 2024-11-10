@@ -98,10 +98,10 @@ class IndexFund(Stock):
         """Updates the graphs for the stocks"""
         for i in range(gameplay_speed):
             value = 0
-            for stock in self.combinStocks:
-                value += stock.graphs[MINRANGE][-1]# adds the last value of the stock to the value
-            
-            value = value/len(self.combinStocks)# gets the average value of the stocks
+            # for stock in self.combinStocks:
+                # value += stock.graphs[MINRANGE][-1]# adds the last value of the stock to the value
+            value = sum([stock.graphs[MINRANGE][-1] for stock in self.combinStocks])/len(self.combinStocks)
+            # value = value/len(self.combinStocks)# gets the average value of the stocks
             # self.graphs["1H"] = np.append(self.graphs["1H"],value)# adds the value to the graph
 
             self.update_range_graphs(value)

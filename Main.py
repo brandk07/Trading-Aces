@@ -38,6 +38,8 @@ fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 # stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
 stocknames = STOCKNAMES
 stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
+for i in range(len(stockVolatilities)):
+    stockVolatilities[i] = stockVolatilities[i]*2
 # stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
 stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(218, 112, 214),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 
@@ -110,43 +112,65 @@ for indexfund in indexFunds:
 
 screen.fill((30,30,30))
 screen.blit(background,(0,0))
-s = screen.copy()# makes way better performance
+
+extraSurf = pygame.Surface((1920,1080))
+extraSurf.fill((30,30,30))
+extraSurf.blit(background,(0,0))
+screenBytes = bytes(extraSurf.get_buffer())
+# s = screen.copy()# makes way better performance
+menuBackBytes = getDrawnMenuBackground(screen.copy())
 
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
-        screen.blit(s,(0,0))
+        if any([menu.menudrawn for menu in menuList]):
+            screen.blit(menuBackBytes,(0,0))
+            # gfxdraw.textured_polygon(screen,[(0,0),(1920,0),(1920,1080),(0,1080)],menuBackBytes,0,0)
+            # doBuffer(screen,menuBackBytes)
+        else:
+            # doBuffer(screen,screenBytes)
+            screen.blit(extraSurf,(0,0))
         
+        timer = timeit.default_timer()
         uiControls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
-
-
+        # print('Ui controls time',timeit.default_timer()-timer)
+        timer = timeit.default_timer()
         if gametime.advanceTime(uiControls.gameplay_speed,autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
             player.newDay(gametime,stocklist)
-        
+        # print('advance time',timeit.default_timer()-timer)
+        timer = timeit.default_timer()
         if gametime.isOpen()[0]:# if the market is open
             if uiControls.gameplay_speed > 0:# if the game is not paused
+                timer = timeit.default_timer()
                 for stock in stocklist:
                     stock.update_price(uiControls.gameplay_speed,Player)
                     stock.priceEffects.update(gametime,screen,player)
-                    
+                print('stock for loop',timeit.default_timer()-timer)
                 # player.update_price(uiControls.gameplay_speed,Player)
+                timer = timeit.default_timer()
                 player.gameTick(uiControls.gameplay_speed,gametime)
+                print('player game tick',timeit.default_timer()-timer)
+                timer = timeit.default_timer()
                 for indexfund in indexFunds:
                     indexfund.updategraphs(uiControls.gameplay_speed)
+                print('indexfund update',timeit.default_timer()-timer)
 
                 # for stock in stocklist:
                     
-
-         
+        # print('Is open',timeit.default_timer()-timer)
+        timer = timeit.default_timer()
         for i,menu in enumerate(menuList):
             menu.draw_icon(screen,mousebuttons,stocklist,player,menuList,(30,165+(i*175)),uiControls,gametime)
-# 
- 
+        # print('menu draw icon time',timeit.default_timer()-timer)
+        timer = timeit.default_timer()
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
         errors.update(screen)# draws the error messages
+        # print('errors and time time',timeit.default_timer()-timer)
+        timer = timeit.default_timer()
         for animation in animationList:
             animation.update(screen)
+        # print('animation time',timeit.default_timer()-timer)
         # uiControls.drawBigMessage(screen,mousebuttons,player)
         uiControls.bar.changeMaxValue(GAMESPEED)
 
@@ -184,6 +208,7 @@ if __name__ == "__main__":
                 mousebuttons = event.button
                 if mousebuttons == 1:
                     print(mousex,mousey)
+  
         pygame.display.update()
 
         clock.tick(180)

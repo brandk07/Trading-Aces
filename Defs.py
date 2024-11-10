@@ -156,6 +156,23 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
             renderlist[position].pop(text)
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
+def getDrawnMenuBackground(surface:pygame.Surface):
+    menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
+    topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]
+    gfxdraw.filled_polygon(surface, menupoints,(40,40,40,150))
+    pygame.draw.polygon(surface, (0,0,0), menupoints,5)
+
+    gfxdraw.filled_polygon(surface, topbarpoints,(85,85,85))
+    pygame.draw.polygon(surface, (0,0,0), topbarpoints,5)
+    
+    # return bytes(surface.get_buffer()) 
+    return surface
+def doBuffer(screen:pygame.Surface,backgroundBtyes):
+    pixels = screen.get_buffer()
+    pixels.write(backgroundBtyes)
+    del pixels  # Release the buffer
+
+
 def drawCenterTxt(screen,text:str,txtSize:int,color:tuple,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False,outline=False) -> None:
     """Draws text centered on the screen, 
     centerx and y will minus half the wh of the txt,
