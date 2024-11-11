@@ -9,7 +9,6 @@ from Classes.StockVisualizer import StockVisualizer
 # from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Latterscroll import PortfolioLatter,LatterScroll
 from Classes.Stock import Stock
-from Classes.imports.PieChart import PieChart
 from Classes.imports.BarGraph import BarGraph
 from Classes.imports.SelectionElements import SelectionBar
 import datetime
@@ -37,7 +36,6 @@ class Stockbook2(Menu):
         self.middleDisplays = ["Info","Reports"]
         self.currentMDisp = self.middleDisplays[0]
         self.oScreenDisp = False
-        self.reportPieChart : PieChart = PieChart(125,(940,700))
         self.reportBarGraph : BarGraph = BarGraph("Report Outlook",(450,190),(940,740))
         self.barSelection : SelectionBar = SelectionBar()
 

@@ -19,6 +19,7 @@ pygame.init()
 
 TXTCOLOR = (220,220,220)
 POINTSPERGRAPH = 500
+MAXSTEP = 50# Max points that can be added to the graph at a time
 
 def timing_decorator(func):
     def wrapper(*args, **kwargs):
@@ -173,11 +174,11 @@ def doBuffer(screen:pygame.Surface,backgroundBtyes):
     del pixels  # Release the buffer
 
 
-def drawCenterTxt(screen,text:str,txtSize:int,color:tuple,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False,outline=False) -> None:
+def drawCenterTxt(screen,text:str,txtSize:int,color:tuple,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False,outline=False,font='reg') -> None:
     """Draws text centered on the screen, 
     centerx and y will minus half the wh of the txt,
     full will minus the full width of the txt (drawing from the top left)"""
-    valueText = s_render(text,txtSize,color)
+    valueText = s_render(text,txtSize,color,font)
     x,y = coords
     if centerX: x -= valueText.get_width()//2
     if centerY: y -= valueText.get_height()//2
@@ -541,6 +542,9 @@ def Writetofile(stocklist,player,data):
 def closest_point(master_point, points):
     return min(points, key=lambda point: math.sqrt((point[0] - master_point[0])**2 + (point[1] - master_point[1])**2))
 
+def pointInCircle(point, circlePos,radius) -> bool:
+    """Checks if a point is inside a circle."""
+    return math.sqrt((point[0] - circlePos[0])**2 + (point[1] - circlePos[1])**2) < radius
 
 def point_in_polygon(point, polygon) -> bool:
     """Checks if a point is inside a polygon."""

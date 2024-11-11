@@ -19,7 +19,7 @@ class Graph:
 
     def setPoints(self, points):
         """Points can be a list or a numpy array"""
-        if type(points) == list:
+        if type(points) != np.ndarray:
             points = np.array(points, dtype=object)
         
         # Ensure both arrays have the same dtype before comparison

@@ -41,7 +41,7 @@ stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
 for i in range(len(stockVolatilities)):
     stockVolatilities[i] = stockVolatilities[i]*2
 # stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
-stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(218, 112, 214),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
+stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(147,112,219),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 
 # CREATING OBJECTS NEEDED FOR FILE DATA
 transact = Transactions()
@@ -56,6 +56,8 @@ indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i
 tmarket = TotalMarket(gametime,stocklist)
 indexFunds.append(tmarket)
 indexFundDict = {fund.name: fund for fund in indexFunds}
+
+
 # indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(['Velocity Ventures','Adaptive Allocation','Reliable Returns'])]# high,med,low risk
 
 # GETTING DATA FROM FILE
@@ -99,8 +101,8 @@ pygame.mixer.music.set_volume(0)
 lastfps = deque(maxlen=300)
 mousebuttons = 0
 # print(stocklist[0].graphs)
-timer = timeit.default_timer()
 
+timer = timeit.default_timer()
 if not all([all([len(graph) == POINTSPERGRAPH for graph in stock.graphs.values()]) for stock in stocklist]):
     for stock in stocklist:
         stock.fill_graphs()
@@ -131,49 +133,45 @@ if __name__ == "__main__":
             # doBuffer(screen,screenBytes)
             screen.blit(extraSurf,(0,0))
         
-        timer = timeit.default_timer()
+        
         uiControls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
-        # print('Ui controls time',timeit.default_timer()-timer)
-        timer = timeit.default_timer()
+        
         if gametime.advanceTime(uiControls.gameplay_speed,autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
             player.newDay(gametime,stocklist)
-        # print('advance time',timeit.default_timer()-timer)
-        timer = timeit.default_timer()
+
         if gametime.isOpen()[0]:# if the market is open
             if uiControls.gameplay_speed > 0:# if the game is not paused
-                timer = timeit.default_timer()
+                
                 for stock in stocklist:
-                    stock.update_price(uiControls.gameplay_speed,Player)
-                    stock.priceEffects.update(gametime,screen,player)
-                print('stock for loop',timeit.default_timer()-timer)
-                # player.update_price(uiControls.gameplay_speed,Player)
-                timer = timeit.default_timer()
-                player.gameTick(uiControls.gameplay_speed,gametime)
-                print('player game tick',timeit.default_timer()-timer)
-                timer = timeit.default_timer()
-                for indexfund in indexFunds:
-                    indexfund.updategraphs(uiControls.gameplay_speed)
-                print('indexfund update',timeit.default_timer()-timer)
+                    step = stock.update_price(uiControls.gameplay_speed,Player)
+                    if stock.priceEffects.update(gametime,screen,player):
+                        uiControls.newsobj.changeStock(stock)
 
-                # for stock in stocklist:
-                    
-        # print('Is open',timeit.default_timer()-timer)
-        timer = timeit.default_timer()
+                # player.update_price(uiControls.gameplay_speed,Player)
+                
+                player.gameTick(uiControls.gameplay_speed,gametime,step)
+                
+                for indexfund in indexFunds:
+                    indexfund.updategraphs(uiControls.gameplay_speed,step)
+
+
+                # for stock in stocklist:            
+        
         for i,menu in enumerate(menuList):
             menu.draw_icon(screen,mousebuttons,stocklist,player,menuList,(30,165+(i*175)),uiControls,gametime)
-        # print('menu draw icon time',timeit.default_timer()-timer)
-        timer = timeit.default_timer()
+
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
         errors.update(screen)# draws the error messages
-        # print('errors and time time',timeit.default_timer()-timer)
-        timer = timeit.default_timer()
+
+        
         for animation in animationList:
             animation.update(screen)
-        # print('animation time',timeit.default_timer()-timer)
+        
         # uiControls.drawBigMessage(screen,mousebuttons,player)
+        
         uiControls.bar.changeMaxValue(GAMESPEED)
-
+        
         mousebuttons = 0
         for event in pygame.event.get():
             if event.type == pygame.USEREVENT:

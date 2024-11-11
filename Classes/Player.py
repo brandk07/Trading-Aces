@@ -25,9 +25,11 @@ class Player(Stock):
         if  not all([len(graph) == POINTSPERGRAPH for graph in self.graphs.values()]):
             # print('cash is',self.cash)
             for key in self.graphs.keys():
-                self.graphs[key] = np.array([],dtype=object)
+                # self.graphs[key] = np.array([],dtype=object)
+                self.graphs[key] = deque([self.cash],maxlen=POINTSPERGRAPH)
                 for _ in range(POINTSPERGRAPH):
-                    self.graphs[key] = np.append(self.graphs[key],self.cash)
+                    # self.graphs[key] = np.append(self.graphs[key],self.cash)
+                    self.graphs[key].append(self.cash)
 
             # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
             
@@ -134,22 +136,25 @@ class Player(Stock):
                 self.transact.addTransaction(*text)
 
 
-    def gameTick(self,gamespeed:int,gametime):
-        """Used to update the options every 120 frames"""
+    def gameTick(self,gamespeed:int,gametime,step):
+        """Used to update the options every 120 frames, step is the rate at which the 1 price movement will go in as"""
         self.updateOptions += gamespeed
         if self.updateOptions >= 512:
             self.updateOptions = 0
             for option in self.options:
                 option.getValue(bypass=True)
 
-        self.update_price(gamespeed,Player)
-        if (gametime.time-self.lastLoanPayment) > timedelta(days=30):
-            self.lastLoanPayment = gametime.time
-            for loan in self.loans:
-                self.addMonthlyLoanPayment(loan) 
-            for indexfund in self.indexFunds:
-                # indexfund.giveDividend()
-                self.payDividend(indexFundObj=indexfund.stockObj)
+            # Only checked every 512 frames for performance reasons
+            if (gametime.time-self.lastLoanPayment) > timedelta(days=30):
+                self.lastLoanPayment = gametime.time
+                for loan in self.loans:
+                    self.addMonthlyLoanPayment(loan) 
+                for indexfund in self.indexFunds:
+                    # indexfund.giveDividend()
+                    self.payDividend(indexFundObj=indexfund.stockObj)
+
+        self.update_price(gamespeed,Player,step)
+        
 
     def buyAsset(self,newasset,customValue=None):
         """Custom Value will override the current value (Per Share Not Fullvalue)"""

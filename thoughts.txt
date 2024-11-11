@@ -144,6 +144,12 @@ Use the perfchart for the past performances in stockbook (8/29/2024)
 Make it so the index funds balance out the stocks inside them (11/3/2024)
     ie if CMDX is trading for 5000 and QSYN and NRLX are below 100 only CMDX's movements really matter
 
+Need to test out what happens when you add more than 4 rows to the pie chart (11/10/2024) 
+    -I think it should just stop displaying the bottom text, but who knows
+
+fix the allocation in the portofolio
+    -when you sell a share/s it doesn't update so it looks like it has gone down
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am

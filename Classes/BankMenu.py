@@ -7,7 +7,6 @@ from Classes.imports.Bar import SliderBar
 from Classes.StockVisualizer import StockVisualizer
 from Classes.imports.Latterscroll import PortfolioLatter,LatterScroll
 from Classes.Stock import Stock
-from Classes.imports.PieChart import PieChart
 from Classes.imports.BarGraph import BarGraph
 from Classes.imports.SelectionElements import SelectionBar,MenuSelection
 from Classes.imports.PerfChart import PerfChart
@@ -172,7 +171,7 @@ class BankMenu(Menu):
         self.transactionScreen = TransactionScreen(transactions,player)
         self.loanScreen = LoanScreen(gametime,player,stocklist)
         self.investScreen = InvestmentScreen(stocklist.copy(),gametime,player,tmarket,indexFunds.copy())
-        self.menudrawn = True
+        self.menudrawn = False
 
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
 

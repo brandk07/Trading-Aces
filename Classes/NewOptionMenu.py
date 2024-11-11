@@ -9,7 +9,6 @@ from Classes.StockVisualizer import StockVisualizer
 # from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Latterscroll import CustomColorLatter
 from Classes.Stock import Stock
-from Classes.imports.PieChart import PieChart
 from Classes.Gametime import GameTime
 from Classes.imports.BarGraph import BarGraph
 from Classes.imports.Numpad import Numpad
@@ -342,7 +341,7 @@ class SellOptionScreen:
         # drawCenterTxt(screen, stock.name, 90, stock.color, (210, 635), centerY=False)# blits the stock name to the screen
         drawCenterTxt(screen, stock.name, 90, stock.color, (680, 630), centerX=False, centerY=False)# blits the stock name to the screen
         
-        drawCenterTxt(screen, FSTOCKNAMEDICT[stock.name], 45, (180, 180, 180), (810, 660), centerX=False)
+        drawCenterTxt(screen, FSTOCKNAMEDICT[stock.name], 45, (180, 180, 180), (812, 660), centerX=False)
 
         drawCenterTxt(screen, 'Report Info', 65, (0, 0, 0), (1657, 695), centerY=False, fullY=True)
 
@@ -534,7 +533,7 @@ class ExerciseOptionScreen:
                     payment = f"${limit_digits(amt*self.selectOption.getStrike(),20)}"# payment for selling the shares
 
         elif self.exerciseSelection.getSelected() == "Sell":
-            payment = f"${limit_digits(self.selectOption.getValue(fullvalue=False),20)}"
+            payment = f"${limit_digits(self.selectOption.getValue(fullvalue=False),20)} Per Unit"
 
         drawLinedInfo(screen,(1430,375),(450,215),[("Requires",f"{req}"),("Yields",f"{payment}")],45,TXTCOLOR)
         

@@ -80,7 +80,9 @@ class Stock():
         # self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"3M":1_474_200,"1Y":5_896_800,"5Y":29_484_000,"10Y":58_968_000}
         self.condensefacs = {key:value/POINTSPERGRAPH for key,value in self.graphrangeoptions.items()}#the amount of points that each index of the graph has
         # self.graphrange = '1H' # H, D, W, M, 3M, Y
-        self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+        # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+        self.graphs = {key:deque([100],maxlen=POINTSPERGRAPH) for key in self.graphrangeoptions.keys()}
+        
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
         
         # self.bTrendRanges = [[(-i,i),(100000-(i*8000),500000-(i*41000))] for i in range(12)]
@@ -221,9 +223,11 @@ class Stock():
 
             for i,grange in enumerate(self.graphs.keys()):
                 if data[i]:# if the file is not empty
-                    self.graphs[grange] = np.array(data[i])# add the contents to the graphs
+                    # self.graphs[grange] = np.array(data[i])# add the contents to the graphs
+                    self.graphs[grange] = deque(data[i],maxlen=POINTSPERGRAPH)
                 else:
-                    self.graphs[grange] = np.array([100])# if the file is empty then set the graph to 100
+                    # self.graphs[grange] = np.array([100])# if the file is empty then set the graph to 100
+                    self.graphs[grange] = deque([100],maxlen=POINTSPERGRAPH)
             if data[-3] != None and data[-3] != []:
                 self.dividendYield = data[-3]# the dividend yield
             else:
@@ -245,7 +249,8 @@ class Stock():
             for item in list(self.graphs.values()):
                 for i in range(len(item)):
                     item[i] = float(item[i])
-                json_item = json.dumps(item.tolist())  # Convert the list to a JSON string
+                # json_item = json.dumps(item.tolist())  # Convert the list to a JSON string
+                json_item = json.dumps(list(item))  # Convert the list to a JSON string
                 file.write(json_item + '\n')  # Write the JSON string to the file with a newline character
 
             file.write(json.dumps(self.dividendYield)+'\n')
@@ -257,7 +262,7 @@ class Stock():
 
         
 
-    def addpoint(self, lastprice, multiplier=1,maxstep=25):
+    def addpoint(self, lastprice, multiplier=1,maxstep=MAXSTEP):
         """returns the new price of the stock
         maxstep is the maximum multiplier added to 1 price movement, a lower value will make it more accurate but slower"""
         vol = int(self.givenVolatility+self.priceEffects._modifers["volatility"])# the volatility of the stock
@@ -282,7 +287,7 @@ class Stock():
             lastprice = lastprice * (1 + factor)
             multiplier -= step
 
-        return lastprice
+        return lastprice,step
     
     def resetTrends(self):
         """Sets/resets the trends for the stock"""
@@ -352,8 +357,10 @@ class Stock():
             # print(pointsUntil)
             return min(pointsUntil,key=lambda x:x[0])
 
-        self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}# reset the graphs
-        self.graphs[MAXRANGE] = np.array([self.price])
+        # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}# reset the graphs
+        self.graphs = {key:deque([100],maxlen=POINTSPERGRAPH) for key in self.graphrangeoptions.keys()}
+        # self.graphs[MAXRANGE] = np.array([self.price])
+        self.graphs[MAXRANGE] = deque([self.price],maxlen=POINTSPERGRAPH)
         lastgraphed = MAXRANGE
         pointsmade = 0
         while len(self.graphs[MINRANGE]) < POINTSPERGRAPH:
@@ -362,7 +369,8 @@ class Stock():
 
             newpoint = self.addPointLong(self.graphs[lastgraphed][-1],distance,self.condensefacs[name])
             lastgraphed = name
-            self.graphs[name] = np.append(self.graphs[name],newpoint)
+            # self.graphs[name] = np.append(self.graphs[name],newpoint)
+            self.graphs[name].append(newpoint)
             pointsmade += distance
         
         self.price = self.graphs[MINRANGE][-1]
@@ -409,37 +417,44 @@ class Stock():
     #         pointsmade += multiplier
     #     self.price = self.graphs['1H'][-1]
 
-    def update_range_graphs(self,stockvalues=0):
+    def update_range_graphs(self,stockvalues=0,step=1):
 
         for key in self.graphrangeoptions:
             condensefactor = self.condensefacs[key]
-            self.graphfillvar[key] += 1
-            if self.graphfillvar[key] == int(condensefactor):#if enough points have passed to add a point to the graph (condensefactor is how many points must go by to add 1 point to the graph)
-                #add the last point to the list
-                self.graphfillvar[key] = 0
-                if type(self) == Stock:
-                    self.graphs[key] = np.append(self.graphs[key],self.price)
-                else:
-                    self.graphs[key] = np.append(self.graphs[key],stockvalues)
+            for i in range(step):
+                self.graphfillvar[key] += 1
+                if self.graphfillvar[key] == int(condensefactor):#if enough points have passed to add a point to the graph (condensefactor is how many points must go by to add 1 point to the graph)
+                    #add the last point to the list
+                    self.graphfillvar[key] = 0
+                    if type(self) == Stock:
+                        # self.graphs[key] = np.append(self.graphs[key],self.price)
+                        self.graphs[key].append(self.price)
+                    else:
+                        # self.graphs[key] = np.append(self.graphs[key],stockvalues)
+                        self.graphs[key].append(stockvalues)
             
-            if len(self.graphs[key]) > POINTSPERGRAPH:
-                # print('deleting',key,len(self.graphs[key]))
-                self.graphs[key] = np.delete(self.graphs[key],0)
+            # if len(self.graphs[key]) > POINTSPERGRAPH:
+            #     # print('deleting',key,len(self.graphs[key]))
+            #     self.graphs[key] = np.delete(self.graphs[key],0)
 
-    def update_price(self,gamespeed,PlayerClass):
+    def update_price(self,gamespeed,PlayerClass,step=1):
         # if self.bankrupcy(False):#if stock is not bankrupt
         #     pass
         
         if type(self) == Stock:#making sure that it is a Stock object and that update is true
-            self.price = self.addpoint(self.price,multiplier=gamespeed,maxstep=250)#updates the price of the stock
+            self.price,step = self.addpoint(self.price,multiplier=gamespeed)#updates the price of the stock
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
-            for _ in range(gamespeed):
-                self.update_range_graphs()
+            for _ in range(0,gamespeed,step):
+                self.update_range_graphs(step=step)
+            # for _ in range(gamespeed):
+            #     self.update_range_graphs()
             self.price = self.graphs[MINRANGE][-1]
+            return step
         elif type(self) == PlayerClass:# if Player object
 
             # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
             self.price = self.getNetworth()
-            for _ in range(gamespeed):
-                self.update_range_graphs(self.getNetworth())#updates the range graphs
+            # for _ in range(gamespeed):
+            for _ in range(0,gamespeed,step):
+                self.update_range_graphs(self.getNetworth(),step=step)#updates the range graphs
     

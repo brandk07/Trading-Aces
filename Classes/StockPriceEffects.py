@@ -217,7 +217,7 @@ class StockPriceEffects:
        
                     
                     
-    def update(self,gametime:GameTime,screen:pygame.Surface,player):
+    def update(self,gametime:GameTime,screen:pygame.Surface,player) -> bool:
         """Updates the effects"""
         self.updateEffects(gametime)
 
@@ -232,5 +232,7 @@ class StockPriceEffects:
             print("Generating Quarterly Report",self.parentStock.name)
             self.generateQuarterlyReport(gametime)
             player.payDividend(stockObj=self.parentStock)
+            return True
+        return False
             # self.futureReports.pop(0)
             # self.futureReports.append((gametime.time+timedelta(days=91)+timedelta(days=randint(30,60)),(self.futureReports[-1][1]+1)%4))

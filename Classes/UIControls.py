@@ -4,9 +4,10 @@ from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 # from Classes.imports.stockeventspos import StockEvents
 from Classes.imports.Latterscroll import LatterScroll
-# from Classes.imports.Newsbar import News
+from Classes.imports.Newsbar import News
 from Classes.Stock import Stock
 from Classes.StockVisualizer import StockVisualizer
+from Classes.imports.PieChart import PieChart
 
 # [20,60] [60,20]
 # [700,1000] [1000,650]
@@ -16,16 +17,19 @@ class UIControls():
         self.gameplay_speed = 0
         # self.stockevent = StockEvents()# the stock events
         self.bar = SliderBar(gamespeed,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
-        # self.newsobj = News()
+        
         self.latterscroll = LatterScroll()
+        self.newsobj = News(stocklist)
+
         # for i in range(10):
         #     for stock in stocklist:
         #         self.newsobj.addStockNews(stock.name)
         self.totalMarketGraph = StockVisualizer(gametime,tmarket,[tmarket,player])
 
-        self.view = "stock"# home or stock
-        self.accbar_middle = "move"# move, stock, pie
-        self.accbar_right = "topAsset"# topAsset, transactions, loans
+        self.view = "home"# home or stock
+        # self.accbar_middle = "move"# move, stock, pie
+        # self.accbar_right = "topAsset"# topAsset, transactions, loans
+        self.pieChart = PieChart((520,540),(945,165))
         self.graphscroll = 0
         self.namerenders = [fontlist[30].render(stock.name,stock.color)[0] for stock in stocklist]# [red,green]
         self.weeknames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
@@ -116,118 +120,118 @@ class UIControls():
         screen.blit(self.stockbarsurf,(dx,dy))# draw the stock graph bar to the screen
         self.stockbarsurf.fill((30,30,30))# fill the stock graph bar with a dark grey color
         
-    def draw_accbar_middle(self,screen:pygame.Surface,stocklist:list,mousebuttons,player):
-        """Draws the stock events to the screen"""
-        # points1 = [(940,175),(955,215),(940+250,215),(925+250,175)]
-        # points2 = [(940+250,175),(955+250,215),(940+505,215),(925+505,175)]
+    # def draw_accbar_middle(self,screen:pygame.Surface,stocklist:list,mousebuttons,player):
+    #     """Draws the stock events to the screen"""
+    #     # points1 = [(940,175),(955,215),(940+250,215),(925+250,175)]
+    #     # points2 = [(940+250,175),(955+250,215),(940+505,215),(925+505,175)]
         
-        # gfxdraw.filled_polygon(screen,points1,(30,30,30))
-        # gfxdraw.filled_polygon(screen,points2,(30,30,30))
-        # pygame.draw.polygon(screen,(0,0,0),points1,5)
-        # pygame.draw.polygon(screen,(0,0,0),points2,5)
-        dcolor = (255,255,255)
-        scolor = (0,220,0)
+    #     # gfxdraw.filled_polygon(screen,points1,(30,30,30))
+    #     # gfxdraw.filled_polygon(screen,points2,(30,30,30))
+    #     # pygame.draw.polygon(screen,(0,0,0),points1,5)
+    #     # pygame.draw.polygon(screen,(0,0,0),points2,5)
+    #     dcolor = (255,255,255)
+    #     scolor = (0,220,0)
         
         
-        stocktext = s_render('STOCKS',30,scolor if self.accbar_middle == "stock" else dcolor)
-        movetext = s_render('MOVEMENTS',30,scolor if self.accbar_middle == "move" else dcolor)
-        pietext = s_render('PIE CHART',30,scolor if self.accbar_middle == "pie" else dcolor)
-        blitpoints = [(940,170),(940+stocktext.get_width()+30,170),(940+stocktext.get_width()+60+movetext.get_width(),170)]
+    #     stocktext = s_render('STOCKS',30,scolor if self.accbar_middle == "stock" else dcolor)
+    #     movetext = s_render('MOVEMENTS',30,scolor if self.accbar_middle == "move" else dcolor)
+    #     pietext = s_render('PIE CHART',30,scolor if self.accbar_middle == "pie" else dcolor)
+    #     blitpoints = [(940,170),(940+stocktext.get_width()+30,170),(940+stocktext.get_width()+60+movetext.get_width(),170)]
         
 
-        texts = [stocktext,movetext,pietext]
-        screen.blits((text,point) for text,point in zip(texts,blitpoints))
+    #     texts = [stocktext,movetext,pietext]
+    #     screen.blits((text,point) for text,point in zip(texts,blitpoints))
 
-        for point,text,name in zip(blitpoints,texts,["stock","move","pie"]):
-            # pygame.draw.rect(screen,(0,0,0),pygame.Rect(point,text.get_size()))
-            if pygame.Rect(point,text.get_size()).collidepoint(pygame.mouse.get_pos()):
-                if mousebuttons == 1:
-                    self.accbar_middle = name
+    #     for point,text,name in zip(blitpoints,texts,["stock","move","pie"]):
+    #         # pygame.draw.rect(screen,(0,0,0),pygame.Rect(point,text.get_size()))
+    #         if pygame.Rect(point,text.get_size()).collidepoint(pygame.mouse.get_pos()):
+    #             if mousebuttons == 1:
+    #                 self.accbar_middle = name
 
-        if self.accbar_middle == "move":
-            minmove = min([stock for stock in stocklist],key=self.get_percent)
-            maxmove = max([stock for stock in stocklist],key=self.get_percent)
+    #     if self.accbar_middle == "move":
+    #         minmove = min([stock for stock in stocklist],key=self.get_percent)
+    #         maxmove = max([stock for stock in stocklist],key=self.get_percent)
 
-            # self.stockevent.addStockEvent(minmove,1600,False)
-            # self.stockevent.addStockEvent(maxmove,1600,)
-            # self.stockevent.draw(screen)
-        elif self.accbar_middle == "pie":
+    #         # self.stockevent.addStockEvent(minmove,1600,False)
+    #         # self.stockevent.addStockEvent(maxmove,1600,)
+    #         # self.stockevent.draw(screen)
+    #     elif self.accbar_middle == "pie":
 
-            # values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
-            values = [(stock.getValue(),stock.name) for stock in player.stocks]
-            names = set([stock.name for stock in player.stocks])
+    #         # values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
+    #         values = [(stock.getValue(),stock.name) for stock in player.stocks]
+    #         names = set([stock.name for stock in player.stocks])
 
-            values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
-            values.append([player.cash, "Cash",player.color])
-            for option in player.options:
-                values.append([option.getValue(),option.name,option.color])
-            draw_pie_chart(screen, values, 190, (935, 235))
+    #         values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
+    #         values.append([player.cash, "Cash",player.color])
+    #         for option in player.options:
+    #             values.append([option.getValue(),option.name,option.color])
+    #         draw_pie_chart(screen, values, 190, (935, 235))
 
-        elif self.accbar_middle == "stock":    
-            pass
+    #     elif self.accbar_middle == "stock":    
+    #         pass
     
-    def draw_accbar_right(self,screen:pygame.Surface,stocklist:list,player,mousebuttons):
-        dcolor = (255,255,255)
-        scolor = (0,220,0)
+    # def draw_accbar_right(self,screen:pygame.Surface,stocklist:list,player,mousebuttons):
+    #     dcolor = (255,255,255)
+    #     scolor = (0,220,0)
         
-        topAssettext = s_render('TOP ASSETS',30,scolor if self.accbar_right == "topAsset" else dcolor)
-        transactionstext = s_render('TRANSACTIONS',30,scolor if self.accbar_right == "transactions" else dcolor)
-        loanstext = s_render('LOANS',30,scolor if self.accbar_right == "loans" else dcolor)
-        blitpoints = [(1480,170),(1480+topAssettext.get_width()+30,170),(1480+topAssettext.get_width()+60+transactionstext.get_width(),170)]
+    #     topAssettext = s_render('TOP ASSETS',30,scolor if self.accbar_right == "topAsset" else dcolor)
+    #     transactionstext = s_render('TRANSACTIONS',30,scolor if self.accbar_right == "transactions" else dcolor)
+    #     loanstext = s_render('LOANS',30,scolor if self.accbar_right == "loans" else dcolor)
+    #     blitpoints = [(1480,170),(1480+topAssettext.get_width()+30,170),(1480+topAssettext.get_width()+60+transactionstext.get_width(),170)]
         
-        texts = [topAssettext,transactionstext,loanstext]
-        screen.blits((text,point) for text,point in zip(texts,blitpoints))
+    #     texts = [topAssettext,transactionstext,loanstext]
+    #     screen.blits((text,point) for text,point in zip(texts,blitpoints))
 
-        for point,text,name in zip(blitpoints,texts,["topAsset","transactions","loans"]):
-            # pygame.draw.rect(screen,(0,0,0),pygame.Rect(point,text.get_size()))
-            if pygame.Rect(point,text.get_size()).collidepoint(pygame.mouse.get_pos()):
-                if mousebuttons == 1:
-                    self.accbar_right = name
+    #     for point,text,name in zip(blitpoints,texts,["topAsset","transactions","loans"]):
+    #         # pygame.draw.rect(screen,(0,0,0),pygame.Rect(point,text.get_size()))
+    #         if pygame.Rect(point,text.get_size()).collidepoint(pygame.mouse.get_pos()):
+    #             if mousebuttons == 1:
+    #                 self.accbar_right = name
         
-        if self.accbar_right == "topAsset":
+    #     if self.accbar_right == "topAsset":
             
-            assets = player.getAssets(5)
+    #         assets = player.getAssets(5)
 
-            #     # function to get the text for each stock
-            # get_text = lambda stock : [f'{stock[0]} ',
-            #                             f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}",
-            #                             f'${limit_digits(stock[0].price*stock[2],15)}',]
-            def get_text(asset):
-                percentchange = asset.getPercent()
-                c = '+' if percentchange > 0 else ''
-                if isinstance(asset,StockAsset) or isinstance(asset,IndexFundAsset):
-                    return [f'${limit_digits(asset.getValue(),10)}',f'{asset.name} shares of {asset.getStockObj().name}',f'{c}{limit_digits(percentchange,8)}%',]
-                elif isinstance(asset,OptionAsset):
-                    return [f'${limit_digits(asset.getValue(),10)}',f'{asset.name} option',f'{c}{limit_digits(percentchange,8)}%',]
-                else:
-                    raise Exception("Asset type not recognized")
-                #     percentchange = ((asset[0].price - asset[1]) / asset[1]) * 100
-                #     c = '+' if percentchange > 0 else ''
-                #     return [f'${limit_digits(asset[0].price*asset[2],10)}',f'{asset[2]} shares of {asset[0].name}',f'{c}{limit_digits(percentchange,6)}%',]
-                # elif isinstance(asset[0],OptionAsset):
-                #   return [f'${limit_digits(asset[0].get_value(),10)}',f'{asset[0].name} option',f'{c}{limit_digits(percentchange,6)}%',]
+    #         #     # function to get the text for each stock
+    #         # get_text = lambda stock : [f'{stock[0]} ',
+    #         #                             f"{limit_digits(stock[2],10,False)} Share{'' if stock[2] == 1 else 's'}",
+    #         #                             f'${limit_digits(stock[0].price*stock[2],15)}',]
+    #         def get_text(asset):
+    #             percentchange = asset.getPercent()
+    #             c = '+' if percentchange > 0 else ''
+    #             if isinstance(asset,StockAsset) or isinstance(asset,IndexFundAsset):
+    #                 return [f'${limit_digits(asset.getValue(),10)}',f'{asset.name} shares of {asset.getStockObj().name}',f'{c}{limit_digits(percentchange,8)}%',]
+    #             elif isinstance(asset,OptionAsset):
+    #                 return [f'${limit_digits(asset.getValue(),10)}',f'{asset.name} option',f'{c}{limit_digits(percentchange,8)}%',]
+    #             else:
+    #                 raise Exception("Asset type not recognized")
+    #             #     percentchange = ((asset[0].price - asset[1]) / asset[1]) * 100
+    #             #     c = '+' if percentchange > 0 else ''
+    #             #     return [f'${limit_digits(asset[0].price*asset[2],10)}',f'{asset[2]} shares of {asset[0].name}',f'{c}{limit_digits(percentchange,6)}%',]
+    #             # elif isinstance(asset[0],OptionAsset):
+    #             #   return [f'${limit_digits(asset[0].get_value(),10)}',f'{asset[0].name} option',f'{c}{limit_digits(percentchange,6)}%',]
 
-            # getting the text for each stock
-            textlist = [get_text(asset) for asset in assets]# stores 3 texts for each stock in the sortedstocks list
+    #         # getting the text for each stock
+    #         textlist = [get_text(asset) for asset in assets]# stores 3 texts for each stock in the sortedstocks list
 
-            textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
-            coords = [[(15,10),(20,60)] for i in range(len(textlist))]
-            # loop through the textlist and store the text info in the textinfo list
-            for i,(text,asset) in enumerate(zip(textlist,assets)):
-                polytexts = []# temporary list to store the text info for each stock
-                polytexts.append([text[0],50,asset.color])
-                polytexts.append([text[1],35,(190,190,190)])
-                polytexts.append([text[2],50,(190,190,190)])
-                textinfo.append(polytexts)
-                coords[i].append(((text[1],50),30))
+    #         textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
+    #         coords = [[(15,10),(20,60)] for i in range(len(textlist))]
+    #         # loop through the textlist and store the text info in the textinfo list
+    #         for i,(text,asset) in enumerate(zip(textlist,assets)):
+    #             polytexts = []# temporary list to store the text info for each stock
+    #             polytexts.append([text[0],50,asset.color])
+    #             polytexts.append([text[1],35,(190,190,190)])
+    #             polytexts.append([text[2],50,(190,190,190)])
+    #             textinfo.append(polytexts)
+    #             coords[i].append(((text[1],50),30))
 
-            self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
-            self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
-            # Does most of the work for the latter scroll, renders the text and finds all the coords
-            maxwh = (420,700)
-            self.latterscroll.store_rendercoords((1475,205), maxwh,125,0,0,updatefreq=5)
-            # drawing the latter scroll and assigning the selected stock
-            self.latterscroll.draw_polys(screen, (1475,205), maxwh, mousebuttons, None, True)
+    #         self.latterscroll.storetextinfo(textinfo)# simply changes the self.texts in latterscroll
+    #         self.latterscroll.set_textcoords(coords)# simply changes the self.textcoords in latterscroll
+    #         # Does most of the work for the latter scroll, renders the text and finds all the coords
+    #         maxwh = (420,700)
+    #         self.latterscroll.store_rendercoords((1475,205), maxwh,125,0,0,updatefreq=5)
+    #         # drawing the latter scroll and assigning the selected stock
+    #         self.latterscroll.draw_polys(screen, (1475,205), maxwh, mousebuttons, None, True)
             
             # for i,asset in enumerate(assets):
             #     #all the texts to be rendered
@@ -273,7 +277,17 @@ class UIControls():
             render = s_render(f"{gametime.isOpen()[1]}",65,color)
             screen.blit(render,(890-(render.get_width()/2),95))
             
+    def drawPieChart(self,screen,player,stocklist,mousebuttons):
+        values = [(stock.getValue(),stock.name) for stock in player.stocks]
+        names = set([stock.name for stock in player.stocks])
 
+        values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
+        values.append([player.cash, "Cash",player.color])
+        for option in player.options:
+            values.append([option.getValue(),option.name,option.color])
+        # draw_pie_chart(screen, values, 190, (935, 235))
+        self.pieChart.updateData(values)
+        self.pieChart.draw(screen,"Portfolio Breakdown",mousebuttons)
 
     def draw_home(self,screen:pygame.Surface,stocklist:list,gametime,player,mousebuttons):
         """Draws the home screen"""
@@ -287,20 +301,21 @@ class UIControls():
         gfxdraw.filled_polygon(screen,[(250,705),(275,1050),(1475,1050),(1450,705)],(10,10,10,175))# the News bar at the bottom
         pygame.draw.polygon(screen,(0,0,0),[(250,705),(275,1050),(1475,1050),(1450,705)],5)# the News bar at the bottom Outline
         
-        
-        gfxdraw.filled_polygon(screen,[(930,160),(930,695),(1450,695),(1450,160)],(40,40,40,175))# Movements bar (right of the portfolio)
-        gfxdraw.box(screen,pygame.Rect(930,160,520,40),(30,30,30))# Top part of the announce (right of the portfolio)
-        pygame.draw.polygon(screen,(0,0,0),[(930,160),(930,695),(1450,695),(1450,160)],5)# Movements bar (right of the portfolio) Outline
+        pygame.draw.line(screen,(0,0,0),(270,985),(1469,985),5)# line between the news bar and the stock bar
+        # gfxdraw.filled_polygon(screen,[(930,160),(930,695),(1450,695),(1450,160)],(40,40,40,175))# Movements bar (right of the portfolio)
+        # gfxdraw.box(screen,pygame.Rect(930,160,520,40),(30,30,30))# Top part of the announce (right of the portfolio)
+        # pygame.draw.polygon(screen,(0,0,0),[(930,160),(930,695),(1450,695),(1450,160)],5)# Movements bar (right of the portfolio) Outline
 
         points = [(1460,160),(1460,700),(1910,700),(1910,160)]
-        gfxdraw.filled_polygon(screen,points,(30,30,30,175))
-        gfxdraw.box(screen,pygame.Rect(1460,160,450,40),(15,15,15))# Top part of the announce (right of the portfolio)
-        pygame.draw.polygon(screen,(0,0,0),points,5)
+        # gfxdraw.filled_polygon(screen,points,(30,30,30,175))
+        # gfxdraw.box(screen,pygame.Rect(1460,160,450,40),(15,15,15))# Top part of the announce (right of the portfolio)
+        # pygame.draw.polygon(screen,(0,0,0),points,5)
 
-        
+        self.drawPieChart(screen,player,stocklist,mousebuttons)
+
         # self.draw_stockbar(screen,stocklist)# draws the stock graph bar
-        self.draw_accbar_middle(screen,stocklist,mousebuttons,player)# draws the stock events (On the right of the portfolio)
-        self.draw_accbar_right(screen,stocklist,player,mousebuttons)# draws the stock events (On the very right of the screen)
+        # self.draw_accbar_middle(screen,stocklist,mousebuttons,player)# draws the stock events (On the right of the portfolio)
+        # self.draw_accbar_right(screen,stocklist,player,mousebuttons)# draws the stock events (On the very right of the screen)
         # self.newsobj.draw(screen)
     # def drawBigMessage(self,screen,mousebuttons,player):
     #     if bigMessageList:# if there is a big message
@@ -323,6 +338,7 @@ class UIControls():
                 # tmarket.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"Normal")
                 self.totalMarketGraph.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"hoverName")
                 # self.gameplay_speed = self.bar.draw_bar(screen,[1500,650],[120,380],'vertical')
+                self.newsobj.draw(screen,gametime)
                 
                 screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(830,20))
 

@@ -28,34 +28,42 @@ def createbacksurf(radius):
     return backsurface
 
 class PieChart:
-    def __init__(s,radius,coords):
-        s.data = []
-        s.radius = radius
-        s.coords = coords
-        s.pieSegments = []#[[color,points,value]...]
-        s.angles = []
-        s.lscroll = LatterScroll()
-        s.selectedAssetIndex = 0
-        s.boxtextsize = int(getTSizeNums(f'50.00% of Portfolio',s.radius*1.75)*.9)
+    def __init__(self,wh,coords):
+        """The wh will calculate the max radius that won't go out of wh"""
+        self.data = []
+        self.wh = wh
+        self.radius = min(self.wh[0]//2,(self.wh[1]-120)//2)# Starts with the radius based on 1 line of bottom text (If there are too many elements then it will be decreased by updateRadius method)
+        self.coords = coords
+        self.numlines = 1
+        self.pieSegments = []#[[color,points,value]...]
+        self.angles = []
+        self.lscroll = LatterScroll()
+        self.selectedAssetIndex = 0
+        self.boxtextsize = int(getTSizeNums(f'50.00% of Portfolio',self.radius*1.75)*.9)
 
-    
-    def updateData(s, data, coords=None, radius=None):
+    def updateRadius(self,NumBottomLines):
+        """Updates the radius of the pie chart"""
+        extraAmt = 55*NumBottomLines
+        self.radius = min(self.wh[0]//2,(self.wh[1]-60-extraAmt)//2)
+
+
+    def updateData(self, data, coords=None, radius=None):
         """
         Updates the Data for the pie chart
         Data is a list of tuples, each tuple is (value, name, color)
         Should Usually just use the original coords and radius, but the coords and radius parameters can be used
         """
 
-        s.coords = s.coords if coords == None else coords# if coords is None, then keep the original coords
-        s.radius = s.radius if radius == None else radius# if radius is None, then keep the original radius
+        self.coords = self.coords if coords == None else coords# if coords is None, then keep the original coords
+        self.radius = self.radius if radius == None else radius# if radius is None, then keep the original radius
 
-        s.data = data
-        s.pieSegments.clear()
+        self.data = data
+        self.pieSegments.clear()
 
-        total = sum([v[0] for v in s.data])# get the total value of the stocks
+        total = sum([v[0] for v in self.data])# get the total value of the stocks
 
         # percentages is a list of lists, each list is [percentage, name, color, actual value]
-        percentages = [[round((value[0]) / total,4)*100,value[1],value[2],value[0]] for value in s.data]
+        percentages = [[round((value[0]) / total,4)*100,value[1],value[2],value[0]] for value in self.data]
 
         other = [0,'Other',(255,255,0),0]
 
@@ -70,21 +78,21 @@ class PieChart:
         percentages.sort(key=lambda x:x[0],reverse=True)
         percentindex = math.radians(0)
         
-        s.angles.clear()
+        self.angles.clear()
         for i,percent in enumerate(percentages):# loop through the percentages and get the angles
-            s.angles.append([math.radians(percentindex)])# the first angle is the previous angle
+            self.angles.append([math.radians(percentindex)])# the first angle is the previous angle
             percentindex += (percent[0]/100)*360
-            s.angles[i].append(math.radians(percentindex))# the second angle is the current angle
-            s.angles[i].extend([percent[3], percent[1],percent[2]])# the value, name and color
+            self.angles[i].append(math.radians(percentindex))# the second angle is the current angle
+            self.angles[i].extend([percent[3], percent[1],percent[2]])# the value, name and color
             
-        corners = [s.coords, (s.coords[0] + s.radius*2, s.coords[1]), (s.coords[0] + s.radius*2, s.coords[1] + s.radius*2), (s.coords[0], s.coords[1] + s.radius*2)]
+        corners = [self.coords, (self.coords[0] + self.radius*2, self.coords[1]), (self.coords[0] + self.radius*2, self.coords[1] + self.radius*2), (self.coords[0], self.coords[1] + self.radius*2)]
         
         points = []
 
-        for a1, a2, value, name, color in s.angles:# loop through the angles
-            p0 = (s.coords[0] + s.radius, s.coords[1]+s.radius)
-            p1 = (s.coords[0] + s.radius + s.radius * math.cos(a1), s.radius + s.coords[1] + (s.radius * math.sin(a1) * -1))# the first point on the circle
-            p2 = (s.coords[0] + s.radius + s.radius * math.cos(a2), s.radius + s.coords[1] + (s.radius * math.sin(a2) * -1))# the second point on the circle - drawn after the corner points
+        for a1, a2, value, name, color in self.angles:# loop through the angles
+            p0 = (self.coords[0] + self.radius, self.coords[1]+self.radius)
+            p1 = (self.coords[0] + self.radius + self.radius * math.cos(a1), self.radius + self.coords[1] + (self.radius * math.sin(a1) * -1))# the first point on the circle
+            p2 = (self.coords[0] + self.radius + self.radius * math.cos(a2), self.radius + self.coords[1] + (self.radius * math.sin(a2) * -1))# the second point on the circle - drawn after the corner points
             points = [p0, p1, p2, p0]# put the first points in the list, more points will be added in between p1 and p2
 
             addedcorners = set()
@@ -115,128 +123,193 @@ class PieChart:
                 points.insert(-2,dto_corner(degree))
             # draw the polygon
             # pygame.draw.polygon(wholesurf, color, [(x[0]-coords[0],x[1]-coords[1]) for x in points]) 
-            s.pieSegments.append([color,[(x[0]-s.coords[0],x[1]-s.coords[1]) for x in points],value,name])
+            self.pieSegments.append([color,[(x[0]-self.coords[0],x[1]-self.coords[1]) for x in points],value,name])
     
-
-    def draw(s,screen:pygame.Surface):
-        """"""        
-        totalValue = sum([v[0] for v in s.data])# originally the displayed value is the total value of the stocks - might change if mouseover
-
-        wholesurf = pygame.Surface((s.radius*2,s.radius*2))
-
+    def getClickedAsset(self,mousebuttons):
+        """Gets the asset that the mouse is over"""
         mousex,mousey = pygame.mouse.get_pos()
 
+        collided = False
+        for i,(color,points,value,name) in enumerate(self.pieSegments):# loop through the pie segments
+            if point_in_polygon((mousex-self.coords[0],mousey-self.coords[1]-60),points):# set collided to the one the mouse is over
+                collided = i
+                if mousebuttons == 1:# if the mouse is clicked, then set the selected asset to the one the mouse is over
+                    if self.selectedAssetIndex == i:
+                        self.selectedAssetIndex = None
+                    else:
+                        self.selectedAssetIndex = i
+                return collided
+        return collided
 
-        def drawInfoBox(pieSegment):
-            """Draws the information box to the right of the pie chart"""	
-            color,points,value,name = pieSegment
-            corners = [s.coords, (s.coords[0] + s.radius*2, s.coords[1]), (s.coords[0] + s.radius*2, s.coords[1] + s.radius*2), (s.coords[0], s.coords[1] + s.radius*2)]
-        
-            # Displaying the information in the box to the right of the pie chart
-            boxRect = pygame.rect.Rect(corners[0][0]+s.radius*2+10,corners[0][1],s.radius*1.75,s.radius*2)
-            pygame.draw.rect(screen, (0,0,0), boxRect, 5, 10)
+    def drawOutline(self,pieSurf:pygame.Surface):
+        for color,points,value,name in self.pieSegments:
+            pygame.draw.line(pieSurf,(1,1,1),(self.radius,self.radius),points[1],5)
 
-            nameText,percentText = s_render(name,45,color), s_render(f'{limit_digits((value/totalValue)*100,16)}%',s.boxtextsize,(110,110,110))
-            nameH,nameW = nameText.get_height(),nameText.get_width()
+    def drawBottomNames(self,wholeSurf:pygame.Surface,mousebuttons:int):
+        numNames = len(self.pieSegments)
+        nameRenders = [s_render(name, 35, color) for i,(color,points,value,name) in enumerate(self.pieSegments)]
+        numLines = 0
+        spaceings = []
+        lastXOffset = 0# The offset for the last line- if it has less than qtyPerLine
+
+        while not spaceings or max(spaceings) < 5:
+            numLines += 1
+            qtyPerLine = math.ceil(numNames/numLines)
+            lastXOffset = 0
+            spaceings.clear()
+            for i in range(numLines):
+                
+                start,stop = i*qtyPerLine,(((i+1)*qtyPerLine) if (i+1)*qtyPerLine < numNames else numNames)
+                totalWidth = (sum([render.get_width() for render in nameRenders[start:stop]])+(15*(stop-start-1)))# technically qtyperline isn't right since it could be less for last one if I want to fix it
+                spaceings.append(((self.radius*2)-totalWidth-10)/(stop-start-1))
+                if (stop-start) != qtyPerLine:# Only for last line if it has less qtyPerLine
+                    spaceings[-1] = spaceings[-2]
+                    lastXOffset = ((self.radius*2)-(totalWidth+(spaceings[-1]*(stop-start))-10))//2
+            if numLines > 4:
+                self.updateRadius(0)
+                return
+
+
             
-            screen.blit(nameText, (boxRect.centerx-(nameW/2), boxRect.y+10))
-            pygame.draw.rect(screen, (0,0,0), (boxRect.x,boxRect.y+nameH+15,boxRect.width,5))# draw the line under the name
-            screen.blit(percentText, (boxRect.centerx-(percentText.get_width()/2), boxRect.y+20+nameH+10))
-            # if name == "Cash" or name == "Other":
-            #     return
-            # nameList = ["Buy","Sell","Speculate"]
-            # for i,image in enumerate(s.menuIcons):
-            #     y = boxRect.y+nameH+percentText.get_height()+40+(i*65)
-            #     screen.blit(image, (boxRect.x+15, y+5))
-            #     screen.blit(s_render(nameList[i],50,(1,1,1)), (boxRect.x+85, y+10))
-            #     myRect = pygame.rect.Rect(boxRect.x+10,y,boxRect.width-20,60)
-            #     if myRect.collidepoint(mousex,mousey):
-            #         pygame.draw.rect(screen, (0,0,0), myRect, 3, 5)
-            #         if pygame.mouse.get_pressed()[0]:
-            #             # menulist is stockbook,portfolio,optiontrade
-            #             for menu in s.menuList:
-            #                 menu.menudrawn = False
-            #             s.menuList[i].menudrawn = True
-            #             if i == 0:# if the stockbook is clicked, then set the selected asset to the one the mouse is over
-            #                 print(name[:4])
-            #                 s.menuList[0].changeSelectedStock(name=name[:4])
-            #             if i == 1:# if the portfolio is clicked, then set the selected asset to the one the mouse is over
-            #                 s.menuList[1].selectedAsset = s.menuList[1].findAsset(value,name)
+        currentWidth = 5
+
+        if self.numlines != numLines:
+            self.numlines = numLines
+            self.updateRadius(numLines)
+    
+        place = 0
+        for i in range(numLines):
+            ylevel = self.radius*2+100+((nameRenders[0].get_height()+15)*i)
+            xOff = lastXOffset if i == numLines-1 else 0
+            for _ in range(qtyPerLine):
+                if place >= numNames: break
+                w,h = nameRenders[place].get_width(),nameRenders[place].get_height()
+                pygame.draw.rect(wholeSurf,self.pieSegments[place][0],(xOff+currentWidth,ylevel,10,10))
+
+                drawCenterRendered(wholeSurf, nameRenders[place], (xOff+currentWidth+15, ylevel), centerX=False, centerY=True)
+                rect = pygame.Rect(xOff+self.coords[0]+currentWidth-3,self.coords[1]+ylevel-10,23+w,h+4)
+
+                if (n:=rect.collidepoint(*pygame.mouse.get_pos())) or place == self.selectedAssetIndex:
+                    pygame.draw.line(wholeSurf,(255,255,255),(xOff+currentWidth,ylevel+15),(xOff+currentWidth+23+w,ylevel+15),3)
+                    if n and mousebuttons == 1:
+                        self.selectedAssetIndex = place          
+                place += 1
+                currentWidth += w+spaceings[i]+15
+            currentWidth = 5
+
+            
+        #     for j in range(len(nameRenders[i])):
+        #         pygame.draw.rect(wholeSurf,self.pieSegments[i],(currentWidth,self.radius*2+100,10,10))
+
+        #         drawCenterRendered(wholeSurf, nameRenders[i], (currentWidth+15, self.radius*2+100), centerX=False, centerY=True)
+        #         rect = pygame.Rect(self.coords[0]+currentWidth-3,self.coords[1]+self.radius*2+90,23+nameRenders[i].get_width(),nameRenders[i].get_height()+4)
+
+        #         if (n:=rect.collidepoint(*pygame.mouse.get_pos())) or i == self.selectedAssetIndex:
+        #             pygame.draw.line(wholeSurf,(255,255,255),(currentWidth,self.radius*2+120),(currentWidth+23+nameRenders[i].get_width(),self.radius*2+120),3)
+        #             if n and mousebuttons == 1:
+        #                 self.selectedAssetIndex = i                
+
+        #         currentWidth += nameRenders[i].get_width()+spaceing+15
+
+    def draw(self,screen:pygame.Surface,title:str,mousebuttons:int):
+        """"""        
+        totalValue = sum([v[0] for v in self.data])# originally the displayed value is the total value of the stocks - might change if mouseover
 
         
-        if pygame.Rect(s.coords[0],s.coords[1],s.radius*2,s.radius*2).collidepoint(mousex,mousey):# if the mouse is in the pie chart
-            collided = False
-            for i,(color,points,value,name) in enumerate(s.pieSegments):# loop through the pie segments
-                if point_in_polygon((mousex-s.coords[0],mousey-s.coords[1]),points):# set collided to the one the mouse is over
-                    collided = i
-                    if pygame.mouse.get_pressed()[0]:# if the mouse is clicked, then set the selected asset to the one the mouse is over
-                        s.selectedAssetIndex = i
+        wholeSurf = pygame.Surface((self.wh[0],self.wh[1]))
+        self.drawBottomNames(wholeSurf,mousebuttons)
+        pieSurf = pygame.Surface((self.radius*2,self.radius*2))
 
-            for i,(color,points,value,name) in enumerate(s.pieSegments):# draws all the segments darker except the one the mouse is over
-                newcolor = (color[0]//2,color[1]//2,color[2]//2) if i != collided else color
-                gfxdraw.filled_polygon(wholesurf,points,newcolor)#draws the none selected polygon darker
+       
+        
+        if pointInCircle(pygame.mouse.get_pos(),(self.coords[0]+self.radius,self.coords[1]+60+self.radius),self.radius):# if the mouse is in the pie chart
+            collided = self.getClickedAsset(mousebuttons)# get the asset that the mouse is over
 
+            for i,(color,points,value,name) in enumerate(self.pieSegments):# draws all the segments darker except the one the mouse is over
+                newcolor = brightenCol(color,0.5) if i != collided else brightenCol(color,1.5)
+                gfxdraw.filled_polygon(pieSurf,points,newcolor)#draws the none selected polygon darker
+            self.drawOutline(pieSurf)
 
-            value = s.pieSegments[collided][2]# the value of the stock the mouse is over
-            drawBoxedText(wholesurf, f'{limit_digits(value,16)}',50,s.pieSegments[collided][0],(1,1,1),(s.radius,s.radius))# blit the value of the mouseover segement to the screen
+            value = self.pieSegments[collided][2]# the value of the stock the mouse is over
+            drawBoxedText(pieSurf, f'${limit_digits(value,16)}',50,self.pieSegments[collided][0],(1,1,1),(self.radius,self.radius))# blit the value of the mouseover segement to the screen
 
         else:
-            for color,points,value,name in s.pieSegments: 
-                gfxdraw.filled_polygon(wholesurf,points,color)
+            if self.selectedAssetIndex != None:
+                if self.selectedAssetIndex >= len(self.pieSegments):
+                    self.selectedAssetIndex = None
+                else:
+                    for i,(color,points,value,name) in enumerate(self.pieSegments):# draws all the segments darker except the one the mouse is over
+                        newcolor = brightenCol(color,0.5) if i != self.selectedAssetIndex else brightenCol(color,1.5)
+                        gfxdraw.filled_polygon(pieSurf,points,newcolor)#draws the none selected polygon darker
+                    self.drawOutline(pieSurf)
+                    drawBoxedText(pieSurf, f'${limit_digits(self.pieSegments[self.selectedAssetIndex][2],16)}',50,self.pieSegments[self.selectedAssetIndex][0],(1,1,1),(self.radius,self.radius))# blit the value of the mouseover segement to the screen                
+            
+            else:# if the mouse isn't over any of the segments, then display the total value
+                for color,points,value,name in self.pieSegments: 
+                    gfxdraw.filled_polygon(pieSurf,points,color)
+                self.drawOutline(pieSurf)
+                drawBoxedText(pieSurf, f'${limit_digits(totalValue,16)}',50,(90,90,90),(1,1,1),(self.radius,self.radius))# blit the value of the mouseover segement to the screen
 
-            # if the mouse isn't over any of the segments, then display the total value    
-            drawBoxedText(wholesurf, f'{limit_digits(totalValue,16)}',50,(0,0,0),(1,1,1),(s.radius,s.radius))# blit the value of the mouseover segement to the screen    
-
-        if s.selectedAssetIndex != None:
-            if s.selectedAssetIndex >= len(s.pieSegments):
-                s.selectedAssetIndex = 0
-            drawInfoBox(s.pieSegments[s.selectedAssetIndex])# draw the information box to the right of the pie chart
-        wholesurf.blit(createbacksurf(s.radius), (0,0))  # blit the backsurface to the screen
-        wholesurf.set_colorkey((0,0,0))
-        screen.blit(wholesurf, s.coords)
         
-        pygame.draw.circle(screen, (0, 0, 0), (s.coords[0]+s.radius,s.coords[1]+s.radius), s.radius, 10)
+        
+
+        titleText = s_render(title, 65, (200, 200, 200))
+        drawCenterRendered(wholeSurf,  titleText, (self.radius, 0), centerX=True, centerY=False)# Blit the title to the screen
+        # draw the line under the title
+        pygame.draw.line(wholeSurf, (200, 200, 200), (self.radius - titleText.get_width()//2, titleText.get_height()+5), (self.radius + titleText.get_width()//2, titleText.get_height()+5), 4)
+
+        pieSurf.blit(createbacksurf(self.radius), (0,0))  # blit the backsurface to the screen
+        pieSurf.set_colorkey((0,0,0))
+        pygame.draw.circle(pieSurf, (1, 1, 1), (self.radius,self.radius), self.radius, 10)
+        # screen.blit(pieSurf, self.coords)
+        wholeSurf.blit(pieSurf,(0,70))
+        wholeSurf.set_colorkey((0,0,0))
+        
+        
+
+        screen.blit(wholeSurf,self.coords)
+        
 
 
 class PieChartSideInfo:
-    def __init__(s,radius,coords,menuList):
-        s.data = []
-        s.menuList = menuList
-        s.radius = radius
-        s.coords = coords
-        # s.menuIcons = [pygame.image.load(f'Assets/Menu_Icons/{icon}.png').convert_alpha() for icon in ['stockbook','portfolio','option3']]# the icons for the menu
-        s.menuIcons = [menu.icon for menu in menuList][:-1]
-        for i in range(len(s.menuIcons)):
-            s.menuIcons[i] = pygame.transform.scale(s.menuIcons[i],(70,40))
-        s.pieSegments = []#[[color,points,value]...]
-        s.angles = []
-        s.lscroll = LatterScroll()
-        s.selectedAssetIndex = 0
-    def checkMenuList(s):
+    def __init__(self,radius,coords,menuList):
+        self.data = []
+        self.menuList = menuList
+        self.radius = radius
+        self.coords = coords
+        # self.menuIcons = [pygame.image.load(f'Assets/Menu_Icons/{icon}.png').convert_alpha() for icon in ['stockbook','portfolio','option3']]# the icons for the menu
+        self.menuIcons = [menu.icon for menu in menuList][:-1]
+        for i in range(len(self.menuIcons)):
+            self.menuIcons[i] = pygame.transform.scale(self.menuIcons[i],(70,40))
+        self.pieSegments = []#[[color,points,value]...]
+        self.angles = []
+        self.lscroll = LatterScroll()
+        self.selectedAssetIndex = 0
+    def checkMenuList(self):
         """Unfortunately menulist isn't always complete when the init is called, so this function is used to update the menuIcons list"""
-        if len(s.menuList) != len(s.menuIcons):
-            s.menuIcons = [menu.icon for menu in s.menuList][:-1]
-            for i in range(len(s.menuIcons)):
-                s.menuIcons[i] = pygame.transform.scale(s.menuIcons[i],(50,50))
+        if len(self.menuList) != len(self.menuIcons):
+            self.menuIcons = [menu.icon for menu in self.menuList][:-1]
+            for i in range(len(self.menuIcons)):
+                self.menuIcons[i] = pygame.transform.scale(self.menuIcons[i],(50,50))
     
-    def updateData(s, data, coords=None, radius=None):
+    def updateData(self, data, coords=None, radius=None):
         """
         Updates the Data for the pie chart
         Data is a list of tuples, each tuple is (value, name, color)
         Should Usually just use the original coords and radius, but the coords and radius parameters can be used
         """
-        s.checkMenuList()# check if the menuIcons list is up to date
+        self.checkMenuList()# check if the menuIcons list is up to date
 
-        s.coords = s.coords if coords == None else coords# if coords is None, then keep the original coords
-        s.radius = s.radius if radius == None else radius# if radius is None, then keep the original radius
+        self.coords = self.coords if coords == None else coords# if coords is None, then keep the original coords
+        self.radius = self.radius if radius == None else radius# if radius is None, then keep the original radius
 
-        s.data = data
-        s.pieSegments.clear()
+        self.data = data
+        self.pieSegments.clear()
 
-        total = sum([v[0] for v in s.data])# get the total value of the stocks
+        total = sum([v[0] for v in self.data])# get the total value of the stocks
 
         # percentages is a list of lists, each list is [percentage, name, color, actual value]
-        percentages = [[round((value[0]) / total,4)*100,value[1],value[2],value[0]] for value in s.data]
+        percentages = [[round((value[0]) / total,4)*100,value[1],value[2],value[0]] for value in self.data]
 
         other = [0,'Other',(255,255,0),0]
 
@@ -251,21 +324,21 @@ class PieChartSideInfo:
         percentages.sort(key=lambda x:x[0],reverse=True)
         percentindex = math.radians(0)
         
-        s.angles.clear()
+        self.angles.clear()
         for i,percent in enumerate(percentages):# loop through the percentages and get the angles
-            s.angles.append([math.radians(percentindex)])# the first angle is the previous angle
+            self.angles.append([math.radians(percentindex)])# the first angle is the previous angle
             percentindex += (percent[0]/100)*360
-            s.angles[i].append(math.radians(percentindex))# the second angle is the current angle
-            s.angles[i].extend([percent[3], percent[1],percent[2]])# the value, name and color
+            self.angles[i].append(math.radians(percentindex))# the second angle is the current angle
+            self.angles[i].extend([percent[3], percent[1],percent[2]])# the value, name and color
             
-        corners = [s.coords, (s.coords[0] + s.radius*2, s.coords[1]), (s.coords[0] + s.radius*2, s.coords[1] + s.radius*2), (s.coords[0], s.coords[1] + s.radius*2)]
+        corners = [self.coords, (self.coords[0] + self.radius*2, self.coords[1]), (self.coords[0] + self.radius*2, self.coords[1] + self.radius*2), (self.coords[0], self.coords[1] + self.radius*2)]
         
         points = []
 
-        for a1, a2, value, name, color in s.angles:# loop through the angles
-            p0 = (s.coords[0] + s.radius, s.coords[1]+s.radius)
-            p1 = (s.coords[0] + s.radius + s.radius * math.cos(a1), s.radius + s.coords[1] + (s.radius * math.sin(a1) * -1))# the first point on the circle
-            p2 = (s.coords[0] + s.radius + s.radius * math.cos(a2), s.radius + s.coords[1] + (s.radius * math.sin(a2) * -1))# the second point on the circle - drawn after the corner points
+        for a1, a2, value, name, color in self.angles:# loop through the angles
+            p0 = (self.coords[0] + self.radius, self.coords[1]+self.radius)
+            p1 = (self.coords[0] + self.radius + self.radius * math.cos(a1), self.radius + self.coords[1] + (self.radius * math.sin(a1) * -1))# the first point on the circle
+            p2 = (self.coords[0] + self.radius + self.radius * math.cos(a2), self.radius + self.coords[1] + (self.radius * math.sin(a2) * -1))# the second point on the circle - drawn after the corner points
             points = [p0, p1, p2, p0]# put the first points in the list, more points will be added in between p1 and p2
 
             addedcorners = set()
@@ -296,14 +369,14 @@ class PieChartSideInfo:
                 points.insert(-2,dto_corner(degree))
             # draw the polygon
             # pygame.draw.polygon(wholesurf, color, [(x[0]-coords[0],x[1]-coords[1]) for x in points]) 
-            s.pieSegments.append([color,[(x[0]-s.coords[0],x[1]-s.coords[1]) for x in points],value,name])
+            self.pieSegments.append([color,[(x[0]-self.coords[0],x[1]-self.coords[1]) for x in points],value,name])
     
 
-    def draw(s,screen:pygame.Surface):
+    def draw(self,screen:pygame.Surface):
         """"""        
-        totalValue = sum([v[0] for v in s.data])# originally the displayed value is the total value of the stocks - might change if mouseover
+        totalValue = sum([v[0] for v in self.data])# originally the displayed value is the total value of the stocks - might change if mouseover
 
-        wholesurf = pygame.Surface((s.radius*2,s.radius*2))
+        wholesurf = pygame.Surface((self.radius*2,self.radius*2))
 
         mousex,mousey = pygame.mouse.get_pos()
 
@@ -311,10 +384,10 @@ class PieChartSideInfo:
         def drawInfoBox(pieSegment):
             """Draws the information box to the right of the pie chart"""	
             color,points,value,name = pieSegment
-            corners = [s.coords, (s.coords[0] + s.radius*2, s.coords[1]), (s.coords[0] + s.radius*2, s.coords[1] + s.radius*2), (s.coords[0], s.coords[1] + s.radius*2)]
+            corners = [self.coords, (self.coords[0] + self.radius*2, self.coords[1]), (self.coords[0] + self.radius*2, self.coords[1] + self.radius*2), (self.coords[0], self.coords[1] + self.radius*2)]
         
             # Displaying the information in the box to the right of the pie chart
-            boxRect = pygame.rect.Rect(corners[0][0]+s.radius*2+10,corners[0][1],s.radius*1.75,s.radius*2)
+            boxRect = pygame.rect.Rect(corners[0][0]+self.radius*2+10,corners[0][1],self.radius*1.75,self.radius*2)
             pygame.draw.rect(screen, (0,0,0), boxRect, 5, 10)
 
             nameText,percentText = s_render(name,45,color), s_render(f'{limit_digits((value/totalValue)*100,16)}% of Portfolio',40,(110,110,110))
@@ -326,7 +399,7 @@ class PieChartSideInfo:
             if name == "Cash" or name == "Other":
                 return
             nameList = ["Buy","Sell","Speculate","Bank"]
-            for i,image in enumerate(s.menuIcons):
+            for i,image in enumerate(self.menuIcons):
                 y = boxRect.y+nameH+percentText.get_height()+40+(i*65)
                 screen.blit(image, (boxRect.x+15, y+5))
                 screen.blit(s_render(nameList[i],50,(1,1,1)), (boxRect.x+85, y+10))
@@ -335,45 +408,45 @@ class PieChartSideInfo:
                     pygame.draw.rect(screen, (0,0,0), myRect, 3, 5)
                     if pygame.mouse.get_pressed()[0]:
                         # menulist is stockbook,portfolio,optiontrade
-                        for menu in s.menuList:
+                        for menu in self.menuList:
                             menu.menudrawn = False
-                        s.menuList[i].menudrawn = True
+                        self.menuList[i].menudrawn = True
                         if i == 0:# if the stockbook is clicked, then set the selected asset to the one the mouse is over
                             print(name[:4])
-                            s.menuList[0].changeSelectedStock(name=name[:4])
+                            self.menuList[0].changeSelectedStock(name=name[:4])
                         if i == 1:# if the portfolio is clicked, then set the selected asset to the one the mouse is over
-                            s.menuList[1].selectedAsset = s.menuList[1].findAsset(value,name)
+                            self.menuList[1].selectedAsset = self.menuList[1].findAsset(value,name)
 
         
-        if pygame.Rect(s.coords[0],s.coords[1],s.radius*2,s.radius*2).collidepoint(mousex,mousey):# if the mouse is in the pie chart
+        if pygame.Rect(self.coords[0],self.coords[1],self.radius*2,self.radius*2).collidepoint(mousex,mousey):# if the mouse is in the pie chart
             collided = False
-            for i,(color,points,value,name) in enumerate(s.pieSegments):# loop through the pie segments
-                if point_in_polygon((mousex-s.coords[0],mousey-s.coords[1]),points):# set collided to the one the mouse is over
+            for i,(color,points,value,name) in enumerate(self.pieSegments):# loop through the pie segments
+                if point_in_polygon((mousex-self.coords[0],mousey-self.coords[1]),points):# set collided to the one the mouse is over
                     collided = i
                     if pygame.mouse.get_pressed()[0]:# if the mouse is clicked, then set the selected asset to the one the mouse is over
-                        s.selectedAssetIndex = i
+                        self.selectedAssetIndex = i
 
-            for i,(color,points,value,name) in enumerate(s.pieSegments):# draws all the segments darker except the one the mouse is over
+            for i,(color,points,value,name) in enumerate(self.pieSegments):# draws all the segments darker except the one the mouse is over
                 newcolor = (color[0]//2,color[1]//2,color[2]//2) if i != collided else color
                 gfxdraw.filled_polygon(wholesurf,points,newcolor)#draws the none selected polygon darker
 
 
-            value = s.pieSegments[collided][2]# the value of the stock the mouse is over
-            drawBoxedText(wholesurf, f'${limit_digits(value,16)}',50,s.pieSegments[collided][0],(1,1,1),(s.radius,s.radius))# blit the value of the mouseover segement to the screen
+            value = self.pieSegments[collided][2]# the value of the stock the mouse is over
+            drawBoxedText(wholesurf, f'${limit_digits(value,16)}',50,self.pieSegments[collided][0],(1,1,1),(self.radius,self.radius))# blit the value of the mouseover segement to the screen
 
         else:
-            for color,points,value,name in s.pieSegments: 
+            for color,points,value,name in self.pieSegments: 
                 gfxdraw.filled_polygon(wholesurf,points,color)
 
             # if the mouse isn't over any of the segments, then display the total value    
-            drawBoxedText(wholesurf, f'${limit_digits(totalValue,16)}',50,(0,170,0),(1,1,1),(s.radius,s.radius))# blit the value of the mouseover segement to the screen    
+            drawBoxedText(wholesurf, f'${limit_digits(totalValue,16)}',50,(0,170,0),(1,1,1),(self.radius,self.radius))# blit the value of the mouseover segement to the screen    
 
-        if s.selectedAssetIndex != None:
-            if s.selectedAssetIndex >= len(s.pieSegments):
-                s.selectedAssetIndex = 0
-            drawInfoBox(s.pieSegments[s.selectedAssetIndex])# draw the information box to the right of the pie chart
-        wholesurf.blit(createbacksurf(s.radius), (0,0))  # blit the backsurface to the screen
+        if self.selectedAssetIndex != None:
+            if self.selectedAssetIndex >= len(self.pieSegments):
+                self.selectedAssetIndex = 0
+            drawInfoBox(self.pieSegments[self.selectedAssetIndex])# draw the information box to the right of the pie chart
+        wholesurf.blit(createbacksurf(self.radius), (0,0))  # blit the backsurface to the screen
         wholesurf.set_colorkey((0,0,0))
-        screen.blit(wholesurf, s.coords)
+        screen.blit(wholesurf, self.coords)
         
-        pygame.draw.circle(screen, (0, 0, 0), (s.coords[0]+s.radius,s.coords[1]+s.radius), s.radius, 10)
+        pygame.draw.circle(screen, (0, 0, 0), (self.coords[0]+self.radius,self.coords[1]+self.radius), self.radius, 10)
