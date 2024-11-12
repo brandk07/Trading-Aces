@@ -12,6 +12,17 @@ class TotalMarket(Stock):
         self.stocks = stocklist.copy()
         self.combinStocks = stocklist.copy()# the stocks that are combined to make the total market
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+    # def getDividendYield(self):
+    #     """returns the dividend yield of the stock"""
+    #     return round(sum([s.dividendYield for s in self.combinStocks])/len(self.combinStocks),3)
+    def getDividendYield(self):
+        """returns the dividend yield of the stock"""
+        percents = self.getStockPercentages()
+        return round(sum([s.dividendYield*percents[s.name] for s in self.combinStocks]),3)
+    def getStockPercentages(self):
+        """returns a dictionary with the stock name as the key and the percentage of the stock in the index fund as the value"""
+        return {stock.name:stock.price/(self.price*len(self.combinStocks)) for stock in self.combinStocks}
+    
     def datafromfile(self,gametime):
         # this child class does not need to read data from a file
         # self.graphs = {key:np.array([100],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
@@ -71,6 +82,13 @@ class IndexFund(Stock):
         # self.stocks = stocks
         self.combinStocks = combinationStocks# the stocks that are combined to make the index Fund
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
+    def getDividendYield(self):
+        """returns the dividend yield of the stock"""
+        percents = self.getStockPercentages()
+        return round(sum([s.dividendYield*percents[s.name] for s in self.combinStocks]),3)
+    def getStockPercentages(self):
+        """returns a dictionary with the stock name as the key and the percentage of the stock in the index fund as the value"""
+        return {stock.name:stock.price/(self.price*len(self.combinStocks))for stock in self.combinStocks}
     def datafromfile(self,gametime):
         # this child class does not need to read data from a file
         # self.graphs = {key:np.array([100],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range

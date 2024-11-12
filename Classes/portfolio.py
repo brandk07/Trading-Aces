@@ -25,7 +25,7 @@ DX = 300# default x
 DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
-    def __init__(self,stocklist,player,gametime,totalmarket,menuList) -> None:
+    def __init__(self,stocklist,player,gametime,totalmarket,menuDict) -> None:
         self.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
         self.icon = pygame.transform.scale(self.icon,(140,100))
         self.icon.set_colorkey((255,255,255))
@@ -49,7 +49,7 @@ class Portfolio(Menu):
         self.displayedStocks = [StockVisualizer(gametime,stocklist[i],stocklist) for i in range(3)]# the stock visualizers for the stocks that are displayed
         self.networthGraph = StockVisualizer(gametime,player,stocklist)
         self.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
-        self.piechart = PieChartSideInfo(150, (200, 650),menuList)
+        self.piechart = PieChartSideInfo(150, (200, 650),menuDict)
         self.barGraphs = [BarGraph("Value",[175,175],[875,400]),BarGraph("Allocation",[175,175],[1150,400])]
         self.orderBox = OrderBox((465,605),(385,370))
         self.barSelection : SelectionBar = SelectionBar()
@@ -205,7 +205,8 @@ class Portfolio(Menu):
             color = (200,10,10)
             if pygame.mouse.get_pressed()[0]:
                 self.selectedAsset = None
-        screen.blit(s_render("Deselect Asset", 70, color), (1450, 115))
+        # screen.blit(s_render("Deselect Asset", 70, color), (1450, 115))
+        drawCenterTxt(screen,"Deselect Asset",70,color,(1740,105),centerY=False)
 
         # Draws the description about the stock on the left side of the screen
         points = [(200, 605), (850, 605), (850, 960), (200, 960)]
@@ -339,7 +340,7 @@ class Portfolio(Menu):
 
             info = [
                 (f"Current Yield", f"{limit_digits(asset.getDividendYield(),15)}%"),
-                (f"Vs Market (1Y)",f"{limit_digits(percentDiff,15)}%"),  
+                (f"Vs Market",f"{limit_digits(percentDiff,15)}%"),  
                 (f"Voliatility" ,f"{limit_digits(asset.getVolatility()*100,15)}%"),
             ]
             
@@ -389,16 +390,18 @@ class Portfolio(Menu):
 
             # Pie chart
             # values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
-            values = [(stock.getValue(),stock.name) for stock in player.stocks]
-            names = set([stock.name for stock in player.stocks])
+            # values = [(stock.getValue(),stock.name) for stock in player.stocks]
+            # names = set([stock.name for stock in player.stocks])
 
-            values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[self.name for self in stocklist].index(name)].color] for name in names]
-            values.append([player.cash, "Cash",player.color])
-            for option in player.options:
-                values.append([option.getValue(),option.name,option.color])
+            # values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[self.name for self in stocklist].index(name)].color] for name in names]
+            # values.append([player.cash, "Cash",player.color])
+            # for option in player.options:
+            #     values.append([option.getValue(),option.name,option.color])
+            assets = player.getAssets()
+            values = [[asset.getValue(),asset.name,asset.color] for asset in assets]
 
             self.piechart.updateData(values)
-            self.piechart.draw(screen)
+            self.piechart.draw(screen,mousebuttons)
             # draw_pie_chart(screen, values, 150,(200, 650))  
             
             wh = (500,285)

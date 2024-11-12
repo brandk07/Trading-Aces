@@ -222,7 +222,7 @@ class PieChart:
 
        
         
-        if pointInCircle(pygame.mouse.get_pos(),(self.coords[0]+self.radius,self.coords[1]+60+self.radius),self.radius):# if the mouse is in the pie chart
+        if pointInCircle(pygame.mouse.get_pos(),(self.coords[0]+self.radius,self.coords[1]+60+self.radius),self.radius-10):# if the mouse is in the pie chart
             collided = self.getClickedAsset(mousebuttons)# get the asset that the mouse is over
 
             for i,(color,points,value,name) in enumerate(self.pieSegments):# draws all the segments darker except the one the mouse is over
@@ -272,25 +272,27 @@ class PieChart:
 
 
 class PieChartSideInfo:
-    def __init__(self,radius,coords,menuList):
+    def __init__(self,radius,coords,menuDict:dict):
         self.data = []
-        self.menuList = menuList
+        self.menuDict = menuDict
         self.radius = radius
         self.coords = coords
         # self.menuIcons = [pygame.image.load(f'Assets/Menu_Icons/{icon}.png').convert_alpha() for icon in ['stockbook','portfolio','option3']]# the icons for the menu
-        self.menuIcons = [menu.icon for menu in menuList][:-1]
-        for i in range(len(self.menuIcons)):
-            self.menuIcons[i] = pygame.transform.scale(self.menuIcons[i],(70,40))
+        self.menuIcons = {}# needs to be updated in the checkmenuDict method
+
         self.pieSegments = []#[[color,points,value]...]
         self.angles = []
         self.lscroll = LatterScroll()
         self.selectedAssetIndex = 0
-    def checkMenuList(self):
-        """Unfortunately menulist isn't always complete when the init is called, so this function is used to update the menuIcons list"""
-        if len(self.menuList) != len(self.menuIcons):
-            self.menuIcons = [menu.icon for menu in self.menuList][:-1]
-            for i in range(len(self.menuIcons)):
-                self.menuIcons[i] = pygame.transform.scale(self.menuIcons[i],(50,50))
+    def checkmenuDict(self):
+        """Unfortunately menuDict isn't always complete when the init is called, so this function is used to update the menuIcons list"""
+        if len(self.menuIcons) != 4:
+            
+            self.menuIcons = {name:menu.icon for (name,menu) in self.menuDict.items() if name in ['Stockbook','Options','Portfolio','Bank']}# get the icons for the menu
+
+            # for  in range(len(self.menuIcons)):
+            for name in list(self.menuIcons):
+                self.menuIcons[name] = pygame.transform.scale(self.menuIcons[name],(50,50))
     
     def updateData(self, data, coords=None, radius=None):
         """
@@ -298,7 +300,7 @@ class PieChartSideInfo:
         Data is a list of tuples, each tuple is (value, name, color)
         Should Usually just use the original coords and radius, but the coords and radius parameters can be used
         """
-        self.checkMenuList()# check if the menuIcons list is up to date
+        self.checkmenuDict()# check if the menuIcons list is up to date
 
         self.coords = self.coords if coords == None else coords# if coords is None, then keep the original coords
         self.radius = self.radius if radius == None else radius# if radius is None, then keep the original radius
@@ -372,7 +374,7 @@ class PieChartSideInfo:
             self.pieSegments.append([color,[(x[0]-self.coords[0],x[1]-self.coords[1]) for x in points],value,name])
     
 
-    def draw(self,screen:pygame.Surface):
+    def draw(self,screen:pygame.Surface,mousebuttons:int):
         """"""        
         totalValue = sum([v[0] for v in self.data])# originally the displayed value is the total value of the stocks - might change if mouseover
 
@@ -381,7 +383,7 @@ class PieChartSideInfo:
         mousex,mousey = pygame.mouse.get_pos()
 
 
-        def drawInfoBox(pieSegment):
+        def drawInfoBox(pieSegment,mousebuttons):
             """Draws the information box to the right of the pie chart"""	
             color,points,value,name = pieSegment
             corners = [self.coords, (self.coords[0] + self.radius*2, self.coords[1]), (self.coords[0] + self.radius*2, self.coords[1] + self.radius*2), (self.coords[0], self.coords[1] + self.radius*2)]
@@ -398,24 +400,48 @@ class PieChartSideInfo:
             screen.blit(percentText, (boxRect.centerx-(percentText.get_width()/2), boxRect.y+20+nameH+10))
             if name == "Cash" or name == "Other":
                 return
-            nameList = ["Buy","Sell","Speculate","Bank"]
-            for i,image in enumerate(self.menuIcons):
+            nameList = ["Sell","Buy","Speculate"]
+            
+                
+            # for i,(iconName,image) in enumerate(self.menuIcons.items()):
+            for i in range(3):
+                if i ==0: # if it is the sell icon
+                    image = self.menuIcons['Portfolio']
+                    iconName = 'Portfolio'
+                elif i == 1:# if it is the buy icon
+                    if name in STOCKNAMES:
+                        image = self.menuIcons['Stockbook']
+                        iconName = 'Stockbook'
+                    elif name in INDEXNAMES:
+                        image = self.menuIcons['Bank']
+                        iconName = 'Bank'
+                else:# if it is the speculate icon
+                    image = self.menuIcons['Options']
+                    iconName = 'Options'                
+
                 y = boxRect.y+nameH+percentText.get_height()+40+(i*65)
                 screen.blit(image, (boxRect.x+15, y+5))
                 screen.blit(s_render(nameList[i],50,(1,1,1)), (boxRect.x+85, y+10))
                 myRect = pygame.rect.Rect(boxRect.x+10,y,boxRect.width-20,60)
+       
+                if mousebuttons == 1 and myRect.collidepoint(mousex,mousey):
+                    for (n,menu) in self.menuDict.items():
+                        menu.menudrawn = (n == iconName)
+                    if iconName == 'Stockbook':# if the stockbook is clicked, then set the selected asset to the one the mouse is over
+                        self.menuDict['Stockbook'].changeSelectedStock(name=name[:4])
+                    elif iconName == 'Portfolio':# if the portfolio is clicked, then set the selected asset to the one the mouse is over
+                        self.menuDict['Portfolio'].selectedAsset = self.menuDict['Portfolio'].findAsset(value,name)
+                    elif iconName == 'Options':
+                        self.menuDict['Options'].setSelectedAsset(self.menuDict['Portfolio'].findAsset(value,name))
+                    elif iconName == 'Bank':
+                        self.menuDict['Bank'].menuSelection.setSelected("Investments")
+                        self.menuDict['Bank'].investScreen.fundSelection.setSelected(name)
+
                 if myRect.collidepoint(mousex,mousey):
                     pygame.draw.rect(screen, (0,0,0), myRect, 3, 5)
-                    if pygame.mouse.get_pressed()[0]:
-                        # menulist is stockbook,portfolio,optiontrade
-                        for menu in self.menuList:
-                            menu.menudrawn = False
-                        self.menuList[i].menudrawn = True
-                        if i == 0:# if the stockbook is clicked, then set the selected asset to the one the mouse is over
-                            print(name[:4])
-                            self.menuList[0].changeSelectedStock(name=name[:4])
-                        if i == 1:# if the portfolio is clicked, then set the selected asset to the one the mouse is over
-                            self.menuList[1].selectedAsset = self.menuList[1].findAsset(value,name)
+                
+                            
+                            
 
         
         if pygame.Rect(self.coords[0],self.coords[1],self.radius*2,self.radius*2).collidepoint(mousex,mousey):# if the mouse is in the pie chart
@@ -444,7 +470,7 @@ class PieChartSideInfo:
         if self.selectedAssetIndex != None:
             if self.selectedAssetIndex >= len(self.pieSegments):
                 self.selectedAssetIndex = 0
-            drawInfoBox(self.pieSegments[self.selectedAssetIndex])# draw the information box to the right of the pie chart
+            drawInfoBox(self.pieSegments[self.selectedAssetIndex],mousebuttons)# draw the information box to the right of the pie chart
         wholesurf.blit(createbacksurf(self.radius), (0,0))  # blit the backsurface to the screen
         wholesurf.set_colorkey((0,0,0))
         screen.blit(wholesurf, self.coords)

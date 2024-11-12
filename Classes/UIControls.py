@@ -272,20 +272,27 @@ class UIControls():
 
     def marketStatus(self,screen,gametime):
         color = (0,150,0) if gametime.isOpen()[0] else (150,0,0)
-        screen.blit(s_render(f"MARKET {'OPEN' if gametime.isOpen()[0] else 'CLOSED'}",115 if gametime.isOpen()[0] else 95,color),(725,20))
-        if not gametime.isOpen()[0]: 
-            render = s_render(f"{gametime.isOpen()[1]}",65,color)
-            screen.blit(render,(890-(render.get_width()/2),95))
+        # screen.blit(s_render(f"MARKET {'OPEN' if gametime.isOpen()[0] else 'CLOSED'}",115 if gametime.isOpen()[0] else 95,color),(725,20))
+        txt = f"MARKET {'OPEN' if gametime.isOpen()[0] else 'CLOSED'}"
+        drawCenterTxt(screen,txt,115,color,(1515,35),centerY=False)
+        # if not gametime.isOpen()[0]: 
+            # render = s_render(f"{gametime.isOpen()[1]}",65,color)
+            # screen.blit(render,(890-(render.get_width()/2),95))
+            # drawCenterTxt(screen,f"{gametime.isOpen()[1]}",65,color,(1515,35),centerY=False)
             
     def drawPieChart(self,screen,player,stocklist,mousebuttons):
-        values = [(stock.getValue(),stock.name) for stock in player.stocks]
-        names = set([stock.name for stock in player.stocks])
+        # values = [(stock.getValue(),stock.name) for stock in player.stocks]
+        # names = set([stock.name for stock in player.stocks])
 
-        values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
-        values.append([player.cash, "Cash",player.color])
-        for option in player.options:
-            values.append([option.getValue(),option.name,option.color])
+        # values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[s.name for s in stocklist].index(name)].color] for name in names]
+        # values.append([player.cash, "Cash",player.color])
+        # for option in player.options:
+        #     values.append([option.getValue(),option.name,option.color])
+
         # draw_pie_chart(screen, values, 190, (935, 235))
+        assets = player.getAssets()
+        values = [[asset.getValue(),asset.name,asset.color] for asset in assets]
+
         self.pieChart.updateData(values)
         self.pieChart.draw(screen,"Portfolio Breakdown",mousebuttons)
 
@@ -327,12 +334,12 @@ class UIControls():
         
 
         if not any(menu.menudrawn for menu in menulist):# if any of the menus are drawn, then don't draw
-            self.marketStatus(screen,gametime)
+            
             if self.view == "home":
                 mousex,mousey = pygame.mouse.get_pos()
                 
                 self.draw_home(screen,stocklist,gametime,player,mousebuttons)            
-
+                self.marketStatus(screen,gametime)
                 # player.draw(screen,player,(250,160),(680,540),mousebuttons,stocklist,True)
                 # tmarket.draw(screen,(250,160),(680,540),mousebuttons,gametime)
                 # tmarket.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"Normal")

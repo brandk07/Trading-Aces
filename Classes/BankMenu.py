@@ -18,147 +18,6 @@ from Classes.AssetTypes.LoanAsset import LoanAsset
 import datetime
 from Classes.imports.SideScroll import SideScroll,CdCard,LoanCard
 
-# class CustomLoanCreator:
-#     def __init__(self,player) -> None:
-#         # self.newOptionInfo = None# list containing info for the new option that is being created, [strikePrice, expirationDate]
-#         self.loanAmount,self.loanTerm = None,None
-#         self.creatingOption = False
-#         self.player = player
-#         self.loanObj : LoanAsset = None
-#         self.strikePad : Numpad = Numpad(displayText=False,nums=('DEL','0','.'))
-#         self.datePad : Numpad = Numpad(displayText=False,nums=('DEL','0','MAX'))
-#         self.oTypeSelect : SelectionBar = SelectionBar()
-#         self.numPadDisplay = None# Strike, or Date
-#         self.newOptionObj = None
- 
-
-#     def removeSelc(self):
-#         self.selectOption = None
-#     def stopCreating(self):
-#         self.creatingOption = False
-    
-#     def drawType(self,screen,mousebuttons):
-#         drawCenterTxt(screen, 'Type', 45, (200, 200, 200), (1700, 275), centerY=False)
-        
-#         self.oTypeSelect.draw(screen, ["call","put"], (1575, 315), (250, 50), mousebuttons, colors=[(50, 180, 169),(127,25,255)],txtsize=35)
-    
-#     def drawStrike(self,screen,mousebuttons,stock:Stock):
-#         drawCenterTxt(screen, 'Strike', 45, (180, 180, 180), (1530, 427), centerX=False)
-
-#         if self.strikePrice == None and self.numPadDisplay != "Strike":# if the strike price has not been set
-#             result = drawClickableBox(screen, (1875, 427), "Set Value", 45, (0,0,0), (160,160,160), mousebuttons,centerY=True,fill=True,topLeftX=True)
-#             if result:# if the box has been clicked to set the value (numpad displayed)
-#                 self.numPadDisplay = "Strike"# changing it to strike so that the numpad will be displayed
-        
-#         elif self.numPadDisplay == "Strike" and self.strikePrice == None:# if the box has been clicked, but no value has been confirmed
-#             self.strikePad.draw(screen,(1050,190),(450,340),"",mousebuttons,stock.price*2)# draw the numpad
-#             result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Strike Value", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
-
-#             self.strikePrice = self.strikePad.getValue() if result else self.strikePrice
-#             self.numPadDisplay = None if result else self.numPadDisplay
-#             drawCenterTxt(screen, f"${self.strikePad.getNumstr(haveSes=False)}", 55, (200, 200, 200), (1850, 428),centerX=False,fullX=True)
-
-#             if self.strikePrice == 0: self.strikePrice = None# if the value is 0, then it is not a valid value
-        
-#         else:# if the value has been confirmed
-            
-#             result = drawClickableBox(screen, (1862, 428), f"${self.strikePad.getValue()}", 55, (200,200,200), (0,0,0), mousebuttons,centerY=True,border=False,topLeftX=True)
-#             if result: 
-#                 self.numPadDisplay = "Strike"; self.strikePrice = None
-
-#     def drawDate(self,screen,mousebuttons,gametime:GameTime):
-#         dateTxt = s_render('Exp Date', 40, (200, 200, 200))
-#         screen.blit(dateTxt, (1530, 537-dateTxt.get_height()/2))
-#         # print(self.expDate)
-#         if self.expDate == None and self.numPadDisplay != "Date":
-#             result = drawClickableBox(screen, (1875, 537), "Set Date", 45, (0,0,0), (170,170,170),mousebuttons,centerY=True,fill=True,topLeftX=True)
-#             if result:# if the box has been clicked to set the date (numpad displayed)
-#                 self.numPadDisplay = "Date"# changing it to date so that the numpad will be displayed
-
-#         elif self.numPadDisplay == "Date" and self.expDate == None:# if the box has been clicked, but no value has been confirmed
-            
-#             self.datePad.draw(screen,(1050,190),(450,340),"Day",mousebuttons,365*3)# draw the numpad, max value of 3 years
-#             result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Date", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
-
-#             self.expDate = self.datePad.getValue() if result else self.expDate
-#             self.numPadDisplay = None if result else self.numPadDisplay
-#             if result:
-#                 newNumDays = (getCloseOpenDate(gametime.time+timedelta(days=self.datePad.getValue()))-gametime.time).days# gets the number of days from the current date to the new date (trading day)
-#                 self.datePad.setValue(newNumDays)
-
-
-#             drawCenterTxt(screen, f"{self.datePad.getNumstr('Day',upperCase=False)}", 55, (200, 200, 200), (1860, 500),centerX=False,centerY=False,fullX=True)
-
-#             timeOffset = gametime.time+timedelta(days=self.datePad.getValue())
-#             drawCenterTxt(screen, f"{timeOffset.strftime('%m/%d/%Y')}", 40, (175, 175, 175), (1860, 545),centerX=False,centerY=False,fullX=True)
-
-#             if self.expDate == 0: self.expDate = None
-#         else:# if the value has been confirmed
-#             result = drawClickableBox(screen, (1885, 485), f"{self.datePad.getNumstr('Day',upperCase=False)}", 55, (200,200,200), (0,0,0), mousebuttons,border=False,topLeftX=True)
-#             if result: 
-#                 self.numPadDisplay = "Date"; self.expDate = None
-#             timeOffset = gametime.time+timedelta(days=self.datePad.getValue())
-#             drawCenterTxt(screen, f"{timeOffset.strftime('%m/%d/%Y')}", 40, (120, 120, 120), (1860, 545),centerX=False,centerY=False,fullX=True)
-    
-#     def drawEstPrice(self,screen,saveResult:bool,gametime:GameTime,stock:Stock):
-#         drawCenterTxt(screen, 'Est Price', 40, (200, 200, 200), (1530, 642), centerX=False)
-            
-#         if self.strikePrice != None and self.expDate != None:# if the strike price and expiration date have been set
-#             if self.numPadDisplay == None:# if the value has been confirmed
-#                 timeOffset = (gametime.time+timedelta(days=self.datePad.getValue()))
-                
-#                 if self.newOptionObj == None:# if the new option object has not been created
-#                     self.newOptionObj = OptionAsset(self.player,stock,self.strikePrice,timeOffset,self.oTypeSelect.getSelected(),str(gametime),1)
-#                 else:# if the new option object has been created
-#                     self.newOptionObj.setValues(strikePrice=self.strikePrice,expDate=timeOffset,optionType=self.oTypeSelect.getSelected())
-                
-#                 price = self.newOptionObj.getValue(bypass=True)
-#                 drawCenterTxt(screen, f"${limit_digits(price,15)}", 55, (200, 200, 200), (1860, 620), centerX=False, centerY=False,fullX=True)
-                
-#                 if saveResult:# if the save button has been clicked
-#                     self.savedOptions.append(self.newOptionObj)# save the new option
-#                     self.selectOption = self.newOptionObj# select the new option
-#                     self.strikePrice,self.newOptionObj,self.expDate = None, None, None# reset the new option info
-#                     self.datePad.reset(); self.strikePad.reset()# reset the numpad
-#                     self.creatingOption = False# stop creating the option
-
-#         if self.strikePrice == None or self.expDate == None or self.numPadDisplay != None:# if the strike price or expiration date have not been set
-#             drawCenterTxt(screen, f"N/A", 55, (200, 200, 200), (1860, 620), centerX=False, centerY=False,fullX=True)
-
-#     def drawCustOptions(self,screen:pygame.Surface,mousebuttons:int,gametime:GameTime,stock:Stock):
-#         """Handles the logic for creating a custom option"""
-
-        
-#         if not self.creatingOption:# if there is no new option being created (display the create new option button)
-
-#             result = drawClickableBox(screen, (1700, 270), "+ Create New", 50, (200,200,200), (0,80,0), mousebuttons,centerX=True,fill=True)
-#             if result:
-#                 self.creatingOption = True; self.selectOption = None; self.optionObj.removeSelc()
-                
-#         else:# if there is a new option being created
-#             self.selectOption = None
-#             coords = [(265,110),(380,95),(480,115),(600,85)]# stores the y and height of the boxes [Type, strike, exp date, est price]
-#             for i,coord in enumerate(coords):
-#                 pygame.draw.rect(screen,(0,0,0),pygame.Rect(1510,coord[0],375,coord[1]),5,10)
-
-#             self.drawType(screen,mousebuttons)# Draws, and handles the logic for setting the option type
-
-#             self.drawStrike(screen,mousebuttons,stock)# Draws, and handles the logic for setting the strike price
-            
-#             self.drawDate(screen,mousebuttons,gametime)# Draws, and handles the logic for setting the expiration date
-            
-#             saveResult = drawClickableBox(screen, (1515, 690), "Save", 45, (200,200,200), (0,225,0), mousebuttons)# draw the save button
-
-#             self.drawEstPrice(screen,saveResult,gametime,stock)# Draws, and handles the logic for setting the estimated price
-
-#             cancelResult = drawClickableBox(screen, (1750, 690), "Cancel", 45, (200,200,200), (225,0,0), mousebuttons)# draw the cancel button
-#             if cancelResult:
-#                 self.strikePrice,self.expDate = None,None
-#                 self.newOptionObj = None
-#                 self.creatingOption = False
-#         return self.savedOptions
-
-
 
 class BankMenu(Menu):
     def __init__(self,stocklist,gametime,player,transactions,tmarket,indexFunds:list) -> None:
@@ -405,9 +264,16 @@ class LoanScreen:
         drawCenterTxt(screen,"or Modify an",45,(180,180,180),(375,340),centerY=False)
         drawCenterTxt(screen,"Existing Loan",45,(180,180,180),(375,380),centerY=False)
 
-        txt = f"${limit_digits(self.player.getCurrentDebt(),20,self.player.getCurrentDebt()>1000)}"
-        drawCenterTxt(screen,txt,getTSizeNums(txt,600,155),(210,190,190),(997,382))
-        drawCenterTxt(screen,"Total Debt",55,(180,180,180),(997,225),centerY=False)
+        # txt = f"${limit_digits(self.player.getCurrentDebt(),20,self.player.getCurrentDebt()>1000)}"
+        # drawCenterTxt(screen,txt,getTSizeNums(txt,600,155),(210,190,190),(997,382))
+        # drawCenterTxt(screen,"Total Debt",55,(180,180,180),(997,225),centerY=False)
+        info = [
+            ("Max Debt Allowed",f"${limit_digits(self.player.getMaxLoan(),25)}"),
+            ("Total Debt",f"${limit_digits(self.player.getCurrentDebt(),25,self.player.getCurrentDebt()>1000)}"),
+            ("Lifetime Interest Paid",f"${limit_digits(self.player.interestPaid,20,self.player.interestPaid>1000)}"),
+            ("Lifetime Debt Undertaken",f"${limit_digits(self.player.underTakenDebt,20,self.player.underTakenDebt>1000)}"),
+        ]
+        drawLinedInfo(screen,(565,225),(865,310),info,50,(200,200,200))
 
 
 
@@ -448,7 +314,8 @@ class LoanScreen:
         pygame.draw.rect(screen,(0,0,0),(870,225,560,310),5,border_radius=10)# box for the loan info
 
         if not self.addingPayment:
-            result = drawClickableBoxWH(screen, (565,260), (300,65),"+ Add Payment", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
+            result = drawClickableBoxWH(screen, (565,275), (300,85),"+ Add Payment", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
+            self.networthGraph.drawFull(screen,(1445,215),(455,335),"Loan Networth",True,"Normal")
             if result: self.addingPayment = True
 
         if self.addingPayment:# if the user is adding a payment
@@ -457,11 +324,12 @@ class LoanScreen:
             val = self.paymentNumpad.getValue()
             princ = loan.principalLeft
 
-            drawCenterTxt(screen, 'New Est Monthly', 45, (180, 180, 180), (575,330), centerX=False,centerY=False)
-            drawBoxedTextWH(screen, (565,365), (300,65), f"${limit_digits(loan.getLoanCalc(principal=loan.principalLeft-val),20,loan.getLoanCalc(principal=loan.principalLeft-val)>1000)}", 55, (220,220,220))
+            drawCenterTxt(screen, 'New Est Monthly', 45, (180, 180, 180), (715,345), centerY=False)
+            drawBoxedTextWH(screen, (565,380), (300,65), f"${limit_digits(loan.getLoanCalc(principal=loan.principalLeft-val),20,loan.getLoanCalc(principal=loan.principalLeft-val)>1000)}", 55, (220,220,220))
 
             
-            result = drawClickableBoxWH(screen, (565,470), (300,65),"Cancel", 45, (190,0,0), (25,25,25), mousebuttons,fill=True)
+            result = drawClickableBoxWH(screen, (565,470), (300,65),"Cancel", 45, (180,180,180), (200,0,0),mousebuttons)
+            # result = drawClickableBox(screen, (565, 470), "Cancel", 45, (200,200,200), (225,0,0), mousebuttons)# draw the cancel button
             if result: self.addingPayment = False
             
             self.orderBox.loadData(f"-${limit_digits(val,25)}",f"${limit_digits(val,25)}",[("Principal Remaining ",f"${limit_digits(princ,20,princ>1000)}",""),("Principal After",f"${limit_digits(princ-val,20,princ-val>1000)}","")])
@@ -508,11 +376,11 @@ class LoanScreen:
         drawCenterTxt(screen,"Debt Info",55,(0,0,0),(1445+227,565),centerY=False)
         
         info = [
-            ("Debt Utilization",f"{limit_digits(self.player.getDebtUtilization(),20)}%"),
-            ("Total Debt",f"${limit_digits(self.player.getCurrentDebt(),20,self.player.getCurrentDebt()>1000)}"),
+            ("Debt Utilization",f"{limit_digits(self.player.getDebtUtilization(),25)}%"),
+            ("Total Debt",f"${limit_digits(self.player.getCurrentDebt(),25,self.player.getCurrentDebt()>1000)}"),
             ("# of Loans",f"{len(self.player.loans)}"),
-            ("Monthly Payment",f"${limit_digits(self.player.getMonthlyPayment(),20,self.player.getMonthlyPayment()>1000)}"),
-            ("Interest Rate",f"{limit_digits(self.interestRate*100,20)}%")
+            ("Monthly Payment",f"${limit_digits(self.player.getMonthlyPayment(),25,self.player.getMonthlyPayment()>1000)}"),
+            ("Interest Rate",f"{limit_digits(self.interestRate*100,25)}%")
         ]
         drawLinedInfo(screen,(1455,615),(435,355),info,40,(215,215,215))
 
@@ -567,17 +435,34 @@ class InvestmentScreen:#
             "Total":"Total Market is a index fund that tracks the entire market, providing a diversified portfolio of companies. It contains all 9 stocks in the market."
         }
         
-    def drawAssetInfo(self,screen,mousebuttons,gametime,assetType):
+    # def drawAssetInfo(self,screen,mousebuttons,gametime,assetType):
   
 
-        if assetType == "Index Funds":
-            txt = "An index fund is an investment that tracks the performance of an entire market, rather than a single stock. It accomplishes this by holding a portfolio of multiple companies within the market. This diversification helps to reduce risk and volatility, making index funds a popular choice for long-term investors."
-            drawCenterTxt(screen,"Index Funds",60,(180,180,180),(1647,220),centerY=False)
-        txt = separate_strings(txt,7)
-        for i,line in enumerate(txt):
-            # screen.blit(s_render(line,30,(220,220,220)),(1425,300+(i*40)))
-            drawCenterTxt(screen,line,30,(220,220,220),(1647,300+(i*40)))
-        
+        # if assetType == "Index Funds":
+        #     txt = "An index fund is an investment that tracks the performance of an entire market, rather than a single stock. It accomplishes this by holding a portfolio of multiple companies within the market. This diversification helps to reduce risk and volatility, making index funds a popular choice for long-term investors."
+        #     drawCenterTxt(screen,"Index Funds",60,(180,180,180),(1647,220),centerY=False)
+        # txt = separate_strings(txt,7)
+        # for i,line in enumerate(txt):
+        #     # screen.blit(s_render(line,30,(220,220,220)),(1425,300+(i*40)))
+        #     drawCenterTxt(screen,line,30,(220,220,220),(1647,300+(i*40)))
+    def drawBuySellInfo(self,screen:pygame.Surface,gametime,fund):
+        """Draws the info underneath On the left of the screen about the fund"""
+        pygame.draw.rect(screen,(0,0,0),(1410,210,475,450),5,border_radius=10)# box around the buy/sell info
+        drawCenterTxt(screen,"Fund Info",55,(180,180,180),(1647,220),centerY=False)
+        strings = ["Open","High (1M)","Low (1M)","Dividend","Volatility"]
+        g = gametime.time
+        marketOpenTime = datetime.datetime.strptime(f"{g.month}/{g.day}/{g.year} 9:30:00 AM", "%m/%d/%Y %I:%M:%S %p")
+        values = [
+            f"${limit_digits(fund.getPointDate(marketOpenTime,gametime),12)}",
+            f"${limit_digits(max(fund.graphs['1M']),12)}",
+            f"${limit_digits(min(fund.graphs['1M']),12)}",
+            f"{limit_digits(fund.getDividendYield(),12)}%",
+            f"{limit_digits(fund.getVolatility()*100,12)}%"
+            
+        ]
+        # info = {key:value for key,value in zip(keys,values)}
+        info = [(string,value) for string,value in zip(strings,values)]
+        drawLinedInfo(screen,(1410,270),(475,380),info,40,TXTCOLOR)
 
     def drawIndexFundInfo(self,screen,mousebuttons,gametime,fund):
         """Draws the information for the index fund (middle of the screen)"""
@@ -597,7 +482,7 @@ class InvestmentScreen:#
 
         self.fundSelection.draw(screen,["TDIF","IEIF", "FHMF","Total"],(200,210),(100,355),mousebuttons,colors=[f.color for f in self.indexFunds])
         
-
+        
         if self.fundSelection.getSelected() != None:
             # realName = self.getRealSelc(self.fundSelection.getSelected())# get the real name of the fund
             fund = [fund for fund in self.indexFunds if fund.name == self.fundSelection.getSelected()][0]# get the fund object
@@ -622,15 +507,16 @@ class InvestmentScreen:#
 
             self.drawIndexFundInfo(screen,mousebuttons,gametime,fund)
 
+            self.drawBuySellInfo(screen,gametime,fund)
+            
             if result and self.fundNumpad.getValue() > 0:# if the order box is clicked and the value is greater than 0
                 fundObj = IndexFundAsset(self.player,fund,gametime.time,fund.price,self.fundNumpad.getValue())
                 self.player.buyAsset(fundObj)
 
     def draw(self,screen,mousebuttons,gametime):
         
-        pygame.draw.rect(screen,(0,0,0),(1410,210,475,450),5,border_radius=10)# Describes what an index fund/CD is
 
         pygame.draw.rect(screen,(0,0,0),(930,210,475,450),5,border_radius=10)# for the indexFund info (deeper in depth for specific fund)
         self.drawIndexFunds(screen,mousebuttons,gametime)
 
-        self.drawAssetInfo(screen,mousebuttons,gametime,"Index Funds")
+        # self.drawAssetInfo(screen,mousebuttons,gametime,"Index Funds")

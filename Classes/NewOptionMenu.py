@@ -224,6 +224,8 @@ class SellOptionScreen:
         self.orderBox = OrderBox((1030,615),(385,345))
         
         self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
+    def setSelectOption(self,option:OptionAsset):
+        self.selectOption = option
 
     def drawOptionInfo(self,screen:pygame.Surface, gametime):
         option = self.selectOption
@@ -592,6 +594,14 @@ class Optiontrade(Menu):
 
     def removeSelc(self):
         self.selectOption = None
+
+    def setSelectedAsset(self,option):
+        """Sets the selected asset to the given option, takes to Sell screen"""
+
+        self.customOptionSc.stopCreating()
+        self.screenSelection.setSelected("Sell")
+        self.sellingScreen.setSelectOption(option)
+       
 
     def createRandomOption(self,stock:Stock):
         def getRandomDate(gametime):

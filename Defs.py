@@ -49,6 +49,9 @@ font45 = fonts(45)
 GRAPHRANGES = ["1H","1D","5D","1M","6M","1Y","5Y"]
 MINRANGE = GRAPHRANGES[0]
 MAXRANGE = GRAPHRANGES[-1]
+INDEXNAMES = ["TDIF","IEIF", "FHMF","Total"]
+INDEXFULLNAMES = ['Tech Digital Innovation Fund','Industrial Evolution Index Fund','Future Health Momentum',"Total Market"]
+
 STOCKNAMES = ['QSYN','NRLX','CMDX','PRBM','GFRG','ASCS','BGTX','MCAN','VITL']
 FULLSTOCKNAMES = ["QuantumSync Solutions","NeuraNex Technologies","CloudMatrix Systems","Precision Robotics Manufacturing","GreenForge Materials","Atlas Supply Chain Solutions","BioGenix Therapeutics","MediCare Analytics","Vitality Senior Living"]
 FSTOCKNAMEDICT = {STOCKNAMES[i]:FULLSTOCKNAMES[i] for i in range(len(STOCKNAMES))}

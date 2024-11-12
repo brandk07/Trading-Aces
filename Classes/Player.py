@@ -77,15 +77,19 @@ class Player(Stock):
         else:
             self.lastLoanPayment = gametime.time
 
-    def newDay(self,gametime,stocklist:list):
+    def newDay(self,gametime,stocklist:list,menuList):
         """Called at the start of a new day"""
         self.updateOptions = 0
         for option in self.options:
             option.getValue(bypass=True)
         for i in range(len(self.options)-1,-1,-1):
-            print("Option has expired")
+            # print("Option has expired")
             if not self.options[i].optionLive():
-                print("Option has expired for the player")
+                for menu in menuList:
+                    menu.drawn = False
+                menuList[2].drawn = True# draw the options menu
+                
+                # print("Option has expired for the player")
         for stock in stocklist:
             stock.updateDividendYield(gametime)
                 # if not bigMessageList:
@@ -291,7 +295,7 @@ class Player(Stock):
                 f"{self.gametime.getDate()}",
                 f"Executed {optionObj.getQuantity()} {optionObj.stockObj.name} Option{'s' if optionObj.getQuantity() != 1 else ''}",
                 f"+${limit_digits(value,15)}",
-                f"-{limit_digits(stockQuantity,20,True)} Shares of {optionObj.stockObj.name}",
+                f"-{limit_digits(quantity*100,20,True)} Shares of {optionObj.stockObj.name}",
                 f"${limit_digits(self.cash,15)}"
             ]
             self.transact.addTransaction(*text)

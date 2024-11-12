@@ -178,23 +178,32 @@ class StockGraphManager:
 
     def masterControls(self,screen,mousebuttons:int,stocklist:list):
         mousex,mousey = pygame.mouse.get_pos()
-
+        width = 150    
+        height = 59
+        x = 1610
         for i,text in enumerate(GRAPHRANGES+['Custom']): 
-            width = 150    
-            height = 60
-            x = 1620
-            y = 100+(i*height)
-                    
+            
+            y = 97+(i*height)
             color = (30,30,30) if text != self.masterRange else (140,0,0)
-            gfxdraw.filled_polygon(screen,[(x-10,y+55),(x-10,y+5),(x+width,y+5),(x+width,y+55)],color)# polygon behind the text (the graph range)
-            pygame.draw.polygon(screen,(0,0,0),[(x-10,y+55),(x-10,y+5),(x+width,y+5),(x+width,y+55)],4)# outline
-            trender = s_render(text,45,(220,220,220))
-            screen.blit(trender,(x+((width-trender.get_width())//2),(y+trender.get_height()//2)))
-
-            if pygame.Rect(x-10,y+10,width,height).collidepoint(mousex,mousey):
+            if (rect:=pygame.Rect(x,y,width,height-5)).collidepoint(mousex,mousey):
                 if mousebuttons == 1:
+                    soundEffects['generalClick'].play()
                     mousebuttons = 0
                     self.masterRange = text
+                elif self.masterRange != text:
+                    color = (120,120,120)
+                
+            
+            # gfxdraw.filled_polygon(screen,[(x-10,y+55),(x-10,y+5),(x+width,y+5),(x+width,y+55)],color)# polygon behind the text (the graph range)
+            # pygame.draw.polygon(screen,(0,0,0),[(x-10,y+55),(x-10,y+5),(x+width,y+5),(x+width,y+55)],4)# outline
+            # trender = s_render(text,45,(220,220,220))
+            # screen.blit(trender,(x+((width-trender.get_width())//2),(y+trender.get_height()//2)))
+            
+            
+            pygame.draw.rect(screen,color,rect,border_radius=10)
+            pygame.draw.rect(screen,(0,0,0),rect,4,10)
+            drawCenterTxt(screen,text,40,(220,220,220),(x+width/2,y+(height-5)/2))
+            
 
 
     def draw_graphs(self, screen, stocklist:list, player, mousebuttons, gametime):

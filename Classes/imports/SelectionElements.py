@@ -93,4 +93,5 @@ class MenuSelection:
 
             if pygame.Rect(self.coords[0]+i*width,self.coords[1],width,self.wh[1]).collidepoint(*pygame.mouse.get_pos()) and mousebuttons == 1:
                 self.selected = i
+                soundEffects['menuClick'].play()
         pygame.draw.rect(screen,(0,0,0),(*self.coords,*self.wh),5,10)# draw the border of the whole menu

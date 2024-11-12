@@ -102,7 +102,7 @@ class StockPriceEffects:
 
         quartTime = january_1st+timeOff# add the time offset
 
-        year = gametime.time.year + 1 if quartTime < gametime.time else gametime.time.year# make sure it is in the future
+        year = gametime.time.year + 1 if quartTime <= gametime.time else gametime.time.year# make sure it is in the future
         if past:# override the year with opposite if it should be in the past
             year = gametime.time.year - 1 if quartTime > gametime.time else gametime.time.year
             if quarter == self.getCurrentQuarter(gametime):# if it was really long ago

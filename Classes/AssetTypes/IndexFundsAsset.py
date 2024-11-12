@@ -29,7 +29,8 @@ class IndexFundAsset(Asset):
 
     def getDividendYield(self):
         """returns the dividend yield of the stock"""
-        return round(sum([s.dividendYield for s in self.stockObj.combinStocks])/len(self.stockObj.combinStocks),3)
+        # return round(sum([s.dividendYield for s in self.stockObj.combinStocks])/len(self.stockObj.combinStocks),3)
+        return self.stockObj.getDividendYield()
     
     def giveDividend(self):
         """gives the stock asset a dividend"""

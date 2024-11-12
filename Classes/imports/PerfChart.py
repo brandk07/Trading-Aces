@@ -63,7 +63,7 @@ class PerfChart:
             # screen.blit(s_render(f"{name}",40,(255,255,255)),(coords[0]+index*xwidth+10,coords[1]+5))
             drawCenterTxt(self.surf,f"{name}",45,(0,0,0),(index*xwidth+xwidth/2,self.wh[1]-5),centerY=False,fullY=True)
         if collideValue:
-            drawBoxedText(self.surf,f"{self.data[collideValue]}%",50,(60,60,60),(0,0,0),(mousex+10-coords[0],mousey-coords[1]))
+            drawBoxedText(self.surf,f"{self.data[collideValue]}%",50,(60,60,60),(0,0,0),(mousex+10-coords[0],mousey-coords[1]-30))
         # draw a dashed line across the middle of the screen
         for x in range(0,self.wh[0]-10,10):
             pygame.draw.line(self.surf,(255,255,255),(x+5,self.wh[1]//2+5),(x+10,self.wh[1]//2+5),2)

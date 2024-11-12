@@ -57,6 +57,7 @@ class ScrollCard:
         
         if pygame.Rect(coords[0],coords[1],self.wh[0],self.wh[1]).collidepoint(pygame.mouse.get_pos()):
             if mousebuttons == 1:
+                soundEffects['generalClick'].play()
                 return True
         return False
     

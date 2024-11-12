@@ -233,6 +233,7 @@ class StockVisualizer:
                 points = [(coords[0]+wh[0],coords[1]+(i*drawingy)), (coords[0]+wh[0],coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex, coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex,coords[1]+(i*drawingy))]
                 gfxdraw.filled_polygon(screen, points,(100,100,100,150))
                 if pygame.mouse.get_pressed()[0] and self.longHover == None and self.longHovers.get(graphrange) == None:
+                    soundEffects['generalClick'].play()
                     self.storedRanges[graphrange] = txt
           
 

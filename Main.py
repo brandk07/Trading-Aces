@@ -19,7 +19,7 @@ from Classes.NewOptionMenu import Optiontrade
 from Classes.BankMenu import BankMenu
 
 GAMESPEED = 250
-FASTFORWARDSPEED = 1000
+FASTFORWARDSPEED = 100
 pygame.init()
 pygame.mixer.init()
 
@@ -38,8 +38,7 @@ fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 # stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
 stocknames = STOCKNAMES
 stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
-for i in range(len(stockVolatilities)):
-    stockVolatilities[i] = stockVolatilities[i]*2
+
 # stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
 stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(147,112,219),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 
@@ -63,7 +62,7 @@ indexFundDict = {fund.name: fund for fund in indexFunds}
 # GETTING DATA FROM FILE
 
 musicdata = Getfromfile(stockdict,indexFundDict,player,gametime)# muiscdata = [time, volume, songindex]
-menuList = []
+menuDict = {}
 
 # CREATING OBJECTS
 stockgraphmanager = StockGraphManager(stocklist,gametime)
@@ -72,12 +71,15 @@ uiControls = UIControls(stocklist,GAMESPEED,gametime,tmarket,player)
 orderScreen = OrderScreen(uiControls)
 # stockbook = Stockbook(stocklist,gametime,orderScreen)
 stockbook = Stockbook2(stocklist,gametime,orderScreen)
-portfolio = Portfolio(stocklist,player,gametime,tmarket,menuList)
+portfolio = Portfolio(stocklist,player,gametime,tmarket,menuDict)
 optiontrade = Optiontrade(stocklist,gametime,player)
 bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
 
-menuList.extend([stockbook,portfolio,optiontrade,bank])
-player.menuList = menuList
+# menuList.extend([portfolio,stockbook,optiontrade,bank])
+# menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank}
+menuDict.update({'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank})
+menuList = list(menuDict.values())
+player.menuList = menuDict
 # VARS FROM SETTINGS
 autofastforward = True
 
@@ -125,7 +127,7 @@ menuBackBytes = getDrawnMenuBackground(screen.copy())
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
-        if any([menu.menudrawn for menu in menuList]):
+        if any([menu.menudrawn for menu in menuDict.values()]):
             screen.blit(menuBackBytes,(0,0))
             # gfxdraw.textured_polygon(screen,[(0,0),(1920,0),(1920,1080),(0,1080)],menuBackBytes,0,0)
             # doBuffer(screen,menuBackBytes)
