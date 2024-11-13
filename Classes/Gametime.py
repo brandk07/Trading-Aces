@@ -18,6 +18,16 @@ def secsTo930(dt):
         seconds = (combined_minutes + 1440) * 60  # Add 1 day and adjust minutes
 
     return seconds
+def getTimeStrs(t:datetime):
+    return {
+    'year': str(t.year),
+    'month': MONTHS[t.month-1],
+    'day': str(t.day),
+    'time': f'{t.hour if t.hour <= 12 else t.hour-12}:{t.minute:02d}',
+    'dayname': WEEKDAYS[t.weekday()],
+    'monthname': MONTHS[t.month-1],
+    'ampm': 'AM' if t.hour < 12 else 'PM'
+    }
 
 DFORMAT = "%m/%d/%Y %I:%M:%S %p"
 class GameTime:
@@ -74,18 +84,30 @@ class GameTime:
     def timeAt(self,secondsago):
         """returns the time at a certain amount of seconds ago"""
         return (self.time - timedelta(seconds=secondsago)).strftime(DFORMAT)
+    
+    def getTimeStrings(self, dt=None):
+        """
+        Returns formatted time strings as a dictionary.
+        Args:
+            dt: Optional datetime object. Uses self.time if None
+        Returns: Dictionary with formatted time components
+        """
+        t = dt if dt else self.time
+        return getTimeStrs(t)
+        
+        
+    
+    # def getRenders(self,sizes):
+    #     """Sizes is (yearsize,monthsize,daysize,timesize,daynamesize,monthnamesize)"""
+    #     year = fontlist[sizes[0]].render(str(self.time.year),(200,200,200))[0]
+    #     month = fontlist[sizes[1]].render(MONTHS[self.time.month-1],(200,200,200))[0]
+    #     day = fontlist[sizes[2]].render(str(self.time.day)+',',(200,200,200))[0]
+    #     minute = fontlist[sizes[3]].render(f'{self.time.hour if self.time.hour <= 12 else self.time.hour-12}:{self.time.minute:02d}',(200,200,200))[0]
+    #     dayname = fontlist[sizes[4]].render(WEEKDAYS[self.time.weekday()]+',',(200,200,200))[0]
+    #     monthname = fontlist[sizes[5]].render(MONTHS[self.time.month-1],(200,200,200))[0]
+    #     ampm = fontlist[sizes[3]].render('AM' if self.time.hour < 12 else 'PM',(200,200,200))[0]
 
-    def getRenders(self,sizes):
-        """Sizes is (yearsize,monthsize,daysize,timesize,daynamesize,monthnamesize)"""
-        year = fontlist[sizes[0]].render(str(self.time.year),(200,200,200))[0]
-        month = fontlist[sizes[1]].render(MONTHS[self.time.month-1],(200,200,200))[0]
-        day = fontlist[sizes[2]].render(str(self.time.day)+',',(200,200,200))[0]
-        minute = fontlist[sizes[3]].render(f'{self.time.hour if self.time.hour <= 12 else self.time.hour-12}:{self.time.minute:02d}',(200,200,200))[0]
-        dayname = fontlist[sizes[4]].render(WEEKDAYS[self.time.weekday()]+',',(200,200,200))[0]
-        monthname = fontlist[sizes[5]].render(MONTHS[self.time.month-1],(200,200,200))[0]
-        ampm = fontlist[sizes[3]].render('AM' if self.time.hour < 12 else 'PM',(200,200,200))[0]
-
-        return [year,month,day,minute,dayname,monthname,ampm]
+    #     return [year,month,day,minute,dayname,monthname,ampm]
 
     def skipText(self):
         """Used for drawing the bar for the game speed"""

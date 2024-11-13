@@ -1,13 +1,14 @@
 import pygame
 from Defs import *
+from Classes.Gametime import getTimeStrs
 
 # pygame.init()
 # screen = pygame.display.set_mode([1850,1000])
 # pygame.display.set_caption("Pygame Shell")
 
 class ScrollCard:
-    def __init__(self,name,sideScroll,data,wh) -> None:
-        self.wh = wh
+    def __init__(self,name,sideScroll,data) -> None:
+        self.wh = sideScroll.cardWH
         self.name :str = name
         self.sideScroll : SideScroll = sideScroll
         self.surf = pygame.Surface(self.wh).convert_alpha()
@@ -62,9 +63,9 @@ class ScrollCard:
         return False
     
 class CdCard(ScrollCard):
-    def __init__(self,image,name,sideScroll,data,wh) -> None:
+    def __init__(self,image,name,sideScroll,data) -> None:
         """Needs to be given the sideScroll object that will be used to draw the card"""
-        super().__init__(name,sideScroll,data,wh)
+        super().__init__(name,sideScroll,data)
 
         self.image = pygame.transform.scale(image,self.wh)
         self.image.set_alpha(80)         
@@ -96,9 +97,9 @@ class CdCard(ScrollCard):
         drawLinedInfo(self.surf,(x,y),(wh[0]-20,wh[1]//4+20),info,30,(0,0,0))
 
 class LoanCard(ScrollCard):
-    def __init__(self,name,sideScroll,data,wh) -> None:
+    def __init__(self,name,sideScroll,data) -> None:
         """Needs to be given the sideScroll object that will be used to draw the card"""
-        super().__init__(name,sideScroll,data,wh)
+        super().__init__(name,sideScroll,data)
 
         # self.image = pygame.transform.scale(image,self.wh)
         # self.image.set_alpha(80)  
@@ -130,10 +131,78 @@ class LoanCard(ScrollCard):
         info = [("Principal (Og)",f"${limit_digits(self.data['principal'],20,True)}"),("Principal Left",f"${limit_digits(self.data['remaining'],20,True)}")]
 
         drawLinedInfo(self.surf,(x,y),(wh[0]-20,wh[1]//4+20),info,35,(0,0,0))
+        
+class RunCard(ScrollCard):
+    def __init__(self,sideScroll,runObj) -> None:
+        """Needs to be given the sideScroll object that will be used to draw the card"""
+        self.runObj = runObj
+        data = self.dataConfig(runObj)
+        super().__init__(data['name'],sideScroll,data)
+
+        # self.image = pygame.transform.scale(image,self.wh)
+        # self.image.set_alpha(80)  
+        # self.data = {"term":int,"monthly payment":int|float,"principal":int|float,"remaining":int|float}
+    def dataConfig(self,runObj):
+        image = runObj.screenShot
+        starTxt = f"{runObj.getStarRating()} Star{'s' if runObj.getStarRating() != 1 else ''}"
+        networthTxt = f"${limit_digits(runObj.networth,30,runObj.networth>10000)}"
+
+        return {"stars":starTxt,"name":runObj.name,"networth":networthTxt,"startTime":runObj.startTime,"screenShot":image}
+
+    def updateSurf(self,wh=None):
+        """Draws Everything onto the card's surface - Only needs to be called when data changes"""
+        # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
+        # self.surf.fill((60,60,60,120))
+        if wh == None:
+            wh = self.wh
+        self.surf = pygame.Surface(wh).convert_alpha()
+        
+        self.surf.fill((0,0,0,0))
+        gfxdraw.filled_polygon(self.surf,[(0,0),(wh[0],0),(wh[0],wh[1]),(0,wh[1])],(60,60,60,120))
+
+        pygame.draw.rect(self.surf,(0,0,0),pygame.Rect(0,0,wh[0],wh[1]),5)
+
+        self.surf.blit(self.data['screenShot'],(5,5))# screenShot (175,175)
+
+        drawCenterTxt(self.surf,self.data['stars'],50,(180,180,180),(190+(wh[0]-190)//2,10),centerY=False)
+
+
+        size = getTSizeNums(self.data['networth'],wh[0]-20,150)
+        color = ((5-self.runObj.getStarRating())*44,self.runObj.getStarRating()*44,0)
+        drawCenterTxt(self.surf,self.data['networth'],size,color,(wh[0]//2,220),centerY=False)
+
+        numLines = min(4,len(self.data['name'].split(' ')),math.ceil(len(self.data['name'])/9))
+        lines = separate_strings(self.data['name'],numLines)
+        for i,line in enumerate(lines):
+            x = 190+(wh[0]-190)//2
+            size = getTSizeNums(line,wh[0]-200,45)
+            drawCenterTxt(self.surf,line,size,(200,200,200),(x,65+35*i),centerY=False)
+
+
+        timeStrs = getTimeStrs(self.runObj.startTime)
+        dateStr = f"{timeStrs['dayname']}, {timeStrs['monthname']} {timeStrs['day']}, {timeStrs['year']}"
+        size = getTSizeNums(dateStr,wh[0]-20,35)
+        drawCenterTxt(self.surf,dateStr,size,(180,180,180),(wh[0]//2,wh[1]-35),centerY=False)
+
+        # # self.surf.blit(s_render(f"LOAN {self.sideScroll.cards.index(self)+1}",80,(0,0,0)),(0+10,0+10))
+
+        # drawCenterTxt(self.surf,f"{self.data['term']} Months",55,(0,0,0),(0+wh[0]-15,0+20),centerX=False,centerY=False,fullX=True)
+        # monthlyPayment = "$"+limit_digits(self.data['monthly payment'],20,self.data['monthly payment']>100)
+        # tSize = getTSizeNums(monthlyPayment,wh[0]-80,170)
+        # monthlyPayment = s_render(monthlyPayment,tSize,(225,225,225))
+        # drawCenterRendered(self.surf,monthlyPayment,(0+wh[0]//2,0+wh[1]//2+15))
+        # drawCenterTxt(self.surf,"Monthly Payment",50,(100,100,100),(0+wh[0]//2,0+wh[1]//2-monthlyPayment.get_height()//2+5),centerY=False,fullY=True)
+
+        # x,y = 0+10,0+(wh[1]//4)*3-20
+        # info = [("Principal (Og)",f"${limit_digits(self.data['principal'],20,True)}"),("Principal Left",f"${limit_digits(self.data['remaining'],20,True)}")]
+
+        # drawLinedInfo(self.surf,(x,y),(wh[0]-20,wh[1]//4+20),info,35,(0,0,0))
 
 class SideScroll:
     def __init__(self,coords,wh,cardWH) -> None:
         self.cards : list[ScrollCard] = []# list of cards
+        if type(self.cards) != list:
+            raise ValueError("self.cards must be a list")
         self.coords = coords
         self.cardWH = cardWH
         self.wh = wh
@@ -156,15 +225,22 @@ class SideScroll:
         if index:
             return self.lastSelected
         return self.cards[self.lastSelected]
-    def setCard(self,index):
+    def setCard(self,index=None,obj=None):
         """Sets the card that is currently in the center of the screen"""
-        self.lastSelected = index
+        if index == None and obj == None:
+            raise ValueError("Either index or obj must be given")
+        if index != None:
+            self.lastSelected = index
+        else:
+            self.lastSelected = self.cards.index(obj)
         # self.scroll = index*self.cardWH[0]+self.cardWH[0]//2
     def addCard(self,card:ScrollCard):
         """Adds a card to the list of cards"""
         self.cards.append(card)
     def loadCards(self,cards:list[ScrollCard]):
         """Needs to be called before the draw method"""
+        if type(self.cards) != list:
+            raise ValueError("self.cards must be a list")
         self.cards : ScrollCard = cards
     def updateCards(self,data:list[dict]):
         """Args should be the arguments for whatever child class of ScrollCard.updateData Needs"""

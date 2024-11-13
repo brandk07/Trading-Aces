@@ -17,6 +17,7 @@ from Classes.imports.Transactions import Transactions
 from Classes.NewstockBook import Stockbook2
 from Classes.NewOptionMenu import Optiontrade
 from Classes.BankMenu import BankMenu
+from Classes.GameModeMenu import GameModeMenu,BlitzRun
 
 GAMESPEED = 250
 FASTFORWARDSPEED = 100
@@ -74,10 +75,15 @@ stockbook = Stockbook2(stocklist,gametime,orderScreen)
 portfolio = Portfolio(stocklist,player,gametime,tmarket,menuDict)
 optiontrade = Optiontrade(stocklist,gametime,player)
 bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
+blitzRuns = [BlitzRun(f'Blitz Run {i}',randint(0,45000),randint(0,5000),[randint(0,15000),randint(0,15000),randint(0,15000)],None) for i in range(5)]
 
-# menuList.extend([portfolio,stockbook,optiontrade,bank])
-# menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank}
-menuDict.update({'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank})
+blitzRuns.append(BlitzRun(f'Blitz Run Timed',randint(0,45000),randint(0,5000),[randint(0,15000),randint(0,15000),randint(0,15000)],startTime="03/04/2030 09:30:20 AM"))
+
+pastRuns = {'Blitz':blitzRuns,'Career':[],'Goal':[]}
+
+gameModeMenu = GameModeMenu(stocklist,player,pastRuns,blitzRuns[0])
+
+menuDict.update({'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'GameModeMenu':gameModeMenu})
 menuList = list(menuDict.values())
 player.menuList = menuDict
 # VARS FROM SETTINGS
@@ -208,6 +214,22 @@ if __name__ == "__main__":
                 mousebuttons = event.button
                 if mousebuttons == 1:
                     print(mousex,mousey)
+
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_j:
+                # Get timestamp for unique filename
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                
+                # Create screenshots directory if it doesn't exist
+                screenshot_dir = "Assets/Screenshots"
+                if not os.path.exists(screenshot_dir):
+                    os.makedirs(screenshot_dir)
+                
+                # Generate filepath
+                filepath = f"{screenshot_dir}/screenshot_{timestamp}.png"
+                
+                # Take screenshot and save
+                screenshot = screen.copy()  # screen is your pygame display surface
+                pygame.image.save(screenshot, filepath)
   
         pygame.display.update()
 

@@ -232,7 +232,7 @@ class LoanScreen:
                 # {"term":12,"monthly payment":random.randint(10,250_000),"principal":10000,"remaining":16000}
                 data = {"term":loanObj.termLeft,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}
                 spot = 1 if not self.sideScroll.cards else max([int(c.name.split()[1]) for c in self.sideScroll.cards])+1
-                self.sideScroll.addCard(LoanCard(f"Loan {spot}",self.sideScroll,data,(375,375)))
+                self.sideScroll.addCard(LoanCard(f"Loan {spot}",self.sideScroll,data))
                 loanObj = None
                 # self.sideScroll.addCard(LoanCard(f"Loan {len(self.player.loans)}",self.sideScroll,{"term":loanObj.term,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}))
                 # self.customLoanCreator.stopCreating()
@@ -342,7 +342,7 @@ class LoanScreen:
         cardList = []
         for i,loan in enumerate(self.player.loans):
             data = {"term":loan.termLeft,"monthly payment":loan.getMonthlyPayment(),"principal":loan.principal,"remaining":loan.principalLeft}
-            cardList.append(LoanCard(f"Loan {i}",self.sideScroll,data,(375,375)))
+            cardList.append(LoanCard(f"Loan {i}",self.sideScroll,data))
 
         self.sideScroll.loadCards(cardList)
 

@@ -13,3 +13,4 @@ with open('Assets\companyNews.txt','r') as f:
 
 print(positiveEvents["VITL"])
 print(negativeEvents["VITL"])
+print(len('Blitz run that will make your socks fall'))

@@ -135,7 +135,7 @@ def getTSizeNums(chars:str, xSpace:int,maxsize:int=199) -> int:
             return getSize(size-1, totalSpace, chars, newSum)
         else:
             print(newSum, totalSpace, lastwidth, size, chars, fontlist[size].get_rect(chars).width)
-        
+    if chars == '': return 1
     getTSizeNum = lambda chars, xSpace : int(((xSpace/len(chars))+0.8)/0.225)
     testSize = max(min(getTSizeNum(chars, xSpace),maxsize),1)
     return getSize(testSize, xSpace, chars, 0)

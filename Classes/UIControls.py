@@ -29,7 +29,7 @@ class UIControls():
         self.view = "home"# home or stock
         # self.accbar_middle = "move"# move, stock, pie
         # self.accbar_right = "topAsset"# topAsset, transactions, loans
-        self.pieChart = PieChart((520,540),(945,165))
+        self.pieChart = PieChart((945,165),(520,540))
         self.graphscroll = 0
         self.namerenders = [fontlist[30].render(stock.name,stock.color)[0] for stock in stocklist]# [red,green]
         self.weeknames = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']
@@ -259,15 +259,13 @@ class UIControls():
             # self.selected_stock = self.latterscroll.draw_polys(screen,(1475,245),790,115,mousebuttons,None,showbottom=False)
         
     def draw_time(self,screen,gametime):
-        texts = gametime.getRenders((50,50,50,105,50,50))# year,month,day,minute,dayname,monthname,am/pm
-        year,month,day,minute,dayname,monthname,ampm = texts
+        timeStrs = gametime.getTimeStrings()# year,month,day,minute,dayname,monthname,am/pm
+        
+        timeStr = f"{timeStrs['time']+' '+timeStrs['ampm']}"
+        drawCenterTxt(screen,timeStr,105,(200,200,200),(260,20),centerX=False,centerY=False)
+        dateStr = f"{timeStrs['dayname']}, {timeStrs['monthname']} {timeStrs['day']}, {timeStrs['year']}"
+        drawCenterTxt(screen,dateStr,50,(200,200,200),(260,105),centerX=False,centerY=False)
 
-        screen.blit(minute,(260,20))
-        screen.blit(ampm,(260+minute.get_width()+20,20))
-        screen.blit(dayname,(260,105))
-        screen.blit(monthname,(260+dayname.get_width()+10,105))
-        screen.blit(day,(260+dayname.get_width()+monthname.get_width()+20,105))
-        screen.blit(year,(260+dayname.get_width()+monthname.get_width()+day.get_width()+30,105))
         
 
     def marketStatus(self,screen,gametime):

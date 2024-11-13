@@ -28,11 +28,11 @@ def createbacksurf(radius):
     return backsurface
 
 class PieChart:
-    def __init__(self,wh,coords):
+    def __init__(self,coords,wh):
         """The wh will calculate the max radius that won't go out of wh"""
         self.data = []
         self.wh = wh
-        self.radius = min(self.wh[0]//2,(self.wh[1]-120)//2)# Starts with the radius based on 1 line of bottom text (If there are too many elements then it will be decreased by updateRadius method)
+        self.radius = min(self.wh[0]//2,(self.wh[1]-115)//2)# Starts with the radius based on 1 line of bottom text (If there are too many elements then it will be decreased by updateRadius method)
         self.coords = coords
         self.numlines = 1
         self.pieSegments = []#[[color,points,value]...]
@@ -43,8 +43,9 @@ class PieChart:
 
     def updateRadius(self,NumBottomLines):
         """Updates the radius of the pie chart"""
-        extraAmt = 55*NumBottomLines
+        extraAmt = 50*NumBottomLines
         self.radius = min(self.wh[0]//2,(self.wh[1]-60-extraAmt)//2)
+        
 
 
     def updateData(self, data, coords=None, radius=None):
@@ -145,29 +146,35 @@ class PieChart:
         for color,points,value,name in self.pieSegments:
             pygame.draw.line(pieSurf,(1,1,1),(self.radius,self.radius),points[1],5)
 
-    def drawBottomNames(self,wholeSurf:pygame.Surface,mousebuttons:int):
+    def drawBottomNames(self,wholeSurf:pygame.Surface,mousebuttons:int,txtSize):
         numNames = len(self.pieSegments)
-        nameRenders = [s_render(name, 35, color) for i,(color,points,value,name) in enumerate(self.pieSegments)]
+        nameRenders = [s_render(name, txtSize, color) for i,(color,points,value,name) in enumerate(self.pieSegments)]
         numLines = 0
         spaceings = []
         lastXOffset = 0# The offset for the last line- if it has less than qtyPerLine
-
+        # print('numNames:',numNames,self.pieSegments)
         while not spaceings or max(spaceings) < 5:
+            # print(spaceings)
             numLines += 1
             qtyPerLine = math.ceil(numNames/numLines)
             lastXOffset = 0
             spaceings.clear()
+            # print('numLines:',numLines)
+            if numLines > numNames:
+                self.updateRadius(0)
+                return
             for i in range(numLines):
                 
                 start,stop = i*qtyPerLine,(((i+1)*qtyPerLine) if (i+1)*qtyPerLine < numNames else numNames)
-                totalWidth = (sum([render.get_width() for render in nameRenders[start:stop]])+(15*(stop-start-1)))# technically qtyperline isn't right since it could be less for last one if I want to fix it
-                spaceings.append(((self.radius*2)-totalWidth-10)/(stop-start-1))
+                # print('start,stop:',start,stop,i,qtyPerLine,numNames)
+                totalWidth = (sum([render.get_width() for render in nameRenders[start:stop]])+(15*(stop-start)))# technically qtyperline isn't right since it could be less for last one if I want to fix it
+                
+                spaceings.append(((self.radius*2)-totalWidth-10)/(stop-start))
+                
                 if (stop-start) != qtyPerLine:# Only for last line if it has less qtyPerLine
                     spaceings[-1] = spaceings[-2]
                     lastXOffset = ((self.radius*2)-(totalWidth+(spaceings[-1]*(stop-start))-10))//2
-            if numLines > 4:
-                self.updateRadius(0)
-                return
+            
 
 
             
@@ -192,7 +199,11 @@ class PieChart:
                 if (n:=rect.collidepoint(*pygame.mouse.get_pos())) or place == self.selectedAssetIndex:
                     pygame.draw.line(wholeSurf,(255,255,255),(xOff+currentWidth,ylevel+15),(xOff+currentWidth+23+w,ylevel+15),3)
                     if n and mousebuttons == 1:
-                        self.selectedAssetIndex = place          
+                        if self.selectedAssetIndex == place:
+                            self.selectedAssetIndex = None
+                        else:
+                            self.selectedAssetIndex = place
+
                 place += 1
                 currentWidth += w+spaceings[i]+15
             currentWidth = 5
@@ -211,13 +222,13 @@ class PieChart:
 
         #         currentWidth += nameRenders[i].get_width()+spaceing+15
 
-    def draw(self,screen:pygame.Surface,title:str,mousebuttons:int):
+    def draw(self,screen:pygame.Surface,title:str,mousebuttons:int,txtSize=35):
         """"""        
         totalValue = sum([v[0] for v in self.data])# originally the displayed value is the total value of the stocks - might change if mouseover
 
         
         wholeSurf = pygame.Surface((self.wh[0],self.wh[1]))
-        self.drawBottomNames(wholeSurf,mousebuttons)
+        self.drawBottomNames(wholeSurf,mousebuttons,txtSize)
         pieSurf = pygame.Surface((self.radius*2,self.radius*2))
 
        
@@ -272,6 +283,7 @@ class PieChart:
 
 
 class PieChartSideInfo:
+
     def __init__(self,radius,coords,menuDict:dict):
         self.data = []
         self.menuDict = menuDict

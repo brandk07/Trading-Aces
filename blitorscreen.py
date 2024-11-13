@@ -1,5 +1,7 @@
 import pygame
 from Defs import *
+from Classes.imports.SideScroll import RunCard
+from Classes.GameModeMenu import BlitzRun
 
 pygame.init()
 screen = pygame.display.set_mode([900,900])
@@ -14,22 +16,19 @@ lastfps = deque(maxlen=300)
 clock = pygame.time.Clock()
 mousebuttons = 0
 
-
-temp_surface = pygame.Surface((900, 900))
-temp_surface.fill((60, 60, 60))
-pygame.draw.rect(temp_surface,(0,255,255),pygame.Rect(0,0,500,100))
-background_bytes = bytes(temp_surface.get_buffer())
+blitzRun = BlitzRun(f'Blitz run that will make your socks fall off becuase',1000.15,randint(0,5000),[randint(0,15000),randint(0,15000),randint(0,15000)],startTime="03/04/2030 09:30:20 AM")
+runCard = RunCard(None,blitzRun,(380,370))
 
 
 while True:
 
-    for i in range(50):
-        # screen.fill((60,60,60))
-        # gfxdraw.filled_polygon(screen,[(0,0),(900,0),(900,900),(0,900)],(60,60,60))
+    # for i in range(50):
+    screen.fill((60,60,60))
+    #     # gfxdraw.filled_polygon(screen,[(0,0),(900,0),(900,900),(0,900)],(60,60,60))
 
-        pixels = screen.get_buffer()
-        pixels.write(background_bytes)
-        del pixels  # Release the buffer
+    #     pixels = screen.get_buffer()
+    #     pixels.write(background_bytes)
+    #     del pixels  # Release the buffer
 
         # screen.blit(screen2,(0,0))
         # screen = screen2.copy()
@@ -38,6 +37,9 @@ while True:
 
 
     pygame.draw.circle(screen, (255,255,255), (450,450), 100)
+    # screen.blit(runCard.draw(),(300,440))
+
+    runCard.draw(screen,(0,0),mousebuttons)
     screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(850,0),(850,30),(850,60)]))
     
     pygame.display.flip()
