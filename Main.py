@@ -75,9 +75,9 @@ stockbook = Stockbook2(stocklist,gametime,orderScreen)
 portfolio = Portfolio(stocklist,player,gametime,tmarket,menuDict)
 optiontrade = Optiontrade(stocklist,gametime,player)
 bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
-blitzRuns = [BlitzRun(f'Blitz Run {i}',randint(0,45000),randint(0,5000),[randint(0,15000),randint(0,15000),randint(0,15000)],None) for i in range(5)]
+blitzRuns = [BlitzRun(f'Blitz Run {i}',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,5000),randint(0,5000)],"1M",'01/02/2030 09:30:00 AM') for i in range(5)]
 
-blitzRuns.append(BlitzRun(f'Blitz Run Timed',randint(0,45000),randint(0,5000),[randint(0,15000),randint(0,15000),randint(0,15000)],startTime="03/04/2030 09:30:20 AM"))
+blitzRuns.append(BlitzRun(f'Blitz Run Timed',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000)],"3Y",'01/02/2030 09:30:00 AM'))
 
 pastRuns = {'Blitz':blitzRuns,'Career':[],'Goal':[]}
 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
         
         if gametime.advanceTime(uiControls.gameplay_speed,autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
-            player.newDay(gametime,stocklist)
+            player.newDay(gametime,stocklist,menuList)
 
         if gametime.isOpen()[0]:# if the market is open
             if uiControls.gameplay_speed > 0:# if the game is not paused

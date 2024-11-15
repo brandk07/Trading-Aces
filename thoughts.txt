@@ -150,6 +150,10 @@ Need to test out what happens when you add more than 4 rows to the pie chart (11
 fix the allocation in the portofolio
     -when you sell a share/s it doesn't update so it looks like it has gone down
 
+Add advance current runt to the player tick (11/14/2024)
+
+start off all games with 1 sample run in each category - just so the stuff in gameModeMenu doesn't look empty (11/14/2024)
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am

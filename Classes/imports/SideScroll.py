@@ -145,7 +145,7 @@ class RunCard(ScrollCard):
     def dataConfig(self,runObj):
         image = runObj.screenShot
         starTxt = f"{runObj.getStarRating()} Star{'s' if runObj.getStarRating() != 1 else ''}"
-        networthTxt = f"${limit_digits(runObj.networth,30,runObj.networth>10000)}"
+        networthTxt = f"${limit_digits(runObj.networth,30,runObj.networth>1000)}"
 
         return {"stars":starTxt,"name":runObj.name,"networth":networthTxt,"startTime":runObj.startTime,"screenShot":image}
 
@@ -167,8 +167,8 @@ class RunCard(ScrollCard):
         drawCenterTxt(self.surf,self.data['stars'],50,(180,180,180),(190+(wh[0]-190)//2,10),centerY=False)
 
 
-        size = getTSizeNums(self.data['networth'],wh[0]-20,150)
-        color = ((5-self.runObj.getStarRating())*44,self.runObj.getStarRating()*44,0)
+        size = getTSizeNums(self.data['networth'],wh[0]-40,135)
+        color = ((5-self.runObj.getStarRating())*35,self.runObj.getStarRating()*35,0)
         drawCenterTxt(self.surf,self.data['networth'],size,color,(wh[0]//2,220),centerY=False)
 
         numLines = min(4,len(self.data['name'].split(' ')),math.ceil(len(self.data['name'])/9))

@@ -290,6 +290,7 @@ class UIControls():
         # draw_pie_chart(screen, values, 190, (935, 235))
         assets = player.getAssets()
         values = [[asset.getValue(),asset.name,asset.color] for asset in assets]
+        values.append([player.cash, "Cash",player.color])
 
         self.pieChart.updateData(values)
         self.pieChart.draw(screen,"Portfolio Breakdown",mousebuttons)

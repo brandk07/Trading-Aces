@@ -81,7 +81,7 @@ class Stock():
         self.condensefacs = {key:value/POINTSPERGRAPH for key,value in self.graphrangeoptions.items()}#the amount of points that each index of the graph has
         # self.graphrange = '1H' # H, D, W, M, 3M, Y
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
-        self.graphs = {key:deque([100],maxlen=POINTSPERGRAPH) for key in self.graphrangeoptions.keys()}
+        self.graphs = {key:deque([],maxlen=POINTSPERGRAPH) for key in self.graphrangeoptions.keys()}
         
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
         
@@ -227,7 +227,7 @@ class Stock():
                     self.graphs[grange] = deque(data[i],maxlen=POINTSPERGRAPH)
                 else:
                     # self.graphs[grange] = np.array([100])# if the file is empty then set the graph to 100
-                    self.graphs[grange] = deque([100],maxlen=POINTSPERGRAPH)
+                    self.graphs[grange] = deque([randint(10,800)],maxlen=POINTSPERGRAPH)
             if data[-3] != None and data[-3] != []:
                 self.dividendYield = data[-3]# the dividend yield
             else:
@@ -358,7 +358,7 @@ class Stock():
             return min(pointsUntil,key=lambda x:x[0])
 
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}# reset the graphs
-        self.graphs = {key:deque([100],maxlen=POINTSPERGRAPH) for key in self.graphrangeoptions.keys()}
+        self.graphs = {key:deque([],maxlen=POINTSPERGRAPH) for key in self.graphrangeoptions.keys()}
         # self.graphs[MAXRANGE] = np.array([self.price])
         self.graphs[MAXRANGE] = deque([self.price],maxlen=POINTSPERGRAPH)
         lastgraphed = MAXRANGE

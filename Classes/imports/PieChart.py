@@ -38,7 +38,7 @@ class PieChart:
         self.pieSegments = []#[[color,points,value]...]
         self.angles = []
         self.lscroll = LatterScroll()
-        self.selectedAssetIndex = 0
+        self.selectedAssetIndex = None
         self.boxtextsize = int(getTSizeNums(f'50.00% of Portfolio',self.radius*1.75)*.9)
 
     def updateRadius(self,NumBottomLines):
@@ -153,7 +153,7 @@ class PieChart:
         spaceings = []
         lastXOffset = 0# The offset for the last line- if it has less than qtyPerLine
         # print('numNames:',numNames,self.pieSegments)
-        while not spaceings or max(spaceings) < 5:
+        while not spaceings or max(spaceings) < 10:
             # print(spaceings)
             numLines += 1
             qtyPerLine = math.ceil(numNames/numLines)

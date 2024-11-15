@@ -399,7 +399,7 @@ class Portfolio(Menu):
             #     values.append([option.getValue(),option.name,option.color])
             assets = player.getAssets()
             values = [[asset.getValue(),asset.name,asset.color] for asset in assets]
-
+            values.append([player.cash, "Cash",player.color])
             self.piechart.updateData(values)
             self.piechart.draw(screen,mousebuttons)
             # draw_pie_chart(screen, values, 150,(200, 650))  
