@@ -160,36 +160,88 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
             renderlist[position].pop(text)
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
-def getDrawnMenuBackground(surface:pygame.Surface):
+
+def getScreenRefreshBackGrounds(surface:pygame.Surface):
+    menuSurface = surface.copy()
+    screenSurface = surface.copy()
     menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
     topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]
-    gfxdraw.filled_polygon(surface, menupoints,(40,40,40,150))
-    pygame.draw.polygon(surface, (0,0,0), menupoints,5)
+    gfxdraw.filled_polygon(menuSurface, menupoints,(40,40,40,150))
+    pygame.draw.polygon(menuSurface, (0,0,0), menupoints,5)
 
-    gfxdraw.filled_polygon(surface, topbarpoints,(85,85,85))
-    pygame.draw.polygon(surface, (0,0,0), topbarpoints,5)
-    
-    # return bytes(surface.get_buffer()) 
-    return surface
+    gfxdraw.filled_polygon(menuSurface, topbarpoints,(85,85,85))
+    pygame.draw.polygon(menuSurface, (0,0,0), topbarpoints,5)
+
+        
+    return menuSurface,screenSurface
 def doBuffer(screen:pygame.Surface,backgroundBtyes):
     pixels = screen.get_buffer()
     pixels.write(backgroundBtyes)
     del pixels  # Release the buffer
 
 
-def drawCenterTxt(screen,text:str,txtSize:int,color:tuple,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False,outline=False,font='reg') -> None:
+def text_input(screen, coords, wh, current_str, keyPressed, txtSize=45) -> str:
+    """Draws an input box on the screen and , returns the text in the box"""
+    input_rect = pygame.Rect(coords, wh)
+    
+    special_keys = {
+        "return": "Enter",
+        "space": "Space",
+        "backspace": "Backspace",
+        "left shift": "Shift",
+        "right shift": "Shift",
+        "left ctrl": "Ctrl",
+        "right ctrl": "Ctrl",
+        "left alt": "Alt",
+        "right alt": "Alt",
+        "tab": "Tab",
+        "escape": "Esc"
+    }
+    if keyPressed == None:
+        pass
+    
+    elif keyPressed in list(special_keys.values()):
+        if keyPressed == "Backspace" and len(current_str) > 0:
+            current_str = current_str[:-1]
+        # elif special_keys[key] == "Enter":
+        #     return current_str
+        elif keyPressed == "Space":
+            current_str += " "
+    else:
+        if len(keyPressed) == 1 and len(current_str) <  30:
+            current_str += keyPressed
+    
+    # Draw input box and text
+    
+    pygame.draw.rect(screen, (0, 0, 0), input_rect, 5, 10)
+
+    width,height = drawCenterTxt(screen, current_str, txtSize, (255, 255, 255), (coords[0] + wh[0]//2, coords[1]+wh[1]-22), centerY=False,fullY=True)
+    
+    # make the cursor blink
+    if int(time.time() * 2) % 2 == 0:
+        
+        lw = fontlist[txtSize].get_rect(' ' if len(current_str) == 0 else current_str[-1]).width
+        x = coords[0] + wh[0]//2 + width/2 - lw - 1
+        y = coords[1] + wh[1]//2 + 20 + 3
+        pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(x,y,lw+4,3))
+    return current_str
+
+def drawCenterTxt(screen,text:str,txtSize:int,color:tuple,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False,outline=False,font='reg') -> tuple:
     """Draws text centered on the screen, 
     centerx and y will minus half the wh of the txt,
-    full will minus the full width of the txt (drawing from the top left)"""
+    full will minus the full width of the txt (drawing from the top left)
+    returns the width and height of the text"""
     valueText = s_render(text,txtSize,color,font)
     x,y = coords
-    if centerX: x -= valueText.get_width()//2
-    if centerY: y -= valueText.get_height()//2
-    if fullX: x -= valueText.get_width()
-    if fullY: y -= valueText.get_height()
+    width,height = valueText.get_width(), valueText.get_height()
+    if centerX: x -= width//2
+    if centerY: y -= height//2
+    if fullX: x -= width
+    if fullY: y -= height
     screen.blit(valueText,(x,y))
     if outline:
-        pygame.draw.rect(screen, (0,0,0), (x-5,y-5,valueText.get_width()+10,valueText.get_height()+10), 5, 10)
+        pygame.draw.rect(screen, (0,0,0), (x-5,y-5,width+10,height+10), 5, 10)
+    return width,height
 
 def drawCenterRendered(screen,renderedTxt,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False) -> None:
     """Works same as drwaCenterTxt but with pre-rendered text

@@ -18,6 +18,7 @@ from Classes.NewstockBook import Stockbook2
 from Classes.NewOptionMenu import Optiontrade
 from Classes.BankMenu import BankMenu
 from Classes.GameModeMenu import GameModeMenu,BlitzRun
+from Classes.StartMenu import StartMenu
 
 GAMESPEED = 250
 FASTFORWARDSPEED = 100
@@ -29,7 +30,7 @@ monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.
 window_width, window_height = (monitor_width, monitor_height)
 
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
-screen = pygame.display.set_mode((window_width, window_height-100),pygame.NOFRAME|pygame.HWSURFACE)
+screen = pygame.display.set_mode((1920, 1080),pygame.NOFRAME|pygame.HWSURFACE)
 pygame.display.set_caption("Trading Aces")
 pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED) 
 # pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
@@ -37,6 +38,8 @@ pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
 clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 # stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
+startmenu = StartMenu()
+startmenu.drawStartMenu(screen,clock)
 stocknames = STOCKNAMES
 stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
 
@@ -123,23 +126,20 @@ for indexfund in indexFunds:
 screen.fill((30,30,30))
 screen.blit(background,(0,0))
 
-extraSurf = pygame.Surface((1920,1080))
-extraSurf.fill((30,30,30))
-extraSurf.blit(background,(0,0))
-screenBytes = bytes(extraSurf.get_buffer())
-# s = screen.copy()# makes way better performance
-menuBackBytes = getDrawnMenuBackground(screen.copy())
+
+   
+menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(screen.copy())
 
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
         if any([menu.menudrawn for menu in menuDict.values()]):
-            screen.blit(menuBackBytes,(0,0))
+            screen.blit(menuBackRefresh,(0,0))
             # gfxdraw.textured_polygon(screen,[(0,0),(1920,0),(1920,1080),(0,1080)],menuBackBytes,0,0)
             # doBuffer(screen,menuBackBytes)
         else:
             # doBuffer(screen,screenBytes)
-            screen.blit(extraSurf,(0,0))
+            screen.blit(screenBackRefresh,(0,0))
         
         
         uiControls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks

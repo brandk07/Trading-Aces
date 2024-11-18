@@ -16,8 +16,13 @@ lastfps = deque(maxlen=300)
 clock = pygame.time.Clock()
 mousebuttons = 0
 
-blitzRun = BlitzRun(f'Blitz run that will make your socks fall off becuase',1000.15,randint(0,5000),[randint(0,15000),randint(0,15000),randint(0,15000)],startTime="03/04/2030 09:30:20 AM")
-runCard = RunCard(None,blitzRun,(380,370))
+# blitzRun = BlitzRun(f'Blitz run that will make your socks fall off becuase',1000.15,randint(0,5000),[randint(0,15000),randint(0,15000),randint(0,15000)],startTime="03/04/2030 09:30:20 AM")
+# runCard = RunCard(None,blitzRun,(380,370))
+
+image = pygame.image.load("Assets\Screenshots\screenshot_20241116_101624.png")
+# image = pygame.transform.chop(image,pygame.Rect(200,0,1700,1080))
+image = pygame.transform.smoothscale(image,(1520/3,1080/3))
+# pygame.transform.smoothscale()
 
 
 while True:
@@ -29,7 +34,7 @@ while True:
     #     pixels = screen.get_buffer()
     #     pixels.write(background_bytes)
     #     del pixels  # Release the buffer
-
+    screen.blit(image,(0,0))
         # screen.blit(screen2,(0,0))
         # screen = screen2.copy()
         # screen.blit(surface,(0,0))
@@ -39,11 +44,10 @@ while True:
     pygame.draw.circle(screen, (255,255,255), (450,450), 100)
     # screen.blit(runCard.draw(),(300,440))
 
-    runCard.draw(screen,(0,0),mousebuttons)
+    # runCard.draw(screen,(0,0),mousebuttons)
     screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(850,0),(850,30),(850,60)]))
     
     pygame.display.flip()
-    # pygame.display.update()
     
     mousebuttons = 0
     for event in pygame.event.get():

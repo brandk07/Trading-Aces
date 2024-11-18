@@ -9,8 +9,10 @@ class SelectionBar:
         self.selected = None
         self.horizontal = horizontal
     def getSelected(self):
+        """Returns the selected string"""
         return self.selected
     def setSelected(self,selected):
+        """Sets the selected string"""
         self.selected = selected
         
     def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],mousebuttons,colors:list[tuple]=None,txtsize:int=36):

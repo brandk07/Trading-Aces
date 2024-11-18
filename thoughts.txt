@@ -154,6 +154,14 @@ Add advance current runt to the player tick (11/14/2024)
 
 start off all games with 1 sample run in each category - just so the stuff in gameModeMenu doesn't look empty (11/14/2024)
 
+big time warp (11/16/2024)
+
+autosave (11/16/2024)
+
+change how the options look when they are on the LatterScroll (11/17/2024)
+
+make the piechart in the portfolio have the lines like the other one (11/17/2024)
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am
