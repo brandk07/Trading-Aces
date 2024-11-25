@@ -3,7 +3,7 @@ from pygame import gfxdraw
 import math
 from Defs import *
 import timeit
-from Classes.StockVisualizer import StockVisualizer
+from Classes.imports.StockVisualizer import StockVisualizer
 
 class StockGraphManager:
     def __init__(self,stocklist,gametime):

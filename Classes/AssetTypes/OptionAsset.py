@@ -7,7 +7,7 @@ from random import randint,random
 from datetime import timedelta,datetime
 from functools import lru_cache 
 # from Classes.imports.BigMessage import OptionMessage
-from Defs import *
+# from Defs import *
 # ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
 DFORMAT = "%m/%d/%Y"
 

@@ -3,11 +3,11 @@ from Defs import *
 from pygame import gfxdraw
 from Classes.imports.Bar import SliderBar
 # from Classes.imports.stockeventspos import StockEvents
-from Classes.imports.Latterscroll import LatterScroll
+from Classes.imports.UIElements.Latterscroll import LatterScroll
 from Classes.imports.Newsbar import News
-from Classes.Stock import Stock
-from Classes.StockVisualizer import StockVisualizer
-from Classes.imports.PieChart import PieChart
+from Classes.BigClasses.Stock import Stock
+from Classes.imports.StockVisualizer import StockVisualizer
+from Classes.imports.UIElements.PieChart import PieChart
 
 # [20,60] [60,20]
 # [700,1000] [1000,650]

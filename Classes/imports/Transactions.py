@@ -1,6 +1,6 @@
 import pygame
 from Defs import *
-from Classes.imports.Latterscroll import LatterScroll
+from Classes.imports.UIElements.Latterscroll import LatterScroll
 
 class Transactions:
     def __init__(self) -> None:

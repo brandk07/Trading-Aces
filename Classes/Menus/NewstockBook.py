@@ -1,16 +1,16 @@
 import pygame
 from Defs import *
 from pygame import gfxdraw
-from Classes.imports.Menu import Menu
+from Classes.Menus.Menu import Menu
 import numpy as np
 from Classes.imports.Bar import SliderBar
 # from Classes.AssetTypes.StockAsset import StockAsset
-from Classes.StockVisualizer import StockVisualizer
+from Classes.imports.StockVisualizer import StockVisualizer
 # from Classes.imports.OrderScreen import OrderScreen
-from Classes.imports.Latterscroll import PortfolioLatter,LatterScroll
-from Classes.Stock import Stock
-from Classes.imports.BarGraph import BarGraph
-from Classes.imports.SelectionElements import SelectionBar
+from Classes.imports.UIElements.Latterscroll import PortfolioLatter,LatterScroll
+from Classes.BigClasses.Stock import Stock
+from Classes.imports.UIElements.BarGraph import BarGraph
+from Classes.imports.UIElements.SelectionElements import SelectionBar
 import datetime
 
 TXTCOLOR = (220,220,220)

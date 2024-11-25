@@ -1,7 +1,7 @@
 import pygame
 from Defs import *
-from Classes.imports.SideScroll import RunCard
-from Classes.GameModeMenu import BlitzRun
+from Classes.imports.UIElements.SideScroll import RunCard
+from Classes.Menus.GameModeMenu import BlitzRun
 
 pygame.init()
 screen = pygame.display.set_mode([900,900])

@@ -1,5 +1,5 @@
 from Classes.imports.Graph import Graph
-from Classes.Gametime import GameTime
+from Classes.imports.Gametime import GameTime
 from Defs import *
 from datetime import datetime,timedelta
 

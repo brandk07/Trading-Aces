@@ -6,12 +6,12 @@ import numpy as np
 import json
 from Classes.imports.Graph import Graph
 from datetime import datetime,timedelta
-from Classes.Gametime import GameTime
+from Classes.imports.Gametime import GameTime
 import math
-from Classes.StockVisualizer import StockVisualizer,POINTSPERGRAPH
+from Classes.imports.StockVisualizer import StockVisualizer,POINTSPERGRAPH
 from functools import lru_cache
 from faker import Faker
-from Classes.StockPriceEffects import StockPriceEffects
+from Classes.BigClasses.StockPriceEffects import StockPriceEffects
 import calendar
 
 @lru_cache(maxsize=20)

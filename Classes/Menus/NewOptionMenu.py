@@ -1,20 +1,20 @@
 import pygame
 from Defs import *
 from pygame import gfxdraw
-from Classes.imports.Menu import Menu
+from Classes.Menus.Menu import Menu
 import numpy as np
 from Classes.imports.Bar import SliderBar
 from Classes.AssetTypes.OptionAsset import OptionAsset,getCloseOpenDate
-from Classes.StockVisualizer import StockVisualizer
+from Classes.imports.StockVisualizer import StockVisualizer
 # from Classes.imports.OrderScreen import OrderScreen
-from Classes.imports.Latterscroll import CustomColorLatter
-from Classes.Stock import Stock
-from Classes.Gametime import GameTime
-from Classes.imports.BarGraph import BarGraph
-from Classes.imports.Numpad import Numpad
-from Classes.imports.SelectionElements import SelectionBar,MenuSelection
+from Classes.imports.UIElements.Latterscroll import CustomColorLatter
+from Classes.BigClasses.Stock import Stock
+from Classes.imports.Gametime import GameTime
+from Classes.imports.UIElements.BarGraph import BarGraph
+from Classes.imports.UIElements.Numpad import Numpad
+from Classes.imports.UIElements.SelectionElements import SelectionBar,MenuSelection
 from datetime import timedelta,datetime
-from Classes.imports.OrderBox import OrderBox
+from Classes.imports.UIElements.OrderBox import OrderBox
 
 class CustomOptionCreator:
     def __init__(self,player,optionObj) -> None:

@@ -36,6 +36,7 @@ def timing_decorator(func):
 crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)
 pixfonts = lambda font_size: freetype.Font(r'Assets\fonts\Silkscreen\Silkscreen-Regular.ttf', font_size*.75)
 fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.ttf', font_size*.75)
+fontsLight = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Light.ttf', font_size*.75)
 # FUN THEME
 # fonts = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
 # fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
@@ -44,7 +45,9 @@ bold40 = fontsbold(45)
 fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size*.75)
 fontlist = [fonts(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistcry = [crystalfonts(num) for num in range(0,201)]#list of fonts from 0-100
+fontlistLight = [fontsLight(num) for num in range(0,201)]#list of fonts from 0-100
 fontlistpix = [pixfonts(num) for num in range(0,201)]#list of fonts from 0-100
+fontlistbold = [fontsbold(num) for num in range(0,201)]#list of fonts from 0-100
 font45 = fonts(45)
 GRAPHRANGES = ["1H","1D","5D","1M","6M","1Y","5Y"]
 MINRANGE = GRAPHRANGES[0]
@@ -67,10 +70,17 @@ def s_render(string:str, size, color,font='reg') -> pygame.Surface:
         text = fontlist[size].render(string, (color))[0]
     elif font == 'cry':
         text = fontlistcry[size].render(string, (color))[0]
+    elif font == 'light':
+        text = fontlistLight[size].render(string, (color))[0]
+    elif font == 'pix':
+        text = fontlistpix[size].render(string, (color))[0]
+    elif font == 'bold':
+        text = fontlistbold[size].render(string, (color))[0]
+
     return text
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 errors = ErrorMessageHandler(s_render)# error messages DO errors.addMessage(txt:str,coords:list=None)
-animationList = []
+animationList : list[BuyAnimation] = []
 # bigMessageList = []
 
 soundEffects = {# soundEffects['generalClick'].play()
@@ -225,6 +235,38 @@ def text_input(screen, coords, wh, current_str, keyPressed, txtSize=45) -> str:
         y = coords[1] + wh[1]//2 + 20 + 3
         pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(x,y,lw+4,3))
     return current_str
+
+@lru_cache(maxsize=15)
+def getBorderedImage(image:pygame.Surface,borderWidth:int,borderColor:tuple,wh:tuple,borderRadius:int) -> pygame.Surface:
+    """Returns the image with a border around it (IF YOUR IMAGE HAS THE COLOR (1,1,1) IN IT, IT WILL BE REMOVED)"""
+
+    outSideSurf = pygame.Surface(wh)# first create an outside surface
+    outSideSurf.fill((1,1,1))# fill it with a color that is not in the image
+    pygame.draw.rect(outSideSurf,(0,0,0),(0,0,wh[0],wh[1]),border_radius=borderRadius)# draw a cutout of what is be displayed on the realSurf
+    outSideSurf.set_colorkey((0,0,0))# make that cut out transparent
+
+    realSurf = pygame.Surface(wh)# create the real surface
+    if image.get_width() != wh[0] or image.get_height() != wh[1]:# if the image is not the same size as the surface
+        image = pygame.transform.smoothscale(image,wh)
+    realSurf.blit(image,(0,0))# blit the image to the real surface first
+    realSurf.blit(outSideSurf,(0,0))# blit the outside surface to the real surface (out side is black, so it will cut out the image)
+    realSurf.set_colorkey((1,1,1))# remove that outside black portion
+    pygame.draw.rect(realSurf,borderColor,(0,0,wh[0],wh[1]),width=borderWidth,border_radius=borderRadius)
+
+    return realSurf
+
+def drawBoxedImage(screen,coords,image,wh=None,borderRadius=0,borderWidth=5,borderColor=(0,0,0)):
+    """Draws a box around the image, with the border width and color"""
+    if wh == None:
+        wh = image.get_width(),image.get_height()
+    if borderRadius != 0:
+        image = getBorderedImage(image,borderWidth,borderColor,wh,borderRadius)
+        screen.blit(image,coords); return
+    
+    screen.blit(image,coords)
+    pygame.draw.rect(screen,borderColor,(*coords,*wh),borderRadius)
+
+
 
 def drawCenterTxt(screen,text:str,txtSize:int,color:tuple,coords:tuple,centerX=True,centerY=True,fullX=False,fullY=False,outline=False,font='reg') -> tuple:
     """Draws text centered on the screen, 

@@ -2,7 +2,7 @@ import pygame, math
 from pygame import gfxdraw
 from functools import lru_cache 
 from Defs import *
-from Classes.imports.Latterscroll import LatterScroll
+from Classes.imports.UIElements.Latterscroll import LatterScroll
 
 
 @lru_cache(maxsize=10)
@@ -16,7 +16,7 @@ import pygame, math
 from pygame import gfxdraw
 from functools import lru_cache 
 from Defs import *
-from Classes.imports.Latterscroll import LatterScroll
+from Classes.imports.UIElements.Latterscroll import LatterScroll
 
 
 @lru_cache(maxsize=10)

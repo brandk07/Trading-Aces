@@ -2,23 +2,23 @@ import pygame
 from random import randint
 import time
 from Defs import *
-from Classes.Stock import Stock
-from Classes.UIControls import UIControls
-from Classes.Gametime import GameTime
-from Classes.Player import Player
-from Classes.StockGraphManager import StockGraphManager
-from Classes.Portfolio import Portfolio
+from Classes.BigClasses.Stock import Stock
+from Classes.BigClasses.UIControls import UIControls
+from Classes.imports.Gametime import GameTime
+from Classes.BigClasses.Player import Player
+from Classes.BigClasses.StockGraphManager import StockGraphManager
+from Classes.Menus.Portfolio import Portfolio
 # from Classes.OptionMenu import Optiontrade
 from collections import deque
 from Classes.smallClasses.IndexFunds import TotalMarket,IndexFund
 import timeit
 from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
-from Classes.NewstockBook import Stockbook2
-from Classes.NewOptionMenu import Optiontrade
-from Classes.BankMenu import BankMenu
-from Classes.GameModeMenu import GameModeMenu,BlitzRun
-from Classes.StartMenu import StartMenu
+from Classes.Menus.NewstockBook import Stockbook2
+from Classes.Menus.NewOptionMenu import Optiontrade
+from Classes.Menus.BankMenu import BankMenu
+from Classes.Menus.GameModeMenu import GameModeMenu,BlitzRun
+from Classes.Menus.startMenus.StartMain import StartMain
 
 GAMESPEED = 250
 FASTFORWARDSPEED = 100
@@ -30,7 +30,7 @@ monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.
 window_width, window_height = (monitor_width, monitor_height)
 
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
-screen = pygame.display.set_mode((1920, 1080),pygame.NOFRAME|pygame.HWSURFACE)
+screen = pygame.display.set_mode((1920, 1080),pygame.NOFRAME|pygame.HWSURFACE|pygame.SRCALPHA)
 pygame.display.set_caption("Trading Aces")
 pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED) 
 # pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
@@ -38,7 +38,7 @@ pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
 clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 # stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
-startmenu = StartMenu()
+startmenu = StartMain()
 startmenu.drawStartMenu(screen,clock)
 stocknames = STOCKNAMES
 stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High

@@ -1,7 +1,7 @@
 import pygame
 from random import randint
 import time
-from Classes.Stock import Stock,POINTSPERGRAPH
+from Classes.BigClasses.Stock import Stock,POINTSPERGRAPH
 from Defs import *
 from pygame import gfxdraw
 import numpy as np

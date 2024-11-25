@@ -162,6 +162,9 @@ change how the options look when they are on the LatterScroll (11/17/2024)
 
 make the piechart in the portfolio have the lines like the other one (11/17/2024)
 
+Create a new animation for selling and for creating a new game (11/24/2024)
+    - one of them should you a sine wave to create a spiral of all the dots
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am

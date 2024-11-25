@@ -2,7 +2,7 @@ from Defs import *
 import numpy as np
 import pygame
 from random import randint
-from Classes.Stock import Stock
+from Classes.BigClasses.Stock import Stock
 
 
 class TotalMarket(Stock):

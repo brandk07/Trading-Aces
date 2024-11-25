@@ -1,6 +1,6 @@
 from random import randint
 from datetime import datetime,timedelta,date
-from Classes.Gametime import GameTime
+from Classes.imports.Gametime import GameTime
 from Defs import *
 import calendar
 

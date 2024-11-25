@@ -4,10 +4,11 @@ import math
 
 class SelectionBar:
     """A bar that allows the user to select from a list of strings"""
-    def __init__(self,horizontal=True) -> None:
+    def __init__(self,horizontal=True,allowSelcNone=False) -> None:
         # self.__annotations__
         self.selected = None
         self.horizontal = horizontal
+        self.allowSelcNone = allowSelcNone
     def getSelected(self):
         """Returns the selected string"""
         return self.selected
@@ -15,14 +16,14 @@ class SelectionBar:
         """Sets the selected string"""
         self.selected = selected
         
-    def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],mousebuttons,colors:list[tuple]=None,txtsize:int=36):
+    def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],mousebuttons,colors:list[tuple]=None,txtsize:int=36,condensed=False):
         """Data is a list of strings that can be selected
         the length of data can be changed, but it must be at least 1
         will auto select the first element in the list"""	
         assert len(data) > 0, "Data must have at least one element"
 
         if self.selected == None or self.selected not in data:
-            self.selected = data[0]
+            self.selected = data[0] if not self.allowSelcNone else None
         
         if colors == None:
             colors = [(255,255,255)]*len(data)
@@ -54,7 +55,9 @@ class SelectionBar:
             if rect.collidepoint(pygame.mouse.get_pos()):
                 if mousebuttons == 1:
                     soundEffects['generalClick'].play()
-                    self.selected = txt
+                    self.selected = txt if txt != self.selected else None
+                    if not self.allowSelcNone and self.selected == None:
+                        self.selected = txt
                     changed = True
         return changed
         

@@ -1,6 +1,6 @@
 import pygame
 from Defs import *
-from Classes.UIControls import UIControls
+from Classes.BigClasses.UIControls import UIControls
 class Menu():
     def __init__(self,iconimage) -> None:
         surface = pygame.Surface((140,115))

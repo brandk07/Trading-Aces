@@ -2,9 +2,9 @@ import pygame
 from pygame import gfxdraw
 import pygame.gfxdraw
 from Defs import *
-from Classes.imports.Numpad import Numpad
-from Classes.UIControls import UIControls
-from Classes.imports.Latterscroll import LatterScroll
+from Classes.imports.UIElements.Numpad import Numpad
+from Classes.BigClasses.UIControls import UIControls
+from Classes.imports.UIElements.Latterscroll import LatterScroll
 TXTCOLOR = (220,220,220)
 
 class OrderScreen:

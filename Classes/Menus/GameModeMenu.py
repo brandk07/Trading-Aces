@@ -1,23 +1,23 @@
 import pygame
 from Defs import *
 from pygame import gfxdraw
-from Classes.imports.Menu import Menu
+from Classes.Menus.Menu import Menu
 import numpy as np
 from Classes.imports.Bar import SliderBar
-from Classes.StockVisualizer import StockVisualizer
-from Classes.imports.Latterscroll import PortfolioLatter,LatterScroll
-from Classes.Stock import Stock
-from Classes.imports.BarGraph import BarGraph
-from Classes.imports.SelectionElements import SelectionBar,MenuSelection
-from Classes.imports.PerfChart import PerfChart
-from Classes.imports.Numpad import Numpad
-from Classes.imports.OrderBox import OrderBox
+from Classes.imports.StockVisualizer import StockVisualizer
+from Classes.imports.UIElements.Latterscroll import PortfolioLatter,LatterScroll
+from Classes.BigClasses.Stock import Stock
+from Classes.imports.UIElements.BarGraph import BarGraph
+from Classes.imports.UIElements.SelectionElements import SelectionBar,MenuSelection
+from Classes.imports.UIElements.PerfChart import PerfChart
+from Classes.imports.UIElements.Numpad import Numpad
+from Classes.imports.UIElements.OrderBox import OrderBox
 from Classes.AssetTypes.IndexFundsAsset import IndexFundAsset
-from Classes.imports.PieChart import PieChart
-from Classes.imports.Latterscroll import LinedLatter
+from Classes.imports.UIElements.PieChart import PieChart
+from Classes.imports.UIElements.Latterscroll import LinedLatter
 from Classes.AssetTypes.LoanAsset import LoanAsset
 import datetime
-from Classes.imports.SideScroll import SideScroll,RunCard
+from Classes.imports.UIElements.SideScroll import SideScroll,RunCard
 from dateutil.relativedelta import relativedelta
 TIME_PERIODS = {
     '1M': relativedelta(months=1),

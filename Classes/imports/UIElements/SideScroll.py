@@ -1,6 +1,6 @@
 import pygame
 from Defs import *
-from Classes.Gametime import getTimeStrs
+from Classes.imports.Gametime import getTimeStrs
 
 # pygame.init()
 # screen = pygame.display.set_mode([1850,1000])
@@ -184,19 +184,25 @@ class RunCard(ScrollCard):
         size = getTSizeNums(dateStr,wh[0]-20,35)
         drawCenterTxt(self.surf,dateStr,size,(180,180,180),(wh[0]//2,wh[1]-35),centerY=False)
 
-        # # self.surf.blit(s_render(f"LOAN {self.sideScroll.cards.index(self)+1}",80,(0,0,0)),(0+10,0+10))
+class CreateMenuRunImage(ScrollCard):
+    def __init__(self,sideScroll,image) -> None:
+        """Needs to be given the sideScroll object that will be used to draw the card"""
+        self.image = image
 
-        # drawCenterTxt(self.surf,f"{self.data['term']} Months",55,(0,0,0),(0+wh[0]-15,0+20),centerX=False,centerY=False,fullX=True)
-        # monthlyPayment = "$"+limit_digits(self.data['monthly payment'],20,self.data['monthly payment']>100)
-        # tSize = getTSizeNums(monthlyPayment,wh[0]-80,170)
-        # monthlyPayment = s_render(monthlyPayment,tSize,(225,225,225))
-        # drawCenterRendered(self.surf,monthlyPayment,(0+wh[0]//2,0+wh[1]//2+15))
-        # drawCenterTxt(self.surf,"Monthly Payment",50,(100,100,100),(0+wh[0]//2,0+wh[1]//2-monthlyPayment.get_height()//2+5),centerY=False,fullY=True)
+        super().__init__("image",sideScroll,image)
 
-        # x,y = 0+10,0+(wh[1]//4)*3-20
-        # info = [("Principal (Og)",f"${limit_digits(self.data['principal'],20,True)}"),("Principal Left",f"${limit_digits(self.data['remaining'],20,True)}")]
 
-        # drawLinedInfo(self.surf,(x,y),(wh[0]-20,wh[1]//4+20),info,35,(0,0,0))
+    def updateSurf(self,wh=None):
+        """Draws Everything onto the card's surface - Only needs to be called when data changes"""
+        if wh == None:
+            wh = self.wh
+
+        self.surf = pygame.Surface(wh).convert_alpha()
+        
+        self.surf.fill((0,0,0,0))
+
+        self.surf.blit(self.image,(0,0))
+        
 
 class SideScroll:
     def __init__(self,coords,wh,cardWH) -> None:

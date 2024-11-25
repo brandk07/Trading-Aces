@@ -3,20 +3,20 @@ import timeit
 
 import pygame.draw_py
 from Defs import *
-from Classes.imports.Menu import Menu
+from Classes.Menus.Menu import Menu
 from pygame import gfxdraw
 # from Classes.imports.Bar import SliderBar
-from Classes.imports.Latterscroll import *
+from Classes.imports.UIElements.Latterscroll import *
 # from Classes.Stockbook import quantityControls
-from Classes.imports.Numpad import Numpad
+from Classes.imports.UIElements.Numpad import Numpad
 # from Classes.Stock import Stock
 from Classes.AssetTypes.OptionAsset import OptionAsset
 from Classes.imports.Transactions import Transactions
-from Classes.StockVisualizer import StockVisualizer
-from Classes.imports.PieChart import PieChartSideInfo
-from Classes.imports.BarGraph import BarGraph
-from Classes.imports.OrderBox import OrderBox
-from Classes.imports.SelectionElements import SelectionBar
+from Classes.imports.StockVisualizer import StockVisualizer
+from Classes.imports.UIElements.PieChart import PieChartSideInfo
+from Classes.imports.UIElements.BarGraph import BarGraph
+from Classes.imports.UIElements.OrderBox import OrderBox
+from Classes.imports.UIElements.SelectionElements import SelectionBar
 import math
 import datetime
 from dateutil import parser
