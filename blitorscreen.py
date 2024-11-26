@@ -23,18 +23,22 @@ image = pygame.image.load("Assets\Screenshots\screenshot_20241116_101624.png")
 # image = pygame.transform.chop(image,pygame.Rect(200,0,1700,1080))
 image = pygame.transform.smoothscale(image,(1520/3,1080/3))
 # pygame.transform.smoothscale()
-
+surf = pygame.Surface((150,150)).convert_alpha()
+surf.fill((255,255,255,100))
 
 while True:
 
     # for i in range(50):
     screen.fill((60,60,60))
+    # screen.blit(surf,(0,0))
+    pygame.draw.rect(screen,(0,150,0),pygame.Rect(0,0,300,300))
+    drawBoxedImage(screen,(10,10),surf,borderRadius=10)
     #     # gfxdraw.filled_polygon(screen,[(0,0),(900,0),(900,900),(0,900)],(60,60,60))
 
     #     pixels = screen.get_buffer()
     #     pixels.write(background_bytes)
     #     del pixels  # Release the buffer
-    screen.blit(image,(0,0))
+    # screen.blit(image,(0,0))
         # screen.blit(screen2,(0,0))
         # screen = screen2.copy()
         # screen.blit(surface,(0,0))

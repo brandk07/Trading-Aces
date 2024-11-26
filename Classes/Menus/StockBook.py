@@ -14,10 +14,10 @@ from Classes.imports.UIElements.SelectionElements import SelectionBar
 import datetime
 
 TXTCOLOR = (220,220,220)
-class Stockbook2(Menu):
+class Stockbook(Menu):
     def __init__(self,stocklist,gametime,orderScreen) -> None:
         self.icon = pygame.image.load(r'Assets\Menu_Icons\stockbook.png').convert_alpha()
-        self.icon = pygame.transform.scale(self.icon,(140,100))
+        self.icon = pygame.transform.smoothscale(self.icon,(140,100))
         super().__init__(self.icon)
         # self.quantity = 0
         stocknames = [stock.name for stock in stocklist]

@@ -565,7 +565,7 @@ class Optiontrade(Menu):
         # self.icon = pygame.image.load(r'Assets\Portfolio\portfolio2.png').convert_alpha()
 
         self.icon = pygame.image.load(r'Assets\Menu_Icons\noblack_option3.png').convert_alpha()
-        self.icon = pygame.transform.scale(self.icon, (140, 100))
+        self.icon = pygame.transform.smoothscale(self.icon, (140, 100))
         super().__init__(self.icon)
         self.player = player
         self.stocklist = stocklist

@@ -57,21 +57,32 @@ class StartMain:
                 if run.name == name:
                     return "-Name already exists"
         return True
-    def drawStartMenu(self, screen: pygame.Surface, clock:pygame.time.Clock):
-        mousebuttons,key = 0,None
-
+    def getSurfs(self):
         background = pygame.image.load(r'Assets\backgrounds\Background (4).png').convert_alpha()
         background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
         extraSurf = pygame.Surface((1920,1080))
         extraSurf.fill((60,60,60))
         extraSurf.blit(background,(0,0))
+        tempSurf = pygame.Surface((1920,1080),pygame.SRCALPHA)
+        tempSurf.fill((60,60,60,200))
+        createSurf = pygame.Surface((1920,1080))
+        createSurf.blit(extraSurf,(0,0))
+        drawBoxedImage(createSurf,(150,10),tempSurf,(1620,1060),25,5)# main box
+        return createSurf,extraSurf
+    def drawStartMenu(self, screen: pygame.Surface, clock:pygame.time.Clock):
+        mousebuttons,key = 0,None
 
+        createSurf,backSurf = self.getSurfs()
+
+        
+
+        lastfps = deque(maxlen=300)
         while True:
-            # screen.fill((60,60,60))
-            # if self.gameMode == 'start':
-            #     screen.fill((60,60,60))
-            # else:
-            screen.blit(extraSurf,(0,0))
+
+            if self.gameMode == 'create':
+                screen.blit(createSurf,(0,0))
+            else:
+                screen.blit(backSurf,(0,0))
 
             match self.gameMode:
                 case 'start':
@@ -89,11 +100,9 @@ class StartMain:
                     pass
             
             for animation in animationList: animation.update(screen)# update the animations
-
-            pygame.display.flip()
     
             mousebuttons,key = 0,None
-
+            screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
@@ -110,8 +119,8 @@ class StartMain:
                         print("Pressed the J key")
 
                     
-                
-            clock.tick(60)
+            pygame.display.flip()
+            clock.tick(180)
 
 
 

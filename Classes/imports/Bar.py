@@ -50,7 +50,9 @@ class SliderBar():
         # the points for the slider polygon
         self.slider_points = []
 
-
+    def getValue(self):
+        return self.value
+    
     def changeMaxValue(self,maxvalue):
         if maxvalue != self.maxvalue:
             self.maxvalue = maxvalue

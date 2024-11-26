@@ -5,8 +5,12 @@ from Defs import *
 import timeit
 from Classes.imports.StockVisualizer import StockVisualizer
 
-class StockGraphManager:
+class StockScreen:
     def __init__(self,stocklist,gametime):
+
+        self.icon = pygame.image.load(r'Assets\stockScreen icon.png').convert_alpha()
+        self.icon = pygame.transform.smoothscale(self.icon,(140,100))
+        
         self.graph_config = {
             'single': (1,1),
             'quad': (2,2),
@@ -206,7 +210,8 @@ class StockGraphManager:
             
 
 
-    def draw_graphs(self, screen, stocklist:list, player, mousebuttons, gametime):
+    # def draw_graphs(self, screen, stocklist:list, player, mousebuttons, gametime):
+    def draw(self, screen, mousebuttons, stocklist, player, gametime):
         self.draw_ui(screen,mousebuttons,stocklist)
         
         

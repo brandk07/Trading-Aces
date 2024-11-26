@@ -64,7 +64,6 @@ FSTOCKNAMEDICT = {STOCKNAMES[i]:FULLSTOCKNAMES[i] for i in range(len(STOCKNAMES)
 @lru_cache(maxsize=250)
 def s_render(string:str, size, color,font='reg') -> pygame.Surface:
     """Caches the renders of the strings, and returns the rendered surface"""
-    # print(f"Caching arguments: {string}, {size}, {color}")
     assert isinstance(string,str), 'The string must be a string'
     if font == 'reg':
         text = fontlist[size].render(string, (color))[0]
@@ -174,13 +173,14 @@ emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 def getScreenRefreshBackGrounds(surface:pygame.Surface):
     menuSurface = surface.copy()
     screenSurface = surface.copy()
-    menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
-    topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]
+    # menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
+    menupoints = [(185,95),(1910,95),(1910,980),(185,980)]
+    # topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]
     gfxdraw.filled_polygon(menuSurface, menupoints,(40,40,40,150))
     pygame.draw.polygon(menuSurface, (0,0,0), menupoints,5)
 
-    gfxdraw.filled_polygon(menuSurface, topbarpoints,(85,85,85))
-    pygame.draw.polygon(menuSurface, (0,0,0), topbarpoints,5)
+    # gfxdraw.filled_polygon(menuSurface, topbarpoints,(85,85,85))
+    # pygame.draw.polygon(menuSurface, (0,0,0), topbarpoints,5)
 
         
     return menuSurface,screenSurface
@@ -239,13 +239,12 @@ def text_input(screen, coords, wh, current_str, keyPressed, txtSize=45) -> str:
 @lru_cache(maxsize=15)
 def getBorderedImage(image:pygame.Surface,borderWidth:int,borderColor:tuple,wh:tuple,borderRadius:int) -> pygame.Surface:
     """Returns the image with a border around it (IF YOUR IMAGE HAS THE COLOR (1,1,1) IN IT, IT WILL BE REMOVED)"""
-
     outSideSurf = pygame.Surface(wh)# first create an outside surface
     outSideSurf.fill((1,1,1))# fill it with a color that is not in the image
     pygame.draw.rect(outSideSurf,(0,0,0),(0,0,wh[0],wh[1]),border_radius=borderRadius)# draw a cutout of what is be displayed on the realSurf
     outSideSurf.set_colorkey((0,0,0))# make that cut out transparent
 
-    realSurf = pygame.Surface(wh)# create the real surface
+    realSurf = pygame.Surface(wh,pygame.SRCALPHA)# create the real surface
     if image.get_width() != wh[0] or image.get_height() != wh[1]:# if the image is not the same size as the surface
         image = pygame.transform.smoothscale(image,wh)
     realSurf.blit(image,(0,0))# blit the image to the real surface first
@@ -257,6 +256,7 @@ def getBorderedImage(image:pygame.Surface,borderWidth:int,borderColor:tuple,wh:t
 
 def drawBoxedImage(screen,coords,image,wh=None,borderRadius=0,borderWidth=5,borderColor=(0,0,0)):
     """Draws a box around the image, with the border width and color"""
+    # screen.blit(image,coords)
     if wh == None:
         wh = image.get_width(),image.get_height()
     if borderRadius != 0:

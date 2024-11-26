@@ -3,25 +3,28 @@ from random import randint
 import time
 from Defs import *
 from Classes.BigClasses.Stock import Stock
-from Classes.BigClasses.UIControls import UIControls
+# from Classes.BigClasses.UIControls import UIControls
+from Classes.Menus.HomeScreen import HomeScreen
 from Classes.imports.Gametime import GameTime
 from Classes.BigClasses.Player import Player
-from Classes.BigClasses.StockGraphManager import StockGraphManager
+from Classes.Menus.StockScreen import StockScreen
 from Classes.Menus.Portfolio import Portfolio
 # from Classes.OptionMenu import Optiontrade
 from collections import deque
-from Classes.smallClasses.IndexFunds import TotalMarket,IndexFund
+from Classes.imports.IndexFunds import TotalMarket,IndexFund
 import timeit
 from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
-from Classes.Menus.NewstockBook import Stockbook2
-from Classes.Menus.NewOptionMenu import Optiontrade
+from Classes.Menus.StockBook import Stockbook
+from Classes.Menus.OptionMenu import Optiontrade
 from Classes.Menus.BankMenu import BankMenu
 from Classes.Menus.GameModeMenu import GameModeMenu,BlitzRun
 from Classes.Menus.startMenus.StartMain import StartMain
+from Classes.Menus.Menu import ScreenManager
+
 
 GAMESPEED = 250
-FASTFORWARDSPEED = 100
+FASTFORWARDSPEED = 1000
 pygame.init()
 pygame.mixer.init()
 
@@ -38,8 +41,13 @@ pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
 clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 # stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
-startmenu = StartMain()
-startmenu.drawStartMenu(screen,clock)
+
+
+
+# startmenu = StartMain()
+# startmenu.drawStartMenu(screen,clock)
+
+
 stocknames = STOCKNAMES
 stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
 
@@ -48,7 +56,7 @@ stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0)
 
 # CREATING OBJECTS NEEDED FOR FILE DATA
 transact = Transactions()
-gametime = GameTime("01/01/2030 00:00:00")
+gametime = GameTime("01/01/2030 00:00:00",GAMESPEED)
 setGameTime(gametime)
 player = Player(stocknames,stockcolors[-1],transact,gametime)
 # stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
@@ -69,12 +77,13 @@ musicdata = Getfromfile(stockdict,indexFundDict,player,gametime)# muiscdata = [t
 menuDict = {}
 
 # CREATING OBJECTS
-stockgraphmanager = StockGraphManager(stocklist,gametime)
+stockScreen = StockScreen(stocklist,gametime)
 
-uiControls = UIControls(stocklist,GAMESPEED,gametime,tmarket,player)
-orderScreen = OrderScreen(uiControls)
+# uiControls = UIControls(stocklist,GAMESPEED,gametime,tmarket,player)
+orderScreen = OrderScreen()
 # stockbook = Stockbook(stocklist,gametime,orderScreen)
-stockbook = Stockbook2(stocklist,gametime,orderScreen)
+homeScreen = HomeScreen(stocklist,gametime,tmarket,player)
+stockbook = Stockbook(stocklist,gametime,orderScreen)
 portfolio = Portfolio(stocklist,player,gametime,tmarket,menuDict)
 optiontrade = Optiontrade(stocklist,gametime,player)
 bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
@@ -88,6 +97,7 @@ gameModeMenu = GameModeMenu(stocklist,player,pastRuns,blitzRuns[0])
 
 menuDict.update({'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'GameModeMenu':gameModeMenu})
 menuList = list(menuDict.values())
+screenManager = ScreenManager(menuDict,homeScreen,stockScreen)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
 player.menuList = menuDict
 # VARS FROM SETTINGS
 autofastforward = True
@@ -133,41 +143,42 @@ menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(screen.copy())
 if __name__ == "__main__":
     while True:
         mousex,mousey = pygame.mouse.get_pos()
-        if any([menu.menudrawn for menu in menuDict.values()]):
-            screen.blit(menuBackRefresh,(0,0))
-            # gfxdraw.textured_polygon(screen,[(0,0),(1920,0),(1920,1080),(0,1080)],menuBackBytes,0,0)
-            # doBuffer(screen,menuBackBytes)
-        else:
-            # doBuffer(screen,screenBytes)
+
+        if screenManager.getCurrentScreen(True) in ['Home','Stock']:# if the current screen is a screen, not a menu then draw the background
             screen.blit(screenBackRefresh,(0,0))
+        else:
+            screen.blit(menuBackRefresh,(0,0))
+
+            
         
         
-        uiControls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
+        # uiControls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
         
-        if gametime.advanceTime(uiControls.gameplay_speed,autofastforward,FASTFORWARDSPEED):# if there is a new trading day
+        if gametime.advanceTime(autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
             player.newDay(gametime,stocklist,menuList)
 
         if gametime.isOpen()[0]:# if the market is open
-            if uiControls.gameplay_speed > 0:# if the game is not paused
+            if gametime.speedBar.getValue() > 0:# if the game is not paused
                 
                 for stock in stocklist:
-                    step = stock.update_price(uiControls.gameplay_speed,Player)
+                    step = stock.update_price(gametime.speedBar.getValue(),Player)
                     if stock.priceEffects.update(gametime,screen,player):
-                        uiControls.newsobj.changeStock(stock)
+                        homeScreen.newsobj.changeStock(stock)
 
                 # player.update_price(uiControls.gameplay_speed,Player)
                 
-                player.gameTick(uiControls.gameplay_speed,gametime,step)
+                player.gameTick(gametime.speedBar.getValue(),gametime,step)
                 
                 for indexfund in indexFunds:
-                    indexfund.updategraphs(uiControls.gameplay_speed,step)
+                    indexfund.updategraphs(gametime.speedBar.getValue(),step)
 
 
                 # for stock in stocklist:            
         
-        for i,menu in enumerate(menuList):
-            menu.draw_icon(screen,mousebuttons,stocklist,player,menuList,(30,165+(i*175)),uiControls,gametime)
+        # for i,menu in enumerate(menuList):
+        #     menu.draw_icon(screen,mousebuttons,stocklist,player,menuList,(30,165+(i*175)),uiControls,gametime)
+        screenManager.drawCurrentScreen(screen,mousebuttons,stocklist,player,gametime)
 
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
         errors.update(screen)# draws the error messages
@@ -178,7 +189,8 @@ if __name__ == "__main__":
         
         # uiControls.drawBigMessage(screen,mousebuttons,player)
         
-        uiControls.bar.changeMaxValue(GAMESPEED)
+        # uiControls.bar.changeMaxValue(GAMESPEED)
+        gametime.speedBar.changeMaxValue(GAMESPEED)# - PROBABLY CAN BE REMOVED -------------------------------------
         
         mousebuttons = 0
         for event in pygame.event.get():

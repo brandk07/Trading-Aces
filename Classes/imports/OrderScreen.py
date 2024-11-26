@@ -3,13 +3,12 @@ from pygame import gfxdraw
 import pygame.gfxdraw
 from Defs import *
 from Classes.imports.UIElements.Numpad import Numpad
-from Classes.BigClasses.UIControls import UIControls
 from Classes.imports.UIElements.Latterscroll import LatterScroll
 TXTCOLOR = (220,220,220)
 
 class OrderScreen:
     """This class will be used in stockbook and porfolio to buy or sell stocks"""
-    def __init__(self,uicontrols) -> None:
+    def __init__(self) -> None:
         # self.orderTypes = ['Market','Limit','Stop']
         self.orderTypes = ['Market']
         self.orderType = 'Market'
@@ -31,7 +30,6 @@ class OrderScreen:
         self.surfCoords = [750,200]
         self.lastMousePos = None
         self.numPad = Numpad(displayText=False)
-        self.uicontrols : UIControls = uicontrols
         self.latterScroll = LatterScroll()
         self.selectedAsset = None
     

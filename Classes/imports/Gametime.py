@@ -2,6 +2,7 @@ from Defs import fontlist
 import pygame
 from datetime import datetime, timedelta
 from dateutil import parser
+from Classes.imports.Bar import SliderBar
 
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
@@ -31,9 +32,11 @@ def getTimeStrs(t:datetime):
 
 DFORMAT = "%m/%d/%Y %I:%M:%S %p"
 class GameTime:
-    def __init__(self,time:str) -> None:
+    def __init__(self,time:str,gamespeed) -> None:
         # self.time = datetime.strptime(time,DFORMAT)
+        self.speedBar = SliderBar(gamespeed,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
         self.time = parser.parse(time)
+
         self.fastforwarding = False# used for refrence in other classes
 
     def __str__(self) -> str:
@@ -48,7 +51,7 @@ class GameTime:
         """"Returns the current quarter of the year : 1-4"""
         return (self.time.month-1)//3+1
 
-    def advanceTime(self,speed:int,autoFastForward:bool,fastforwardspeed:int):
+    def advanceTime(self,autoFastForward:bool,fastforwardspeed:int):
         """Advances the time by a certain amount of seconds and returns if it is a new day"""
         fastforward = self.fastforwarding
         if autoFastForward and not self.isOpen()[0]:
@@ -58,7 +61,7 @@ class GameTime:
                 seconds = fastforwardspeed
             self.fastforwarding = True
         else:
-            seconds = speed
+            seconds = self.speedBar.getValue()# seconds to advance
             self.fastforwarding = False
         self.time += timedelta(seconds=seconds)
         return (self.fastforwarding) and (fastforward != self.fastforwarding)# returns if fastforwarding is stopped (new trading day) and 

@@ -1,6 +1,42 @@
 import pygame
 from Defs import *
-from Classes.BigClasses.UIControls import UIControls
+from Classes.Menus.HomeScreen import HomeScreen
+from Classes.imports.UIElements.SelectionElements import SelectionBar
+
+class ScreenManager:
+    def __init__(self,menuDict:dict,homeScreen,stockScreen) -> None:
+        self.screens = {"Home":homeScreen,"Stock":stockScreen}
+        for key in menuDict:
+            self.screens[key] = menuDict[key]
+
+        self.selectedScreen= "Stock"
+        self.screenSelection : SelectionBar = SelectionBar(horizontal=False)
+    
+    def getCurrentScreen(self,returnName=False):
+        """Returns the current screen obj, """
+        return self.selectedScreen if returnName else self.screens[self.selectedScreen]
+    
+
+    def drawSelector(self,screen,mousebuttons):
+
+        if self.selectedScreen not in self.screens:
+            self.selectedScreen = "Stock"
+        
+        drawBoxedImage(screen,(5,7),self.screens[self.selectedScreen].icon,(170,170),borderRadius=5)
+        drawCenterTxt(screen,self.selectedScreen,55,(255,255,255),(90,180),centerY=False)
+        
+
+        # for i,txt in enumerate(self.screens):
+        #     if drawClickableBoxWH(screen,(10,225+(60*i)),(170,55),txt,35,(160,160,160),(200,255,200),mousebuttons):
+        #         self.selectedScreen = txt
+        self.screenSelection.draw(screen,list(self.screens.keys()),(10,225),(170,415),mousebuttons)
+        self.selectedScreen = self.screenSelection.getSelected()
+
+    def drawCurrentScreen(self,screen,mousebuttons,stocklist,player,gametime):
+        self.drawSelector(screen,mousebuttons)
+        self.screens[self.selectedScreen].draw(screen,mousebuttons,stocklist,player,gametime)
+        
+
 class Menu():
     def __init__(self,iconimage) -> None:
         surface = pygame.Surface((140,115))
@@ -16,8 +52,7 @@ class Menu():
         self.icontext = fontlist[36].render(self.__class__.__name__,(255,255,255))[0]
         self.menudrawn = False
         self.menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
-        self.topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]
-        
+        self.topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]        
 
     
     def draw_icon(self,screen,mousebuttons:int,stocklist:list,player,menulist,iconcoords:tuple,ui_controls,gametime):
@@ -51,51 +86,22 @@ class Menu():
     def draw_menu_content(self,screen:pygame.Surface,stocklist:list,mousebuttons:int,player,gametime):
         """Mearly a placeholder for the child classes to override"""
         pass
-    # def draw_menu_sidebar(self,screen,ui_controls,stocklist,gametime):
-    #     # draw a polygon with points (1150,40) to (1900,975)
-    #     points = ((1520,100),(1800,100),(1900,980),(1620,980))
-    #     gfxdraw.filled_polygon(screen, points,(40,40,40))
-    #     pygame.draw.polygon(screen, (0,0,0), points,10)
 
-    #     ui_controls.gameplay_speed = ui_controls.bar.draw_bar(screen,[1650,630],[120,320],'vertical',shift=40)
-
-    #     # draws the top stock bar 
-    #     # ui_controls.draw_stockbar(screen,stocklist,[200,10],[1300,80])
-        
-    #     # draws the time in the top left corner
-    #     texts = gametime.getrenders(50,50,50,105,50,50)# month,day,year,timerender,dayname,monthname
-    #     month,day,year,timerender,dayname,monthname = texts
-
-    #     screen.blit(timerender,(200,10))
-    #     screen.blit(dayname,(215+timerender.get_width(),10))
-    #     screen.blit(monthname,(215+timerender.get_width()+10,15+dayname.get_height()))
-    #     screen.blit(day,(215+timerender.get_width()+monthname.get_width()+20,15+dayname.get_height()))
-    #     screen.blit(year,(215+timerender.get_width()+monthname.get_width()+day.get_width()+30,15+dayname.get_height()))
-    #     twidth = 215+timerender.get_width()+monthname.get_width()+day.get_width()+year.get_width()+30
-    #     # draws the market open/closed text
-    #     color = (0,150,0) if gametime.isOpen()[0] else (150,0,0)
-    #     screen.blit(s_render(f"MARKET {'OPEN' if gametime.isOpen()[0] else 'CLOSED'}",110,color),(twidth+50,5))
-    #     if not gametime.isOpen()[0]: 
-    #         if ui_controls.autofastforward:
-    #             gametime.skipToOpen = True
-
-        # gfxdraw.filled_polygon(screen, ((1150,40),(1900,40),(1900,975),(1150,975)),(40,40,40))
-        # pygame.draw.polygon(screen, (0,0,0), ((1150,40),(1900,40),(1900,975),(1150,975)),10)
-    def drawbottombar(self,screen,ui_controls:UIControls,gametime):
+    def drawbottombar(self,screen,gametime,player):
         """Draws the bottom bar of the screen"""
-        ui_controls.gameplay_speed = ui_controls.bar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True,text=gametime.skipText())
-
-        # draws the time in the top left corner
-        # texts = gametime.getrenders(50,50,50,105,50,50)
-    def topbar(self,screen,gametime,player):
-        """Draws the top bar of the screen"""
+        gametime.speedBar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True,text=gametime.skipText())
         screen.blit(s_render(f"Cash ${limit_digits(player.cash,150)}",50,(200,200,200)),(1150,1010))
         gametimetext = s_render(f"{str(gametime)}",50,(200,200,200))
         screen.blit(gametimetext,(750-gametimetext.get_width(),1010))
+        # draws the time in the top left corner
+        # texts = gametime.getrenders(50,50,50,105,50,50)
+    # def topbar(self,screen,gametime,player):
+    #     """Draws the top bar of the screen"""
         
-    def draw_menu(self,screen,mousebuttons:int,stocklist:list,player,ui_controls,gametime):
         
-        self.topbar(screen,gametime,player)
-        self.drawbottombar(screen,ui_controls,gametime)
+    def draw(self,screen,mousebuttons:int,stocklist:list,player,gametime):
+        
+        # self.topbar(screen,gametime,player)
+        self.drawbottombar(screen,gametime,player)
         self.draw_menu_content(screen,stocklist,mousebuttons,player,gametime)#draws the content of the menu, defined in the child classes
 

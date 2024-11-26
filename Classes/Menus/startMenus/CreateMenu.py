@@ -26,6 +26,8 @@ class CreateMenu:
         self.sideScroll.loadCards(self.runIcons)
         self.sideScroll.setCard(index=0)
         self.haveError = False
+        # self.surf = pygame.Surface((1920,1080),pygame.SRCALPHA)
+        # self.surf.fill((60,60,60,200))
     
     def drawModeInfo(self,screen):
         """Draws the info about the mode (Left side of the screen)"""
@@ -137,7 +139,7 @@ class CreateMenu:
         n = drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),color,mousebuttons)
 
         if n:
-            animationList.append(BuyAnimation((mousex,mousey),20,animationList))
+            animationList.append(BuyAnimation((mousex,mousey),5,animationList))
 
         if self.haveError and pygame.Rect(170,450,540,130).collidepoint(mousex,mousey):
             drawCenterTxt(screen,"Please fill out all fields",40,(255,150,150),(mousex+20,mousey),centerX=False,centerY=False,font='light')
@@ -148,6 +150,8 @@ class CreateMenu:
         self.haveError = False# resets the error for each draw
          
         # pygame.draw.rect(screen,(60,60,60),pygame.Rect(150,10,1620,1060),border_radius=25)# main box
+        
+        
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(150,10,1620,1060),5,border_radius=25)# main box border
 

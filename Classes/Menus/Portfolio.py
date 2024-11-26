@@ -27,7 +27,7 @@ DH = 120# default height
 class Portfolio(Menu):
     def __init__(self,stocklist,player,gametime,totalmarket,menuDict) -> None:
         self.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
-        self.icon = pygame.transform.scale(self.icon,(140,100))
+        self.icon = pygame.transform.smoothscale(self.icon,(140,100))
         self.icon.set_colorkey((255,255,255))
         super().__init__(self.icon)
         # remove all the white from the image
