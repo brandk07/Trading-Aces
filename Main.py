@@ -16,7 +16,7 @@ import timeit
 from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.Transactions import Transactions
 from Classes.Menus.StockBook import Stockbook
-from Classes.Menus.OptionMenu import Optiontrade
+from Classes.Menus.OptionScreens.OptionMenu import Optiontrade
 from Classes.Menus.BankMenu import BankMenu
 from Classes.Menus.GameModeMenu import GameModeMenu,BlitzRun
 from Classes.Menus.startMenus.StartMain import StartMain
@@ -74,7 +74,7 @@ indexFundDict = {fund.name: fund for fund in indexFunds}
 # GETTING DATA FROM FILE
 
 musicdata = Getfromfile(stockdict,indexFundDict,player,gametime)# muiscdata = [time, volume, songindex]
-menuDict = {}
+
 
 # CREATING OBJECTS
 stockScreen = StockScreen(stocklist,gametime)
@@ -84,7 +84,7 @@ orderScreen = OrderScreen()
 # stockbook = Stockbook(stocklist,gametime,orderScreen)
 homeScreen = HomeScreen(stocklist,gametime,tmarket,player)
 stockbook = Stockbook(stocklist,gametime,orderScreen)
-portfolio = Portfolio(stocklist,player,gametime,tmarket,menuDict)
+portfolio = Portfolio(stocklist,player,gametime,tmarket)
 optiontrade = Optiontrade(stocklist,gametime,player)
 bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
 blitzRuns = [BlitzRun(f'Blitz Run {i}',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,5000),randint(0,5000)],"1M",'01/02/2030 09:30:00 AM') for i in range(5)]
@@ -94,11 +94,10 @@ blitzRuns.append(BlitzRun(f'Blitz Run Timed',[randint(0,15000),randint(0,15000),
 pastRuns = {'Blitz':blitzRuns,'Career':[],'Goal':[]}
 
 gameModeMenu = GameModeMenu(stocklist,player,pastRuns,blitzRuns[0])
-
-menuDict.update({'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'GameModeMenu':gameModeMenu})
-menuList = list(menuDict.values())
+menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
+# menuList = list(menuDict.values())
 screenManager = ScreenManager(menuDict,homeScreen,stockScreen)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
-player.menuList = menuDict
+player.screenManager = screenManager
 # VARS FROM SETTINGS
 autofastforward = True
 
@@ -149,14 +148,14 @@ if __name__ == "__main__":
         else:
             screen.blit(menuBackRefresh,(0,0))
 
-            
+        
         
         
         # uiControls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
         
         if gametime.advanceTime(autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
-            player.newDay(gametime,stocklist,menuList)
+            player.newDay(gametime,stocklist)
 
         if gametime.isOpen()[0]:# if the market is open
             if gametime.speedBar.getValue() > 0:# if the game is not paused

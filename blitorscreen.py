@@ -18,10 +18,48 @@ mousebuttons = 0
 
 # blitzRun = BlitzRun(f'Blitz run that will make your socks fall off becuase',1000.15,randint(0,5000),[randint(0,15000),randint(0,15000),randint(0,15000)],startTime="03/04/2030 09:30:20 AM")
 # runCard = RunCard(None,blitzRun,(380,370))
+def remove_near_white_background(image, tolerance=5):
+    """
+    Removes colors that are close to white (255,255,255) within specified tolerance
+    Args:
+        image: pygame Surface to modify
+        tolerance: how far from 255 a color channel can be (default 5)
+    """
+    # Convert image to format that supports per-pixel alpha
+    image = image.convert_alpha()
+    
+    # Get pixel array for direct manipulation
+    px_array = pygame.PixelArray(image)
+    
+    # Get image dimensions
+    width, height = image.get_size()
+    
+    # Check each pixel
+    for x in range(width):
+        for y in range(height):
+            r, g, b, a = image.get_at((x, y))
+            # If all RGB values are within tolerance of 255, make pixel transparent
+            if (255 - r <= tolerance and 
+                255 - g <= tolerance and 
+                255 - b <= tolerance):
+                px_array[x, y] = (r, g, b, 0)  # Set alpha to 0
+    
+    # Delete pixel array to unlock surface
+    del px_array
+    return image
 
-image = pygame.image.load("Assets\Screenshots\screenshot_20241116_101624.png")
+image1 = pygame.image.load("modeIcon.jpg").convert_alpha()
+image1 = remove_near_white_background(image1, tolerance=15)
+image1 = pygame.transform.smoothscale(image1,(200,200))
+
+image2 = pygame.image.load("mode2icon.jpg")
+
+
+image2 = remove_near_white_background(image2, tolerance=15)
+image2 = pygame.transform.smoothscale(image2,(200,200))
+
 # image = pygame.transform.chop(image,pygame.Rect(200,0,1700,1080))
-image = pygame.transform.smoothscale(image,(1520/3,1080/3))
+
 # pygame.transform.smoothscale()
 surf = pygame.Surface((150,150)).convert_alpha()
 surf.fill((255,255,255,100))
@@ -31,21 +69,13 @@ while True:
     # for i in range(50):
     screen.fill((60,60,60))
     # screen.blit(surf,(0,0))
-    pygame.draw.rect(screen,(0,150,0),pygame.Rect(0,0,300,300))
-    drawBoxedImage(screen,(10,10),surf,borderRadius=10)
-    #     # gfxdraw.filled_polygon(screen,[(0,0),(900,0),(900,900),(0,900)],(60,60,60))
-
-    #     pixels = screen.get_buffer()
-    #     pixels.write(background_bytes)
-    #     del pixels  # Release the buffer
     # screen.blit(image,(0,0))
-        # screen.blit(screen2,(0,0))
-        # screen = screen2.copy()
-        # screen.blit(surface,(0,0))
-        # screen = surface.copy()
+    screen.blit(image1,(0,0))
+    screen.blit(image2,(200,0))
 
 
-    pygame.draw.circle(screen, (255,255,255), (450,450), 100)
+
+    # pygame.draw.circle(screen, (255,255,255), (450,450), 100)
     # screen.blit(runCard.draw(),(300,440))
 
     # runCard.draw(screen,(0,0),mousebuttons)

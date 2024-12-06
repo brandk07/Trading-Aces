@@ -239,6 +239,7 @@ def text_input(screen, coords, wh, current_str, keyPressed, txtSize=45) -> str:
 @lru_cache(maxsize=15)
 def getBorderedImage(image:pygame.Surface,borderWidth:int,borderColor:tuple,wh:tuple,borderRadius:int) -> pygame.Surface:
     """Returns the image with a border around it (IF YOUR IMAGE HAS THE COLOR (1,1,1) IN IT, IT WILL BE REMOVED)"""
+    print('Creating new bordered image')
     outSideSurf = pygame.Surface(wh)# first create an outside surface
     outSideSurf.fill((1,1,1))# fill it with a color that is not in the image
     pygame.draw.rect(outSideSurf,(0,0,0),(0,0,wh[0],wh[1]),border_radius=borderRadius)# draw a cutout of what is be displayed on the realSurf

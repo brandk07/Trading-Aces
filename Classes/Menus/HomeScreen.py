@@ -24,7 +24,7 @@ class HomeScreen:
         
         self.newsobj = News(stocklist)
         self.speedBar : SliderBar = gametime.speedBar
-        self.pieChart = PieChart((945,165),(520,540))
+        self.pieChart = PieChart((945,165),(520,530))
         self.totalMarketGraph = StockVisualizer(gametime,tmarket,[tmarket,player])
 
 

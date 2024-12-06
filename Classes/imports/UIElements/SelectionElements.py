@@ -4,9 +4,10 @@ import math
 
 class SelectionBar:
     """A bar that allows the user to select from a list of strings"""
-    def __init__(self,horizontal=True,allowSelcNone=False) -> None:
+    def __init__(self,horizontal=True,allowSelcNone=False,rounded=15) -> None:
         # self.__annotations__
         self.selected = None
+        self.rounded = rounded
         self.horizontal = horizontal
         self.allowSelcNone = allowSelcNone
     def getSelected(self):
@@ -38,15 +39,15 @@ class SelectionBar:
 
             if self.horizontal:
                 if txt == self.selected:
-                    pygame.draw.rect(screen,(10,10,10),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),border_radius=25)
-                pygame.draw.rect(screen,(0,0,0),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),width=5,border_radius=25)
+                    pygame.draw.rect(screen,(10,10,10),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),border_radius=self.rounded)
+                pygame.draw.rect(screen,(0,0,0),pygame.Rect(x+(i*spacing)+5,y,spacing-10,h),width=5,border_radius=self.rounded)
                 txtx = x+(i*spacing)+(spacing//2)-(rtxt.get_width()//2)
                 txty = y+(h//2)-(rtxt.get_height()//2)
                 rect = pygame.Rect(x+(i*spacing),y,spacing,h)
             else:
                 if txt == self.selected:
-                    pygame.draw.rect(screen,(10,10,10),pygame.Rect(x,y+(i*spacing)+5,w,spacing-10),border_radius=25)
-                pygame.draw.rect(screen,(0,0,0),pygame.Rect(x,y+(i*spacing)+5,w,spacing-10),width=5,border_radius=25)
+                    pygame.draw.rect(screen,(10,10,10),pygame.Rect(x,y+(i*spacing)+5,w,spacing-10),border_radius=self.rounded)
+                pygame.draw.rect(screen,(0,0,0),pygame.Rect(x,y+(i*spacing)+5,w,spacing-10),width=5,border_radius=self.rounded)
                 txtx = x+(w//2)-(rtxt.get_width()//2)
                 txty = y+(i*spacing)+(spacing//2)-(rtxt.get_height()//2)
                 rect = pygame.Rect(x,y+(i*spacing),w,spacing)

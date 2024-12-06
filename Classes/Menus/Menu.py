@@ -10,29 +10,49 @@ class ScreenManager:
             self.screens[key] = menuDict[key]
 
         self.selectedScreen= "Stock"
-        self.screenSelection : SelectionBar = SelectionBar(horizontal=False)
-    
+        self.screenSelection : SelectionBar = SelectionBar(horizontal=False,rounded=5)
+    def setScreen(self,screenName):
+        """Sets the current screen to the screen with the name screenName"""
+        assert screenName in self.screens, f"Screen {screenName} not found in screens"
+        self.selectedScreen = screenName
+        self.screenSelection.setSelected(screenName)
+
     def getCurrentScreen(self,returnName=False):
         """Returns the current screen obj, """
         return self.selectedScreen if returnName else self.screens[self.selectedScreen]
     
-
-    def drawSelector(self,screen,mousebuttons):
+    def drawSelector(self,screen,mousebuttons):  
 
         if self.selectedScreen not in self.screens:
-            self.selectedScreen = "Stock"
+            self.selectedScreen = "Home"
         
-        drawBoxedImage(screen,(5,7),self.screens[self.selectedScreen].icon,(170,170),borderRadius=5)
-        drawCenterTxt(screen,self.selectedScreen,55,(255,255,255),(90,180),centerY=False)
+        # drawBoxedImage(screen,(5,7),self.screens[self.selectedScreen].icon,(170,170),borderRadius=5)
+        colors = [(86, 130, 189),(239, 131, 84),(92, 131, 116),(255, 205, 78),(191, 85, 178),(87, 167, 115),(255, 145, 164)]
+        # drawCenterTxt(screen,self.selectedScreen,55,colors[list(self.screens).index(self.selectedScreen)],(90,180),centerY=False)
+        drawCenterTxt(screen,self.selectedScreen,getTSizeNums(self.selectedScreen,150,80),colors[list(self.screens).index(self.selectedScreen)],(90,50))
         
-
-        # for i,txt in enumerate(self.screens):
-        #     if drawClickableBoxWH(screen,(10,225+(60*i)),(170,55),txt,35,(160,160,160),(200,255,200),mousebuttons):
-        #         self.selectedScreen = txt
-        self.screenSelection.draw(screen,list(self.screens.keys()),(10,225),(170,415),mousebuttons)
+        
+        # self.screenSelection.draw(screen,list(self.screens.keys()),(10,225),(170,415),mousebuttons,colors=colors)
+        self.screenSelection.draw(screen,list(self.screens.keys()),(10,90),(170,415),mousebuttons,colors=colors)
         self.selectedScreen = self.screenSelection.getSelected()
 
+    def drawTime(self,screen,gametime):
+        """Draws the time in the top left corner"""
+        timeStrs = gametime.getTimeStrings()
+        # t : datetime = gametime.time
+        hour = ("0" if (timeStrs['hour']) < 10 else "")+str(timeStrs['hour'])
+        # pygame.draw.rect(screen,(0,0,0),pygame.Rect(2,515,180,370),width=5)
+
+        drawCenterTxt(screen,hour,150,(200,200,200),(92,530),centerY=False)
+        drawCenterTxt(screen,f"{timeStrs['minute']}",150,(200,200,200),(92,650),centerY=False)
+        drawCenterTxt(screen,f"{timeStrs['dayname'][:3]} {timeStrs['monthname'][:3]} {timeStrs['day']}",50,(200,200,200),(92,765),centerY=False)
+        drawCenterTxt(screen,f"{timeStrs['year']}",80,(200,200,200),(92,820),centerY=False)
+        
     def drawCurrentScreen(self,screen,mousebuttons,stocklist,player,gametime):
+        
+        
+        
+        self.drawTime(screen,gametime)
         self.drawSelector(screen,mousebuttons)
         self.screens[self.selectedScreen].draw(screen,mousebuttons,stocklist,player,gametime)
         

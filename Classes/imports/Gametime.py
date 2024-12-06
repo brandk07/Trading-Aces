@@ -27,6 +27,9 @@ def getTimeStrs(t:datetime):
     'time': f'{t.hour if t.hour <= 12 else t.hour-12}:{t.minute:02d}',
     'dayname': WEEKDAYS[t.weekday()],
     'monthname': MONTHS[t.month-1],
+    'monthNum': t.month,
+    'minute': t.minute,
+    'hour': t.hour if t.hour <= 12 else t.hour-12,
     'ampm': 'AM' if t.hour < 12 else 'PM'
     }
 

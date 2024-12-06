@@ -44,6 +44,7 @@ class Player(Stock):
         self.stockvalues = []
         self.loans = []
         self.menuList = None
+        self.screenManager = None
         self.messagedict = {}
         self.taxrate = 0.15
         self.transact = transact
@@ -77,7 +78,7 @@ class Player(Stock):
         else:
             self.lastLoanPayment = gametime.time
 
-    def newDay(self,gametime,stocklist:list,menuList):
+    def newDay(self,gametime,stocklist:list):
         """Called at the start of a new day"""
         self.updateOptions = 0
         for option in self.options:
@@ -85,9 +86,10 @@ class Player(Stock):
         for i in range(len(self.options)-1,-1,-1):
             # print("Option has expired")
             if not self.options[i].optionLive():
-                for menu in menuList:
-                    menu.drawn = False
-                menuList[2].drawn = True# draw the options menu
+                # for menu in menuList:
+                #     menu.drawn = False
+                # menuList[2].drawn = True# draw the options menu
+                self.screenManager.setScreen('Options')
                 
                 # print("Option has expired for the player")
         for stock in stocklist:

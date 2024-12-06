@@ -284,9 +284,9 @@ class PieChart:
 
 class PieChartSideInfo:
 
-    def __init__(self,radius,coords,menuDict:dict):
+    def __init__(self,radius,coords):
         self.data = []
-        self.menuDict = menuDict
+        # self.menuDict = menuDict
         self.radius = radius
         self.coords = coords
         # self.menuIcons = [pygame.image.load(f'Assets/Menu_Icons/{icon}.png').convert_alpha() for icon in ['stockbook','portfolio','option3']]# the icons for the menu
@@ -296,15 +296,15 @@ class PieChartSideInfo:
         self.angles = []
         self.lscroll = LatterScroll()
         self.selectedAssetIndex = 0
-    def checkmenuDict(self):
-        """Unfortunately menuDict isn't always complete when the init is called, so this function is used to update the menuIcons list"""
-        if len(self.menuIcons) != 4:
+    # def checkmenuDict(self):
+    #     """Unfortunately menuDict isn't always complete when the init is called, so this function is used to update the menuIcons list"""
+    #     if len(self.menuIcons) != 4:
             
-            self.menuIcons = {name:menu.icon for (name,menu) in self.menuDict.items() if name in ['Stockbook','Options','Portfolio','Bank']}# get the icons for the menu
+    #         self.menuIcons = {name:menu.icon for (name,menu) in self.menuDict.items() if name in ['Stockbook','Options','Portfolio','Bank']}# get the icons for the menu
 
-            # for  in range(len(self.menuIcons)):
-            for name in list(self.menuIcons):
-                self.menuIcons[name] = pygame.transform.scale(self.menuIcons[name],(50,50))
+    #         # for  in range(len(self.menuIcons)):
+    #         for name in list(self.menuIcons):
+    #             self.menuIcons[name] = pygame.transform.scale(self.menuIcons[name],(50,50))
     
     def updateData(self, data, coords=None, radius=None):
         """
@@ -312,7 +312,7 @@ class PieChartSideInfo:
         Data is a list of tuples, each tuple is (value, name, color)
         Should Usually just use the original coords and radius, but the coords and radius parameters can be used
         """
-        self.checkmenuDict()# check if the menuIcons list is up to date
+        # self.checkmenuDict()# check if the menuIcons list is up to date
 
         self.coords = self.coords if coords == None else coords# if coords is None, then keep the original coords
         self.radius = self.radius if radius == None else radius# if radius is None, then keep the original radius
@@ -386,7 +386,7 @@ class PieChartSideInfo:
             self.pieSegments.append([color,[(x[0]-self.coords[0],x[1]-self.coords[1]) for x in points],value,name])
     
 
-    def draw(self,screen:pygame.Surface,mousebuttons:int):
+    def draw(self,screen:pygame.Surface,mousebuttons:int,screenManager):
         """"""        
         totalValue = sum([v[0] for v in self.data])# originally the displayed value is the total value of the stocks - might change if mouseover
 
@@ -414,43 +414,31 @@ class PieChartSideInfo:
                 return
             nameList = ["Sell","Buy","Speculate"]
             
-                
-            # for i,(iconName,image) in enumerate(self.menuIcons.items()):
+            menuDict = screenManager.screens  
             for i in range(3):
-                if i ==0: # if it is the sell icon
-                    image = self.menuIcons['Portfolio']
-                    iconName = 'Portfolio'
-                elif i == 1:# if it is the buy icon
-                    if name in STOCKNAMES:
-                        image = self.menuIcons['Stockbook']
-                        iconName = 'Stockbook'
-                    elif name in INDEXNAMES:
-                        image = self.menuIcons['Bank']
-                        iconName = 'Bank'
-                else:# if it is the speculate icon
-                    image = self.menuIcons['Options']
-                    iconName = 'Options'                
+                iconName = ['Portfolio','Stockbook','Options'][i]                
 
                 y = boxRect.y+nameH+percentText.get_height()+40+(i*65)
-                screen.blit(image, (boxRect.x+15, y+5))
-                screen.blit(s_render(nameList[i],50,(1,1,1)), (boxRect.x+85, y+10))
-                myRect = pygame.rect.Rect(boxRect.x+10,y,boxRect.width-20,60)
-       
-                if mousebuttons == 1 and myRect.collidepoint(mousex,mousey):
-                    for (n,menu) in self.menuDict.items():
-                        menu.menudrawn = (n == iconName)
-                    if iconName == 'Stockbook':# if the stockbook is clicked, then set the selected asset to the one the mouse is over
-                        self.menuDict['Stockbook'].changeSelectedStock(name=name[:4])
-                    elif iconName == 'Portfolio':# if the portfolio is clicked, then set the selected asset to the one the mouse is over
-                        self.menuDict['Portfolio'].selectedAsset = self.menuDict['Portfolio'].findAsset(value,name)
-                    elif iconName == 'Options':
-                        self.menuDict['Options'].setSelectedAsset(self.menuDict['Portfolio'].findAsset(value,name))
-                    elif iconName == 'Bank':
-                        self.menuDict['Bank'].menuSelection.setSelected("Investments")
-                        self.menuDict['Bank'].investScreen.fundSelection.setSelected(name)
 
+                drawCenterTxt(screen, nameList[i], 50, (1,1,1), (boxRect.centerx, y+10),centerY=False)
+                myRect = pygame.rect.Rect(boxRect.x+10,y,boxRect.width-20,60)
+                pygame.draw.rect(screen, (0,0,0), myRect, 3, 5)
                 if myRect.collidepoint(mousex,mousey):
-                    pygame.draw.rect(screen, (0,0,0), myRect, 3, 5)
+                    pygame.draw.rect(screen, (220,220,220), myRect, 5, 5)
+                    if mousebuttons == 1:
+                        screenManager.setScreen(iconName)
+
+                        if iconName == 'Stockbook':# if the stockbook is clicked, then set the selected asset to the one the mouse is over
+                            menuDict['Stockbook'].changeSelectedStock(name=name[:4])
+                        elif iconName == 'Portfolio':# if the portfolio is clicked, then set the selected asset to the one the mouse is over
+                            menuDict['Portfolio'].selectedAsset = menuDict['Portfolio'].findAsset(value,name)
+                        elif iconName == 'Options':
+                            menuDict['Options'].setSelectedAsset(menuDict['Portfolio'].findAsset(value,name))
+
+                        elif iconName == 'Bank':
+                            menuDict['Bank'].menuSelection.setSelected("Investments")
+                            menuDict['Bank'].investScreen.fundSelection.setSelected(name)
+                    
                 
                             
                             

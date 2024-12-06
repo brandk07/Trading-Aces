@@ -25,7 +25,7 @@ DX = 300# default x
 DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
-    def __init__(self,stocklist,player,gametime,totalmarket,menuDict) -> None:
+    def __init__(self,stocklist,player,gametime,totalmarket) -> None:
         self.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
         self.icon = pygame.transform.smoothscale(self.icon,(140,100))
         self.icon.set_colorkey((255,255,255))
@@ -49,7 +49,7 @@ class Portfolio(Menu):
         self.displayedStocks = [StockVisualizer(gametime,stocklist[i],stocklist) for i in range(3)]# the stock visualizers for the stocks that are displayed
         self.networthGraph = StockVisualizer(gametime,player,stocklist)
         self.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
-        self.piechart = PieChartSideInfo(150, (200, 650),menuDict)
+        self.piechart = PieChartSideInfo(150, (200, 650))
         self.barGraphs = [BarGraph("Value",[175,175],[875,400]),BarGraph("Allocation",[175,175],[1150,400])]
         self.orderBox = OrderBox((465,605),(385,370))
         self.barSelection : SelectionBar = SelectionBar()
@@ -401,7 +401,8 @@ class Portfolio(Menu):
             values = [[asset.getValue(),asset.name,asset.color] for asset in assets]
             values.append([player.cash, "Cash",player.color])
             self.piechart.updateData(values)
-            self.piechart.draw(screen,mousebuttons)
+            
+            self.piechart.draw(screen,mousebuttons,self.player.screenManager)
             # draw_pie_chart(screen, values, 150,(200, 650))  
             
             wh = (500,285)
