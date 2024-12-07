@@ -35,7 +35,7 @@ def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizo
     return [int(gamespeed*seclength)+xy,gamespeed,False]
 
 class SliderBar():
-    def __init__(self,maxvalue:int,color:list,minvalue=0,barcolor=((150,150,150),(210,210,210))) -> None:
+    def __init__(self,maxvalue:int,color:list,gametime,minvalue=0,barcolor=((150,150,150),(210,210,210))) -> None:
         """Max value must be less than the slider width-20, or height-20 if vertical, color = [(colorstart),(colorend)]"""
         self.value = 0
         self.maxvalue = maxvalue; self.minvalue = minvalue
@@ -45,6 +45,7 @@ class SliderBar():
         self.sliderwh = self.sliderxy = self.barwh = self.barxy = self.shift = [0, 0]
         self.color = color
         self.reversedscroll = False
+        self.gametime = gametime
         # below is the slider offset, gives a bit more space for the mouse to get to 0 and max speed - conditional statement later for no errors
         # self.slider_rect = pygame.Rect(0,0,0,0)
         # the points for the slider polygon
@@ -153,13 +154,14 @@ class SliderBar():
                     self.barxy[0],self.value,mouseover = barpos(self.slider_points,-self.sliderwh[0]+(self.barwh[0]*2),self.sliderxy[0]+self.sliderwh[0]-self.barwh[0],self.maxvalue,self.value,self.barwh[0],True)
             else: raise ValueError(f'Bar width must be less than the slider width bw{self.barwh[0]} sw{self.sliderwh[0]}')
         return mouseover
-    def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation,barwh=None,shift=0,reversedscroll=False,text=True):
+    def draw_bar(self,screen:pygame.Surface,sliderxy,sliderwh,orientation,barwh=None,shift=0,reversedscroll=False,text=True) -> bool:
         """sliderxy [startx,starty], 
         sliderwh [width,height], 
         orientation ['horizontal','vertical'], 
         shift is the offset for the bottom two points to make a trapezoid (Must be positive)"""
-
+        changed = False
         if self.sliderxy != sliderxy or self.sliderwh != sliderwh or shift != max(self.shift) or self.reversedscroll != reversedscroll:# if the slider has moved, then recreate the gradient and the slider_rect
+            changed = True
             self.reversedscroll = reversedscroll
             self.shift = [0,0]
             self.shift[0] = shift if orientation == 'vertical' else 0
@@ -206,6 +208,10 @@ class SliderBar():
         # Box around the slider
         pygame.draw.polygon(screen,(0,0,0),self.slider_points,5)
         
+        if self.gametime.timeFrozen and self.orientation == 'horizontal':
+            text = False
+            # screen.blit(s_render('Time Frozen',40,(0,0,0)),(self.sliderxy[0]+(self.sliderwh[0]//2)-50,self.sliderxy[1]+(self.sliderwh[1]//2)-15))
+            drawCenterTxt(screen,'Time Frozen',40,(0,0,0),(self.sliderxy[0]+(self.sliderwh[0]//2),self.sliderxy[1]+(self.sliderwh[1]//2)))
         if type(text) == bool and text:
             # Draw the text that displays the gameplay speed
             textx = (self.sliderwh[0]//2 if self.orientation == 'horizontal' else self.sliderwh[0]//2) - (self.gamevaluetexts[self.value].get_width()/2)
@@ -221,4 +227,4 @@ class SliderBar():
             self.value = self.minvalue
         if self.value <= 2:
             self.value = 0
-        return self.value
+        return changed

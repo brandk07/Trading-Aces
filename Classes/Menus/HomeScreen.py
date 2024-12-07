@@ -75,7 +75,11 @@ class HomeScreen:
         
         screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(830,20))
 
-        self.gameplay_speed = self.speedBar.draw_bar(screen,[740,75],[450,65],'horizontal',reversedscroll=True,text=gametime.skipText())
+        result = self.speedBar.draw_bar(screen,[740,75],[450,65],'horizontal',reversedscroll=True,text=gametime.skipText())
+        if result and gametime.timeFrozen:
+            errors.addMessage("Time is Frozen")
+
+        self.gameplay_speed = self.speedBar.getValue()
 
 
 # [20,60] [60,20]

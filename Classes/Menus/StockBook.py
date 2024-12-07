@@ -3,8 +3,6 @@ from Defs import *
 from pygame import gfxdraw
 from Classes.Menus.Menu import Menu
 import numpy as np
-from Classes.imports.Bar import SliderBar
-# from Classes.AssetTypes.StockAsset import StockAsset
 from Classes.imports.StockVisualizer import StockVisualizer
 # from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.UIElements.Latterscroll import PortfolioLatter,LatterScroll
@@ -26,8 +24,7 @@ class Stockbook(Menu):
         self.selectedStock : Stock = stocklist[0]
         self.menudrawn = False
         self.stocklist = stocklist
-        self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
-        self.quantitybar : SliderBar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
+        # self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockLS : PortfolioLatter = PortfolioLatter()
         # self.futureRepLS, self.pastRepLS = LatterScroll(), LatterScroll()

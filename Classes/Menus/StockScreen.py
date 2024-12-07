@@ -27,7 +27,7 @@ class StockScreen:
 
         self.hoverimages = {name:image for name,image in self.images.items()}
         for key,image in self.images.items():# makes the hover images for the ui controls (the images that appear brighter when you hover over them)
-            image = pygame.transform.scale(image,(50,50))
+            image = pygame.transform.scale(image,(75,75))
             surface = pygame.Surface((image.get_width()+6,image.get_height()+6))
             surface.fill((110,110,110))
             surface.blit(image,(3,3))
@@ -35,8 +35,8 @@ class StockScreen:
             surface.fill((180,180,180))
             surface.blit(image,(3,3))
             self.hoverimages[key] = surface
-
-        self.ui_rects = [pygame.Rect(745+(i*66),990,56,56) for i in range(len(self.images))]
+        
+        self.ui_rects = [pygame.Rect(1647,590+(i*90),80,80) for i in range(len(self.images))]
         self.wh = [1400,880]# the start coords of the graph
 
         self.current_config = 'nona'
@@ -69,14 +69,19 @@ class StockScreen:
                     self.picked_stocks = self.pickedstockconfig[self.current_config].copy()#uses the pickedstockconfig dict to see which stocks it needs to use
 
         if collide == None:
-            if pygame.Rect(710,10,340,80).collidepoint(mousex,mousey):
+            if pygame.Rect(1610,570,150,390).collidepoint(mousex,mousey):
                 collide = 'Not None'#this is just to make it so when you are over the polygon it will remove the hover image, otherwise everytime you go between ui images it will blink
+        pygame.draw.rect(screen,(30,30,30),pygame.Rect(1610,570,150,390),border_radius=10)
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(1610,570,150,390),width=5,border_radius=10)
+
         for i,(name,image) in enumerate(self.images.items()):
             #bit complex if statement but the first part is for the current config, and the second part is for the other configs
             if ((name == self.current_config and collide != None) and collide != list(self.images.keys()).index(self.current_config)) or (collide != i and name != self.current_config):
-                screen.blit(image,(745+(i*66),990))
+                screen.blit(image,(1647,590+(i*90)))
+                # screen.blit(image,(745+(i*66),990))
             elif name == self.current_config or collide == i:
-                screen.blit(self.hoverimages[name],(745+(i*66),990))
+                # screen.blit(self.hoverimages[name],(745+(i*66),990))
+                screen.blit(self.hoverimages[name],(1647,590+(i*90)))
     
     # def changestockbutton(self,screen:pygame.Surface,startpos,endpos,mousebuttons:int,stockname:str,stocklist:list):
     #     mousex,mousey = pygame.mouse.get_pos()
@@ -213,7 +218,8 @@ class StockScreen:
     # def draw_graphs(self, screen, stocklist:list, player, mousebuttons, gametime):
     def draw(self, screen, mousebuttons, stocklist, player, gametime):
         self.draw_ui(screen,mousebuttons,stocklist)
-        
+
+        gametime.speedBar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True,text=gametime.skipText())
         
         for i in range(self.graph_config[self.current_config][1]):# for each row
             for ii in range(self.graph_config[self.current_config][0]):# for each column
@@ -228,7 +234,7 @@ class StockScreen:
 
                 stockname = self.picked_stocks[(i*self.graph_config[self.current_config][0])+ii]
 
-                stock = [stock for stock in stocklist if stock.name == stockname][0]
+                # stock = [stock for stock in stocklist if stock.name == stockname][0]
                 # if not [obj.name for obj in stocklist][stockbook.selectedstock] == stockname or not stockbook.menudrawn:#make sure the stock isn't being drawn on the buy sell page
                 #     stock.update(screen,play_pause,player,startpos,endpos,drawn=not menudrawn)
 

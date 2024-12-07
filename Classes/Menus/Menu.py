@@ -4,8 +4,9 @@ from Classes.Menus.HomeScreen import HomeScreen
 from Classes.imports.UIElements.SelectionElements import SelectionBar
 
 class ScreenManager:
-    def __init__(self,menuDict:dict,homeScreen,stockScreen) -> None:
+    def __init__(self,menuDict:dict,homeScreen,stockScreen,gametime) -> None:
         self.screens = {"Home":homeScreen,"Stock":stockScreen}
+        self.gameTime = gametime
         for key in menuDict:
             self.screens[key] = menuDict[key]
 
@@ -33,8 +34,11 @@ class ScreenManager:
         
         
         # self.screenSelection.draw(screen,list(self.screens.keys()),(10,225),(170,415),mousebuttons,colors=colors)
-        self.screenSelection.draw(screen,list(self.screens.keys()),(10,90),(170,415),mousebuttons,colors=colors)
+        result = self.screenSelection.draw(screen,list(self.screens.keys()),(10,90),(170,415),mousebuttons,colors=colors)
+        if result and self.screens['Options'].isForced():
+            errors.addMessage("Need to Exercise Or Sell Option",(170,170,170))
         self.selectedScreen = self.screenSelection.getSelected()
+
 
     def drawTime(self,screen,gametime):
         """Draws the time in the top left corner"""
@@ -49,11 +53,12 @@ class ScreenManager:
         drawCenterTxt(screen,f"{timeStrs['year']}",80,(200,200,200),(92,820),centerY=False)
         
     def drawCurrentScreen(self,screen,mousebuttons,stocklist,player,gametime):
-        
-        
-        
-        self.drawTime(screen,gametime)
         self.drawSelector(screen,mousebuttons)
+        if self.screens['Options'].isForced():#if the options screen is forced, then set the current screen to options
+            self.setScreen('Options')
+            self.gameTime.timeFrozen = True
+        self.drawTime(screen,gametime)
+        
         self.screens[self.selectedScreen].draw(screen,mousebuttons,stocklist,player,gametime)
         
 

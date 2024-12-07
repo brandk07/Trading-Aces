@@ -15,6 +15,7 @@ class ExerciseOptionScreen:
         self.selectedGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
 
         self.selectOption = None
+        self.forced = False
 
         self.orderBox = OrderBox((1050,605),(510,365))
         self.exerciseSelection : SelectionBar = SelectionBar()# Exercise, Sell, or Dimiss
@@ -24,9 +25,10 @@ class ExerciseOptionScreen:
     def drawn(self):
         return self.selectOption != None
 
-    def setSelected(self,option):
+    def setSelected(self,option,forced=False):
         """Sets the exercise option to the given option"""
         self.selectOption = option
+        self.forced = forced
 
     def drawOptionInfo(self,screen:pygame.Surface, gametime):
         option = self.selectOption; stock = option.stockObj
@@ -172,15 +174,17 @@ class ExerciseOptionScreen:
 
     def drawScreen(self,screen,mousebuttons):
         if self.selectOption not in self.player.options:
-            self.selectOption = None
+            self.selectOption = None; self.forced = False
             return None 
         
         self.selectedGraph.setStockObj(self.selectOption.stockObj)
         self.selectedGraph.drawFull(screen, (200,210),(450,340),"SellSelected",True,"Normal")
+        if self.forced:
+            drawCenterTxt(screen, 'Option Expired', 120, (185, 0, 0), (205, 105),centerX=False, centerY=False)
 
         self.drawOptionInfo(screen,self.gametime)
         self.drawExerciseChoices(screen,mousebuttons)
         self.drawReqAndPay(screen,mousebuttons)
-        result = drawClickableBoxWH(screen, (1575,880),(325,80),"Cancel", 45, (180,180,180), (45,0,0), mousebuttons,fill=True)
-        if result:
-            self.selectOption = None
+        if not self.forced:
+            result = drawClickableBoxWH(screen, (1575,880),(325,80),"Cancel", 45, (180,180,180), (45,0,0), mousebuttons,fill=True)
+            if result: self.selectOption = None; self.forced = False

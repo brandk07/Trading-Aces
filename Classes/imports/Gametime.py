@@ -37,8 +37,9 @@ DFORMAT = "%m/%d/%Y %I:%M:%S %p"
 class GameTime:
     def __init__(self,time:str,gamespeed) -> None:
         # self.time = datetime.strptime(time,DFORMAT)
-        self.speedBar = SliderBar(gamespeed,[(247, 223, 0),(110,110,110)],barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
+        self.speedBar = SliderBar(gamespeed,[(247, 223, 0),(110,110,110)],self,barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
         self.time = parser.parse(time)
+        self.timeFrozen = False
 
         self.fastforwarding = False# used for refrence in other classes
 
@@ -56,6 +57,8 @@ class GameTime:
 
     def advanceTime(self,autoFastForward:bool,fastforwardspeed:int):
         """Advances the time by a certain amount of seconds and returns if it is a new day"""
+        if self.timeFrozen:
+            return False
         fastforward = self.fastforwarding
         if autoFastForward and not self.isOpen()[0]:
             if (secs:=secsTo930(self.time)) < fastforwardspeed:
@@ -76,6 +79,8 @@ class GameTime:
     def isOpen(self,time:datetime=None):
         """Checks if the market is open or not
         returns a tuple of (bool,reason)"""
+        if self.timeFrozen:
+            return False, 'Time Frozen'
         assert time == None or isinstance(time,datetime), "time must be a datetime object"
         if time == None:
             time = self.time

@@ -96,7 +96,7 @@ pastRuns = {'Blitz':blitzRuns,'Career':[],'Goal':[]}
 gameModeMenu = GameModeMenu(stocklist,player,pastRuns,blitzRuns[0])
 menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
 # menuList = list(menuDict.values())
-screenManager = ScreenManager(menuDict,homeScreen,stockScreen)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
+screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
 player.screenManager = screenManager
 # VARS FROM SETTINGS
 autofastforward = True
@@ -171,12 +171,10 @@ if __name__ == "__main__":
                 
                 for indexfund in indexFunds:
                     indexfund.updategraphs(gametime.speedBar.getValue(),step)
+        gametime.timeFrozen = False
 
+       
 
-                # for stock in stocklist:            
-        
-        # for i,menu in enumerate(menuList):
-        #     menu.draw_icon(screen,mousebuttons,stocklist,player,menuList,(30,165+(i*175)),uiControls,gametime)
         screenManager.drawCurrentScreen(screen,mousebuttons,stocklist,player,gametime)
 
         screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
@@ -189,7 +187,7 @@ if __name__ == "__main__":
         # uiControls.drawBigMessage(screen,mousebuttons,player)
         
         # uiControls.bar.changeMaxValue(GAMESPEED)
-        gametime.speedBar.changeMaxValue(GAMESPEED)# - PROBABLY CAN BE REMOVED -------------------------------------
+        # gametime.speedBar.changeMaxValue(GAMESPEED)# - PROBABLY CAN BE REMOVED -------------------------------------
         
         mousebuttons = 0
         for event in pygame.event.get():

@@ -1,21 +1,7 @@
 import pygame
 from Defs import *
-from pygame import gfxdraw
 from Classes.Menus.Menu import Menu
-import numpy as np
-from Classes.imports.Bar import SliderBar
-from Classes.imports.StockVisualizer import StockVisualizer
-from Classes.imports.UIElements.Latterscroll import PortfolioLatter,LatterScroll
-from Classes.BigClasses.Stock import Stock
-from Classes.imports.UIElements.BarGraph import BarGraph
-from Classes.imports.UIElements.SelectionElements import SelectionBar,MenuSelection
-from Classes.imports.UIElements.PerfChart import PerfChart
-from Classes.imports.UIElements.Numpad import Numpad
-from Classes.imports.UIElements.OrderBox import OrderBox
-from Classes.AssetTypes.IndexFundsAsset import IndexFundAsset
 from Classes.imports.UIElements.PieChart import PieChart
-from Classes.imports.UIElements.Latterscroll import LinedLatter
-from Classes.AssetTypes.LoanAsset import LoanAsset
 import datetime
 from Classes.imports.UIElements.SideScroll import SideScroll,RunCard
 from dateutil.relativedelta import relativedelta

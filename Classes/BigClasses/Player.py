@@ -90,6 +90,7 @@ class Player(Stock):
                 #     menu.drawn = False
                 # menuList[2].drawn = True# draw the options menu
                 self.screenManager.setScreen('Options')
+                self.screenManager.screens['Options'].forceExerciseOption(self.options[i])
                 
                 # print("Option has expired for the player")
         for stock in stocklist:

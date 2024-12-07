@@ -2,12 +2,7 @@ import pygame
 from Defs import *
 from pygame import gfxdraw
 from Classes.Menus.Menu import Menu
-import numpy as np
-from Classes.imports.Bar import SliderBar
 from Classes.imports.StockVisualizer import StockVisualizer
-from Classes.imports.UIElements.Latterscroll import PortfolioLatter,LatterScroll
-from Classes.BigClasses.Stock import Stock
-from Classes.imports.UIElements.BarGraph import BarGraph
 from Classes.imports.UIElements.SelectionElements import SelectionBar,MenuSelection
 from Classes.imports.UIElements.PerfChart import PerfChart
 from Classes.imports.UIElements.Numpad import Numpad

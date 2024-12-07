@@ -239,7 +239,15 @@ class Optiontrade(Menu):
         self.customOptionSc.stopCreating()
         self.screenSelection.setSelected("Sell")
         self.sellingScreen.setSelectOption(option)
-       
+
+    def forceExerciseOption(self,option):
+        """Sets the selected asset to the given option, takes to Sell screen"""
+        self.screenSelection.setSelected("Sell")
+        self.sellingScreen.setSelectOption(option)
+        self.sellingScreen.exerciseMenu.setSelected(option,forced=True)
+    def isForced(self):
+        """Returns if the exercise menu is forced"""
+        return self.sellingScreen.exerciseMenu.forced
 
     def createRandomOption(self,stock:Stock):
         def getRandomDate(gametime):
@@ -418,8 +426,8 @@ class Optiontrade(Menu):
             self.selectOption = None
             
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
-        
-        self.screenSelection.draw(screen,mousebuttons)
+        if not (self.screenSelection.getSelected() == "Sell" and self.isForced()):# don't draw menu switcher if the exercise menu is forced
+            self.screenSelection.draw(screen,mousebuttons)
         if self.screenSelection.getSelected() == "Buy":
             self.checkOptionDates()# Ensures that the options are still live
 
