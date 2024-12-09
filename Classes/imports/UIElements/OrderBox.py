@@ -2,9 +2,10 @@ import pygame
 from Defs import *
 
 class OrderBox:
-    def __init__(self,coords:tuple,wh:tuple) -> None:
+    def __init__(self,coords:tuple,wh:tuple,gametime) -> None:
         self.coords = list(coords)
         self.wh = list(wh)
+        self.gametime = gametime
         self.quantStr = ""
         self.extraData = []
         self.stage = 0# 0 is the first stage (proceeding to confirm screen), 1 is the second stage (confirming the order)
@@ -72,6 +73,9 @@ class OrderBox:
             drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middle)
 
         if result:
+            if self.gametime.speedBar.getValue() > 0 and not self.gametime.speedBar.frozen:
+                errors.addMessage("Can't Proceed While Game Running")
+                return False
             if self.stage == 0: self.stage = 1# if the proceed button is pressed, move to the next stage
             elif self.stage == 1:
                 self.stage = 0

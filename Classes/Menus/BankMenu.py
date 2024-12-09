@@ -187,7 +187,7 @@ class LoanScreen:
         self.paymentNumpad = Numpad(False)
         self.customLoanCreator = CustomLoanCreator(self.numpad,player)
         self.sideScroll = SideScroll((200,555),(1240,415),(375,375))
-        self.orderBox = OrderBox((1445,215),(455,335))
+        self.orderBox = OrderBox((1445,215),(455,335),gametime)
         self.state = "View"# Creation, View, Modify
         self.networthGraph = StockVisualizer(gametime,player,stocklist)
         
@@ -251,7 +251,7 @@ class LoanScreen:
 
     def veiwState(self,screen,mousebuttons):
         
-        self.networthGraph.drawFull(screen,(1445,215),(455,335),"Loan Networth",True,"Normal")
+        self.networthGraph.drawFull(screen,(1445,215),(455,335),"Loan Networth",True,"Normal",mousebuttons)
         # drawCenterTxt(screen,"Loan Controls",70,(220,220,220),(375,225),centerY=False)
 
         drawCenterTxt(screen,"Loan Controls",70,(220,220,220),(375,225),centerY=False)
@@ -310,7 +310,7 @@ class LoanScreen:
 
         if not self.addingPayment:
             result = drawClickableBoxWH(screen, (565,275), (300,85),"+ Add Payment", 45, (160,160,160), (0,0,0), mousebuttons,fill=True)
-            self.networthGraph.drawFull(screen,(1445,215),(455,335),"Loan Networth",True,"Normal")
+            self.networthGraph.drawFull(screen,(1445,215),(455,335),"Loan Networth",True,"Normal",mousebuttons)
             if result: self.addingPayment = True
 
         if self.addingPayment:# if the user is adding a payment
@@ -410,7 +410,7 @@ class InvestmentScreen:#
         self.sideScroll.loadCards(list(bankIcons.values()))
 
         self.fundNumpad = Numpad(False,maxDecimals=0)
-        self.fundOrderBox = OrderBox((1410,670),(475,300))
+        self.fundOrderBox = OrderBox((1410,670),(475,300),gametime)
 
         self.indexFunds = indexFunds.copy(); self.indexFunds.append(tmarket)
         # self.indexGraphs : dict[str:StockVisualizer] = {}
@@ -483,7 +483,7 @@ class InvestmentScreen:#
             fund = [fund for fund in self.indexFunds if fund.name == self.fundSelection.getSelected()][0]# get the fund object
             # self.indexGraphs[self.fundSelection.getSelected()].drawFull(screen,(305,210),(620,450),self.fundSelection.getSelected(),True,"Normal")# draw the graph for the fund
             self.indexGraph.setStockObj(fund)
-            self.indexGraph.drawFull(screen,(305,210),(620,450),"Main Investment Graph",True,"Normal")# draw the graph for the fund
+            self.indexGraph.drawFull(screen,(305,210),(620,450),"Main Investment Graph",True,"Normal",mousebuttons)# draw the graph for the fund
 
             currentQ = gametime.getCurrentQuarter()# current game quarter
 

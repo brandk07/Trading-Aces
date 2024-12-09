@@ -204,6 +204,7 @@ class Player(Stock):
     def sellAsset(self,asset,quantity,feePercent=1) -> int:
         """sells the quantity number of the asset object given
         won't sell more than the quantity of the asset"""
+        if quantity <= 0: return 0
         quantity = int(quantity)
         if isinstance(asset,StockAsset):
             assetlist = self.stocks 
@@ -266,6 +267,7 @@ class Player(Stock):
     def exerciseOption(self,optionObj:OptionAsset,quantity):
         """Executes the option
         Assumes that the player has enough money/stocks to execute the option"""
+        if quantity <= 0: return 0
         if optionObj.optionType == "call":
             cost = optionObj.getStrike()*quantity*100
             self.cash -= cost

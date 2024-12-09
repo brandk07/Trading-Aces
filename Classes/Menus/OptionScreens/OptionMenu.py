@@ -216,7 +216,7 @@ class Optiontrade(Menu):
         self.screenSelection : MenuSelection = MenuSelection((200, 105), (375, 100),["Buy","Sell"],45,colors=[(100,200,100),(200,100,100)])
         self.screenSelection.setSelected("Buy")
 
-        self.orderBox = OrderBox((1040,570),(450,370))
+        self.orderBox = OrderBox((1040,570),(450,370),gametime)
 
         self.customOptionSc = CustomOptionCreator(player,self)    
         self.sellingScreen = SellOptionScreen(stocklist,gametime,player,self.screenSelection,self)    
@@ -438,7 +438,7 @@ class Optiontrade(Menu):
 
             stock = self.findStockObj(self.stockSelection.getSelected())
             self.stockGraph.setStockObj(stock)
-            self.stockGraph.drawFull(screen, (585,210),(460,350),"OptionMenu Graph",True,"Normal")
+            self.stockGraph.drawFull(screen, (585,210),(460,350),"OptionMenu Graph",True,"Normal",mousebuttons)
             # if self.newOptionInfo == None or (self.newOptionInfo and type(self.strikePrice) != bool) and (self.newOptionInfo and type(self.newOptionInfo[1]) != bool):
             self.drawStockInfo(screen,gametime,stock)
             self.drawAvailableOptions(screen,mousebuttons,gametime,stock)

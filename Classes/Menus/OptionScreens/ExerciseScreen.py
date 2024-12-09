@@ -17,7 +17,7 @@ class ExerciseOptionScreen:
         self.selectOption = None
         self.forced = False
 
-        self.orderBox = OrderBox((1050,605),(510,365))
+        self.orderBox = OrderBox((1050,605),(510,365),gametime)
         self.exerciseSelection : SelectionBar = SelectionBar()# Exercise, Sell, or Dimiss
         self.numPad = Numpad(displayText=False,nums=('DEL','0','MAX'))
         
@@ -88,7 +88,7 @@ class ExerciseOptionScreen:
         self.numPad.draw(screen,(650,645),(390,345),"Options",mousebuttons,maxQuantity)# draw the numpad
 
         # Loads the orderBox with the information for the put option based on the numPad's quantity
-        sellInfotxts = f"Allows the the option to be sold for it's estimated value instead of exercising it with a 2% fee"
+        sellInfotxts = f"Allows the the option to be sold for it's estimated value at a 2% fee instead of exercising it"
         
         amt = self.numPad.getValue()# the amount of shares that the player is selling
         value = self.selectOption.getValue(bypass=True,fullvalue=False)# the value of the option just 1
@@ -117,15 +117,16 @@ class ExerciseOptionScreen:
                     exerciseInfotxts = self.exerciseCallLogic(screen,mousebuttons)
                 else:
                     exerciseInfotxts = self.exercisePutLogic(screen,mousebuttons)
-                separatedTxts = separate_strings(exerciseInfotxts,4)
+                separatedTxts = separate_strings(exerciseInfotxts,5)
             case "Sell":
-                separatedTxts = separate_strings(self.sellOptionLogic(screen,mousebuttons),4)
+                separatedTxts = separate_strings(self.sellOptionLogic(screen,mousebuttons),5)
             case "Dismiss":
-                separatedTxts = separate_strings(f"Dismisses and removes the option without any action. This is useful if the option is worthless",4)
+                separatedTxts = separate_strings(f"Dismisses and removes the option without any action. This is useful if the option is worthless",5)
                 self.orderBox.loadData("Removing Option",f"$0",[("Action Irreversible","-","")])
 
         for i,string in enumerate(separatedTxts):# loop through the textlist and store the text info in the textinfo list
-            drawCenterTxt(screen, string, 60, (180, 180, 180), (980, 325+50*i),centerY=False)
+            # drawCenterTxt(screen, string, 55, (180, 180, 180), (940, 325+45*i),centerY=False)
+            drawCenterTxt(screen, string, 55, (180, 180, 180), (670, 325+45*i),centerX=False,centerY=False)
 
 
         result = self.orderBox.draw(screen,mousebuttons)
@@ -143,6 +144,7 @@ class ExerciseOptionScreen:
                     self.player.sellAsset(self.selectOption,self.numPad.getValue(),feePercent=1.02)
                 case "Dismiss":
                     self.player.removeAsset(self.selectOption)
+                    self.forced = False
 
             
     def drawReqAndPay(self,screen:pygame.Surface,mousebuttons:int):
@@ -150,26 +152,48 @@ class ExerciseOptionScreen:
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(660, 315, 1230, 280),5,10)# box around the explaination text and the information
         
-        drawCenterTxt(screen, 'Max Potential', 65, (0, 0, 0), (1655, 335), centerY=False)
+        drawCenterTxt(screen, 'Max Potential', 65, (170, 170, 170), (1655, 335), centerY=False)
+
+        drawCenterTxt(screen, 'Exercising One', 60, (170, 170, 170), (1250, 335), centerY=False)
 
         req = f"{limit_digits(self.selectOption.getQuantity(),20,True)} Option{'s' if self.selectOption.getQuantity() != 1 else ''}"
-        payment = "None"
+        maxPayment, onePayment, maxReq = "None","None","None"
+        oneReq = f"1 {self.selectOption.name} Option"
+        capacity = f"{limit_digits(self.selectOption.getQuantity(),20,True)} Options"
+        
         if self.exerciseSelection.getSelected() == "Exercise":
             
             amt = self.selectOption.getQuantity()*100
             match self.selectOption.getType():
                 case "call":
-                    req = f"${limit_digits(amt*self.selectOption.getStrike(),20)}"# cost to buy the shares
-                    payment = f"{limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name}"# shares to buy
+                    maxReq = f"${limit_digits(amt*self.selectOption.getStrike(),20)}"# cost to buy the shares
+                    maxPayment = f"{limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name}"# shares to buy
+                    oneReq = f"${limit_digits(self.selectOption.getStrike()*100,20)}"# cost to exercise one option
+                    onePayment = f"100 Shares of {self.selectOption.stockObj.name}"# shares to buy with one option
+                    possessed = f"{limit_digits(self.player.cash,25,True)}"
+                    capacity = f"{limit_digits(self.player.cash/(self.selectOption.getStrike()*100),25,True)} Shares"
+                    
 
                 case "put":
-                    req = f"{limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name}"# shares to sell
-                    payment = f"${limit_digits(amt*self.selectOption.getStrike(),20)}"# payment for selling the shares
+                    maxReq = f"{limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name}"# shares to sell
+                    maxPayment = f"${limit_digits(amt*self.selectOption.getStrike(),20)}"# payment for selling the shares
+                    oneReq = f"100 Shares of {self.selectOption.stockObj.name}"# shares to sell with one option
+                    onePayment = f"${limit_digits(self.selectOption.getStrike()*100,20)}"# payment for selling one option
+                    possessed = f"{self.player.getNumStocks(self.selectOption.stockObj)} Shares"
+                    capacity = f"{limit_digits(self.player.getNumStocks(self.selectOption.stockObj)/100,25,True)} Options"
 
         elif self.exerciseSelection.getSelected() == "Sell":
-            payment = f"${limit_digits(self.selectOption.getValue(fullvalue=False),20)} Per Unit"
+            maxPayment = f"${limit_digits(self.selectOption.getValue(fullvalue=False),20)} Per Option"
+            onePayment = f"${limit_digits(self.selectOption.getValue(fullvalue=False),20)} Per Option"
+            maxReq = f"{limit_digits(self.selectOption.getQuantity(),20,True)} Options"
+            # oneReq = f"1 {self.selectOption.name} Option"
+            possessed = f"{limit_digits(self.selectOption.getQuantity(),20,True)} Options"
+        elif self.exerciseSelection.getSelected() == "Dismiss":
+            possessed = f"{limit_digits(self.selectOption.getQuantity(),20,True)} Options"
+            onePayment = "$0"
 
-        drawLinedInfo(screen,(1430,375),(450,215),[("Requires",f"{req}"),("Yields",f"{payment}")],45,TXTCOLOR)
+        drawLinedInfo(screen,(1460,375),(420,215),[("Requires",f"{maxReq}"),("Yields",f"{maxPayment}"),("Present Capacity",capacity)],38,TXTCOLOR)
+        drawLinedInfo(screen,(1040,375),(420,215),[("Requires",f"{oneReq}"),("Yields",f"{onePayment}"),("Possessed",possessed)],38,TXTCOLOR)
         
 
     def drawScreen(self,screen,mousebuttons):
@@ -178,7 +202,7 @@ class ExerciseOptionScreen:
             return None 
         
         self.selectedGraph.setStockObj(self.selectOption.stockObj)
-        self.selectedGraph.drawFull(screen, (200,210),(450,340),"SellSelected",True,"Normal")
+        self.selectedGraph.drawFull(screen, (200,210),(450,340),"SellSelected",True,"Normal",mousebuttons)
         if self.forced:
             drawCenterTxt(screen, 'Option Expired', 120, (185, 0, 0), (205, 105),centerX=False, centerY=False)
 

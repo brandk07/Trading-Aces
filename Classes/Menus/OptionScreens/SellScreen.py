@@ -16,7 +16,7 @@ class SellOptionScreen:
         self.numpad = Numpad(displayText=False)
         self.screenSelection : SelectionBar = screenSelection# stores the screen selection object from the main game screen
         self.exerciseMenu : ExerciseOptionScreen = ExerciseOptionScreen(stocklist,gametime,player)
-        self.orderBox = OrderBox((1030,615),(385,345))
+        self.orderBox = OrderBox((1030,615),(385,345),gametime)
         
         self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
     def setSelectOption(self,option:OptionAsset):
@@ -163,7 +163,7 @@ class SellOptionScreen:
             if self.selectOption == None:
                 pygame.draw.rect(screen,(0,0,0),pygame.Rect(670, 210, 675, 550),5,10)# box around the select an option
                 drawCenterTxt(screen, 'Select An Option', 80, (180, 180, 180), (1005, 225), centerY=False)
-                self.netWorthGraph.drawFull(screen, (1350,210),(550,550),"SellNetWorth",True,"Normal")
+                self.netWorthGraph.drawFull(screen, (1350,210),(550,550),"SellNetWorth",True,"Normal",mousebuttons)
 
             self.drawOwnedOptions(screen,mousebuttons)
             
@@ -171,4 +171,4 @@ class SellOptionScreen:
                 self.drawOptionInfo(screen,self.gametime)
                 self.drawExerciseAndOther(screen,mousebuttons,gametime)
                 self.selectedGraph.setStockObj(self.selectOption.stockObj)
-                self.selectedGraph.drawFull(screen, (670,210),(465,405),"SellSelected",True,"Normal")
+                self.selectedGraph.drawFull(screen, (670,210),(465,405),"SellSelected",True,"Normal",mousebuttons)

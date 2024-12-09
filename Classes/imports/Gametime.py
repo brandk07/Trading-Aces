@@ -2,7 +2,7 @@ from Defs import fontlist
 import pygame
 from datetime import datetime, timedelta
 from dateutil import parser
-from Classes.imports.Bar import SliderBar
+from Classes.imports.Bar import TimeBar
 
 WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
@@ -35,11 +35,13 @@ def getTimeStrs(t:datetime):
 
 DFORMAT = "%m/%d/%Y %I:%M:%S %p"
 class GameTime:
-    def __init__(self,time:str,gamespeed) -> None:
+    def __init__(self,time:str,maxSpeed) -> None:
         # self.time = datetime.strptime(time,DFORMAT)
-        self.speedBar = SliderBar(gamespeed,[(247, 223, 0),(110,110,110)],self,barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
+        # self.speedBar = TimeBar(gamespeed,[(247, 223, 0),(110,110,110)],self,barcolor=[(255,255,255),(200,200,200)])# the bar for the gameplay speed
+        self.speedBar = TimeBar(maxSpeed,(435,80),60,(0,180,0))# the bar for the gameplay speed
+        # gametime.speedBar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True,text=gametime.skipText())
         self.time = parser.parse(time)
-        self.timeFrozen = False
+        # self.speedBar.frozen = False
 
         self.fastforwarding = False# used for refrence in other classes
 
@@ -57,7 +59,7 @@ class GameTime:
 
     def advanceTime(self,autoFastForward:bool,fastforwardspeed:int):
         """Advances the time by a certain amount of seconds and returns if it is a new day"""
-        if self.timeFrozen:
+        if self.speedBar.frozen:
             return False
         fastforward = self.fastforwarding
         if autoFastForward and not self.isOpen()[0]:
@@ -79,7 +81,7 @@ class GameTime:
     def isOpen(self,time:datetime=None):
         """Checks if the market is open or not
         returns a tuple of (bool,reason)"""
-        if self.timeFrozen:
+        if self.speedBar.frozen:
             return False, 'Time Frozen'
         assert time == None or isinstance(time,datetime), "time must be a datetime object"
         if time == None:
@@ -91,6 +93,19 @@ class GameTime:
         if not(((time.hour == 9 and time.minute >= 30) or time.hour > 9) and time.hour < 16):
             return False, 'Off Hours'
         return True, 'Open'
+    def marketOpen(self,time:datetime) -> bool:
+        """Returns if the market would be open at a certain time, if time is None, it uses the current time
+        DOESN'T TAKE TIMEFROZEN INTO ACCOUNT USE isOpen() FOR THAT"""
+        assert time == None or isinstance(time,datetime), "time must be a datetime object"
+        if time == None:
+            time = self.time
+        if (time.month,time.day) in HOLIDAYS:
+            return False
+        if WEEKDAYS[time.weekday()] in ['Saturday','Sunday']:
+            return False
+        if not(((time.hour == 9 and time.minute >= 30) or time.hour > 9) and time.hour < 16):
+            return False
+        return True
     
     def timeAt(self,secondsago):
         """returns the time at a certain amount of seconds ago"""

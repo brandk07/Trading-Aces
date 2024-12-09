@@ -71,17 +71,17 @@ class StockScreen:
         if collide == None:
             if pygame.Rect(1610,570,150,390).collidepoint(mousex,mousey):
                 collide = 'Not None'#this is just to make it so when you are over the polygon it will remove the hover image, otherwise everytime you go between ui images it will blink
-        pygame.draw.rect(screen,(30,30,30),pygame.Rect(1610,570,150,390),border_radius=10)
-        pygame.draw.rect(screen,(0,0,0),pygame.Rect(1610,570,150,390),width=5,border_radius=10)
+        pygame.draw.rect(screen,(60,60,60),pygame.Rect(1610,570,150,410),border_radius=10)
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(1610,570,150,410),width=5,border_radius=10)
 
         for i,(name,image) in enumerate(self.images.items()):
             #bit complex if statement but the first part is for the current config, and the second part is for the other configs
             if ((name == self.current_config and collide != None) and collide != list(self.images.keys()).index(self.current_config)) or (collide != i and name != self.current_config):
-                screen.blit(image,(1647,590+(i*90)))
+                screen.blit(image,(1647,590+(i*95)))
                 # screen.blit(image,(745+(i*66),990))
             elif name == self.current_config or collide == i:
                 # screen.blit(self.hoverimages[name],(745+(i*66),990))
-                screen.blit(self.hoverimages[name],(1647,590+(i*90)))
+                screen.blit(self.hoverimages[name],(1647,590+(i*95)))
     
     # def changestockbutton(self,screen:pygame.Surface,startpos,endpos,mousebuttons:int,stockname:str,stocklist:list):
     #     mousex,mousey = pygame.mouse.get_pos()
@@ -121,7 +121,7 @@ class StockScreen:
     #     if stockname == self.mousehovering and not pygame.Rect(startpos[0]-140,startpos[1]+5,135,250).collidepoint(mousex,mousey):
     #         self.mousehovering = None
     
-    def stockBar(self, screen: pygame.Surface, stocklist: list):
+    def stockBar(self, screen: pygame.Surface, stocklist: list, mousebuttons:int):
 
         def stockOver(mousex, mousey, picked_stocks, draggedstock):
             # stocknames = [stock.name for stock in stocklist]
@@ -174,7 +174,7 @@ class StockScreen:
                 # stock.baredraw(screen, (x + 5, y), (int(width), 80), self.masterRange if self.masterRange != 'Custom' else '1H')
                 graphrange = self.masterRange if self.masterRange != 'Custom' else '1D'
                 # stock.drawBare(screen, (x + 5, y), (int(width), 80), graphrange, False, "None")
-                self.stockGraphs[stock.name].drawBare(screen, (x + 5, y), (int(width), 80), graphrange, False, "None")
+                self.stockGraphs[stock.name].drawBare(screen, (x + 5, y), (int(width), 80), graphrange, False, "None",mousebuttons)
 
                 # pchange = round(((stock.graphs[stock.graphrange][-1] / stock.graphs[stock.graphrange][0]) - 1) * 100, 2)
                 pchange = stock.getPercent(graphrange)
@@ -193,7 +193,7 @@ class StockScreen:
         for i,text in enumerate(GRAPHRANGES+['Custom']): 
             
             y = 97+(i*height)
-            color = (30,30,30) if text != self.masterRange else (140,0,0)
+            color = (40,40,40) if text != self.masterRange else (140,0,0)
             if (rect:=pygame.Rect(x,y,width,height-5)).collidepoint(mousex,mousey):
                 if mousebuttons == 1:
                     soundEffects['generalClick'].play()
@@ -219,7 +219,7 @@ class StockScreen:
     def draw(self, screen, mousebuttons, stocklist, player, gametime):
         self.draw_ui(screen,mousebuttons,stocklist)
 
-        gametime.speedBar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True,text=gametime.skipText())
+        gametime.speedBar.drawBar(screen,(760,990),mousebuttons)
         
         for i in range(self.graph_config[self.current_config][1]):# for each row
             for ii in range(self.graph_config[self.current_config][0]):# for each column
@@ -242,9 +242,9 @@ class StockScreen:
 
                 graphrange = self.masterRange if self.masterRange != 'Custom' else f'Graph Manager {stockname}'
                 # stock.drawFull(screen,coords,wh,graphrange,True,"Normal",False if graphrange in GRAPHRANGES else True)
-                self.stockGraphs[stockname].drawFull(screen,coords,wh,graphrange,True,"Normal",False if graphrange in GRAPHRANGES else True)
+                self.stockGraphs[stockname].drawFull(screen,coords,wh,graphrange,True,"Normal",mousebuttons,False if graphrange in GRAPHRANGES else True)
                 # if self.current_config != 'nona':#if no menus are drawn and the current config is not nona
                 #     self.changestockbutton(screen,startpos,endpos,mousebuttons,stockname,stocklist)#  ------------------------Used for changing stocks, don't want right now
-        self.stockBar(screen,stocklist)
+        self.stockBar(screen,stocklist,mousebuttons)
         self.masterControls(screen,mousebuttons,stocklist)
                 

@@ -32,21 +32,23 @@ class StockVisualizer:
         grapheddays = graphed_seconds//self.stockObj.graphrangeoptions["1D"]# the amount of days that the stock has been graphed
         seconds = graphed_seconds % self.stockObj.graphrangeoptions["1D"]# the amount of seconds that the stock has been graphed
         time_offset = self.gametime.time#time offset
-        if self.gametime.isOpen(time_offset)[0] == False:
+        if self.gametime.marketOpen(time_offset) == False:
             time_offset = time_offset.replace(hour=15,minute=59,second=0)# set the time to 3:59 PM
         dayscount = 0
 
         while dayscount < grapheddays:# while the days count is less than the amount of days that the stock has been graphed
             time_offset -= timedelta(days=1)# add a day to the time offset
-            if self.gametime.isOpen(time_offset)[0]:# if that is a day that was open for trading
+            
+            if self.gametime.marketOpen(time_offset):# if that is a day that was open for trading
                 dayscount += 1# add 1 to the days count
 
         secondsleft = (time_offset - time_offset.replace(hour=9,minute=30,second=0)).seconds# the amount of seconds left in the day
         if seconds > secondsleft:# if the amount of seconds needed to minus is greater than the seconds left in the day
             seconds -= secondsleft
             time_offset -= timedelta(days=1)# add a day to the time offset
-            while self.gametime.isOpen(time_offset)[0] == False:
+            while self.gametime.marketOpen(time_offset) == False:
                 time_offset -= timedelta(days=1)
+                
             
             time_offset = time_offset.replace(hour=15,minute=59,second=0)# set the time to 3:59 PM
             
@@ -106,8 +108,9 @@ class StockVisualizer:
             if not pygame.mouse.get_pressed()[0] and collide:# if the mouse is not being clicked
                 longHover = None
                 self.priceMouseOver(screen,graphpoints,spacing,coords,wh,truegraphrange)
-
-            else:# if the mouse is being clicked
+            elif not pygame.mouse.get_pressed()[0]:# in the range of the graph but not being clicked
+                longHover = None
+            elif pygame.mouse.get_pressed()[0] and ((longHover == None and collide) or (longHover != None)) :# if the mouse is being clicked
                 if longHover == None:# If the mouse hadn't been clicked before
                     longHover = max(coords[0],min(coords[0]+wh[0],mousex))
                     # self.priceMouseOver(screen,graphpoints,spacing,coords,wh,truegraphrange)
@@ -208,7 +211,7 @@ class StockVisualizer:
             # screen.blit(text,(coords[0]+wh[0]-blnkspacex-text.get_width()-10,(graphingpoints[yvalpos]-text.get_height())))
             screen.blit(txt,(coords[0]+8,(yval-txt.get_height()/2)))
 
-    def drawRangeControls(self,screen:pygame.Surface,coords,wh,graphrange):
+    def drawRangeControls(self,screen:pygame.Surface,coords,wh,graphrange,mousebuttons:int):
         """Draws the range controls for the stock to the screen
         needs the inputed graphrange, not the valid graphrange,"""	
         blnkspacex = ((coords[0]+wh[0]-coords[0])//10)
@@ -232,12 +235,12 @@ class StockVisualizer:
             if pygame.Rect(coords[0]+wh[0],coords[1]+(i*drawingy),blnkspacex,extraheight).collidepoint(pygame.mouse.get_pos()):
                 points = [(coords[0]+wh[0],coords[1]+(i*drawingy)), (coords[0]+wh[0],coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex, coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex,coords[1]+(i*drawingy))]
                 gfxdraw.filled_polygon(screen, points,(100,100,100,150))
-                if pygame.mouse.get_pressed()[0] and self.longHover == None and self.longHovers.get(graphrange) == None:
+                if mousebuttons == 1 and self.longHover == None and self.longHovers.get(graphrange) == None:
                     soundEffects['generalClick'].play()
                     self.storedRanges[graphrange] = txt
           
 
-    def _defaultDraw(self,screen:pygame.Surface,coords,wh,graphrange,customRange):
+    def _defaultDraw(self,screen:pygame.Surface,coords,wh,graphrange,customRange,mousebuttons:int):
         """Draws the basic elements of the stock to the screen, Shouldn't really be called directly"""
         truegraphrange = self.getValidRange(graphrange)
         backcolor = p3choice((55,0,0),(0,55,0),(55,55,55),self.stockObj.getPercent(truegraphrange))
@@ -253,15 +256,15 @@ class StockVisualizer:
         
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0],coords[1],graphwidth,graphheight), 5)
         if customRange:
-            self.drawRangeControls(screen,coords,wh,graphrange)
+            self.drawRangeControls(screen,coords,wh,graphrange,mousebuttons)
         return graphingpoints,spacing,minmax_same
     
 
-    def drawBare(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset):
+    def drawBare(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset,mousebuttons:int):
         """Draws the basic graph of the stock to the screen,
         Graphrange can be a valid range or it will be used as a key in a dict to store the range"""
         truegraphrange = self.getValidRange(graphrange)
-        graphingpoints,spacing,minmax_same = self._defaultDraw(screen,coords,wh,graphrange,False)# draw the basic graph, no range controls
+        graphingpoints,spacing,minmax_same = self._defaultDraw(screen,coords,wh,graphrange,False,mousebuttons)# draw the basic graph, no range controls
 
         if detectmouseover:
             self.longPriceOver(screen,graphingpoints,spacing,coords,wh,graphrange)
@@ -269,7 +272,7 @@ class StockVisualizer:
 
         # return self.drawNamePreset(screen,coords,wh,truegraphrange,preset)
     
-    def drawFull(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset,customRange=True):
+    def drawFull(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset,mousebuttons,customRange=True):
         """Draws the full graph of the stock to the screen, 
         Graphrange can be a valid range or it will be used as a key in a dict to store the range"""
         truegraphrange = self.getValidRange(graphrange)
@@ -283,7 +286,7 @@ class StockVisualizer:
 
         graphwh = (wh[0]-blnkspacexr-blnkspacel,wh[1]-blnkspacey)# Giving blankspace for the graph
 
-        graphingpoints,spacing,minmax_same = self._defaultDraw(screen,(coords[0]+blnkspacel,coords[1]),graphwh,graphrange,customRange)# draw the basic graph
+        graphingpoints,spacing,minmax_same = self._defaultDraw(screen,(coords[0]+blnkspacel,coords[1]),graphwh,graphrange,customRange,mousebuttons)# draw the basic graph
 
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0], coords[1], (coords[0]+wh[0] - coords[0]+1),(coords[1]+wh[1] - coords[1]+1)), 6)# outline of the whole display
         

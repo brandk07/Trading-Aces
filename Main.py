@@ -171,13 +171,15 @@ if __name__ == "__main__":
                 
                 for indexfund in indexFunds:
                     indexfund.updategraphs(gametime.speedBar.getValue(),step)
-        gametime.timeFrozen = False
+        if gametime.speedBar.frozen:
+            gametime.speedBar.frozen = False
+            gametime.speedBar.redraw()
 
        
 
         screenManager.drawCurrentScreen(screen,mousebuttons,stocklist,player,gametime)
 
-        screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
+        screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,980),(1900,1010),(1900,1040)]))
         errors.update(screen)# draws the error messages
 
         

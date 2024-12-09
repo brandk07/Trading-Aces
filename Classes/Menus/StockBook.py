@@ -18,9 +18,9 @@ class Stockbook(Menu):
         self.icon = pygame.transform.smoothscale(self.icon,(140,100))
         super().__init__(self.icon)
         # self.quantity = 0
-        stocknames = [stock.name for stock in stocklist]
-        self.stocktext = {name:[] for name in stocknames}# a dictionary containing the stock names as keys and the stock descriptions as values
-        self.createDescriptions(stocknames)
+        self.stocknames = [stock.name for stock in stocklist]
+        self.stocktext = {name:[] for name in self.stocknames}# a dictionary containing the stock names as keys and the stock descriptions as values
+        self.createDescriptions(self.stocknames)
         self.selectedStock : Stock = stocklist[0]
         self.menudrawn = False
         self.stocklist = stocklist
@@ -61,14 +61,17 @@ class Stockbook(Menu):
                 else:#else render it with a smaller font and orange color
                     self.stocktext[key][i] = fontlist[30].render(line,TXTCOLOR)[0]
 
-    def changeSelectedStock(self,name=None,stockobj=None):
+    def changeSelectedStock(self,name=None,stockobj=None) -> bool:
         if name and isinstance(name,str):
-            self.selectedStock = [stock for stock in self.stocklist if stock.name == name][0]
-            
+            s = [stock for stock in self.stocklist if stock.name == name]
+            if len(s) == 0 or s == None: return False# something didn't work so return false
+            self.selectedStock = s[0]
             self.stockGraph.setStockObj(self.selectedStock)
+            return True
         elif (stockobj and isinstance(stockobj,Stock)) or (name and isinstance(name,Stock)):
             self.selectedStock = stockobj
             self.stockGraph.setStockObj(self.selectedStock) 
+            return True
         else:
             raise ValueError('You must provide either a valid name or an object')
 
@@ -261,7 +264,7 @@ class Stockbook(Menu):
 
         # Draw the stock graph
         self.stockGraph.setStockObj(self.selectedStock)
-        self.stockGraph.drawFull(screen, (190,100),(550,450),"StockBook Graph",True,"Normal")
+        self.stockGraph.drawFull(screen, (190,100),(550,450),"StockBook Graph",True,"Normal",mousebuttons)
        
 
         self.drawStockLatter(screen, mousebuttons, player)

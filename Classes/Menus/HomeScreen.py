@@ -7,7 +7,7 @@
 import pygame
 from Defs import *
 from pygame import gfxdraw
-from Classes.imports.Bar import SliderBar
+from Classes.imports.Bar import TimeBar
 # from Classes.imports.stockeventspos import StockEvents
 from Classes.imports.UIElements.Latterscroll import LatterScroll
 from Classes.imports.Newsbar import News
@@ -23,7 +23,7 @@ class HomeScreen:
         self.icon = pygame.transform.smoothscale(self.icon,(140,100))
         
         self.newsobj = News(stocklist)
-        self.speedBar : SliderBar = gametime.speedBar
+        self.speedBar : TimeBar = gametime.speedBar
         self.pieChart = PieChart((945,165),(520,530))
         self.totalMarketGraph = StockVisualizer(gametime,tmarket,[tmarket,player])
 
@@ -70,14 +70,13 @@ class HomeScreen:
 
         self.draw_home(screen,stocklist,gametime,player,mousebuttons)            
         self.marketStatus(screen,gametime)
-        self.totalMarketGraph.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"hoverName")
+        self.totalMarketGraph.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"hoverName",mousebuttons)
         self.newsobj.draw(screen,gametime)
         
         screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(830,20))
 
-        result = self.speedBar.draw_bar(screen,[740,75],[450,65],'horizontal',reversedscroll=True,text=gametime.skipText())
-        if result and gametime.timeFrozen:
-            errors.addMessage("Time is Frozen")
+        # result = self.speedBar.draw_bar(screen,[740,75],[450,65],'horizontal',reversedscroll=True,text=gametime.skipText())
+        self.speedBar.drawBar(screen,(747,65),mousebuttons)
 
         self.gameplay_speed = self.speedBar.getValue()
 

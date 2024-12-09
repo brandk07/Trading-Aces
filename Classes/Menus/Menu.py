@@ -35,8 +35,7 @@ class ScreenManager:
         
         # self.screenSelection.draw(screen,list(self.screens.keys()),(10,225),(170,415),mousebuttons,colors=colors)
         result = self.screenSelection.draw(screen,list(self.screens.keys()),(10,90),(170,415),mousebuttons,colors=colors)
-        if result and self.screens['Options'].isForced():
-            errors.addMessage("Need to Exercise Or Sell Option",(170,170,170))
+
         self.selectedScreen = self.screenSelection.getSelected()
 
 
@@ -54,9 +53,8 @@ class ScreenManager:
         
     def drawCurrentScreen(self,screen,mousebuttons,stocklist,player,gametime):
         self.drawSelector(screen,mousebuttons)
-        if self.screens['Options'].isForced():#if the options screen is forced, then set the current screen to options
-            self.setScreen('Options')
-            self.gameTime.timeFrozen = True
+        if self.screens['Options'].isForced():#if the options screen is forced
+            self.gameTime.speedBar.frozen = True
         self.drawTime(screen,gametime)
         
         self.screens[self.selectedScreen].draw(screen,mousebuttons,stocklist,player,gametime)
@@ -112,21 +110,28 @@ class Menu():
         """Mearly a placeholder for the child classes to override"""
         pass
 
-    def drawbottombar(self,screen,gametime,player):
+    def drawbottombar(self,screen,gametime,player,mousebuttons):
         """Draws the bottom bar of the screen"""
-        gametime.speedBar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True,text=gametime.skipText())
-        screen.blit(s_render(f"Cash ${limit_digits(player.cash,150)}",50,(200,200,200)),(1150,1010))
-        gametimetext = s_render(f"{str(gametime)}",50,(200,200,200))
-        screen.blit(gametimetext,(750-gametimetext.get_width(),1010))
+        # gametime.speedBar.draw_bar(screen,[760,990],[375,80],'horizontal',reversedscroll=True,text=gametime.skipText())
+        gametime.speedBar.drawBar(screen,(825,990),mousebuttons)
+        # screen.blit(s_render(f"Cash ${limit_digits(player.cash,150)}",50,(200,200,200)),(1150,1010))
+        # gametimetext = s_render(f"{str(gametime)}",50,(200,200,200))
+        # screen.blit(gametimetext,(750-gametimetext.get_width(),1010))
+        # pass
         # draws the time in the top left corner
         # texts = gametime.getrenders(50,50,50,105,50,50)
     # def topbar(self,screen,gametime,player):
     #     """Draws the top bar of the screen"""
         
-        
+    def drawCash(self,screen,player):
+        txt = limit_digits(player.cash,30)
+        txt = "Cash $" + limit_digits(player.cash,30)
+        drawCenterTxt(screen,txt,75,(220,220,220),(1890,15),centerX=False,fullX=True,centerY=False)
+    
     def draw(self,screen,mousebuttons:int,stocklist:list,player,gametime):
         
         # self.topbar(screen,gametime,player)
-        self.drawbottombar(screen,gametime,player)
+        self.drawCash(screen,player)
+        self.drawbottombar(screen,gametime,player,mousebuttons)
         self.draw_menu_content(screen,stocklist,mousebuttons,player,gametime)#draws the content of the menu, defined in the child classes
 

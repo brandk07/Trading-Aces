@@ -297,7 +297,7 @@ class LinedLatter():
             y = (i*self.elementHeight)+self.scrollvalue
             if y < self.wh[1] or y+self.elementHeight > 0:
                 if i != 0:
-                    pygame.draw.line(self.surf,(0,0,0),(15,y-20),(self.wh[0]-15,y-20),3)
+                    pygame.draw.line(self.surf,(0,0,0),(15,y-20),(self.wh[0]-15,y-20),5)
 
                 for ii,(string,size,color) in enumerate(element):
                     drawCenterTxt(self.surf,string,size,color,(self.coords[ii][0],self.coords[ii][1]+y),centerY=False)

@@ -51,7 +51,7 @@ class Portfolio(Menu):
         self.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
         self.piechart = PieChartSideInfo(150, (200, 650))
         self.barGraphs = [BarGraph("Value",[175,175],[875,400]),BarGraph("Allocation",[175,175],[1150,400])]
-        self.orderBox = OrderBox((465,605),(385,370))
+        self.orderBox = OrderBox((465,605),(385,370),gametime)
         self.barSelection : SelectionBar = SelectionBar()
 
         # for the asset type selection which sorts the latterscroll
@@ -228,7 +228,7 @@ class Portfolio(Menu):
         yamt = int(780/len(asset.getStockObj().graphrangeoptions))
         for i,graphname in enumerate(asset.getStockObj().graphrangeoptions):# 1H, 1D, etc...
             # asset.getStockObj().baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
-            self.selectedGraph.drawBare(screen,(1630,200+(i*(yamt))),(270,yamt-10),graphname,True,"Normal")
+            self.selectedGraph.drawBare(screen,(1630,200+(i*(yamt))),(270,yamt-10),graphname,True,"Normal",mousebuttons)
             
             text = s_render(graphname, 40, (230, 230, 230))
             screen.blit(text, (1640, 315+(i*(yamt))-text.get_height()-20))
@@ -382,7 +382,7 @@ class Portfolio(Menu):
         if self.selectedAsset == None:# if the selected asset is None
             # player.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)
             # player.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")
-            self.networthGraph.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")
+            self.networthGraph.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal",mousebuttons)
 
             if len(sortedassets) > 0:
                 # draws the stocks on the right of the screen
@@ -410,7 +410,7 @@ class Portfolio(Menu):
                 # 870/3 = 290
                 # if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),mousebuttons,0,rangecontroldisp=False,graphrange="1D") and mousebuttons == 1:# if the stock name is clicked
                 coords = (1400,100+(i*290))
-                stock.drawFull(screen,coords,wh,f"PortfolioExtra{i}",True,"Normal")
+                stock.drawFull(screen,coords,wh,f"PortfolioExtra{i}",True,"Normal",mousebuttons)
             
             # for stock in self.displayedStocks:
             #     stock.draw(screen,player,(1400,stock.y),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
@@ -429,7 +429,7 @@ class Portfolio(Menu):
             # stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
             # stockgraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
             self.selectedGraph.setStockObj(self.selectedAsset[0].getStockObj())
-            self.selectedGraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
+            self.selectedGraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal",mousebuttons)# draws the selected stock graph on the left
 
             # selectedindex = sortedassets.index(self.selectedAsset)
             self.draw_selected_description(screen,self.selectedAsset,mousebuttons,player,gametime)# draws the description of the selected asset

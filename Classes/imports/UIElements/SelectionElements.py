@@ -53,13 +53,13 @@ class SelectionBar:
                 rect = pygame.Rect(x,y+(i*spacing),w,spacing)
             screen.blit(rtxt,(txtx,txty))
 
-            if rect.collidepoint(pygame.mouse.get_pos()):
-                if mousebuttons == 1:
+            if rect.collidepoint(pygame.mouse.get_pos()) and mousebuttons == 1:
+                if not self.selected == txt:
                     soundEffects['generalClick'].play()
-                    self.selected = txt if txt != self.selected else None
-                    if not self.allowSelcNone and self.selected == None:
-                        self.selected = txt
-                    changed = True
+                self.selected = txt if txt != self.selected else None
+                if not self.allowSelcNone and self.selected == None:
+                    self.selected = txt
+                changed = True
         return changed
         
 
