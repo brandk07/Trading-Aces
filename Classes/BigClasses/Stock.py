@@ -38,70 +38,60 @@ def calculate_volatility(points) -> float:
     return annualized_volatility
 
 
-fake = Faker()
-with open(r'Assets\ceoSlogans.txt','r') as file:
-    slogans = file.readlines()
-class CEO():
-    def __init__(self) -> None:
-        gender = ['male','female'][randint(0,1)]
+# fake = Faker()
+# with open(r'Assets\ceoSlogans.txt','r') as file:
+#     slogans = file.readlines()
+# class CEO():
+#     def __init__(self) -> None:
+#         gender = ['male','female'][randint(0,1)]
 
-        self.name = fake.name_female() if gender == 'female' else fake.name_male()
-        self.age = randint(30,70)
-        self.image = generate_8bit_character(gender)
-        self.image = pygame.transform.scale(self.image,(100,100))
-        sloganInd = randint(0,len(slogans)-1)
-        self.slogan = slogans[sloganInd].replace('\n','')
-        self.givenVolatility = sloganInd*15+700
-    def getVolatility(self):
-        return self.givenVolatility
-    @lru_cache(maxsize=5)
-    def getSloganLines(self,lines):
-        """Returns the slogan of the CEO with the amount of lines specified"""
-        return separate_strings(self.slogan,lines)
-    @lru_cache(maxsize=5)
-    def getImageSize(self,xSize,ySize):
-        """Returns the image of the CEO with the size of xSize and ySize"""	
-        return pygame.transform.scale(self.image,(xSize,ySize)) 
-    def addYears(self,years):
-        self.age += years
-        return self.age
+#         self.name = fake.name_female() if gender == 'female' else fake.name_male()
+#         self.age = randint(30,70)
+#         self.image = generate_8bit_character(gender)
+#         self.image = pygame.transform.scale(self.image,(100,100))
+#         sloganInd = randint(0,len(slogans)-1)
+#         self.slogan = slogans[sloganInd].replace('\n','')
+#         self.givenVolatility = sloganInd*15+700
+#     def getVolatility(self):
+#         return self.givenVolatility
+#     @lru_cache(maxsize=5)
+#     def getSloganLines(self,lines):
+#         """Returns the slogan of the CEO with the amount of lines specified"""
+#         return separate_strings(self.slogan,lines)
+#     @lru_cache(maxsize=5)
+#     def getImageSize(self,xSize,ySize):
+#         """Returns the image of the CEO with the size of xSize and ySize"""	
+#         return pygame.transform.scale(self.image,(xSize,ySize)) 
+#     def addYears(self,years):
+#         self.age += years
+#         return self.age
 
 
 class Stock():
     """Class contains the points and ability to modify the points of the stock
     an object of stockVisualizer is created to visualize the stock"""
 
-    def __init__(self,name,color,gametime,volatility) -> None:
-        self.color,self.name = color,name
-        # self.ceo = CEO()
+    def __init__(self,name,color,gametime,volatility,gameRun) -> None:
+        self.color,self.name = color,
+        self.gameRun = gameRun
+        
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
         self.graphrangeoptions = {"1H":3600,"1D":23_400,"5D":117_000,"1M":491_400,"6M":2_946_000,"1Y":5_896_800,"5Y":29_484_000}
-        # self.graphrangeoptions = {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"3M":1_474_200,"1Y":5_896_800,"5Y":29_484_000,"10Y":58_968_000}
         self.condensefacs = {key:value/POINTSPERGRAPH for key,value in self.graphrangeoptions.items()}#the amount of points that each index of the graph has
-        # self.graphrange = '1H' # H, D, W, M, 3M, Y
-        # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
         self.graphs = {key:deque([],maxlen=POINTSPERGRAPH) for key in self.graphrangeoptions.keys()}
         
         self.graphfillvar = {key:0 for key in self.graphrangeoptions.keys()}# used to see when to add a point to a graph
         
-        # self.bTrendRanges = [[(-i,i),(100000-(i*8000),500000-(i*41000))] for i in range(12)]
 
         self.bTrendRanges = [[(-int(i**.9),int(i**.9)),(randint(1,300),randint(301,100000))] for i in range(20)]
-        # self.bTrendRanges = [[(i-15,15-i),(randint(1,i*300),randint(i*301,(i**2)*10_000))] for i in range(1,15)]
-
-        # self.bTrendRanges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]# the ranges for the bonus trends
-        # self.bTrendRanges = [[(-i,i),(randint(1,12000),randint(12001,1_500_000))] for i in range(12)]# the ranges for the bonus trends
         self.bTrends = [[randint(*x[0]),randint(*x[1])] for x in self.bTrendRanges]# the trends for the stock
 
         self.datafromfile(gametime)# Retrieves the data from the file
         self.price = self.graphs[MINRANGE][-1]# the price of the stock at the last graphed point
-        # self.dividendYield = 0#
-        # self.givenVolatility = self.ceo.getVolatility()
         self.givenVolatility = volatility# volatility that the stock will trend towards, still use getVolatility to calculate the real volatility
         self.recentrenders = {}# a dict of the renders of the recent prices
         self.graph = Graph()
-        # print()
 
 
 
@@ -136,10 +126,7 @@ class Stock():
                 return 0
             tradingsecs = 0
             date1 = datetime.strptime(f"{date1.month}/{date1.day}/{date1.year} 9:30:00 AM", "%m/%d/%Y %I:%M:%S %p")
-            # print(f"Num days is {days}")
             for i in range(days):
-                # print(f"i is {i}, date is {date1+timedelta(days=i)}, {gametime.isOpen(date1+timedelta(days=i))}, tradingsecs is {tradingsecs}")
-                # if (day:=date1+timedelta(days=i)).weekday() < 5:
                 if gametime.isOpen(date1+timedelta(days=i))[0]:
                     
                     tradingsecs += 3600*6.5
@@ -168,8 +155,6 @@ class Stock():
                 closestIndex = len(self.graphs[key])-1
             if closestIndex < -len(self.graphs[key]):
                 closestIndex = 0
-            # print(closestIndex,key,len(self.graphs[key]))
-            # print(closestIndex,key,"is the closest index")
 
             return self.graphs[key][closestIndex]
         
@@ -187,13 +172,9 @@ class Stock():
         end = datetime(gametime.time.year,3*quarter,calendar.monthrange(gametime.time.year, 3*quarter)[1])
         if end > gametime.time and (gametime.time.month-1)//3+1 != quarter:# if the quarter is not the current quarter and the end is after the current date
             end -= timedelta(days=365)
-        # if end.month == 12:
-        #     end = datetime(gametime.time.year,12,31)
-        # print(start,end,gametime.time)
         
         p1 = self.getPointDate(start,gametime)
         p2 = self.getPointDate(end,gametime)
-        # print(f"Quarter {quarter} returns are {p2/p1}, p1:{p1}, p2:{p2}, start {3*quarter-2}, end {3*quarter}")
         return ((p2/p1)-1)*100
 
 
@@ -218,7 +199,8 @@ class Stock():
 
     def datafromfile(self,gametime):
         """gets the data from each file and puts it into the graphlist"""
-        with open(f'Assets/Stockdata/{self.name}/data.json', 'r')as f:
+        dataDir = os.path.join(self.gameRun.getFileDir(),"StockData")# now data dir is the run dir + "Stock Data"
+        with open(f'{dataDir}/{self.name}/data.json', 'r')as f:
             data = [json.loads(line) for line in f]
 
             for i,grange in enumerate(self.graphs.keys()):
@@ -243,7 +225,8 @@ class Stock():
                 self.resetTrends()
 
     def save_data(self):
-        with open(f'Assets/Stockdata/{self.name}/data.json','w') as file:
+        dataDir = os.path.join(self.gameRun.getFileDir(),"StockData")# now data dir is the run dir + "Stock Data"
+        with open(f'{dataDir}/{self.name}/data.json','w') as file:
             file.seek(0)  # go to the start of the file
             file.truncate()  # clear the file
             for item in list(self.graphs.values()):
@@ -325,9 +308,6 @@ class Stock():
         lastprice = lastprice * (1 + factor)
 
         return lastprice
-                    
-
-        
 
     def fill_graphs(self):
         
@@ -365,57 +345,13 @@ class Stock():
         pointsmade = 0
         while len(self.graphs[MINRANGE]) < POINTSPERGRAPH:
             distance,name = getNextLowest(pointsmade)
-            # print(distance,name,self.graphs[name].size)
 
             newpoint = self.addPointLong(self.graphs[lastgraphed][-1],distance,self.condensefacs[name])
             lastgraphed = name
-            # self.graphs[name] = np.append(self.graphs[name],newpoint)
             self.graphs[name].append(newpoint)
             pointsmade += distance
         
         self.price = self.graphs[MINRANGE][-1]
-        
-
-    # def fill_graphs(self):
-    #     def get_lowestgraph(pointsmade):
-    #         for name,points in self.graphs.items():
-    #             """Returns the name of the lowest graph that should get points added to it"""
-    #             # the line below figures out if the amount of points made is greater than the amount of points that the graph can have
-    #             if (diff:=self.graphrangeoptions["5Y"]-self.graphrangeoptions[name]) <= pointsmade:
-    #                 # figuring out the amount of points that each index of the graph has
-    #                 condensefactor = self.condensefacs[name]
-    #                 # if the amount of points made is greater than or equal to the amount of points that the graph can have
-    #                 if pointsmade-diff >= condensefactor*len(points):
-    #                     return name
-
-    #     self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}# reset the graphs
-
-    #     lastgraphed = ""
-    #     pointsmade = 0
-    #     while len(self.graphs['1H']) < POINTSPERGRAPH:
-    #         newgraphed = get_lowestgraph(pointsmade)# gets the name of the lowest graph that should get points added to it
-    #         if newgraphed == None:# if there is no graph that needs points added to it for the amount of points made
-    #             pointsmade += 1# advance pointsmade until there is a graph that needs points added to it
-    #             continue
-    #         if self.graphs[newgraphed].size == 0:# if the graph is empty
-    #             if lastgraphed == "":# if there is no last graphed (Only used for the year graph)
-    #                 self.graphs[newgraphed] = np.array([self.price],dtype=object)
-    #             else:# this is when the first point is added to a graph after the year graph
-    #                 self.graphs[newgraphed] = np.append(self.graphs[newgraphed],self.graphs[lastgraphed][-1])
-
-    #         lastgraphed = newgraphed
-    #         multiplier = int(self.graphrangeoptions[lastgraphed]/POINTSPERGRAPH)
-            
-    #         newpoint = self.addpoint(self.graphs[lastgraphed][-1],multiplier,maxstep=100)
-
-    #         for name,points in self.graphs.items():# for each graph
-    #             if (diff:=self.graphrangeoptions["5Y"]-self.graphrangeoptions[name]) <= pointsmade:# figures out if the amount of pointsmade is greater than the amount of points that the graph can have
-    #                 condensefactor = self.condensefacs[name]
-    #                 if pointsmade-diff >= condensefactor*len(points):
-    #                     self.graphs[name] = np.append(self.graphs[name],newpoint)
-
-    #         pointsmade += multiplier
-    #     self.price = self.graphs['1H'][-1]
 
     def update_range_graphs(self,stockvalues=0,step=1):
 
@@ -427,16 +363,10 @@ class Stock():
                     #add the last point to the list
                     self.graphfillvar[key] = 0
                     if type(self) == Stock:
-                        # self.graphs[key] = np.append(self.graphs[key],self.price)
                         self.graphs[key].append(self.price)
                     else:
-                        # self.graphs[key] = np.append(self.graphs[key],stockvalues)
                         self.graphs[key].append(stockvalues)
             
-            # if len(self.graphs[key]) > POINTSPERGRAPH:
-            #     # print('deleting',key,len(self.graphs[key]))
-            #     self.graphs[key] = np.delete(self.graphs[key],0)
-
     def update_price(self,gamespeed,PlayerClass,step=1):
         # if self.bankrupcy(False):#if stock is not bankrupt
         #     pass
@@ -446,15 +376,11 @@ class Stock():
             # self.stock_split(player)#if stock is greater then 2500 then split it to keep price affordable
             for _ in range(0,gamespeed,step):
                 self.update_range_graphs(step=step)
-            # for _ in range(gamespeed):
-            #     self.update_range_graphs()
+
             self.price = self.graphs[MINRANGE][-1]
             return step
         elif type(self) == PlayerClass:# if Player object
-
-            # stockvalues = sum([stock[0].price*stock[2] for stock in self.stocks])
             self.price = self.getNetworth()
-            # for _ in range(gamespeed):
             for _ in range(0,gamespeed,step):
                 self.update_range_graphs(self.getNetworth(),step=step)#updates the range graphs
     

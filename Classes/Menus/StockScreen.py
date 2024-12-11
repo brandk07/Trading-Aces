@@ -7,9 +7,6 @@ from Classes.imports.StockVisualizer import StockVisualizer
 
 class StockScreen:
     def __init__(self,stocklist,gametime):
-
-        self.icon = pygame.image.load(r'Assets\stockScreen icon.png').convert_alpha()
-        self.icon = pygame.transform.smoothscale(self.icon,(140,100))
         
         self.graph_config = {
             'single': (1,1),
@@ -18,10 +15,10 @@ class StockScreen:
             'nona': (3,3),
         }
         self.images = {
-            'single': pygame.image.load('Assets/graph manager/single.png').convert_alpha(),
-            'quad': pygame.image.load('Assets/graph manager/quad.png').convert_alpha(),
-            'six' : pygame.image.load('Assets/graph manager/six.png').convert_alpha(),
-            'nona': pygame.image.load('Assets/graph manager/nona.png').convert_alpha(),
+            'single': pygame.image.load('Assets/GraphChoiceIcons/single.png').convert_alpha(),
+            'quad': pygame.image.load('Assets/GraphChoiceIcons/quad.png').convert_alpha(),
+            'six' : pygame.image.load('Assets/GraphChoiceIcons/six.png').convert_alpha(),
+            'nona': pygame.image.load('Assets/GraphChoiceIcons/nona.png').convert_alpha(),
         }
         self.stockGraphs = {stock.name:StockVisualizer(gametime,stock,stocklist) for stock in stocklist}
 
@@ -82,45 +79,7 @@ class StockScreen:
             elif name == self.current_config or collide == i:
                 # screen.blit(self.hoverimages[name],(745+(i*66),990))
                 screen.blit(self.hoverimages[name],(1647,590+(i*95)))
-    
-    # def changestockbutton(self,screen:pygame.Surface,startpos,endpos,mousebuttons:int,stockname:str,stocklist:list):
-    #     mousex,mousey = pygame.mouse.get_pos()
-    #     #polygon at the top of each stock graph
-    #     gfxdraw.filled_polygon(screen,[(startpos[0]-140,startpos[1]+30),(startpos[0]-130,startpos[1]+5),(startpos[0]-5,startpos[1]+5),(startpos[0]-15,startpos[1]+30)],(180,180,180))
-    #     #Smaller polgyon on top of the first one to make it look like a button
-    #     gfxdraw.filled_polygon(screen,[(startpos[0]-135,startpos[1]+27),(startpos[0]-130,startpos[1]+7),(startpos[0]-10,startpos[1]+7),(startpos[0]-17,startpos[1]+27)],(110,110,110))
-    #     screen.blit(fontlist[25].render('SWAP STOCK',(0,0,0))[0],(startpos[0]-120,startpos[1]+10))
-    #     #seeing if the mouse is hovering over the button
-    #     if pygame.Rect(startpos[0]-140,startpos[1]+5,135,25).collidepoint(mousex,mousey) or self.mousehovering == stockname:
 
-    #         if pygame.Rect(startpos[0]-140,startpos[1]+5,135,245).collidepoint(mousex,mousey):#if the mouse is hovering over the button or the list of stocks below it
-    #             self.mousehovering = stockname
-
-    #         for stock in self.allstocks:#draws the list of stocks below the button
-    #             if stock != stockname and stock not in self.picked_stocks:#if the stock is not the current stock
-    #                 index_place = len([used_stock for used_stock in self.allstocks if used_stock in self.picked_stocks and self.allstocks.index(used_stock) < self.allstocks.index(stock)])-1
-                    
-    #                 yadj = ((self.allstocks.index(stock)-index_place)*30)
-
-    #                 color = (0,0,180)#default color
-    #                 if pygame.Rect(startpos[0]-140,startpos[1]+5+yadj,135,25).collidepoint(mousex,mousey):#if the mouse is hovering over the stock button
-    #                     color = (0,180,180)
-    #                     if mousebuttons == 1:
-    #                         mousebuttons = 0
-    #                         # oldstockobj = [stockobj for stockobj in stocklist if stockobj.name == stockname][0]#finds the stock object of the stock that is being replaced
-    #                         # stockobj = [stockobj for stockobj in stocklist if stockobj.name == stock][0]#finds the stock object of the stock that is replacing the old stock
-    #                         self.picked_stocks[self.picked_stocks.index(stockname)] = stock#replaces the old stock with the new stock in the picked_stocks list
-    #                         self.pickedstockconfig[self.current_config][self.pickedstockconfig[self.current_config].index(stockname)] = stock#replaces the old stock with the new stock in the pickedstockconfig dict
-    #                         self.mousehovering = None
-    #                 #draws the stock button, and the name of the stock
-    #                 # gfxdraw.filled_polygon(screen,[(startpos[0]-140,startpos[1]+30+yadj),(startpos[0]-130,startpos[1]+5+yadj),(startpos[0]-55,startpos[1]+5+yadj),(startpos[0]-60,startpos[1]+30+yadj)],color)
-    #                 gfxdraw.filled_polygon(screen,[(startpos[0]-113,startpos[1]+30+yadj),(startpos[0]-103,startpos[1]+5+yadj),(startpos[0]-32,startpos[1]+5+yadj),(startpos[0]-37,startpos[1]+30+yadj)],color)
-    #                 screen.blit(fontlist[25].render(stock,(255,255,255))[0],(startpos[0]-92,startpos[1]+yadj+10))
-                    
-
-    #     if stockname == self.mousehovering and not pygame.Rect(startpos[0]-140,startpos[1]+5,135,250).collidepoint(mousex,mousey):
-    #         self.mousehovering = None
-    
     def stockBar(self, screen: pygame.Surface, stocklist: list, mousebuttons:int):
 
         def stockOver(mousex, mousey, picked_stocks, draggedstock):

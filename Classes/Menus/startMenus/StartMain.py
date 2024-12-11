@@ -34,17 +34,17 @@ def get_shift_state():
 
 
 class StartMain:
-    def __init__(self,gametime) -> None:
+    def __init__(self) -> None:
 
-        self.gameMode = 'start'# play, create, settings , credit, or start
-        self.menus : str[CreateMenu] = {'create':CreateMenu(self,gametime),'play':None,'settings':None,'credit':None,'start':StartMenu()}
+        self.gameMode = 'create'# play, create, settings , credit, or start
+        self.menus : str[CreateMenu] = {'create':CreateMenu(self),'play':None,'settings':None,'credit':None,'start':StartMenu()}
         
         self.pastRuns = {'Career':list[CareerRun],'Blitz':list[BlitzRun],'Goal':list[GoalRun]}# the past runs that the player has done
         self.loadPastRuns()
 
         # --------------------------------------------- Temporary ---------------------------------------------
-        blitzRuns = [BlitzRun(f'Blitz Run {i}',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,5000),randint(0,5000)],"1M",'01/02/2030 09:30:00 AM') for i in range(5)]
-        blitzRuns.append(BlitzRun(f'Blitz Run Timed',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000)],"3Y",'01/02/2030 09:30:00 AM'))
+        # blitzRuns = [BlitzRun(f'Blitz Run {i}',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,5000),randint(0,5000)],"1M",'01/02/2030 09:30:00 AM') for i in range(5)]
+        # blitzRuns.append(BlitzRun(f'Blitz Run Timed',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000)],"3Y",'01/02/2030 09:30:00 AM'))
 
 
     def loadPastRuns(self):
@@ -62,7 +62,7 @@ class StartMain:
                     return "-Name already exists"
         return True
     def getSurfs(self):
-        background = pygame.image.load(r'Assets\backgrounds\Background (4).png').convert_alpha()
+        background = pygame.image.load(r'Assets\StartBackground.png').convert_alpha()
         background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
         extraSurf = pygame.Surface((1920,1080))
         extraSurf.fill((60,60,60))

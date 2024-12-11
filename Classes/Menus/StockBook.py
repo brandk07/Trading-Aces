@@ -14,9 +14,7 @@ import datetime
 TXTCOLOR = (220,220,220)
 class Stockbook(Menu):
     def __init__(self,stocklist,gametime,orderScreen) -> None:
-        self.icon = pygame.image.load(r'Assets\Menu_Icons\stockbook.png').convert_alpha()
-        self.icon = pygame.transform.smoothscale(self.icon,(140,100))
-        super().__init__(self.icon)
+        super().__init__()
         # self.quantity = 0
         self.stocknames = [stock.name for stock in stocklist]
         self.stocktext = {name:[] for name in self.stocknames}# a dictionary containing the stock names as keys and the stock descriptions as values
@@ -43,7 +41,7 @@ class Stockbook(Menu):
         
 
     def createDescriptions(self,stocknames): 
-        with open(r'Assets\stockdes3.txt','r') as descriptions:
+        with open(r'Assets\GameTexts\StockDescriptions.txt','r') as descriptions:
             filecontents = descriptions.readlines()
             for i,line in enumerate(filecontents):
                 for stockname in stocknames:

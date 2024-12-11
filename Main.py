@@ -26,8 +26,6 @@ from Classes.Menus.Menu import ScreenManager
 GAMESPEED = 250
 FASTFORWARDSPEED = 1000
 pygame.init()
-pygame.mixer.init()
-
 
 monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
 window_width, window_height = (monitor_width, monitor_height)
@@ -40,29 +38,24 @@ pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED)
 
 clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
-# stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
 
+
+# ------------------------------------------ Start of the Start Menu ------------------------------------------
+startmenu = StartMain()
+currentRun = startmenu.drawStartMenu(screen,clock)
+pastRuns = startmenu.pastRuns
 
 gametime = GameTime("01/01/2030 00:00:00",GAMESPEED)
-setGameTime(gametime)
-
-startmenu = StartMain(gametime)
-pastRuns = startmenu.drawStartMenu(screen,clock)
-
-# pastRuns = {'Blitz':blitzRuns,'Career':[],'Goal':[]}
+setGameTime(gametime,currentRun.getFileDir())
 
 stocknames = STOCKNAMES
 stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
 
-# stocknames = ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
 stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(147,112,219),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 
-# CREATING OBJECTS NEEDED FOR FILE DATA
-transact = Transactions()
 
-
+transact = Transactions(currentRun.getFileDir())
 player = Player(stocknames,stockcolors[-1],transact,gametime)
-# stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stockdict = {name:Stock(name,stockcolors[i],gametime,stockVolatilities[i]) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 indexfundColors = [(217, 83, 149),(64, 192, 128),(138, 101, 235)]
@@ -71,20 +64,10 @@ tmarket = TotalMarket(gametime,stocklist)
 indexFunds.append(tmarket)
 indexFundDict = {fund.name: fund for fund in indexFunds}
 
+Getfromfile(stockdict,indexFundDict,player,gametime,currentRun.getFileDir())
 
-# indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(['Velocity Ventures','Adaptive Allocation','Reliable Returns'])]# high,med,low risk
-
-# GETTING DATA FROM FILE
-
-musicdata = Getfromfile(stockdict,indexFundDict,player,gametime)# muiscdata = [time, volume, songindex]
-
-
-# CREATING OBJECTS
 stockScreen = StockScreen(stocklist,gametime)
-
-# uiControls = UIControls(stocklist,GAMESPEED,gametime,tmarket,player)
 orderScreen = OrderScreen()
-# stockbook = Stockbook(stocklist,gametime,orderScreen)
 homeScreen = HomeScreen(stocklist,gametime,tmarket,player)
 stockbook = Stockbook(stocklist,gametime,orderScreen)
 portfolio = Portfolio(stocklist,player,gametime,tmarket)
@@ -93,32 +76,13 @@ bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
 
 gameModeMenu = GameModeMenu(stocklist,player,pastRuns,pastRuns["Blitz"][0])
 menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
-# menuList = list(menuDict.values())
 screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
 player.screenManager = screenManager
-# VARS FROM SETTINGS
 autofastforward = True
-
-
-background = pygame.image.load(r'Assets\backgrounds\Background (9).png').convert_alpha()
-background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
-
-
-
-
-pygame.mixer.music.set_endevent(pygame.USEREVENT)  # Set custom event when music ends
- 
-musicnames = list(musicThemes)
-pygame.mixer.music.load(musicThemes[musicnames[musicdata[2]]] if musicdata[2] < len(musicnames) else musicThemes[musicnames[0]])
-pygame.mixer.music.play()
-pygame.mixer.music.set_pos(musicdata[0])
-pygame.mixer.music.set_volume(musicdata[1])
-pygame.mixer.music.set_volume(0)
 
 # LAST DECLARATIONS
 lastfps = deque(maxlen=300)
 mousebuttons = 0
-# print(stocklist[0].graphs)
 
 timer = timeit.default_timer()
 if not all([all([len(graph) == POINTSPERGRAPH for graph in stock.graphs.values()]) for stock in stocklist]):
@@ -128,14 +92,8 @@ if not all([all([len(graph) == POINTSPERGRAPH for graph in stock.graphs.values()
 
 for indexfund in indexFunds:
     indexfund.fill_graphs()
-
-
-screen.fill((30,30,30))
-screen.blit(background,(0,0))
-
-
    
-menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(screen.copy())
+menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(screen)
 
 if __name__ == "__main__":
     while True:
@@ -146,11 +104,6 @@ if __name__ == "__main__":
         else:
             screen.blit(menuBackRefresh,(0,0))
 
-        
-        
-        
-        # uiControls.draw_ui(screen,stockgraphmanager,stocklist,player,gametime,mousebuttons,menuList,tmarket)#draws the ui controls to the screen, and senses for clicks
-        
         if gametime.advanceTime(autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
             player.newDay(gametime,stocklist)
@@ -163,7 +116,6 @@ if __name__ == "__main__":
                     if stock.priceEffects.update(gametime,screen,player):
                         homeScreen.newsobj.changeStock(stock)
 
-                # player.update_price(uiControls.gameplay_speed,Player)
                 
                 player.gameTick(gametime.speedBar.getValue(),gametime,step)
                 
@@ -183,37 +135,20 @@ if __name__ == "__main__":
         
         for animation in animationList:
             animation.update(screen)
-        
-        # uiControls.drawBigMessage(screen,mousebuttons,player)
-        
-        # uiControls.bar.changeMaxValue(GAMESPEED)
-        # gametime.speedBar.changeMaxValue(GAMESPEED)# - PROBABLY CAN BE REMOVED -------------------------------------
+
         
         mousebuttons = 0
         for event in pygame.event.get():
-            if event.type == pygame.USEREVENT:
-                if pygame.USEREVENT == pygame.mixer.music.get_endevent():
-                    # Code to start a new song
-                    musicdata[2] = musicdata[2]+1 if musicdata[2]+1 < len(musicThemes) else 0# increment the song index
-                    musicdata[0] = 0# reset the song time
-                    print('song ended, now playing',musicnames[musicdata[2]])
-                    pygame.mixer.music.load(musicThemes[list(musicThemes.keys())[musicdata[2]]] if musicdata[2] < len(musicThemes) else musicThemes[list(musicThemes.keys())[0]])
-                    pygame.mixer.music.play()
-                    pygame.mixer.music.set_volume(musicdata[1])
-
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
-                musicdata = [pygame.mixer.music.get_pos()/1000+musicdata[0],pygame.mixer.music.get_volume(),musicdata[2]]
-                
+            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):                
                 stockdata = [stock.savingInputs() for stock in player.stocks]
                 optiondata = [option.savingInputs() for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
                 loanData = [loan.savingInputs() for loan in player.loans]
                 indexFundData = [indexfund.savingInputs() for indexfund in player.indexFunds]
                 
-                data = [str(gametime),stockdata,optiondata,loanData,indexFundData,float(player.cash),musicdata]
+                data = [str(gametime),stockdata,optiondata,loanData,indexFundData,float(player.cash)]
                 data.append(player.extraSavingData())
-                # data.extend([stockobj.graphrange for stockobj in stocklist])
-                print(data)
-                Writetofile(stocklist,player,data)
+
+                Writetofile(stocklist,player,data,currentRun.getFileDir())
                 transact.storeTransactions()
                 pygame.quit()
                 quit()
@@ -228,15 +163,12 @@ if __name__ == "__main__":
                 # Get timestamp for unique filename
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 
-                # Create screenshots directory if it doesn't exist
-                screenshot_dir = "Assets/Screenshots"
+                screenshot_dir = os.path.join(currentRun.getFileDir(), "Screenshots")
                 if not os.path.exists(screenshot_dir):
                     os.makedirs(screenshot_dir)
-                
-                # Generate filepath
+
                 filepath = f"{screenshot_dir}/screenshot_{timestamp}.png"
-                
-                # Take screenshot and save
+            
                 screenshot = screen.copy()  # screen is your pygame display surface
                 pygame.image.save(screenshot, filepath)
   

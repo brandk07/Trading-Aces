@@ -11,21 +11,21 @@ from Classes.imports.UIElements.SideScroll import SideScroll, CreateMenuRunImage
 from Classes.Menus.GameModeMenu import GameRun,BlitzRun,CareerRun,GoalRun
 
 class CreateMenu:
-    def __init__(self,startMenu,gametime) -> None:
+    def __init__(self,startMenu) -> None:
         self.modeselectionBar : SelectionBar = SelectionBar()
         self.customizeBar : SelectionBar = SelectionBar(allowSelcNone=True)# the bar for the customization (blits is time, career is mode[career/sandbox], goal is target)
-        self.mode = 'career'# career, goal, or blitz
+        
+        self.mode = 'blitz'# career, goal, or blitz
         self.gameModes = ['career','blitz','goal']
         self.modeColors = {self.gameModes[i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
         self.currentName = 'Game Name'
         self.startMenu : 'StartMain' = startMenu
-        self.gameIcons = [pygame.image.load(rf'Assets\GameRuns\game Icons\image {i}.png') for i in range(1,9)]
-        self.gametime = gametime
-        self.sideScroll = SideScroll((180,325),(520,110),(70,70))
+        self.gameIcons = [pygame.image.load(rf'Assets\Run Icons\image {i}.png') for i in range(1,9)]
+        self.gameIconScroll = SideScroll((180,325),(520,110),(70,70))# the side scroll for the game icons
         self.runIcons = [pygame.transform.smoothscale(g,(70,70)) for g in self.gameIcons]
-        self.runIcons = [CreateMenuRunImage(self.sideScroll,g) for g in self.runIcons]
-        self.sideScroll.loadCards(self.runIcons)
-        self.sideScroll.setCard(index=0)
+        self.runIcons = [CreateMenuRunImage(self.gameIconScroll,g) for g in self.runIcons]
+        self.gameIconScroll.loadCards(self.runIcons)
+        self.gameIconScroll.setCard(index=0)
         self.haveError = False
 
         self.currentRun = None
@@ -104,7 +104,7 @@ class CreateMenu:
                 drawCenterTxt(screen,"-Must select a time period for Blitz Mode",40,(210,0,0),(730,665),centerX=False,centerY=False)
 
             drawCenterTxt(screen,"Time Period",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
-            self.customizeBar.draw(screen,['1 M','1Y','5Y'],(730,595),(600,60),mousebuttons)
+            self.customizeBar.draw(screen,['1M','1Y','5Y'],(730,595),(600,60),mousebuttons)
         elif self.mode == 'career':
             
             drawCenterTxt(screen,"Starting Progress",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
@@ -122,7 +122,7 @@ class CreateMenu:
     def drawImageSelection(self,screen,mousebuttons):
         """Draws the image selection on the left top side of the screen"""
         
-        if (n:=self.sideScroll.getCard(index=True)) != None:# if a card is selected
+        if (n:=self.gameIconScroll.getCard(index=True)) != None:# if a card is selected
             image : pygame.Surface = self.gameIcons[n]# get the image of the card
             drawBoxedImage(screen,(180,75),image,(240,240),15,5)# draw the image of the card
 
@@ -133,7 +133,24 @@ class CreateMenu:
             x = 425+(275)//2
             size = getTSizeNums(line,260,65)
             drawCenterTxt(screen,line,size,(200,200,200),(x,80+65*i),centerY=False)
+
     
+
+    def createNewRun(self):
+        if self.mode == 'blitz':# if the mode is blitz
+            gameDuration = self.customizeBar.getSelected()
+            ind = self.gameIconScroll.getCard(index=True)
+            self.currentRun = BlitzRun(self.currentName,[],None,ind,gameDuration)
+
+        elif self.mode == 'career':
+            mode = self.customizeBar.getSelected()
+            self.currentRun = CareerRun(self.currentName,mode)
+
+        elif self.mode == 'goal':
+            target = self.customizeBar.getSelected()
+            self.currentRun = GoalRun(self.currentName,target)
+
+        
     def drawCreateGameBox(self,screen,mousebuttons):
         """Draws the create game box"""
         color = (0,210,0) if not self.haveError else (210,0,0)
@@ -143,15 +160,7 @@ class CreateMenu:
         n = drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),color,mousebuttons)
 
         if n and not self.haveError:# if the create game button is pressed and its all good, then create the game and enter it
-            if self.mode == 'blitz':# if the mode is blitz
-                time = self.customizeBar.getSelected()
-                self.currentRun = BlitzRun(self.currentName,[],time,self.gametime.getTime())
-            elif self.mode == 'career':
-                mode = self.customizeBar.getSelected()
-                self.currentRun = CareerRun(self.currentName,mode)
-            elif self.mode == 'goal':
-                target = self.customizeBar.getSelected()
-                self.currentRun = GoalRun(self.currentName,target)
+            self.createNewRun()
             animationList.append(BuyAnimation((mousex,mousey),5,animationList))
 
         if self.haveError and pygame.Rect(170,450,540,130).collidepoint(mousex,mousey):
@@ -161,6 +170,11 @@ class CreateMenu:
     def draw(self,screen,mousebuttons,key):
         """Draws the create game menu"""
         self.haveError = False# resets the error for each draw
+
+
+        self.customizeBar.setSelected('1Y')
+        self.modeselectionBar.setSelected('Blitz')
+
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(150,10,1620,1060),5,border_radius=25)# main box border
 
@@ -174,7 +188,7 @@ class CreateMenu:
 
         self.drawCustomizeInfo(screen,mousebuttons)# draws the customize info on the right side of the screen
         
-        self.sideScroll.draw(screen,mousebuttons)# draws the side scroll
+        self.gameIconScroll.draw(screen,mousebuttons)# draws the side scroll
 
         self.drawImageSelection(screen,mousebuttons)# draws the image selection on the left top side of the screen
 

@@ -3,24 +3,24 @@ from Defs import *
 from Classes.imports.UIElements.Latterscroll import LatterScroll
 
 class Transactions:
-    def __init__(self) -> None:
+    def __init__(self,dataDir) -> None:
         self.transactlog = []# list of lists containing [texts1,texts2,texts3]
-        self.getFileData()
+        self.getFileData(dataDir)
         # self.transactlog = [["Sold 39 Shares of","KSTON for $5,056.93","Balance $26,103.18"] for i in range(10)]# list of lists containing [texts1,texts2,texts3]
         self.latterscroll = LatterScroll()
         self.surfs = []
         self.scrollvalue = 0
 
-    def getFileData(self):
-        with open(r'Assets\transactions.json','r') as f:
+    def getFileData(self,dataDir):
+        with open(os.path.join(dataDir,"Transactions.json"),'r') as f:
             data = [json.loads(line) for line in f]
             for line in data:
                 self.transactlog.append(line)
         if len(self.transactlog) == 1 and self.transactlog[0] == []:
             self.transactlog = []
 
-    def storeTransactions(self):
-        with open(r'Assets\transactions.json','w') as f:
+    def storeTransactions(self,dataDir):
+        with open(os.path.join(dataDir,"Transactions.json"),'w') as f:
             f.seek(0)  # go to the start of the file
             f.truncate()  # clear the file
             for line in self.transactlog:

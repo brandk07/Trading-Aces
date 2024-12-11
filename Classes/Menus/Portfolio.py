@@ -1,47 +1,24 @@
 import pygame
-import timeit
-
 import pygame.draw_py
 from Defs import *
 from Classes.Menus.Menu import Menu
-from pygame import gfxdraw
-# from Classes.imports.Bar import SliderBar
 from Classes.imports.UIElements.Latterscroll import *
-# from Classes.Stockbook import quantityControls
 from Classes.imports.UIElements.Numpad import Numpad
-# from Classes.Stock import Stock
 from Classes.AssetTypes.OptionAsset import OptionAsset
-from Classes.imports.Transactions import Transactions
 from Classes.imports.StockVisualizer import StockVisualizer
 from Classes.imports.UIElements.PieChart import PieChartSideInfo
 from Classes.imports.UIElements.BarGraph import BarGraph
 from Classes.imports.UIElements.OrderBox import OrderBox
 from Classes.imports.UIElements.SelectionElements import SelectionBar
-import math
-import datetime
-from dateutil import parser
 
 DX = 300# default x
 DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
     def __init__(self,stocklist,player,gametime,totalmarket) -> None:
-        self.icon = pygame.image.load(r'Assets\Menu_Icons\portfolio.png').convert_alpha()
-        self.icon = pygame.transform.smoothscale(self.icon,(140,100))
-        self.icon.set_colorkey((255,255,255))
-        super().__init__(self.icon)
-        # remove all the white from the image
-        # self.bar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
-        # self.bar.value = 0
-        # self.quantitybar = SliderBar(50,[(150,150,150),(10,10,10)],barcolor=((20,130,20),(40,200,40)))
-
+        super().__init__()
         self.totalmarket = totalmarket
-
-        self.sharebackground = pygame.image.load(r"Assets\backgrounds\Background (8).png").convert_alpha()
-        self.sharebackground = self.sharebackground.subsurface((0,0,485,880))
-        self.sharebackground.set_alpha(150)
-
-        self.displayingtext = fontlist[35].render('Displaying ',(220,220,220))[0]
+   
         self.menudrawn = False
         # self.allrenders = []
         self.selectedAsset = None
@@ -58,8 +35,6 @@ class Portfolio(Menu):
         # self.assetoptions = ["Stock","Option","Other"]# future, Crypto, bonds, minerals, real estate, etc
         self.assetoptions = ["Stocks","Options","Index"]
         self.displayed_asset_type = ["Stocks","Options","Index"]
-
-        
 
         self.classtext = {StockAsset:"Share",OptionAsset:"Option",IndexFundAsset:"Share"}# Used quite a bit and saves an if statement every time I need class specific text
 
@@ -210,8 +185,6 @@ class Portfolio(Menu):
 
         # Draws the description about the stock on the left side of the screen
         points = [(200, 605), (850, 605), (850, 960), (200, 960)]
-        # gfxdraw.filled_polygon(screen, points, (30, 30, 30))
-        # pygame.draw.polygon(screen, (0, 0, 0), points, 5)
 
         # NEED TO REIMPLEMENT THE ASSET ANALYTICS
         self.drawAssetInfo(screen,asset,gametime,player)# draws the Asset Analytics underneath the stock graph on the left side of the screen
@@ -316,8 +289,6 @@ class Portfolio(Menu):
                 return (1-((1+((asset.getPercent())/100))**(365/diff.days))) * -100
             return (((1+(asset.getPercent()/100))**(365/diff.days))-1) * 100
         
-        # purchaseDetailsText = s_render(f"Purchase Details", 50, (255, 255, 255))
-        # screen.blit(purchaseDetailsText, (880, 660))
         drawCenterTxt(screen,f"Purchase Details",45,(220,220,220),(1047,655),centerY=False)
 
         yearlyReturn = getYearlyReturn(asset,gametime)
@@ -331,10 +302,7 @@ class Portfolio(Menu):
         ]
         drawLinedInfo(screen,(870,690),(355,260),info,40,(215,215,215))
         # ---------------Right bottom (Asset Specifics)----------------
-        # assetSpecificsText = s_render(f"Asset Specifics", 50, (255, 255, 255))
-        # screen.blit(assetSpecificsText, (1285, 660))
         drawCenterTxt(screen,f"Asset Specifics",45,(220,220,220),(1422,655),centerY=False)
-        # pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(1275, 710, assetSpecificsText.get_width()+30,10))
 
         if isinstance(asset,StockAsset):
 
@@ -380,30 +348,18 @@ class Portfolio(Menu):
 
         
         if self.selectedAsset == None:# if the selected asset is None
-            # player.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)
-            # player.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")
             self.networthGraph.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal",mousebuttons)
 
             if len(sortedassets) > 0:
                 # draws the stocks on the right of the screen
                 self.draw_assetscroll(sortedassets,screen,mousebuttons)
 
-            # Pie chart
-            # values = [(stock[0].price * stock[2], stock[0].name) for stock in player.stocks]
-            # values = [(stock.getValue(),stock.name) for stock in player.stocks]
-            # names = set([stock.name for stock in player.stocks])
-
-            # values = [[sum([v[0] for v in values if v[1] == name]), name, stocklist[[self.name for self in stocklist].index(name)].color] for name in names]
-            # values.append([player.cash, "Cash",player.color])
-            # for option in player.options:
-            #     values.append([option.getValue(),option.name,option.color])
             assets = player.getAssets()
             values = [[asset.getValue(),asset.name,asset.color] for asset in assets]
             values.append([player.cash, "Cash",player.color])
             self.piechart.updateData(values)
             
             self.piechart.draw(screen,mousebuttons,self.player.screenManager)
-            # draw_pie_chart(screen, values, 150,(200, 650))  
             
             wh = (500,285)
             for i,stock in enumerate(self.displayedStocks):
@@ -411,27 +367,13 @@ class Portfolio(Menu):
                 # if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),mousebuttons,0,rangecontroldisp=False,graphrange="1D") and mousebuttons == 1:# if the stock name is clicked
                 coords = (1400,100+(i*290))
                 stock.drawFull(screen,coords,wh,f"PortfolioExtra{i}",True,"Normal",mousebuttons)
-            
-            # for stock in self.displayedStocks:
-            #     stock.draw(screen,player,(1400,stock.y),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
- 
-            # stocklist[0].draw(screen,player,(1400,200),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
-            # stocklist[1].draw(screen,player,(1400,455),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
-            # stocklist[2].draw(screen,player,(1400,710),(500,245),mousebuttons,gametime,rangecontroldisp=False,graphrange="1D")
-            # self.transact.draw(screen,mousebuttons,(1400,105),(500,960),(500,1
 
         
         else:# if the selected asset is NOT None
-            # stockgraph = self.selectedAsset[0].stockobj
 
-            
-
-            # stockgraph.draw(screen,player,(200,100),(650,500),mousebuttons,gametime)# draws the selected stock graph on the left
-            # stockgraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
             self.selectedGraph.setStockObj(self.selectedAsset[0].getStockObj())
             self.selectedGraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal",mousebuttons)# draws the selected stock graph on the left
 
-            # selectedindex = sortedassets.index(self.selectedAsset)
             self.draw_selected_description(screen,self.selectedAsset,mousebuttons,player,gametime)# draws the description of the selected asset
             if self.selectedAsset != None:
                 self.drawselectedScroll(screen,self.selectedAsset,mousebuttons)# draws the selected asset scroll on the right

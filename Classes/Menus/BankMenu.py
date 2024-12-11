@@ -16,9 +16,7 @@ from Classes.imports.UIElements.SideScroll import SideScroll,CdCard,LoanCard
 
 class BankMenu(Menu):
     def __init__(self,stocklist,gametime,player,transactions,tmarket,indexFunds:list) -> None:
-        self.icon = pygame.image.load(r'Assets\Menu_Icons\bankIcon.jpg').convert_alpha()
-        self.icon = pygame.transform.scale(self.icon,(140,100))
-        super().__init__(self.icon)
+        super().__init__()
         self.menuSelection = MenuSelection((200,105),(520,100),["Investments","Loans","Transactions"],45)
         # self.overView = OverView(player,transactions)
         self.menuSelection.setSelected("Loans")
@@ -30,8 +28,7 @@ class BankMenu(Menu):
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
 
         self.menuSelection.draw(screen,mousebuttons)
-
-
+        
         match self.menuSelection.getSelected():
             # case "Overview":
             #     self.overView.draw(screen)

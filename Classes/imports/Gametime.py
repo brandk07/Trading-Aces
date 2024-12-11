@@ -1,4 +1,4 @@
-from Defs import fontlist
+from Defs import DFORMAT
 import pygame
 from datetime import datetime, timedelta
 from dateutil import parser
@@ -33,7 +33,7 @@ def getTimeStrs(t:datetime):
     'ampm': 'AM' if t.hour < 12 else 'PM'
     }
 
-DFORMAT = "%m/%d/%Y %I:%M:%S %p"
+
 class GameTime:
     def __init__(self,time:str,maxSpeed) -> None:
         # self.time = datetime.strptime(time,DFORMAT)

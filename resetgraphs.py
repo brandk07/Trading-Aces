@@ -95,7 +95,7 @@ data = []
 # stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR','Net Worth']
 stocknames = ['QSYN','NRLX','CMDX','PRBM','GFRG','ASCS','BGTX','MCAN','VITL','Net Worth']
 # stockdict = {name:np.array(data,dtype=object) for name in stocknames}
-stockdict = {name:deque(data,maxlen=500) for name in stocknames}
+# stockdict = {name:deque(data,maxlen=500) for name in stocknames}
 
 start_time = timeit.default_timer()
 # create folders for each stockname in the directory if they don't already exist

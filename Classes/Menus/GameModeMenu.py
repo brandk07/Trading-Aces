@@ -2,24 +2,13 @@ import pygame
 from Defs import *
 from Classes.Menus.Menu import Menu
 from Classes.imports.UIElements.PieChart import PieChart
-import datetime
 from Classes.imports.UIElements.SideScroll import SideScroll,RunCard
-from dateutil.relativedelta import relativedelta
-TIME_PERIODS = {
-    '1M': relativedelta(months=1),
-    '3M': relativedelta(months=3),
-    '6M': relativedelta(months=6),
-    '1Y': relativedelta(years=1),
-    '3Y': relativedelta(years=3),
-    '5Y': relativedelta(years=5)
-}
-STARTCASH = 10_000
+from Classes.BigClasses.RunTypes import *
+
 class GameModeMenu(Menu):
     def __init__(self,stocklist,player,pastRuns:dict,currentRun) -> None:
         """Gets the past runs {'Blitz':[BlitzRun : obj],'Career':[],'Goal':[]}"""
-        self.icon = pygame.image.load(r'Assets\Menu_Icons\gamemode.jpg').convert_alpha()
-        self.icon = pygame.transform.scale(self.icon,(140,100))
-        super().__init__(self.icon)
+        super().__init__()
         self.loadRuns(pastRuns)# loads the runs from the save file
         self.currentRun = currentRun
 
@@ -47,63 +36,6 @@ class GameModeMenu(Menu):
                 self.draw()
             case 'goal':
                 self.draw()
-class GameRun:
-    def __init__(self,name:str,assetSpread:list,gameMode,gameDate,startTime:str=None) -> None:
-        """Start time is real time (no relation to the game time) that is why the gameDate is needed"""
-        assert type(assetSpread) == list, "The asset spread must be a list"
-        # assert len(assetSpread) == 5, "The asset spread must have 5 values"
-        assert gameMode in ['Blitz','Career','Goal'], "The game mode must be either 'Blitz', 'Career', or 'Goal'"
-        assert type(gameDate) == str, "The game date must be a string"
-        assert startTime == None or type(startTime) == str, "The start time must be a string"
-        
-        self.name = name
-        self.startTime = datetime.datetime.now() if startTime == None else datetime.datetime.strptime(startTime,"%m/%d/%Y %I:%M:%S %p")
-        
-        self.assetSpread = assetSpread if len(assetSpread) == 5 else [0,0,0,STARTCASH,0]# end value of all in each category [stocks, options, indexFunds, cash, loans]
-
-        self.loans = self.assetSpread[-1]
-        self.gameMode : str = gameMode
-        self.screenShotDir = r"Assets\GameRuns\Screenshots" + f"\{self.name}.png"
-        self.gameDate = datetime.datetime.strptime(gameDate,"%m/%d/%Y %I:%M:%S %p")# the date the game started
-        self.networth = sum(self.assetSpread[:-1]) - self.loans
-
-        if not os.path.exists(self.screenShotDir):
-            self.screenShot = pygame.image.load(r"Assets\GameRuns\Screenshots\default.png").convert_alpha()
-        else:
-            self.screenShot = pygame.image.load(self.screenShotDir).convert_alpha()
-        self.screenShot = pygame.transform.scale(self.screenShot,(190,190))
-
-class BlitzRun(GameRun):
-    def __init__(self,name:str,assetSpread:list,duration:str,gameDate,endGameDate=None,startTime:str=None,endTime:str=None) -> None:
-        """Being Clear, the gameDate and endGameDate are the dates in the game not the real time
-        and the startTime and endTime are the real-life time that the player created and ended the run"""
-        super().__init__(name,assetSpread,'Blitz',gameDate,startTime=startTime)
-        self.duration = duration# 1M, 3M, 6M, 1Y, 3Y, 5Y
-
-        self.endTime = None if endTime == None else datetime.datetime.strptime(endTime,"%m/%d/%Y %I:%M:%S %p")
-        self.endGameDate = self.endGameDate if endGameDate != None else self.gameDate + TIME_PERIODS[self.duration]# the date the game ends
-        
-    def savingInputs(self):
-        pass
-    
-    def getRealEndTimeTxt(self):
-        """Returns the end time in a string format"""
-        return "N/a" if self.endTime == None else self.endTime.strftime("%m/%d/%Y")
-    def getFormattedStartTime(self):
-        """Returns the start time in a formatted string"""
-        return self.startTime.strftime("%m/%d/%Y")
-
-    def getStarRating(self):
-        """Returns the star rating of the run"""
-        return min(5,int((self.networth/20_000)*5))
-
-class CareerRun(GameRun):
-    def __init__(self, name, assetSpread, gameMode, gameDate, startTime = None):
-        super().__init__(name, assetSpread, gameMode, gameDate, startTime)
-
-class GoalRun(GameRun):
-    def __init__(self, name, assetSpread, gameMode, gameDate, startTime = None):
-        super().__init__(name, assetSpread, gameMode, gameDate, startTime)
 
 
 class Blitz:
@@ -155,7 +87,7 @@ class Blitz:
         
         pygame.draw.rect(screen,(0,0,0),(205,405,320,60),5,10)# displays the starting duration
 
-        txt = "Blitz Duration : " + self.currentRun.duration
+        txt = "Blitz Duration : " + self.currentRun.gameDuration
         drawCenterTxt(screen,txt,35,(200,200,200),(365,420),centerY=False)
 
 

@@ -14,7 +14,6 @@ from Classes.imports.Messages import ErrorMessageHandler
 from Classes.imports.Animations import BuyAnimation
 from functools import lru_cache 
 pygame.font.init()
-pygame.mixer.init()
 pygame.init()
 
 TXTCOLOR = (220,220,220)
@@ -52,9 +51,11 @@ font45 = fonts(45)
 GRAPHRANGES = ["1H","1D","5D","1M","6M","1Y","5Y"]
 MINRANGE = GRAPHRANGES[0]
 MAXRANGE = GRAPHRANGES[-1]
+STARTCASH = 10_000
+DEFAULTSTARTDATE = datetime(2050,1,1,9,30,0)
 INDEXNAMES = ["TDIF","IEIF", "FHMF","Total"]
 INDEXFULLNAMES = ['Tech Digital Innovation Fund','Industrial Evolution Index Fund','Future Health Momentum',"Total Market"]
-
+DFORMAT = "%m/%d/%Y %I:%M:%S %p"
 STOCKNAMES = ['QSYN','NRLX','CMDX','PRBM','GFRG','ASCS','BGTX','MCAN','VITL']
 FULLSTOCKNAMES = ["QuantumSync Solutions","NeuraNex Technologies","CloudMatrix Systems","Precision Robotics Manufacturing","GreenForge Materials","Atlas Supply Chain Solutions","BioGenix Therapeutics","MediCare Analytics","Vitality Senior Living"]
 FSTOCKNAMEDICT = {STOCKNAMES[i]:FULLSTOCKNAMES[i] for i in range(len(STOCKNAMES))}
@@ -84,33 +85,16 @@ animationList : list[BuyAnimation] = []
 
 soundEffects = {# soundEffects['generalClick'].play()
     # 'menuClick': pygame.mixer.Sound(r'Assets\Soundeffects\menuClick.wav'),
-    'menuClick': pygame.mixer.Sound(r'Assets\NewSoundEffects\menuClick.wav'),
+    'menuClick': pygame.mixer.Sound(r'Assets\SoundEffects\menuClick.wav'),
     'generalClick': pygame.mixer.Sound(r'Assets\Soundeffects\generalClick.wav'),
     'error' : pygame.mixer.Sound(r'Assets\Soundeffects\error.wav'),
     # 'buy': pygame.mixer.Sound(r'Assets\Soundeffects\buy.wav'),
-    'buyStock': pygame.mixer.Sound(r'Assets\NewSoundEffects\buyStock.wav'),
-    'buyOption': pygame.mixer.Sound(r'Assets\NewSoundEffects\OptionBuy.wav'),
-    'sellGain' : pygame.mixer.Sound(r'Assets\NewSoundEffects\sellGain.wav'),
-    'sellLoss' : pygame.mixer.Sound(r'Assets\NewSoundEffects\sellLoss.wav'),
-    'buyLoan' : pygame.mixer.Sound(r'Assets\NewSoundEffects\buyStock.wav')
+    'buyStock': pygame.mixer.Sound(r'Assets\SoundEffects\buyStock.wav'),
+    'buyOption': pygame.mixer.Sound(r'Assets\SoundEffects\OptionBuy.wav'),
+    'sellGain' : pygame.mixer.Sound(r'Assets\SoundEffects\sellGain.wav'),
+    'sellLoss' : pygame.mixer.Sound(r'Assets\SoundEffects\sellLoss.wav'),
+    'buyLoan' : pygame.mixer.Sound(r'Assets\SoundEffects\buyStock.wav')
 }
-
-musicThemes = {}
-for song in os.listdir(r'Assets\Music\themes'):
-    musicThemes[f'maintheme{song}'] = rf'Assets\Music\themes\{song}'
-print(musicThemes)
-
-def playmusic(musicdata):
-    if musicdata[0] == 0:
-        pygame.mixer.music.load(r"Assets\Music\themes\maintheme1.wav")
-        pygame.mixer.music.play(-1)
-    else:
-        pygame.mixer.music.load(rf"Assets\Music\themes\maintheme{musicdata[0]}.wav")
-        pygame.mixer.music.play(-1)
-        pygame.mixer.music.get_endevent
-    pygame.mixer.music.set_volume(musicdata[1])
-    
-    return musicdata
 
 # Mostly used for deciding color of the percent change, it was just really annoying to write out the if statements every time
 p3choice = lambda negative, positive, zero, change : (negative if change < 0 else positive) if round(change,2) != 0 else zero
@@ -170,18 +154,18 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
     return renderlist
 emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 
-def getScreenRefreshBackGrounds(surface:pygame.Surface):
+def getScreenRefreshBackGrounds(screen:pygame.Surface):
+    background = pygame.image.load(r'Assets\GameBackground.png').convert_alpha()
+    background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
+    screen.fill((30,30,30))
+    screen.blit(background,(0,0))
+    surface = screen.copy()
+
     menuSurface = surface.copy()
     screenSurface = surface.copy()
-    # menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
     menupoints = [(185,95),(1910,95),(1910,980),(185,980)]
-    # topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]
     gfxdraw.filled_polygon(menuSurface, menupoints,(40,40,40,150))
     pygame.draw.polygon(menuSurface, (0,0,0), menupoints,5)
-
-    # gfxdraw.filled_polygon(menuSurface, topbarpoints,(85,85,85))
-    # pygame.draw.polygon(menuSurface, (0,0,0), topbarpoints,5)
-
         
     return menuSurface,screenSurface
 def doBuffer(screen:pygame.Surface,backgroundBtyes):
@@ -597,42 +581,32 @@ def time_loop(loop):
         print(f"Loop took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-def setGameTime(gametime):
-    with open('Assets/extradata.json','r') as file:
+def setGameTime(gametime,dataDir):
+    with open(os.path.join(dataDir,"ExtraData"),'r') as file:
         data = json.load(file)
         if data:
             gametime.setTimeStr(data[0])
             # return gametime
-def Getfromfile(stockdict:dict,indexFunds:dict,player,gametime):
-    with open('Assets/extradata.json','r') as file:
+def Getfromfile(stockdict:dict,indexFunds:dict,player,gametime,dataDir):
+    with open(os.path.join(dataDir,"ExtraData"),'r') as file:
         data = json.load(file)
-        print(data)
         if data:
-            # gametime.setTimeStr(data[0])
-            # player.stocks = [[stockdict[stock[0]],stock[1],stock[2]] for stock in data[1]]#[name,price,obj] can't save the object so I save the name and use that to get the object
-            # print(data[1])
             player.stocks = [StockAsset(player,stockdict[stock[0]],stock[1],stock[2],stock[3],dividends=stock[4],portfolioPercent=stock[5]) for stock in data[1]]# [stockobj,creationdate,ogprice,quantity]
             player.options = [OptionAsset(player,stockdict[option[0]],option[1],option[2],option[3],option[4],option[5],porfolioPercent=option[6],ogValue=option[7],color=tuple(option[8])) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity,ogprice]
             player.loans = [LoanAsset(loan[0],loan[1],loan[2],loan[3],loan[4],loan[5]) for loan in data[3]]# loans storage is [rate,term,principal,principalLeft,interestpaid, termleft]
             player.indexFunds = [IndexFundAsset(player,indexFunds[indexfund[0]],indexfund[1],indexfund[2],indexfund[3],dividends=indexfund[4],portfolioPercent=indexfund[5]) for indexfund in data[4]]# indexfunds storage is [name,creationdate,ogprice,quantity,dividends]
-            # player.graphrange = data[3]
             player.cash = data[5] if data[5] != 0 else 2500
-            musicdata = (data[6])
-
             player.getExtraData(data[7],gametime)
-            # for i,stockobj in enumerate(stockdict.values()):
-            #     stockobj.graphrange = data[i+6]
-            return musicdata
+           
         else:
             player.getExtraData(None,gametime)
-        return [0,0,0]# time, volume, songindex
 
-def Writetofile(stocklist,player,data):
+def Writetofile(stocklist,player,data,dataDir):
     for stock in stocklist:
         stock.save_data()
     player.save_data()
     
-    with open('Assets/extradata.json','w') as file:
+    with open('dataDir/extradata.json','w') as file:
         file.seek(0)# go to the start of the file
         file.truncate()# clear the file
         json.dump(data,file)

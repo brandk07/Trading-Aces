@@ -165,6 +165,12 @@ make the piechart in the portfolio have the lines like the other one (11/17/2024
 Create a new animation for selling and for creating a new game (11/24/2024)
     - one of them should you a sine wave to create a spiral of all the dots
 
+Add credit score for calculating loan price and interest rate (12/10/2024)
+
+try to add the icon thing in run types to the game run rather than all the other ones, (12/10/2024)
+    you have to have the create custom files method called so not sure how that works
+    should be able to remove the createCustomFile() method in general from the child classes - they are very similar
+
 Done ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am
