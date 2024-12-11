@@ -1,11 +1,7 @@
-import pygame
 import pygame.camera
-from Defs import *
-from pygame import gfxdraw
-from Classes.imports.UIElements.SelectionElements import SelectionBar
-from Classes.Menus.startMenus.CreateMenu import CreateMenu
-from Classes.imports.Animations import BuyAnimation
+from Classes.Menus.startMenus.CreateMenu import *
 from Classes.Menus.startMenus.StartMenu import StartMenu
+
 
 def get_key_name(key_event, shift_pressed=False):
     """
@@ -38,14 +34,22 @@ def get_shift_state():
 
 
 class StartMain:
-    def __init__(self) -> None:
+    def __init__(self,gametime) -> None:
 
         self.gameMode = 'start'# play, create, settings , credit, or start
-        self.menus : str[CreateMenu] = {'create':CreateMenu(self),'play':None,'settings':None,'credit':None,'start':StartMenu()}
-        self.pastRuns = {}# the past runs that the player has done
+        self.menus : str[CreateMenu] = {'create':CreateMenu(self,gametime),'play':None,'settings':None,'credit':None,'start':StartMenu()}
+        
+        self.pastRuns = {'Career':list[CareerRun],'Blitz':list[BlitzRun],'Goal':list[GoalRun]}# the past runs that the player has done
+        self.loadPastRuns()
+
+        # --------------------------------------------- Temporary ---------------------------------------------
+        blitzRuns = [BlitzRun(f'Blitz Run {i}',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,5000),randint(0,5000)],"1M",'01/02/2030 09:30:00 AM') for i in range(5)]
+        blitzRuns.append(BlitzRun(f'Blitz Run Timed',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000)],"3Y",'01/02/2030 09:30:00 AM'))
+
 
     def loadPastRuns(self):
-        pass
+        for mode in self.pastRuns:
+            self.pastRuns[mode] = []
     def validName(self,name:str):
         """returns True if the name is valid"""
         if len(name) < 3:
@@ -69,6 +73,7 @@ class StartMain:
         createSurf.blit(extraSurf,(0,0))
         drawBoxedImage(createSurf,(150,10),tempSurf,(1620,1060),25,5)# main box
         return createSurf,extraSurf
+    
     def drawStartMenu(self, screen: pygame.Surface, clock:pygame.time.Clock):
         mousebuttons,key = 0,None
 
@@ -83,7 +88,7 @@ class StartMain:
                 screen.blit(createSurf,(0,0))
             else:
                 screen.blit(backSurf,(0,0))
-
+            
             match self.gameMode:
                 case 'start':
                     n = self.menus['start'].draw(screen,mousebuttons)
@@ -91,6 +96,7 @@ class StartMain:
                         self.gameMode = n.lower()
                 case 'create':
                     if self.menus['create'].draw(screen,mousebuttons,key):
+                        self.pastRuns[self.menus['create'].mode.capitalize()].append(self.menus['create'].currentRun)# add the run to the past runs
                         break
                 case 'play':
                     pass
@@ -122,6 +128,7 @@ class StartMain:
             pygame.display.flip()
             clock.tick(180)
 
+        return self.pastRuns
 
 
 

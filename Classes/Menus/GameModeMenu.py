@@ -13,7 +13,7 @@ TIME_PERIODS = {
     '3Y': relativedelta(years=3),
     '5Y': relativedelta(years=5)
 }
-
+STARTCASH = 10_000
 class GameModeMenu(Menu):
     def __init__(self,stocklist,player,pastRuns:dict,currentRun) -> None:
         """Gets the past runs {'Blitz':[BlitzRun : obj],'Career':[],'Goal':[]}"""
@@ -51,7 +51,7 @@ class GameRun:
     def __init__(self,name:str,assetSpread:list,gameMode,gameDate,startTime:str=None) -> None:
         """Start time is real time (no relation to the game time) that is why the gameDate is needed"""
         assert type(assetSpread) == list, "The asset spread must be a list"
-        assert len(assetSpread) == 5, "The asset spread must have 5 values"
+        # assert len(assetSpread) == 5, "The asset spread must have 5 values"
         assert gameMode in ['Blitz','Career','Goal'], "The game mode must be either 'Blitz', 'Career', or 'Goal'"
         assert type(gameDate) == str, "The game date must be a string"
         assert startTime == None or type(startTime) == str, "The start time must be a string"
@@ -59,11 +59,12 @@ class GameRun:
         self.name = name
         self.startTime = datetime.datetime.now() if startTime == None else datetime.datetime.strptime(startTime,"%m/%d/%Y %I:%M:%S %p")
         
-        self.assetSpread = assetSpread# end value of all in each category [stocks, options, indexFunds, cash, loans]
-        self.loans = assetSpread[-1]
+        self.assetSpread = assetSpread if len(assetSpread) == 5 else [0,0,0,STARTCASH,0]# end value of all in each category [stocks, options, indexFunds, cash, loans]
+
+        self.loans = self.assetSpread[-1]
         self.gameMode : str = gameMode
         self.screenShotDir = r"Assets\GameRuns\Screenshots" + f"\{self.name}.png"
-        self.gameDate = datetime.datetime.strptime(gameDate,"%m/%d/%Y %I:%M:%S %p")
+        self.gameDate = datetime.datetime.strptime(gameDate,"%m/%d/%Y %I:%M:%S %p")# the date the game started
         self.networth = sum(self.assetSpread[:-1]) - self.loans
 
         if not os.path.exists(self.screenShotDir):
@@ -96,6 +97,13 @@ class BlitzRun(GameRun):
         """Returns the star rating of the run"""
         return min(5,int((self.networth/20_000)*5))
 
+class CareerRun(GameRun):
+    def __init__(self, name, assetSpread, gameMode, gameDate, startTime = None):
+        super().__init__(name, assetSpread, gameMode, gameDate, startTime)
+
+class GoalRun(GameRun):
+    def __init__(self, name, assetSpread, gameMode, gameDate, startTime = None):
+        super().__init__(name, assetSpread, gameMode, gameDate, startTime)
 
 
 class Blitz:
@@ -114,8 +122,10 @@ class Blitz:
         self.sideScroll.loadCards(list(self.sideScrollCards.values()))
 
         self.selectedRun : BlitzRun = None
-        run = max(self.pastRuns,key=lambda x:x.networth)# gets the best run to start
-        self.sideScroll.setCard(obj=self.sideScrollCards[run.name])# sets the card to the best run
+        if len(self.pastRuns) > 0:
+            run = max(self.pastRuns,key=lambda x:x.networth)# gets the best run to start
+            self.sideScroll.setCard(obj=self.sideScrollCards[run.name])# sets the card to the best run
+
 
     def drawPieCharts(self,screen,mousebuttons,run:BlitzRun=None,maxRun=False):
         colors = [(0, 150, 136),(255, 69, 0), (65, 105, 225),(12, 89, 27)]
@@ -204,7 +214,7 @@ class Blitz:
             
 
         else:
-            self.sideScroll.setCard(None)
+            # self.sideScroll.setCard(None)
             self.drawPieCharts(screen,mousebuttons)
             self.drawRunsInfo(screen,mousebuttons,gametime)
         # pass

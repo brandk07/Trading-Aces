@@ -8,24 +8,28 @@ from Defs import *
 from pygame import gfxdraw
 from Classes.imports.UIElements.SelectionElements import SelectionBar
 from Classes.imports.UIElements.SideScroll import SideScroll, CreateMenuRunImage
+from Classes.Menus.GameModeMenu import GameRun,BlitzRun,CareerRun,GoalRun
 
 class CreateMenu:
-    def __init__(self,startMenu) -> None:
+    def __init__(self,startMenu,gametime) -> None:
         self.modeselectionBar : SelectionBar = SelectionBar()
-        self.customizeBar : SelectionBar = SelectionBar(allowSelcNone=True)
-        self.mode = 'blitz'# career, goal, or blitz
-        self.gameModes = ['blitz','career','goal']
+        self.customizeBar : SelectionBar = SelectionBar(allowSelcNone=True)# the bar for the customization (blits is time, career is mode[career/sandbox], goal is target)
+        self.mode = 'career'# career, goal, or blitz
+        self.gameModes = ['career','blitz','goal']
         self.modeColors = {self.gameModes[i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
         self.currentName = 'Game Name'
         self.startMenu : 'StartMain' = startMenu
         self.gameIcons = [pygame.image.load(rf'Assets\GameRuns\game Icons\image {i}.png') for i in range(1,9)]
-        
+        self.gametime = gametime
         self.sideScroll = SideScroll((180,325),(520,110),(70,70))
         self.runIcons = [pygame.transform.smoothscale(g,(70,70)) for g in self.gameIcons]
         self.runIcons = [CreateMenuRunImage(self.sideScroll,g) for g in self.runIcons]
         self.sideScroll.loadCards(self.runIcons)
         self.sideScroll.setCard(index=0)
         self.haveError = False
+
+        self.currentRun = None
+
         # self.surf = pygame.Surface((1920,1080),pygame.SRCALPHA)
         # self.surf.fill((60,60,60,200))
     
@@ -60,7 +64,7 @@ class CreateMenu:
     def drawInDepthInfo(self,screen):
         """Draws the in depth info about the mode under the mode selection"""
         drawCenterTxt(screen,self.mode.capitalize(),85,self.modeColors[self.mode],(180,600),centerX=False,centerY=False)# title
-        pygame.draw.rect(screen,(0,0,0),pygame.Rect(170,590,540,430),5,border_radius=10)# rect under the game mode selector (says more info about the mode)
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(170,590,540,310),5,border_radius=10)# rect under the game mode selector (says more info about the mode)
         descriptions = {
             "blitz": "In blitz mode, you have limited time to maximize networth in a high-volatility market. All stocks have 2x normal price swings, requiring quick analysis and decisive trading.",
             "career": "In career mode, you unlimited time to build wealth in a standard market. Start with $10k and unlock advanced tools at wealth milestones.",
@@ -138,7 +142,16 @@ class CreateMenu:
 
         n = drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),color,mousebuttons)
 
-        if n:
+        if n and not self.haveError:# if the create game button is pressed and its all good, then create the game and enter it
+            if self.mode == 'blitz':# if the mode is blitz
+                time = self.customizeBar.getSelected()
+                self.currentRun = BlitzRun(self.currentName,[],time,self.gametime.getTime())
+            elif self.mode == 'career':
+                mode = self.customizeBar.getSelected()
+                self.currentRun = CareerRun(self.currentName,mode)
+            elif self.mode == 'goal':
+                target = self.customizeBar.getSelected()
+                self.currentRun = GoalRun(self.currentName,target)
             animationList.append(BuyAnimation((mousex,mousey),5,animationList))
 
         if self.haveError and pygame.Rect(170,450,540,130).collidepoint(mousex,mousey):
@@ -148,10 +161,6 @@ class CreateMenu:
     def draw(self,screen,mousebuttons,key):
         """Draws the create game menu"""
         self.haveError = False# resets the error for each draw
-         
-        # pygame.draw.rect(screen,(60,60,60),pygame.Rect(150,10,1620,1060),border_radius=25)# main box
-        
-        
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(150,10,1620,1060),5,border_radius=25)# main box border
 
@@ -161,15 +170,13 @@ class CreateMenu:
 
         self.drawModeNameSelection(screen,mousebuttons,key)# draws the name and mode selection
 
-        self.drawInDepthInfo(screen)
+        self.drawInDepthInfo(screen)# draws the in depth info about the mode
 
-        self.drawCustomizeInfo(screen,mousebuttons)
+        self.drawCustomizeInfo(screen,mousebuttons)# draws the customize info on the right side of the screen
         
-        self.sideScroll.draw(screen,mousebuttons)
+        self.sideScroll.draw(screen,mousebuttons)# draws the side scroll
 
-        self.drawImageSelection(screen,mousebuttons)
-        
-
+        self.drawImageSelection(screen,mousebuttons)# draws the image selection on the left top side of the screen
 
         # return not drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),(200,200,200),mousebuttons)# returns False if the create game button is pressed
         return self.drawCreateGameBox(screen,mousebuttons)

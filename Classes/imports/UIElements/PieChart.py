@@ -415,7 +415,14 @@ class PieChartSideInfo:
             nameList = ["Sell","Buy","Speculate"]
             
             menuDict = screenManager.screens  
-            iconsNames = ['Portfolio','Stockbook','Options'] if name in menuDict['Stockbook'].stocknames else ['Portfolio','Bank','Options']
+            # iconsNames = ['Portfolio','Stockbook','Options'] if name in menuDict['Stockbook'].stocknames else ['Portfolio','Bank','Options']
+            iconsNames = ['Options']
+            extra1 = "Options" if ("call" in name.lower() or "put" in name.lower()) else 'Portfolio'
+            iconsNames.insert(0,extra1)
+
+            extra = "Stockbook" if name in menuDict['Stockbook'].stocknames else "Bank"
+            extra = "Options" if ("call" in name.lower() or "put" in name.lower()) else extra
+            iconsNames.insert(1,extra)
             for i in range(3):
                 iconName = iconsNames[i]                
 
@@ -435,7 +442,10 @@ class PieChartSideInfo:
                         elif iconName == 'Portfolio':# if the portfolio is clicked, then set the selected asset to the one the mouse is over
                             menuDict['Portfolio'].selectedAsset = menuDict['Portfolio'].findAsset(value,name)
                         elif iconName == 'Options':
-                            menuDict['Options'].setSelectedAsset(menuDict['Portfolio'].findAsset(value,name))
+                            if nameList[i] == "Sell":
+                                menuDict['Options'].screenSelection.setSelected("Sell")
+                            elif nameList[i] == "Buy":
+                                menuDict['Options'].screenSelection.setSelected("Buy")
                         elif iconName == 'Bank':
                             menuDict['Bank'].menuSelection.setSelected("Investments")
                             menuDict['Bank'].investScreen.fundSelection.setSelected(name)

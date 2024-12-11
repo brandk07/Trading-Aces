@@ -305,9 +305,9 @@ class LinedLatter():
     def scrollcontrols(self, mousebuttons, coords, wh):
         mousex,mousey = pygame.mouse.get_pos()
         if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]),mousex,mousey):
-            if mousebuttons == 4 and (self.scrollvalue+len(self.data)*self.elementHeight)-self.elementHeight > 0:
+            if mousebuttons == 5 and (self.scrollvalue+len(self.data)*self.elementHeight)-self.elementHeight > 0:
                 self.scrollvalue -= 30; self.needToUpdate = True
-            elif mousebuttons == 5 and self.scrollvalue < self.elementHeight:
+            elif mousebuttons == 4 and self.scrollvalue < self.elementHeight:
                 self.scrollvalue += 30; self.needToUpdate = True
 
     def draw(self,screen,mousebuttons:int,coords:tuple):

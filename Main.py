@@ -43,10 +43,13 @@ fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 # stocknames = ['DRON','FACE','FARM','HOLO','SUNR','BOTS','GENX','NEUR','STAR']
 
 
+gametime = GameTime("01/01/2030 00:00:00",GAMESPEED)
+setGameTime(gametime)
 
-# startmenu = StartMain()
-# startmenu.drawStartMenu(screen,clock)
+startmenu = StartMain(gametime)
+pastRuns = startmenu.drawStartMenu(screen,clock)
 
+# pastRuns = {'Blitz':blitzRuns,'Career':[],'Goal':[]}
 
 stocknames = STOCKNAMES
 stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
@@ -56,8 +59,8 @@ stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0)
 
 # CREATING OBJECTS NEEDED FOR FILE DATA
 transact = Transactions()
-gametime = GameTime("01/01/2030 00:00:00",GAMESPEED)
-setGameTime(gametime)
+
+
 player = Player(stocknames,stockcolors[-1],transact,gametime)
 # stockdict = {name:Stock(name,(20,400),10,stockcolors[i],Player,stocknames) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stockdict = {name:Stock(name,stockcolors[i],gametime,stockVolatilities[i]) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
@@ -87,13 +90,8 @@ stockbook = Stockbook(stocklist,gametime,orderScreen)
 portfolio = Portfolio(stocklist,player,gametime,tmarket)
 optiontrade = Optiontrade(stocklist,gametime,player)
 bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
-blitzRuns = [BlitzRun(f'Blitz Run {i}',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,5000),randint(0,5000)],"1M",'01/02/2030 09:30:00 AM') for i in range(5)]
 
-blitzRuns.append(BlitzRun(f'Blitz Run Timed',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000)],"3Y",'01/02/2030 09:30:00 AM'))
-
-pastRuns = {'Blitz':blitzRuns,'Career':[],'Goal':[]}
-
-gameModeMenu = GameModeMenu(stocklist,player,pastRuns,blitzRuns[0])
+gameModeMenu = GameModeMenu(stocklist,player,pastRuns,pastRuns["Blitz"][0])
 menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
 # menuList = list(menuDict.values())
 screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime)# Handles the drawing of both the screens (stock + home) and the menus (menudict)

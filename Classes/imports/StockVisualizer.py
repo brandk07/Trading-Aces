@@ -70,7 +70,7 @@ class StockVisualizer:
             mousepoint = (len(self.stockObj.graphs[truegraphrange])-pos)# the amount of points from the mouse to the end of the graph (just the index of the point in the graph list)
 
             time_offset = self.calculateTime(truegraphrange,mousepoint)# gets the time of the stock where the mouse is hovering
-            percentchange = round(((self.stockObj.graphs[truegraphrange][int(pos)]/self.stockObj.graphs[truegraphrange][0])-1)*100,2)
+            percentchange = ((self.stockObj.graphs[truegraphrange][int(pos)]/self.stockObj.graphs[truegraphrange][0])-1)*100
             color = p3choice((200,0,0),(0,200,0),(200,200,200),percentchange)
 
             valuetext = s_render(f'${self.stockObj.graphs[truegraphrange][int(pos)]:,.2f}',60,color)# the value of the stock
@@ -313,7 +313,8 @@ class StockVisualizer:
         # Setting variables that are used in all presets
         percent = self.stockObj.getPercent(graphrange)
         percentColor = p3choice((175,0,0),(0,175,0),(175,175,175),percent)
-        change_text = p3choice(f'{percent:.2f}%',f'+{percent:.2f}%',f'{percent:.2f}%',percent)
+        percentTxt = limit_digits(percent,24)
+        change_text = p3choice(f'{percentTxt}%',f'+{percentTxt}%',f'{percentTxt}%',percent)
         swappable = False
         if preset in ["hoverName"]:# if it is a preset that allows for the stock to be swapped 
             swappable = True
