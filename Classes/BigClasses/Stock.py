@@ -72,7 +72,7 @@ class Stock():
     an object of stockVisualizer is created to visualize the stock"""
 
     def __init__(self,name,color,gametime,volatility,gameRun) -> None:
-        self.color,self.name = color,
+        self.color,self.name = color,name
         self.gameRun = gameRun
         
         #variables for graphing the stock 

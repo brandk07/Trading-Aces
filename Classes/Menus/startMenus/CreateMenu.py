@@ -20,7 +20,8 @@ class CreateMenu:
         self.modeColors = {self.gameModes[i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
         self.currentName = 'Game Name'
         self.startMenu : 'StartMain' = startMenu
-        self.gameIcons = [pygame.image.load(rf'Assets\Run Icons\image {i}.png') for i in range(1,9)]
+        
+        self.gameIcons = [pygame.image.load(rf'Classes\BigClasses\RunIcons\image ({i}).png') for i in range(8)]
         self.gameIconScroll = SideScroll((180,325),(520,110),(70,70))# the side scroll for the game icons
         self.runIcons = [pygame.transform.smoothscale(g,(70,70)) for g in self.gameIcons]
         self.runIcons = [CreateMenuRunImage(self.gameIconScroll,g) for g in self.runIcons]
@@ -161,7 +162,6 @@ class CreateMenu:
 
         if n and not self.haveError:# if the create game button is pressed and its all good, then create the game and enter it
             self.createNewRun()
-            animationList.append(BuyAnimation((mousex,mousey),5,animationList))
 
         if self.haveError and pygame.Rect(170,450,540,130).collidepoint(mousex,mousey):
             drawCenterTxt(screen,"Please fill out all fields",40,(255,150,150),(mousex+20,mousey),centerX=False,centerY=False,font='light')
@@ -170,11 +170,6 @@ class CreateMenu:
     def draw(self,screen,mousebuttons,key):
         """Draws the create game menu"""
         self.haveError = False# resets the error for each draw
-
-
-        self.customizeBar.setSelected('1Y')
-        self.modeselectionBar.setSelected('Blitz')
-
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(150,10,1620,1060),5,border_radius=25)# main box border
 

@@ -171,7 +171,12 @@ try to add the icon thing in run types to the game run rather than all the other
     you have to have the create custom files method called so not sure how that works
     should be able to remove the createCustomFile() method in general from the child classes - they are very similar
 
-Done ------------------------------
+create typing class/text box that has everything nice and copyable (12/12/24)
+
+options are priced wrong cause they are filled before the points are modifed, just make them fill if they are empty on each game loop ()
+    Also need to store the options
+
+D/one ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
 improve performance in portfolio, none of the texts are cached (including the pie chart) (12/14/23) - (12/16/23) 11:12am
 baredraw has problem when increasing the amount of points per graph (12/16/23)

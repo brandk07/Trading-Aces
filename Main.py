@@ -18,7 +18,7 @@ from Classes.imports.Transactions import Transactions
 from Classes.Menus.StockBook import Stockbook
 from Classes.Menus.OptionScreens.OptionMenu import Optiontrade
 from Classes.Menus.BankMenu import BankMenu
-from Classes.Menus.GameModeMenu import GameModeMenu,BlitzRun
+from Classes.Menus.GameModeMenu import GameModeMenu,GameRun
 from Classes.Menus.startMenus.StartMain import StartMain
 from Classes.Menus.Menu import ScreenManager
 
@@ -42,10 +42,10 @@ fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 
 # ------------------------------------------ Start of the Start Menu ------------------------------------------
 startmenu = StartMain()
-currentRun = startmenu.drawStartMenu(screen,clock)
+currentRun : GameRun = startmenu.drawStartMenu(screen,clock)
 pastRuns = startmenu.pastRuns
 
-gametime = GameTime("01/01/2030 00:00:00",GAMESPEED)
+gametime = GameTime(DEFAULTSTARTDATE.strftime(DFORMAT),GAMESPEED)
 setGameTime(gametime,currentRun.getFileDir())
 
 stocknames = STOCKNAMES
@@ -55,12 +55,12 @@ stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0)
 
 
 transact = Transactions(currentRun.getFileDir())
-player = Player(stocknames,stockcolors[-1],transact,gametime)
-stockdict = {name:Stock(name,stockcolors[i],gametime,stockVolatilities[i]) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+player = Player(stocknames,stockcolors[-1],transact,gametime,currentRun)
+stockdict = {name:Stock(name,stockcolors[i],gametime,stockVolatilities[i],currentRun) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
 stocklist = [stockdict[name] for name in stocknames]
 indexfundColors = [(217, 83, 149),(64, 192, 128),(138, 101, 235)]
-indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3]) for i,name in enumerate(["TDIF","IEIF", "FHMF"])]# Tech, industrial, health
-tmarket = TotalMarket(gametime,stocklist)
+indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3],currentRun) for i,name in enumerate(["TDIF","IEIF", "FHMF"])]# Tech, industrial, health
+tmarket = TotalMarket(gametime,stocklist,currentRun)
 indexFunds.append(tmarket)
 indexFundDict = {fund.name: fund for fund in indexFunds}
 
@@ -74,7 +74,7 @@ portfolio = Portfolio(stocklist,player,gametime,tmarket)
 optiontrade = Optiontrade(stocklist,gametime,player)
 bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
 
-gameModeMenu = GameModeMenu(stocklist,player,pastRuns,pastRuns["Blitz"][0])
+gameModeMenu = GameModeMenu(stocklist,player,pastRuns,currentRun)
 menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
 screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
 player.screenManager = screenManager
@@ -126,6 +126,7 @@ if __name__ == "__main__":
             gametime.speedBar.redraw()
 
        
+        player.updateRunAssetSpread()# updates the asset spread for the current run
 
         screenManager.drawCurrentScreen(screen,mousebuttons,stocklist,player,gametime)
 
@@ -149,7 +150,8 @@ if __name__ == "__main__":
                 data.append(player.extraSavingData())
 
                 Writetofile(stocklist,player,data,currentRun.getFileDir())
-                transact.storeTransactions()
+                transact.storeTransactions(currentRun.getFileDir())
+                currentRun.saveRun()
                 pygame.quit()
                 quit()
 

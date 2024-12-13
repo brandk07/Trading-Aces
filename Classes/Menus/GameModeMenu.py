@@ -55,12 +55,13 @@ class Blitz:
 
         self.selectedRun : BlitzRun = None
         if len(self.pastRuns) > 0:
-            run = max(self.pastRuns,key=lambda x:x.networth)# gets the best run to start
+            run = max(self.pastRuns,key=lambda x:x.getNetworth())# gets the best run to start
             self.sideScroll.setCard(obj=self.sideScrollCards[run.name])# sets the card to the best run
 
 
     def drawPieCharts(self,screen,mousebuttons,run:BlitzRun=None,maxRun=False):
         colors = [(0, 150, 136),(255, 69, 0), (65, 105, 225),(12, 89, 27)]
+        
         names = ['Stocks','Options','Index Funds','Cash']
         if run != None:
             values = [(val,name,color) for (val,name,color) in zip(run.assetSpread[:-1],names,colors)]
@@ -106,7 +107,7 @@ class Blitz:
             (f"Name",f"{self.currentRun.name}"),
             (f"Start Time",f"{self.currentRun.getFormattedStartTime()}"),
             (f"End Time",f"{self.currentRun.getRealEndTimeTxt()}"),
-            (f"Final Loan Value",f"${limit_digits(self.currentRun.loans,25,True)}"),
+            (f"Liabilities (Loans)",f"${limit_digits(self.currentRun.getLoans(),25,True)}"),
 
         ]
         drawLinedInfo(screen,(1450,160),(450,375),info,40,(180,180,180))
@@ -119,21 +120,21 @@ class Blitz:
                 (f"Name",f"{run.name}"),
                 (f"Start Time",f"{run.getFormattedStartTime()}"),
                 (f"End Time",f"{run.getRealEndTimeTxt()}"),
-                (f"Final Loan Value",f"${limit_digits(run.loans,25,True)}"),
+                (f"Liabilities (Loans)",f"${limit_digits(run.getLoans(),25,True)}"),
             ]
             drawLinedInfo(screen,(1450,600),(450,375),info,40,(180,180,180))
-        
-
 
     def draw(self,screen,mousebuttons,gametime):
         
         self.drawBlitzInfo(screen,mousebuttons,gametime)
-        if len(self.pastRuns) > 1:# if there are more than just the current run
+        if len(self.pastRuns) > 0:# if there are more than just the current run
             self.selectedRun = None if self.sideScroll.getCard() == None else self.sideScroll.getCard().runObj# gets the selected run
-            maxRun = max(self.pastRuns,key=lambda x:x.networth)
+            maxRun = max(self.pastRuns,key=lambda x:x.getNetworth())
             run = self.selectedRun if self.selectedRun != None else maxRun# if the run is None then make it the best run
             if self.selectedRun == None:# if the selected run was None then set the card to the best run
                 self.sideScroll.setCard(obj=self.sideScrollCards[run.name])
+
+            self.sideScroll.getCard().dataConfig(run); self.sideScroll.getCard().updateSurf()
                 
             
             # self.drawPastRuns()'

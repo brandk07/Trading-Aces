@@ -36,20 +36,46 @@ def get_shift_state():
 class StartMain:
     def __init__(self) -> None:
 
-        self.gameMode = 'create'# play, create, settings , credit, or start
+        self.gameMode = 'start'# play, create, settings , credit, or start
         self.menus : str[CreateMenu] = {'create':CreateMenu(self),'play':None,'settings':None,'credit':None,'start':StartMenu()}
         
-        self.pastRuns = {'Career':list[CareerRun],'Blitz':list[BlitzRun],'Goal':list[GoalRun]}# the past runs that the player has done
+        self.pastRuns : dict[str:list[GameRun]] = {'Career':[],'Blitz':[],'Goal':[]}# the past runs that the player has done
         self.loadPastRuns()
 
         # --------------------------------------------- Temporary ---------------------------------------------
         # blitzRuns = [BlitzRun(f'Blitz Run {i}',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,5000),randint(0,5000)],"1M",'01/02/2030 09:30:00 AM') for i in range(5)]
         # blitzRuns.append(BlitzRun(f'Blitz Run Timed',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000)],"3Y",'01/02/2030 09:30:00 AM'))
-
-
+        
+        
     def loadPastRuns(self):
         for mode in self.pastRuns:
-            self.pastRuns[mode] = []
+            for runName in os.listdir(os.path.join("Saves",mode)):
+                with open(os.path.join("Saves",mode,runName,"BasicInfo.json"),"r") as f:
+                    basicInfo = json.load(f)
+                with open(os.path.join("Saves",mode,runName,"ModeSpecificInfo.json"),"r") as f:
+                    modeSpecificInfo = json.load(f)
+                if mode == 'Career':
+                    pass
+                elif mode == 'Blitz':
+                    print(basicInfo)
+                    print(modeSpecificInfo)
+                    run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],endTime=modeSpecificInfo['endTime'])
+                elif mode == 'Goal':
+                    pass
+                self.pastRuns[mode].append(run)
+
+                    
+            #     if filename.endswith(".json"):
+            #         with open(os.path.join("Saves",mode,filename),"r") as f:
+            #             data = json.load(f)
+            #             if mode == 'Career':
+            #                 self.pastRuns[mode].append(CareerRun(data['name'],data['networth'],data['time'],data['date']))
+            #             elif mode == 'Blitz':
+            #                 self.pastRuns[mode].append(BlitzRun(data['name'],data['networth'],data['time'],data['date']))
+            #             elif mode == 'Goal':
+            #                 self.pastRuns[mode].append(GoalRun(data['name'],data['networth'],data['time'],data['date']))
+
+
     def validName(self,name:str):
         """returns True if the name is valid"""
         if len(name) < 3:
@@ -78,7 +104,6 @@ class StartMain:
         mousebuttons,key = 0,None
 
         createSurf,backSurf = self.getSurfs()
-
         
 
         lastfps = deque(maxlen=300)
@@ -97,16 +122,18 @@ class StartMain:
                 case 'create':
                     if self.menus['create'].draw(screen,mousebuttons,key):
                         self.pastRuns[self.menus['create'].mode.capitalize()].append(self.menus['create'].currentRun)# add the run to the past runs
-                        break
+                        return self.menus['create'].currentRun
                 case 'play':
                     pass
                 case 'settings':
                     pass
                 case 'credit':
                     pass
-            
-            for animation in animationList: animation.update(screen)# update the animations
-    
+            if self.gameMode != 'start':
+                if drawClickableBoxWH(screen,(170,905),(540,130),"Return Home", 75, (0,0,0),(0,210,0),mousebuttons):
+                    self.gameMode = 'start'
+                
+
             mousebuttons,key = 0,None
             screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
             for event in pygame.event.get():
@@ -127,8 +154,6 @@ class StartMain:
                     
             pygame.display.flip()
             clock.tick(180)
-
-        return self.pastRuns
 
 
 

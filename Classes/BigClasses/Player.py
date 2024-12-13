@@ -13,10 +13,10 @@ from Classes.AssetTypes.LoanAsset import LoanAsset
 class Player(Stock):
     
 
-    def __init__(self,stocknames,color,transact,gametime) -> None:
+    def __init__(self,stocknames,color,transact,gametime,gameRun) -> None:
         """Player class is a child of the Stock class price is the networth of the player"""
         name = 'Net Worth'
-        super().__init__(name,color,gametime,0)
+        super().__init__(name,color,gametime,0,gameRun)
         
         self.name = name
         
@@ -308,6 +308,9 @@ class Player(Stock):
             optionObj.quantity -= quantity
             if optionObj.getQuantity() == 0:
                 self.options.remove(optionObj)
+    def updateRunAssetSpread(self):
+        """updates the asset spread of the game run"""
+        self.gameRun.assetSpread = [sum([asset.getValue() for asset in self.stocks]),sum([asset.getValue() for asset in self.options]),sum([asset.getValue() for asset in self.indexFunds]),self.cash,self.getCurrentDebt()]
 
     def getNumStocks(self,stockObj):
         """returns the number of stocks the player has of the stockObj"""

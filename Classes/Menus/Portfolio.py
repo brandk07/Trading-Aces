@@ -101,14 +101,15 @@ class Portfolio(Menu):
         else:# if the selected asset is not None
             self.selectedAsset = sortedassets[newselected]
 
-        # make a text saying displaying # out of # assets
-        screen.blit(self.displayingtext,(1025,105))
-        currenttext = s_render(f'{ommitted[0]} - {ommitted[1]-1}',35,(220,220,220))
-        outoftext = s_render(f' out of {len(sortedassets)}',35,(220,220,220))
+        # drawCenterTxt(screen,"Displaying ",35,(220,220,220),(1025,105),centerX=False,centerY=False)
+        # currenttext = s_render(f'{ommitted[0]} - {ommitted[1]-1}',35,(220,220,220))
+        # outoftext = s_render(f' out of {len(sortedassets)}',35,(220,220,220))
 
-        screen.blit(currenttext,(1025+self.displayingtext.get_width(),105))
+        # screen.blit(currenttext,(1025+self.displayingtext.get_width(),105))
 
-        screen.blit(outoftext,(1025+self.displayingtext.get_width()+currenttext.get_width(),105))
+        # screen.blit(outoftext,(1025+self.displayingtext.get_width()+currenttext.get_width(),105))
+        totalTxt = "Displaying " + str(ommitted[0]) + " - " + str(ommitted[1]-1) + " out of " + str(len(sortedassets))
+        drawCenterTxt(screen,totalTxt,35,(220,220,220),(1025,105),centerX=False,centerY=False)
 
     def assetscroll_controls(self,screen,mousebuttons):
         """Controls for the asset scroll"""

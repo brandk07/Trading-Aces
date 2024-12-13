@@ -9,13 +9,12 @@ TIME_PERIODS = {
     '6M': relativedelta(months=6),
     '1Y': relativedelta(years=1),
     '3Y': relativedelta(years=3),
-    '5Y': relativedelta(years=5)}
-
+    '5Y': relativedelta(years=5) }
 
 class GameRun:
     def __init__(self,name:str,assetSpread:list,gameMode,gameDate,iconIndex,startTime:str=None) -> None:
         """Start time is real time (no relation to the game time) that is why the gameDate is needed"""
-        assert type(assetSpread) == list, "The asset spread must be a list"
+        assert type(assetSpread) == list, "The asset spread must be a list"# [stocks, options, indexFunds, cash, loans]
         # assert len(assetSpread) == 5, "The asset spread must have 5 values"
         assert gameMode in ['Blitz','Career','Goal'], "The game mode must be either 'Blitz', 'Career', or 'Goal'"
         assert (type(gameDate) == str or gameDate == None), "The game date must be a string"
@@ -26,31 +25,35 @@ class GameRun:
         
         self.assetSpread = assetSpread if len(assetSpread) == 5 else [0,0,0,STARTCASH,0]# end value of all in each category [stocks, options, indexFunds, cash, loans]
         self.iconIndex = iconIndex
-        self.loans = self.assetSpread[-1]
+        self.runIcon = pygame.image.load(rf'Classes\BigClasses\RunIcons\image ({self.iconIndex}).png').convert_alpha()
         self.gameMode : str = gameMode
         if gameDate == None:
             self.gameDate = DEFAULTSTARTDATE# default start date
         else:
             self.gameDate = datetime.strptime(gameDate,"%m/%d/%Y %I:%M:%S %p")# the date the game started
-        self.networth = sum(self.assetSpread[:-1]) - self.loans
+        # self.networth = sum(self.assetSpread[:-1]) - self.assetSpread[-1]# the net worth of the player
 
         if not os.path.exists(self.getFileDir()):# if the run does not exist create the files
-            self.massFileCreation(self.getFileDir())# moves/creates all the files for the new run        
-
+            self.massFileCreation(self.getFileDir())# moves/creates all the files for the new run 
+            self.createCustomFile() # creates the mode specific file      
+        
+    def getNetworth(self):
+        return sum(self.assetSpread[:-1]) - self.assetSpread[-1]
+    def getLoans(self):
+        return self.assetSpread[-1]
     def massFileCreation(self,save_dir):
         """Creates the files for the new game"""
-        basicInfo = {"name": self.name,"assetSpread": [],"gameMode": self.gameMode,"gameDate": self.gameDate.strftime(DFORMAT)}
-        # os.makedirs(os.path.join(save_dir, "BasicInfo.json"), exist_ok=True)
-        # with open(os.path.join(save_dir, "BasicInfo.json"), "w") as f:
-        #     json.dump(basicInfo, f)
-        os.makedirs(os.path.join(save_dir, "BasicInfo.json"), exist_ok=True)
-        # info_path = os.path.join(save_dir, "BasicInfo.json")
-        with open(r"Saves\Blitz\Game Name\BasicInfo.json", "w") as f:
+        basicInfo = {"name": self.name,"assetSpread": [],"gameMode": self.gameMode,"gameDate": self.gameDate.strftime(DFORMAT),"iconIndex":self.iconIndex,"startTime":self.startTime.strftime(DFORMAT)}
+
+        os.makedirs(save_dir, exist_ok=True)
+
+        with open(os.path.join(save_dir, "BasicInfo.json"), "w") as f:
             json.dump(basicInfo, f)
+
+        # source = rf"Classes\BigClasses\RunIcons\image {self.iconIndex+1}.png"
+        # dest = os.path.join(save_dir, "RunIcon.png")
+        # shutil.copy2(source, dest)
         
-        source = os.path.join("Assets", "RunIcons", f"image {self.iconIndex}.png")# copy the game icon to the save folder
-        dest = os.path.join(save_dir, "RunIcon.png")
-        shutil.copy2(source, dest)
 
         os.makedirs(os.path.join("Saves", "Blitz", self.name, "ScreenShots"), exist_ok=True)# create the screenshot folder
 
@@ -60,7 +63,7 @@ class GameRun:
         with open(os.path.join(save_dir, "Transactions.json"), "w+") as f:
             json.dump([], f)
         
-        stockDataDir = os.path.join("Assets", "StockData")
+        stockDataDir = os.path.join(save_dir, "StockData")
         os.makedirs(stockDataDir, exist_ok=True)
 
         for name in STOCKNAMES+["Net Worth"]:# create the data files for each stock
@@ -80,26 +83,55 @@ class GameRun:
         return f"Saves/{self.gameMode}/{self.name}/"
     def createCustomFile(self):
         raise NotImplementedError
+    def getModeSpecificInfo(self):
+        raise NotImplementedError
+    def saveRun(self):
+        """Saves the run to the file"""
+        save_dir = self.getFileDir()
+        basicInfo = {"name": self.name,"assetSpread": self.assetSpread,"gameMode": self.gameMode,"gameDate": self.gameDate.strftime(DFORMAT),"iconIndex":self.iconIndex,"startTime":self.startTime.strftime(DFORMAT)}
+        with open(os.path.join(save_dir, "BasicInfo.json"), "w") as f:
+            # f.seek(0)  # go to the start of the file
+            # f.truncate()  # clear the file
+            json.dump(basicInfo, f)
+        with open(os.path.join(save_dir, "ModeSpecificInfo.json"), "w+") as f:
+            # f.seek(0)  # go to the start of the file
+            # f.truncate()  # clear the file
+            json.dump(self.getModeSpecificInfo(), f)
+
 
 class BlitzRun(GameRun):
+
     def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,gameDuration:str,endGameDate=None,startTime:str=None,endTime:str=None) -> None:
         """Being Clear, the gameDate and endGameDate are the dates in the game not the real time
         and the startTime and endTime are the real-life time that the player created and ended the run"""
-        super().__init__(name,assetSpread,'Blitz',gameDate,iconIndex,startTime=startTime)
+ 
+        # These below need to be set before the super call since CreateCustomFile is called in the super call
         self.gameDuration = gameDuration# 1M, 3M, 6M, 1Y, 3Y, 5Y
+        self.endTime = None if endTime == None else datetime.strptime(endTime,"%m/%d/%Y %I:%M:%S %p")# need this cause we don't track how many days have gone by so when gameDate reaches this then game over
+        self.endGameDate = endGameDate# temporary until the createCustomFile is called
 
-        self.endTime = None if endTime == None else datetime.strptime(endTime,"%m/%d/%Y %I:%M:%S %p")
-        self.endGameDate = self.endGameDate if endGameDate != None else self.gameDate + TIME_PERIODS[self.gameDuration]# the date the game ends
-        
-        self.runIcon = pygame.image.load(os.path.join(self.getFileDir(),'RunIcon.png')).convert_alpha()
+        super().__init__(name,assetSpread,'Blitz',gameDate,iconIndex,startTime=startTime)
+
+        if type(self.endGameDate) == str:# in case the createCustomFile isn't called since it wasn't just created
+            # In theory it shouldn't need the if == None cause it should have been set when it was originally created, but just in case
+            self.endGameDate = self.gameDate + TIME_PERIODS[self.gameDuration] if self.endGameDate == None else datetime.strptime(self.endGameDate,"%m/%d/%Y %I:%M:%S %p")
+
+
 
     def createCustomFile(self):
+        self.endGameDate = datetime.strptime(self.endGameDate,"%m/%d/%Y %I:%M:%S %p") if self.endGameDate != None else self.gameDate + TIME_PERIODS[self.gameDuration]# the date the game ends
         save_dir = os.path.join("Saves", "Blitz", self.name)
-        os.makedirs(save_dir, exist_ok=True)
-        info_path = os.path.join(save_dir, "GameModeInfo.json")
-        game_info = {"duration": self.gameDuration}
+        # os.makedirs(save_dir, exist_ok=True)
+        info_path = os.path.join(save_dir, "ModeSpecificInfo.json")
+        
+        game_info = self.getModeSpecificInfo()# change for blitz mode
         with open(info_path, 'w') as f:
             json.dump(game_info, f) 
+
+    def getModeSpecificInfo(self):
+        """Returns the mode specific info for the run"""
+        endTimestr = None if self.endTime == None else self.endTime.strftime(DFORMAT)
+        return {"duration": self.gameDuration,"endGameDate": self.endGameDate.strftime(DFORMAT),"endTime":endTimestr}
 
     def getRealEndTimeTxt(self):
         """Returns the end time in a string format"""
@@ -110,7 +142,7 @@ class BlitzRun(GameRun):
 
     def getStarRating(self):
         """Returns the star rating of the run"""
-        return min(5,int((self.networth/20_000)*5))
+        return min(5,int((self.getNetworth()/20_000)*5))
 
 class CareerRun(GameRun):
     def __init__(self, name, assetSpread, gameMode, gameDate, startTime = None):

@@ -144,8 +144,9 @@ class RunCard(ScrollCard):
         # self.data = {"term":int,"monthly payment":int|float,"principal":int|float,"remaining":int|float}
     def dataConfig(self,runObj):
         image = runObj.runIcon
+        image = pygame.transform.scale(image,(175,175))
         starTxt = f"{runObj.getStarRating()} Star{'s' if runObj.getStarRating() != 1 else ''}"
-        networthTxt = f"${limit_digits(runObj.networth,30,runObj.networth>1000)}"
+        networthTxt = f"${limit_digits(runObj.getNetworth(),30,runObj.getNetworth()>1000)}"
 
         return {"stars":starTxt,"name":runObj.name,"networth":networthTxt,"startTime":runObj.startTime,"runIcon":image}
 
@@ -162,7 +163,8 @@ class RunCard(ScrollCard):
 
         pygame.draw.rect(self.surf,(0,0,0),pygame.Rect(0,0,wh[0],wh[1]),5)
 
-        self.surf.blit(self.data['runIcon'],(5,5))# screenShot (175,175)
+        # self.surf.blit(self.data['runIcon'],(5,5))# screenShot (175,175)
+        drawBoxedImage(self.surf,(10,10),self.data['runIcon'],(175,175),15,5)
 
         drawCenterTxt(self.surf,self.data['stars'],50,(180,180,180),(190+(wh[0]-190)//2,10),centerY=False)
 
