@@ -12,21 +12,23 @@ TIME_PERIODS = {
     '5Y': relativedelta(years=5) }
 
 class GameRun:
-    def __init__(self,name:str,assetSpread:list,gameMode,gameDate,iconIndex,startTime:str=None) -> None:
+    def __init__(self,name:str,assetSpread:list,gameMode,gameDate,iconIndex,runManager,startTime:str=None,lastPlayed:str=None) -> None:
         """Start time is real time (no relation to the game time) that is why the gameDate is needed"""
         assert type(assetSpread) == list, "The asset spread must be a list"# [stocks, options, indexFunds, cash, loans]
         # assert len(assetSpread) == 5, "The asset spread must have 5 values"
         assert gameMode in ['Blitz','Career','Goal'], "The game mode must be either 'Blitz', 'Career', or 'Goal'"
         assert (type(gameDate) == str or gameDate == None), "The game date must be a string"
         assert startTime == None or type(startTime) == str, "The start time must be a string"
+        assert lastPlayed == None or type(lastPlayed) == str, "The last played time must be a string"
         
         self.name = name
         self.startTime = datetime.now() if startTime == None else datetime.strptime(startTime,"%m/%d/%Y %I:%M:%S %p")
-        
+        self.lastPlayed = datetime.now() if lastPlayed == None else datetime.strptime(lastPlayed,"%m/%d/%Y %I:%M:%S %p")
+        self.runManager = runManager
         self.assetSpread = assetSpread if len(assetSpread) == 5 else [0,0,0,STARTCASH,0]# end value of all in each category [stocks, options, indexFunds, cash, loans]
         self.iconIndex = iconIndex
         self.runIcon = pygame.image.load(rf'Classes\BigClasses\RunIcons\image ({self.iconIndex}).png').convert_alpha()
-        self.gameMode : str = gameMode
+        self.gameMode : str = gameMode.capitalize()# the mode of the game (Blitz, Career, Goal)
         if gameDate == None:
             self.gameDate = DEFAULTSTARTDATE# default start date
         else:
@@ -43,7 +45,7 @@ class GameRun:
         return self.assetSpread[-1]
     def massFileCreation(self,save_dir):
         """Creates the files for the new game"""
-        basicInfo = {"name": self.name,"assetSpread": [],"gameMode": self.gameMode,"gameDate": self.gameDate.strftime(DFORMAT),"iconIndex":self.iconIndex,"startTime":self.startTime.strftime(DFORMAT)}
+        basicInfo = {"name": self.name,"assetSpread": [],"gameMode": self.gameMode,"gameDate": self.gameDate.strftime(DFORMAT),"iconIndex":self.iconIndex,"startTime":self.startTime.strftime(DFORMAT),"lastPlayed":datetime.now().strftime(DFORMAT)}
 
         os.makedirs(save_dir, exist_ok=True)
 
@@ -88,7 +90,7 @@ class GameRun:
     def saveRun(self):
         """Saves the run to the file"""
         save_dir = self.getFileDir()
-        basicInfo = {"name": self.name,"assetSpread": self.assetSpread,"gameMode": self.gameMode,"gameDate": self.gameDate.strftime(DFORMAT),"iconIndex":self.iconIndex,"startTime":self.startTime.strftime(DFORMAT)}
+        basicInfo = {"name": self.name,"assetSpread": self.assetSpread,"gameMode": self.gameMode,"gameDate": self.gameDate.strftime(DFORMAT),"iconIndex":self.iconIndex,"startTime":self.startTime.strftime(DFORMAT),"lastPlayed":datetime.now().strftime(DFORMAT)}
         with open(os.path.join(save_dir, "BasicInfo.json"), "w") as f:
             # f.seek(0)  # go to the start of the file
             # f.truncate()  # clear the file
@@ -101,7 +103,7 @@ class GameRun:
 
 class BlitzRun(GameRun):
 
-    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,gameDuration:str,endGameDate=None,startTime:str=None,endTime:str=None) -> None:
+    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,gameDuration:str,runManager,endGameDate=None,startTime:str=None,endTime:str=None,lastPlayed:str=None) -> None:
         """Being Clear, the gameDate and endGameDate are the dates in the game not the real time
         and the startTime and endTime are the real-life time that the player created and ended the run"""
  
@@ -110,7 +112,7 @@ class BlitzRun(GameRun):
         self.endTime = None if endTime == None else datetime.strptime(endTime,"%m/%d/%Y %I:%M:%S %p")# need this cause we don't track how many days have gone by so when gameDate reaches this then game over
         self.endGameDate = endGameDate# temporary until the createCustomFile is called
 
-        super().__init__(name,assetSpread,'Blitz',gameDate,iconIndex,startTime=startTime)
+        super().__init__(name,assetSpread,'Blitz',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed)
 
         if type(self.endGameDate) == str:# in case the createCustomFile isn't called since it wasn't just created
             # In theory it shouldn't need the if == None cause it should have been set when it was originally created, but just in case
@@ -140,9 +142,12 @@ class BlitzRun(GameRun):
         """Returns the start time in a formatted string"""
         return self.startTime.strftime("%m/%d/%Y")
 
-    def getStarRating(self):
-        """Returns the star rating of the run"""
-        return min(5,int((self.getNetworth()/20_000)*5))
+    # def getStarRating(self):
+    #     """Returns the star rating of the run"""
+    #     return min(5,int((self.getNetworth()/20_000)*5))
+    def getRankStr(self) -> str:
+        """Returns the rank of the run"""
+        return ordinal(self.runManager.getRanking(self))
 
 class CareerRun(GameRun):
     def __init__(self, name, assetSpread, gameMode, gameDate, startTime = None):
@@ -169,3 +174,52 @@ class GoalRun(GameRun):
         game_info = {"duration": time}# change for goal mode
         with open(info_path, 'w') as f:
             json.dump(game_info, f) 
+
+class RunManager():
+    """This class Manages all the runs in one convenient place"""
+    def __init__(self):
+        self.pastRuns : dict[str:list[GameRun]] = {'Career':[],'Blitz':[],'Goal':[]}# the past runs that the player has done
+        self.loadPastRuns()
+    def getRuns(self,mode:str):
+        """Returns the runs of the mode"""
+        return self.pastRuns[mode]
+    def getAllRuns(self,inList=False):
+        """Returns all the runs in a dictionary or list if inList is True"""
+        if inList:
+            return [run for mode in self.pastRuns for run in self.pastRuns[mode]]
+        return self.pastRuns
+    def addRun(self,run:GameRun):
+        """Adds the run to the past runs"""
+        self.pastRuns[run.gameMode].append(run)
+    def getRanking(self,run:GameRun):
+        """Returns the ranking of the runs in the mode"""
+        runs = self.pastRuns[run.gameMode]
+        # runs.append(run)
+        runs.sort(key=lambda x:x.getNetworth(),reverse=True)
+        return runs.index(run)+1
+        # return "1"
+    def loadPastRuns(self):
+        for mode in self.pastRuns:
+            for runName in os.listdir(os.path.join("Saves",mode)):
+                with open(os.path.join("Saves",mode,runName,"BasicInfo.json"),"r") as f:
+                    basicInfo = json.load(f)
+                with open(os.path.join("Saves",mode,runName,"ModeSpecificInfo.json"),"r") as f:
+                    modeSpecificInfo = json.load(f)
+                if mode == 'Career':
+                    pass
+                elif mode == 'Blitz':
+                    run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],self,endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],endTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
+                elif mode == 'Goal':
+                    pass
+                self.pastRuns[mode].append(run)
+    def validName(self,name:str):
+        """returns True if the name is valid"""
+        if len(name) < 3:
+            return "-Name must be at least 3 characters long"
+        if name.isspace():
+            return "-Name cannot be all spaces"
+        for mode in self.pastRuns:
+            for run in self.pastRuns[mode]:
+                if run.name == name:
+                    return "-Name already exists"
+        return True

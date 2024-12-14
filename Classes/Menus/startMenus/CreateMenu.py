@@ -8,10 +8,10 @@ from Defs import *
 from pygame import gfxdraw
 from Classes.imports.UIElements.SelectionElements import SelectionBar
 from Classes.imports.UIElements.SideScroll import SideScroll, CreateMenuRunImage
-from Classes.Menus.GameModeMenu import GameRun,BlitzRun,CareerRun,GoalRun
+from Classes.Menus.GameModeMenu import GameRun,BlitzRun,CareerRun,GoalRun,RunManager
 
 class CreateMenu:
-    def __init__(self,startMenu) -> None:
+    def __init__(self,runManager) -> None:
         self.modeselectionBar : SelectionBar = SelectionBar()
         self.customizeBar : SelectionBar = SelectionBar(allowSelcNone=True)# the bar for the customization (blits is time, career is mode[career/sandbox], goal is target)
         
@@ -19,7 +19,7 @@ class CreateMenu:
         self.gameModes = ['career','blitz','goal']
         self.modeColors = {self.gameModes[i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
         self.currentName = 'Game Name'
-        self.startMenu : 'StartMain' = startMenu
+        self.runManager : RunManager = runManager
         
         self.gameIcons = [pygame.image.load(rf'Classes\BigClasses\RunIcons\image ({i}).png') for i in range(8)]
         self.gameIconScroll = SideScroll((180,325),(520,110),(70,70))# the side scroll for the game icons
@@ -82,7 +82,7 @@ class CreateMenu:
         drawCenterTxt(screen,"Name",65,(0,0,0),(730,65),centerX=False,centerY=False)
         self.currentName = text_input(screen,(715,115),(640,75),self.currentName,key,55)
 
-        if type(n:=self.startMenu.validName(self.currentName)) != bool:
+        if type(n:=self.runManager.validName(self.currentName)) != bool:
             self.haveError = True
             drawCenterTxt(screen,n,40,(210,0,0),(730,200),centerX=False,centerY=False)
 
@@ -141,7 +141,7 @@ class CreateMenu:
         if self.mode == 'blitz':# if the mode is blitz
             gameDuration = self.customizeBar.getSelected()
             ind = self.gameIconScroll.getCard(index=True)
-            self.currentRun = BlitzRun(self.currentName,[],None,ind,gameDuration)
+            self.currentRun = BlitzRun(self.currentName,[],None,ind,gameDuration,self.runManager)
 
         elif self.mode == 'career':
             mode = self.customizeBar.getSelected()

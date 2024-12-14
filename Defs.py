@@ -107,6 +107,7 @@ strSizes['.'] = ([fontlist[i].get_rect('.') for i in range(1,199)])
 def getTSizeNums(chars:str, xSpace:int,maxsize:int=199) -> int:
     """Returns the font size that will fit the text in the xSpace"""
     xSpace*=.7
+    if chars == '': return 1
     def getSize(size, totalSpace, chars, lastwidth:int):
         """Lastwidth is the last width of text, totalSpace is the total space the text should take up, chars is the text to be rendered"""
         newSum = sum([fontlist[size].get_rect(c).width for c in chars])
@@ -173,6 +174,12 @@ def doBuffer(screen:pygame.Surface,backgroundBtyes):
     pixels.write(backgroundBtyes)
     del pixels  # Release the buffer
 
+def ordinal(n: int) -> str:
+    """Convert number to ordinal string (1 -> '1st', 2 -> '2nd', etc)"""
+    suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
+    if 11 <= (n % 100) <= 13:
+        suffix = 'th'
+    return f"{n}{suffix}"
 
 def text_input(screen, coords, wh, current_str, keyPressed, txtSize=45) -> str:
     """Draws an input box on the screen and , returns the text in the box"""
@@ -202,7 +209,7 @@ def text_input(screen, coords, wh, current_str, keyPressed, txtSize=45) -> str:
         elif keyPressed == "Space":
             current_str += " "
     else:
-        if len(keyPressed) == 1 and len(current_str) <  30:
+        if len(keyPressed) == 1 and len(current_str) <  17:
             current_str += keyPressed
     
     # Draw input box and text
@@ -223,7 +230,7 @@ def text_input(screen, coords, wh, current_str, keyPressed, txtSize=45) -> str:
 @lru_cache(maxsize=15)
 def getBorderedImage(image:pygame.Surface,borderWidth:int,borderColor:tuple,wh:tuple,borderRadius:int) -> pygame.Surface:
     """Returns the image with a border around it (IF YOUR IMAGE HAS THE COLOR (1,1,1) IN IT, IT WILL BE REMOVED)"""
-    print('Creating new bordered image')
+    # print('Creating new bordered image')
     outSideSurf = pygame.Surface(wh)# first create an outside surface
     outSideSurf.fill((1,1,1))# fill it with a color that is not in the image
     pygame.draw.rect(outSideSurf,(0,0,0),(0,0,wh[0],wh[1]),border_radius=borderRadius)# draw a cutout of what is be displayed on the realSurf

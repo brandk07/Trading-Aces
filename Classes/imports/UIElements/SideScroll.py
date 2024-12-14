@@ -29,20 +29,27 @@ class ScrollCard:
         """Returns a surface that has cutOff pixels cut off from the direction"""
         if direction == "left":
             return self.surf.subsurface(pygame.Rect(cutOff,0,self.wh[0]-cutOff,self.wh[1]))
-        else:
+        elif direction == "right":
             return self.surf.subsurface(pygame.Rect(0,0,self.wh[0]-cutOff,self.wh[1]))
+        elif direction == "top":
+            return self.surf.subsurface(pygame.Rect(0,cutOff,self.wh[0],self.wh[1]-cutOff))
+        elif direction == "bottom":
+            return self.surf.subsurface(pygame.Rect(0,0,self.wh[0],self.wh[1]-cutOff))
 
-    def draw(self,screen,coords,mousebuttons,minX=None,maxX=None,customWh=None) -> bool:
+    def draw(self,screen,coords,mousebuttons,minX=None,maxX=None,minY=None,maxY=None,customWh=None) -> bool:
         """Draws the card onto the screen at the given coords"""
         if minX == None and maxX == None:
             minX,maxX = 0,screen.get_width()
+        if minY == None and maxY == None:
+            minY,maxY = 0,screen.get_height()
         if customWh != None:# if the card was resized, then the card needs to be updated (temporarily)
             self.needToUpdate = True
 
         coords = list(coords)
         if coords[0]+self.wh[0] < minX+20 or coords[0] > maxX:
             return False
-
+        if coords[1]+self.wh[1] < minY+20 or coords[1] > maxY:
+            return False
         if self.needToUpdate:
             self.updateSurf(customWh)# update the card's surface
             if customWh == None:# if the card was resized, then the coords need to be updated again
@@ -54,6 +61,12 @@ class ScrollCard:
             coords[0] += (minX-coords[0])
         elif coords[0]+self.wh[0] > maxX:
             newSurf = self.getPartialSurf(coords[0]+self.wh[0]-maxX,"right")
+        if coords[1] < minY and coords[1]+self.wh[1] > minY:
+            newSurf = self.getPartialSurf(minY-coords[1],"top")
+            coords[1] += (minY-coords[1])
+        elif coords[1]+self.wh[1] > maxY:
+            newSurf = self.getPartialSurf(coords[1]+self.wh[1]-maxY,"bottom")
+
         screen.blit(newSurf,coords)
         
         if pygame.Rect(coords[0],coords[1],self.wh[0],self.wh[1]).collidepoint(pygame.mouse.get_pos()):
@@ -145,10 +158,10 @@ class RunCard(ScrollCard):
     def dataConfig(self,runObj):
         image = runObj.runIcon
         image = pygame.transform.scale(image,(175,175))
-        starTxt = f"{runObj.getStarRating()} Star{'s' if runObj.getStarRating() != 1 else ''}"
+
         networthTxt = f"${limit_digits(runObj.getNetworth(),30,runObj.getNetworth()>1000)}"
 
-        return {"stars":starTxt,"name":runObj.name,"networth":networthTxt,"startTime":runObj.startTime,"runIcon":image}
+        return {"placement":runObj.getRankStr(),"name":runObj.name,"networth":networthTxt,"startTime":runObj.startTime,"runIcon":image}
 
     def updateSurf(self,wh=None):
         """Draws Everything onto the card's surface - Only needs to be called when data changes"""
@@ -166,12 +179,12 @@ class RunCard(ScrollCard):
         # self.surf.blit(self.data['runIcon'],(5,5))# screenShot (175,175)
         drawBoxedImage(self.surf,(10,10),self.data['runIcon'],(175,175),15,5)
 
-        drawCenterTxt(self.surf,self.data['stars'],50,(180,180,180),(190+(wh[0]-190)//2,10),centerY=False)
+        drawCenterTxt(self.surf,self.data['placement'],50,(180,180,180),(190+(wh[0]-190)//2,10),centerY=False)
 
 
         size = getTSizeNums(self.data['networth'],wh[0]-40,135)
-        color = ((5-self.runObj.getStarRating())*35,self.runObj.getStarRating()*35,0)
-        drawCenterTxt(self.surf,self.data['networth'],size,color,(wh[0]//2,220),centerY=False)
+        # color = ((5-self.runObj.getStarRating())*35,self.runObj.getStarRating()*35,0)
+        drawCenterTxt(self.surf,self.data['networth'],size,(0,180,0),(wh[0]//2,220),centerY=False)
 
         numLines = min(4,len(self.data['name'].split(' ')),math.ceil(len(self.data['name'])/9))
         lines = separate_strings(self.data['name'],numLines)
@@ -185,6 +198,56 @@ class RunCard(ScrollCard):
         dateStr = f"{timeStrs['dayname']}, {timeStrs['monthname']} {timeStrs['day']}, {timeStrs['year']}"
         size = getTSizeNums(dateStr,wh[0]-20,35)
         drawCenterTxt(self.surf,dateStr,size,(180,180,180),(wh[0]//2,wh[1]-35),centerY=False)
+
+class StartRunCard(ScrollCard):
+    def __init__(self,sideScroll,runObj) -> None:
+        """Needs to be given the sideScroll object that will be used to draw the card"""
+        self.runObj = runObj
+        data = self.dataConfig(runObj)
+        super().__init__(data['name'],sideScroll,data)
+        # self.image = pygame.transform.scale(image,self.wh)
+        # self.image.set_alpha(80)  
+        # self.data = {"term":int,"monthly payment":int|float,"principal":int|float,"remaining":int|float}
+    def dataConfig(self,runObj):
+        image = runObj.runIcon
+        image = pygame.transform.scale(image,(230,230))
+        networthTxt = f"${limit_digits(runObj.getNetworth(),30,runObj.getNetworth()>1000)}"
+
+        return {"name":runObj.name,"networth":networthTxt,"startTime":runObj.startTime,"runIcon":image,"mode":runObj.gameMode,"placement":runObj.getRankStr()}
+
+    def updateSurf(self,wh=None):
+        """Draws Everything onto the card's surface - Only needs to be called when data changes"""
+        # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
+        # self.surf.fill((60,60,60,120))
+        if wh == None:
+            wh = self.wh
+        self.surf = pygame.Surface(wh).convert_alpha()
+        
+        self.surf.fill((0,0,0,0))
+        gfxdraw.filled_polygon(self.surf,[(0,0),(wh[0],0),(wh[0],wh[1]),(0,wh[1])],(60,60,60,120))
+
+        pygame.draw.rect(self.surf,(0,0,0),pygame.Rect(0,0,wh[0],wh[1]),5)
+
+        drawBoxedImage(self.surf,(10,10),self.data['runIcon'],(230,230),15,5)
+
+        drawCenterTxt(self.surf,self.data['name'],50,(180,180,180),(60+(wh[0])//2,10),centerY=False)
+
+
+        size = getTSizeNums(self.data['networth'],wh[0]//2,135)
+        drawCenterTxt(self.surf,self.data['networth'],size,(205,205,205),(270,80),centerX=False,centerY=False)
+
+        color = self.gameModes = [(19, 133, 100), (199, 114, 44), (196, 22, 62)][['Career','Blitz','Goal'].index(self.data['mode'])]
+
+        drawCenterTxt(self.surf,self.data['mode'],70,color,(255,10),centerX=False,centerY=False)
+        drawCenterTxt(self.surf,self.data['placement'],70,(180,180,180),(wh[0]-20,10),centerX=False,centerY=False,fullX=True)
+
+
+        timeStrs = getTimeStrs(self.runObj.startTime)
+        dateStr = f"Started On {timeStrs['dayname']}, {timeStrs['monthname']} {timeStrs['day']}, {timeStrs['year']}"
+        size = getTSizeNums(dateStr,wh[0]-20,35)
+        drawCenterTxt(self.surf,dateStr,size,(180,180,180),(wh[0]//2,wh[1]-35),centerY=False)
+
+
 
 class CreateMenuRunImage(ScrollCard):
     def __init__(self,sideScroll,image) -> None:
@@ -304,52 +367,46 @@ class SideScroll:
                 else:# if the card is already selected - deselect it
                     self.lastSelected = None
 
-        # if index != None:# if there is a selected card, draw a white box around it
-        #     pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
-
-        # elif index == None:
-        #     index = min(len(self.cards)-1,max(0,self.scroll//self.cardWH[0]))
-
-        # for i,card in enumerate(self.cards):
-        #     if card.draw(screen,(middle+(i-index)*(self.cardWH[0]+25)+offset,ypos),mousebuttons,minX,maxX):# if the card is clicked
-        #         if self.lastSelected != i:# if the card is not already selected
-        #             self.setCard(i)
-        #         else:# if the card is already selected - deselect it
-        #             self.lastSelected = None
-
-        # if index != None:
-        #     pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
-        #     minX,maxX = self.coords[0]+20,self.coords[0]+self.wh[0]-20
-        #     self.cards[index].draw(screen,(middle+offset,ypos),mousebuttons,minX,maxX)
-      
-
-        # for i,card in enumerate(self.cards):
-
-        #     if i == index:
-        #         pygame.draw.rect(screen,(255,255,255),pygame.Rect(middle-self.cardWH[0]-5+offset+self.cardWH[0],ypos-5,self.cardWH[0]+10,self.cardWH[1]+10),5)
-
-        #     if card.draw(screen,(middle+(i-index)*(self.cardWH[0]+25)+offset,ypos),mousebuttons,minX,maxX):# if the card is clicked
-        #         if self.lastSelected != i:
-        #             self.setCard(i)
-        #         else:
-        #             self.lastSelected = None
-
-
-
+class VerticalScroll(SideScroll):
+    def __init__(self, coords, wh, cardWH=(170,170)):
+        super().__init__(coords, wh, cardWH)
+        self.scroll = 25
         
+    def draw(self, screen, mousebuttons):
+        """Draws the cards vertically instead of horizontally"""
+        minY, maxY = self.coords[1]+20, self.coords[1]+self.wh[1]-20
         
-
-# sideSroll = SideScroll((50,50),(1350,500),(450,450))
-# bankIcons = {}
-# for file in os.listdir(r"Assets\bankIcons"):
-#     print(file)
-#     image = pygame.image.load(r"Assets\bankIcons\{}".format(file)).convert_alpha()
-#     name = file.split(".")[0]
-#     bankIcons[name] = CdCard(image,name,sideSroll)
-
-# sideSroll.loadCards(list(bankIcons.values()))
-
-#     sideSroll.draw(screen,mousebuttons)
-
-
-
+        # Handle scrolling
+        if mousebuttons == 4:  # Scroll up
+            self.scroll = min(25, self.scroll + 50)
+        elif mousebuttons == 5:  # Scroll down
+            maxScroll = -(len(self.cards) * (self.cardWH[1] + 25) - self.wh[1])
+            self.scroll = max(maxScroll, self.scroll - 50)
+        xpos = self.coords[0] + (self.wh[0]//2) - (self.cardWH[0] // 2) 
+        index = self.lastSelected
+        
+        # Draw cards
+        for i, card in enumerate(self.cards):
+            ycoord = self.coords[1] + self.scroll + (i * (self.cardWH[1] + 25))
+            
+            # Draw selection box
+            if index == i:
+                y, h = ycoord-5, self.cardWH[1]+10
+                if y+h < self.coords[1] or y > self.coords[1]+self.wh[1]:
+                    continue
+                if y < self.coords[1]:
+                    h = self.cardWH[1]+10+y-self.coords[1]
+                    y = self.coords[1]+10
+                elif y+h > self.wh[1]+self.coords[1]:
+                    h = self.wh[1]+self.coords[1]-y-10
+                    
+                pygame.draw.rect(screen, (255,255,255), 
+                               pygame.Rect(xpos-5, y, self.cardWH[0]+10, h), 5)
+            # Draw card and handle click
+            if card.draw(screen, (xpos, ycoord), mousebuttons,minY=minY, maxY=maxY):
+                if self.lastSelected != i:
+                    self.setCard(i)
+                else:
+                    self.lastSelected = None
+                    
+        return self.getCard()

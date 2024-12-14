@@ -1,6 +1,7 @@
 import pygame.camera
 from Classes.Menus.startMenus.CreateMenu import *
 from Classes.Menus.startMenus.StartMenu import StartMenu
+from Classes.Menus.startMenus.PlayMenu import PlayMenu
 
 
 def get_key_name(key_event, shift_pressed=False):
@@ -34,35 +35,18 @@ def get_shift_state():
 
 
 class StartMain:
-    def __init__(self) -> None:
+    def __init__(self,runManager) -> None:
 
-        self.gameMode = 'start'# play, create, settings , credit, or start
-        self.menus : str[CreateMenu] = {'create':CreateMenu(self),'play':None,'settings':None,'credit':None,'start':StartMenu()}
-        
-        self.pastRuns : dict[str:list[GameRun]] = {'Career':[],'Blitz':[],'Goal':[]}# the past runs that the player has done
-        self.loadPastRuns()
+        self.gameMode = 'play'# play, create, settings , credit, or start
+        self.menus : str[CreateMenu] = {'create':CreateMenu(runManager),'play':PlayMenu(runManager),'settings':None,'credit':None,'start':StartMenu()}
+        self.runManager = runManager
 
         # --------------------------------------------- Temporary ---------------------------------------------
         # blitzRuns = [BlitzRun(f'Blitz Run {i}',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,5000),randint(0,5000)],"1M",'01/02/2030 09:30:00 AM') for i in range(5)]
         # blitzRuns.append(BlitzRun(f'Blitz Run Timed',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000),randint(0,15000)],"3Y",'01/02/2030 09:30:00 AM'))
         
         
-    def loadPastRuns(self):
-        for mode in self.pastRuns:
-            for runName in os.listdir(os.path.join("Saves",mode)):
-                with open(os.path.join("Saves",mode,runName,"BasicInfo.json"),"r") as f:
-                    basicInfo = json.load(f)
-                with open(os.path.join("Saves",mode,runName,"ModeSpecificInfo.json"),"r") as f:
-                    modeSpecificInfo = json.load(f)
-                if mode == 'Career':
-                    pass
-                elif mode == 'Blitz':
-                    print(basicInfo)
-                    print(modeSpecificInfo)
-                    run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],endTime=modeSpecificInfo['endTime'])
-                elif mode == 'Goal':
-                    pass
-                self.pastRuns[mode].append(run)
+    
 
                     
             #     if filename.endswith(".json"):
@@ -74,19 +58,17 @@ class StartMain:
             #                 self.pastRuns[mode].append(BlitzRun(data['name'],data['networth'],data['time'],data['date']))
             #             elif mode == 'Goal':
             #                 self.pastRuns[mode].append(GoalRun(data['name'],data['networth'],data['time'],data['date']))
-
-
-    def validName(self,name:str):
-        """returns True if the name is valid"""
-        if len(name) < 3:
-            return "-Name must be at least 3 characters long"
-        if name.isspace():
-            return "-Name cannot be all spaces"
-        for mode in self.pastRuns:
-            for run in self.pastRuns[mode]:
-                if run.name == name:
-                    return "-Name already exists"
-        return True
+    # def validName(self,name:str):
+    #     """returns True if the name is valid"""
+    #     if len(name) < 3:
+    #         return "-Name must be at least 3 characters long"
+    #     if name.isspace():
+    #         return "-Name cannot be all spaces"
+    #     for mode in self.pastRuns:
+    #         for run in self.pastRuns[mode]:
+    #             if run.name == name:
+    #                 return "-Name already exists"
+    #     return True
     def getSurfs(self):
         background = pygame.image.load(r'Assets\StartBackground.png').convert_alpha()
         background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
@@ -121,10 +103,12 @@ class StartMain:
                         self.gameMode = n.lower()
                 case 'create':
                     if self.menus['create'].draw(screen,mousebuttons,key):
-                        self.pastRuns[self.menus['create'].mode.capitalize()].append(self.menus['create'].currentRun)# add the run to the past runs
+                        # self.pastRuns[self.menus['create'].mode.capitalize()].append(self.menus['create'].currentRun)# add the run to the past runs
+                        self.runManager.addRun(self.menus['create'].currentRun)
                         return self.menus['create'].currentRun
                 case 'play':
-                    pass
+                    if run:=self.menus['play'].draw(screen,mousebuttons):
+                        return run
                 case 'settings':
                     pass
                 case 'credit':

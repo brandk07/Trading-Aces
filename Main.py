@@ -18,7 +18,7 @@ from Classes.imports.Transactions import Transactions
 from Classes.Menus.StockBook import Stockbook
 from Classes.Menus.OptionScreens.OptionMenu import Optiontrade
 from Classes.Menus.BankMenu import BankMenu
-from Classes.Menus.GameModeMenu import GameModeMenu,GameRun
+from Classes.Menus.GameModeMenu import GameModeMenu,GameRun,RunManager
 from Classes.Menus.startMenus.StartMain import StartMain
 from Classes.Menus.Menu import ScreenManager
 
@@ -41,9 +41,10 @@ fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 
 
 # ------------------------------------------ Start of the Start Menu ------------------------------------------
-startmenu = StartMain()
+runManager = RunManager()
+startmenu = StartMain(runManager)
 currentRun : GameRun = startmenu.drawStartMenu(screen,clock)
-pastRuns = startmenu.pastRuns
+pastRuns = runManager.pastRuns
 
 gametime = GameTime(DEFAULTSTARTDATE.strftime(DFORMAT),GAMESPEED)
 setGameTime(gametime,currentRun.getFileDir())
