@@ -23,9 +23,9 @@ class GameModeMenu(Menu):
 
         self.menudrawn = True
     def loadRuns(self,pastRuns:dict):
-        self.blitzReports = pastRuns['Blitz']# full of BlitzRun objects
-        self.careerReports = pastRuns['Career']# full of CareerRun objects
-        self.goalReports = pastRuns['Goal']# full of GoalRun objects
+        self.blitzReports = pastRuns['Blitz'].copy()# full of BlitzRun objects
+        self.careerReports = pastRuns['Career'].copy()# full of CareerRun objects
+        self.goalReports = pastRuns['Goal'].copy()# full of GoalRun objects
 
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player, gametime):
 

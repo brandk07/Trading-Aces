@@ -206,7 +206,7 @@ class Optiontrade(Menu):
         self.gametime = gametime
         self.preMadeOptions = {}
         self.menudrawn = False
-        self.fillPreMadeOptions()
+        
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockSelection : SelectionBar = SelectionBar()
         self.screenSelection : MenuSelection = MenuSelection((200, 105), (375, 100),["Buy","Sell"],45,colors=[(100,200,100),(200,100,100)])
@@ -422,6 +422,8 @@ class Optiontrade(Menu):
             self.selectOption = None
             
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
+        if self.preMadeOptions == {}:
+            self.fillPreMadeOptions()
         if not (self.screenSelection.getSelected() == "Sell" and self.isForced()):# don't draw menu switcher if the exercise menu is forced
             self.screenSelection.draw(screen,mousebuttons)
         if self.screenSelection.getSelected() == "Buy":

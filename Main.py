@@ -43,141 +43,140 @@ fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 # ------------------------------------------ Start of the Start Menu ------------------------------------------
 runManager = RunManager()
 startmenu = StartMain(runManager)
-currentRun : GameRun = startmenu.drawStartMenu(screen,clock)
-pastRuns = runManager.pastRuns
-
-gametime = GameTime(DEFAULTSTARTDATE.strftime(DFORMAT),GAMESPEED)
-setGameTime(gametime,currentRun.getFileDir())
-
-stocknames = STOCKNAMES
-stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
-
-stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(147,112,219),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
-
-
-transact = Transactions(currentRun.getFileDir())
-player = Player(stocknames,stockcolors[-1],transact,gametime,currentRun)
-stockdict = {name:Stock(name,stockcolors[i],gametime,stockVolatilities[i],currentRun) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
-stocklist = [stockdict[name] for name in stocknames]
-indexfundColors = [(217, 83, 149),(64, 192, 128),(138, 101, 235)]
-indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3],currentRun) for i,name in enumerate(["TDIF","IEIF", "FHMF"])]# Tech, industrial, health
-tmarket = TotalMarket(gametime,stocklist,currentRun)
-indexFunds.append(tmarket)
-indexFundDict = {fund.name: fund for fund in indexFunds}
-
-Getfromfile(stockdict,indexFundDict,player,gametime,currentRun.getFileDir())
-
-stockScreen = StockScreen(stocklist,gametime)
-orderScreen = OrderScreen()
-homeScreen = HomeScreen(stocklist,gametime,tmarket,player)
-stockbook = Stockbook(stocklist,gametime,orderScreen)
-portfolio = Portfolio(stocklist,player,gametime,tmarket)
-optiontrade = Optiontrade(stocklist,gametime,player)
-bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
-
-gameModeMenu = GameModeMenu(stocklist,player,pastRuns,currentRun)
-menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
-screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
-player.screenManager = screenManager
-autofastforward = True
-
-# LAST DECLARATIONS
-lastfps = deque(maxlen=300)
-mousebuttons = 0
-
-timer = timeit.default_timer()
-if not all([all([len(graph) == POINTSPERGRAPH for graph in stock.graphs.values()]) for stock in stocklist]):
-    for stock in stocklist:
-        stock.fill_graphs()
-    print('time to fill graphs',timeit.default_timer()-timer)
-
-for indexfund in indexFunds:
-    indexfund.fill_graphs()
-   
-menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(screen)
 
 if __name__ == "__main__":
     while True:
-        mousex,mousey = pygame.mouse.get_pos()
+        startmenu.reset()# resets the start menu
+        currentRun : GameRun = startmenu.drawStartMenu(screen,clock)
+        pastRuns = runManager.pastRuns# remember that this is using the real past runs so if it is modified then it will mess stuff up - also deep copy issue b/c there are lists inside
 
-        if screenManager.getCurrentScreen(True) in ['Home','Stock']:# if the current screen is a screen, not a menu then draw the background
-            screen.blit(screenBackRefresh,(0,0))
-        else:
-            screen.blit(menuBackRefresh,(0,0))
+        gametime = GameTime(DEFAULTSTARTDATE.strftime(DFORMAT),GAMESPEED)
+        setGameTime(gametime,currentRun.getFileDir())
 
-        if gametime.advanceTime(autofastforward,FASTFORWARDSPEED):# if there is a new trading day
+        stocknames = STOCKNAMES
+        stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
 
-            player.newDay(gametime,stocklist)
+        stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(147,112,219),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 
-        if gametime.isOpen()[0]:# if the market is open
-            if gametime.speedBar.getValue() > 0:# if the game is not paused
-                
-                for stock in stocklist:
-                    step = stock.update_price(gametime.speedBar.getValue(),Player)
-                    if stock.priceEffects.update(gametime,screen,player):
-                        homeScreen.newsobj.changeStock(stock)
 
-                
-                player.gameTick(gametime.speedBar.getValue(),gametime,step)
-                
-                for indexfund in indexFunds:
-                    indexfund.updategraphs(gametime.speedBar.getValue(),step)
-        if gametime.speedBar.frozen:
-            gametime.speedBar.frozen = False
-            gametime.speedBar.redraw()
+        transact = Transactions(currentRun.getFileDir())
+        player = Player(stocknames,stockcolors[-1],transact,gametime,currentRun)
+        stockdict = {name:Stock(name,stockcolors[i],gametime,stockVolatilities[i],currentRun) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+        stocklist = [stockdict[name] for name in stocknames]
+        indexfundColors = [(217, 83, 149),(64, 192, 128),(138, 101, 235)]
+        indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3],currentRun) for i,name in enumerate(["TDIF","IEIF", "FHMF"])]# Tech, industrial, health
+        tmarket = TotalMarket(gametime,stocklist,currentRun)
+        indexFunds.append(tmarket)
+        indexFundDict = {fund.name: fund for fund in indexFunds}
 
-       
-        player.updateRunAssetSpread()# updates the asset spread for the current run
+        Getfromfile(stockdict,indexFundDict,player,gametime,currentRun.getFileDir())
 
-        screenManager.drawCurrentScreen(screen,mousebuttons,stocklist,player,gametime)
+        stockScreen = StockScreen(stocklist,gametime)
+        orderScreen = OrderScreen()
+        homeScreen = HomeScreen(stocklist,gametime,tmarket,player)
+        stockbook = Stockbook(stocklist,gametime,orderScreen)
+        portfolio = Portfolio(stocklist,player,gametime,tmarket)
+        optiontrade = Optiontrade(stocklist,gametime,player)
+        bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
 
-        screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,980),(1900,1010),(1900,1040)]))
-        errors.update(screen)# draws the error messages
+        gameModeMenu = GameModeMenu(stocklist,player,pastRuns,currentRun)
+        menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
+        screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
+        player.screenManager = screenManager
+        autofastforward = True
 
-        
-        for animation in animationList:
-            animation.update(screen)
-
-        
-        mousebuttons = 0
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):                
-                stockdata = [stock.savingInputs() for stock in player.stocks]
-                optiondata = [option.savingInputs() for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
-                loanData = [loan.savingInputs() for loan in player.loans]
-                indexFundData = [indexfund.savingInputs() for indexfund in player.indexFunds]
-                
-                data = [str(gametime),stockdata,optiondata,loanData,indexFundData,float(player.cash)]
-                data.append(player.extraSavingData())
-
-                Writetofile(stocklist,player,data,currentRun.getFileDir())
-                transact.storeTransactions(currentRun.getFileDir())
-                currentRun.saveRun()
-                pygame.quit()
-                quit()
-
-            elif event.type == pygame.MOUSEBUTTONDOWN and mousebuttons == 0:
-                # print(event.button)
-                mousebuttons = event.button
-                if mousebuttons == 1:
-                    print(mousex,mousey)
-
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_j:
-                # Get timestamp for unique filename
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                
-                screenshot_dir = os.path.join(currentRun.getFileDir(), "Screenshots")
-                if not os.path.exists(screenshot_dir):
-                    os.makedirs(screenshot_dir)
-
-                filepath = f"{screenshot_dir}/screenshot_{timestamp}.png"
+        # LAST DECLARATIONS
+        lastfps = deque(maxlen=300)
+        mousebuttons = 0           
             
-                screenshot = screen.copy()  # screen is your pygame display surface
-                pygame.image.save(screenshot, filepath)
-  
-        pygame.display.update()
 
-        clock.tick(180)
+        timer = timeit.default_timer()
+        if not all([all([len(graph) == POINTSPERGRAPH for graph in stock.graphs.values()]) for stock in stocklist]):
+            for stock in stocklist:
+                stock.fill_graphs()
+            print('time to fill graphs',timeit.default_timer()-timer)
+
+        for indexfund in indexFunds:
+            indexfund.fill_graphs()
+        
+        menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(screen)
+        # ------------------------------------------ Main Game Loop ------------------------------------------
+        while True:
+            mousex,mousey = pygame.mouse.get_pos()
+
+            if screenManager.getCurrentScreen(True) in ['Home','Stock']:# if the current screen is a screen, not a menu then draw the background
+                screen.blit(screenBackRefresh,(0,0))
+            else:
+                screen.blit(menuBackRefresh,(0,0))
+
+            if gametime.advanceTime(autofastforward,FASTFORWARDSPEED):# if there is a new trading day
+
+                player.newDay(gametime,stocklist)
+
+            if gametime.isOpen()[0]:# if the market is open
+                if gametime.speedBar.getValue() > 0:# if the game is not paused
+                    
+                    for stock in stocklist:
+                        step = stock.update_price(gametime.speedBar.getValue(),Player)
+                        if stock.priceEffects.update(gametime,screen,player):
+                            homeScreen.newsobj.changeStock(stock)
+
+                    
+                    player.gameTick(gametime.speedBar.getValue(),gametime,step)
+                    
+                    for indexfund in indexFunds:
+                        indexfund.updategraphs(gametime.speedBar.getValue(),step)
+            if gametime.speedBar.frozen:
+                gametime.speedBar.frozen = False
+                gametime.speedBar.redraw()
+
+        
+            player.updateRunAssetSpread()# updates the asset spread for the current run
+
+            screenManager.drawCurrentScreen(screen,mousebuttons,stocklist,player,gametime)
+
+            screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,980),(1900,1010),(1900,1040)]))
+            errors.update(screen)# draws the error messages
+
+            
+            for animation in animationList:
+                animation.update(screen)
+
+            if drawClickableBoxWH(screen,(10,970),(180,100),"Main Menu", 50, (0,0,0),(0,210,0),mousebuttons):
+                break
+
+            mousebuttons = 0
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):                
+                    saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun)
+                    pygame.quit()
+                    quit()
+
+                elif event.type == pygame.MOUSEBUTTONDOWN and mousebuttons == 0:
+                    # print(event.button)
+                    mousebuttons = event.button
+                    if mousebuttons == 1:
+                        print(mousex,mousey)
+
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_j:
+                    # Get timestamp for unique filename
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    
+                    screenshot_dir = os.path.join(currentRun.getFileDir(), "Screenshots")
+                    if not os.path.exists(screenshot_dir):
+                        os.makedirs(screenshot_dir)
+
+                    filepath = f"{screenshot_dir}/screenshot_{timestamp}.png"
+                
+                    screenshot = screen.copy()  # screen is your pygame display surface
+                    pygame.image.save(screenshot, filepath)
+
+            pygame.display.update()
+
+            clock.tick(180)
+
+        # Saves the game when the user goes back to the main menu
+        saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun)
 
 
 # {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"1Y":5_896_800,"5Y":29_484_000}

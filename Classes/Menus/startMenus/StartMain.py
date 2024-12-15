@@ -37,7 +37,7 @@ def get_shift_state():
 class StartMain:
     def __init__(self,runManager) -> None:
 
-        self.gameMode = 'play'# play, create, settings , credit, or start
+        self.gameMode = 'start'# play, create, settings , credit, or start
         self.menus : str[CreateMenu] = {'create':CreateMenu(runManager),'play':PlayMenu(runManager),'settings':None,'credit':None,'start':StartMenu()}
         self.runManager = runManager
 
@@ -69,6 +69,11 @@ class StartMain:
     #             if run.name == name:
     #                 return "-Name already exists"
     #     return True
+    def reset(self):
+        self.gameMode = 'start'
+        self.menus['create'].reset()
+        self.menus['play'].reset()
+
     def getSurfs(self):
         background = pygame.image.load(r'Assets\StartBackground.png').convert_alpha()
         background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)

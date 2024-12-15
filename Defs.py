@@ -608,11 +608,20 @@ def Getfromfile(stockdict:dict,indexFunds:dict,player,gametime,dataDir):
         else:
             player.getExtraData(None,gametime)
 
-def Writetofile(stocklist,player,data,dataDir):
+def saveGame(stocklist,player,dataDir,gametime,transact,currentRun):
+    stockdata = [stock.savingInputs() for stock in player.stocks]
+    optiondata = [option.savingInputs() for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
+    loanData = [loan.savingInputs() for loan in player.loans]
+    indexFundData = [indexfund.savingInputs() for indexfund in player.indexFunds]
+    
+    data = [str(gametime),stockdata,optiondata,loanData,indexFundData,float(player.cash)]
+    data.append(player.extraSavingData())
+
     for stock in stocklist:
         stock.save_data()
     player.save_data()
-    
+    transact.storeTransactions(currentRun.getFileDir())
+    currentRun.saveRun()
     with open(os.path.join(dataDir,"ExtraData.json"),'w') as file:
         file.seek(0)# go to the start of the file
         file.truncate()# clear the file

@@ -20,7 +20,9 @@ class PlayMenu:
         self.runManager = runManager
         self.selectionBar = MultiSelectionBar()
         self.selectionBar.setSelected(["Blitz","Career","Goal"])# sets all the options to be selected
-
+    def reset(self):
+        # self.vertScroll.reset()
+        self.selectionBar.setSelected(["Blitz","Career","Goal"])# sets all the options to be selected
     def drawLatterScroll(self,screen:pygame.Surface,runs:list[GameRun],mousebuttons:int):
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(715,115,1040,920),5,border_radius=25)# outline for the latter scroll

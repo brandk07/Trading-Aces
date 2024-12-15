@@ -33,7 +33,14 @@ class CreateMenu:
 
         # self.surf = pygame.Surface((1920,1080),pygame.SRCALPHA)
         # self.surf.fill((60,60,60,200))
-    
+    def reset(self):
+        self.currentName = 'Game Name'
+        self.mode = 'blitz'
+        self.customizeBar.setSelected(None)
+        self.modeselectionBar.setSelected(None)
+        self.gameIconScroll.setCard(index=0)
+        self.haveError = False
+        self.currentRun = None
     def drawModeInfo(self,screen):
         """Draws the info about the mode (Left side of the screen)"""
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(1360,65,395,955),5,border_radius=10)# box for the mode info on right
