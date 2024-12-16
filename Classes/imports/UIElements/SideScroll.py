@@ -246,6 +246,52 @@ class StartRunCard(ScrollCard):
         dateStr = f"Started On {timeStrs['dayname']}, {timeStrs['monthname']} {timeStrs['day']}, {timeStrs['year']}"
         size = getTSizeNums(dateStr,wh[0]-20,35)
         drawCenterTxt(self.surf,dateStr,size,(180,180,180),(wh[0]//2,wh[1]-35),centerY=False)
+class ModeMenuRunCard(ScrollCard):
+    def __init__(self,sideScroll,runObj) -> None:
+        """Needs to be given the sideScroll object that will be used to draw the card"""
+        self.runObj = runObj
+        data = self.dataConfig(runObj)
+        super().__init__(data['name'],sideScroll,data)
+        # self.image = pygame.transform.scale(image,self.wh)
+        # self.image.set_alpha(80)  
+        # self.data = {"term":int,"monthly payment":int|float,"principal":int|float,"remaining":int|float}
+    def dataConfig(self,runObj):
+        image = runObj.runIcon
+        image = pygame.transform.scale(image,(150,150))
+        networthTxt = f"${limit_digits(runObj.getNetworth(),30,runObj.getNetworth()>1000)}"
+
+        return {"name":runObj.name,"networth":networthTxt,"startTime":runObj.startTime,"runIcon":image,"mode":runObj.gameMode,"placement":runObj.getRankStr()}
+
+    def updateSurf(self,wh=None):
+        """Draws Everything onto the card's surface - Only needs to be called when data changes"""
+        # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
+        # self.surf.fill((60,60,60,120))
+        if wh == None:
+            wh = self.wh
+        self.surf = pygame.Surface(wh).convert_alpha()
+        
+        self.surf.fill((0,0,0,0))
+        gfxdraw.filled_polygon(self.surf,[(0,0),(wh[0],0),(wh[0],wh[1]),(0,wh[1])],(60,60,60,120))
+
+        pygame.draw.rect(self.surf,(0,0,0),pygame.Rect(0,0,wh[0],wh[1]),5)
+
+        drawBoxedImage(self.surf,(10,10),self.data['runIcon'],(150,150),15,5)
+
+        drawCenterTxt(self.surf,self.data['name']+f" {self.data['placement']}",40,(180,180,180),(wh[0]-20,10),centerY=False,centerX=False,fullX=True)
+
+
+        # size = getTSizeNums(self.data['networth'],wh[0]//2,135)
+        drawCenterTxt(self.surf,self.data['networth'],60,(205,205,205),(175,wh[1]//2),centerX=False,centerY=True)
+
+        color = self.gameModes = [(19, 133, 100), (199, 114, 44), (196, 22, 62)][['Career','Blitz','Goal'].index(self.data['mode'])]
+
+        # drawCenterTxt(self.surf,self.data['mode'],70,color,(255,10),centerX=False,centerY=False)
+        # drawCenterTxt(self.surf,self.data['placement'],40,(180,180,180),(175,10),centerX=False,centerY=False)
+
+
+        timeStrs = getTimeStrs(self.runObj.startTime)
+        dateStr = f"{timeStrs['monthname']} {timeStrs['day']}, {timeStrs['year']}"
+        drawCenterTxt(self.surf,dateStr,30,(180,180,180),(wh[0]-20,wh[1]-35),centerY=False,centerX=False,fullX=True)
 
 
 

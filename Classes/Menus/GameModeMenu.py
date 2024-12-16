@@ -2,8 +2,9 @@ import pygame
 from Defs import *
 from Classes.Menus.Menu import Menu
 from Classes.imports.UIElements.PieChart import PieChart
-from Classes.imports.UIElements.SideScroll import SideScroll,RunCard
+from Classes.imports.UIElements.SideScroll import VerticalScroll,ModeMenuRunCard
 from Classes.BigClasses.RunTypes import *
+from Classes.imports.UIElements.BarGraph import BarGraph
 
 class GameModeMenu(Menu):
     def __init__(self,stocklist,player,pastRuns:dict,currentRun) -> None:
@@ -12,14 +13,14 @@ class GameModeMenu(Menu):
         self.loadRuns(pastRuns)# loads the runs from the save file
         self.currentRun = currentRun
 
-        self.blitz : Blitz = Blitz(self.blitzReports,self.currentRun)
-        self.career = Career()
-        self.goal = Goal()
+        self.blitz : BlitzScreen = BlitzScreen(self.blitzReports,self.currentRun)
+        self.career = CareerScreen(self.careerReports,self.currentRun)
+        self.goal = GoalScreen(self.goalReports,self.currentRun)
         self.player = player
         self.stocklist = stocklist
     
 
-        self.gameMode = 'blitz'# career, goal, or blitz
+        self.gameMode = self.currentRun.gameMode# career, goal, or blitz
 
         self.menudrawn = True
     def loadRuns(self,pastRuns:dict):
@@ -30,137 +31,126 @@ class GameModeMenu(Menu):
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player, gametime):
 
         match self.gameMode:
-            case 'blitz':
+            case 'Blitz':
                 self.blitz.draw(screen,mousebuttons,gametime)
-            case 'career':
-                self.draw()
-            case 'goal':
-                self.draw()
+            case 'Career':
+                self.career.draw()
+            case 'Goal':
+                self.goal.draw(screen,mousebuttons,gametime)
 
+class BlitzAndGoalScreen:
+    def __init__(self,pastRuns:list[BlitzRun|GoalRun],curentRun:BlitzRun|GoalRun) -> None:
+        self.pastRuns : list[BlitzRun|GoalRun] = pastRuns# PAST RUNS DOESNT INCLUDE THE CURRENT RUN
+        self.currentRun : BlitzRun|GoalRun = curentRun
+        if self.currentRun in self.pastRuns:
+            self.pastRuns.remove(self.currentRun)
 
-class Blitz:
-    def __init__(self,pastRuns:list[BlitzRun],curentRun:BlitzRun) -> None:
-        self.pastRuns : list[BlitzRun] = pastRuns# PAST RUNS DOESNT INCLUDE THE CURRENT RUN
-        self.pastRuns.remove(curentRun)
+        self.currBarGraph = BarGraph(self.currentRun.name,(205,565),(520,300))
+        self.selcBarGraph = BarGraph(self.currentRun.name,(750,565),(520,300))
+        self.pieChart = PieChart((745,125),(520,430))
 
-        self.currentRun : BlitzRun = curentRun
-        self.currRunPieChart = PieChart((580,105),(410,440))
-        self.selecRunPieChart = PieChart((1120,105),(410,440))
-        self.sideScroll = SideScroll((195,555),(1240,415),(380,370))
         self.sideScrollCards = {}
-
+        self.vertScroll = VerticalScroll((1290,195),(610,770),(570,170))
         for run in self.pastRuns:
-            self.sideScrollCards[run.name] = (RunCard(self.sideScroll,run))
-        self.sideScroll.loadCards(list(self.sideScrollCards.values()))
+            self.sideScrollCards[run.name] = (ModeMenuRunCard(self.vertScroll,run))
+        self.vertScroll.loadCards(list(self.sideScrollCards.values()))
 
-        self.selectedRun : BlitzRun = None
+        self.selectedRun : BlitzRun|GoalRun = None if len(self.pastRuns) == 0 else self.pastRuns[0]
         if len(self.pastRuns) > 0:
             run = max(self.pastRuns,key=lambda x:x.getNetworth())# gets the best run to start
-            self.sideScroll.setCard(obj=self.sideScrollCards[run.name])# sets the card to the best run
-
-
-    def drawPieCharts(self,screen,mousebuttons,run:BlitzRun=None,maxRun=False):
-        colors = [(0, 150, 136),(255, 69, 0), (65, 105, 225),(12, 89, 27)]
-        
-        names = ['Stocks','Options','Index Funds','Cash']
-        if run != None:
-            values = [(val,name,color) for (val,name,color) in zip(run.assetSpread[:-1],names,colors)]
-            self.selecRunPieChart.updateData(values)
-            txt = "Selected Run" if not maxRun else "Best Run"
-            self.selecRunPieChart.draw(screen,txt,mousebuttons)
-
-        values = [(val,name,color) for (val,name,color) in zip(self.currentRun.assetSpread[:-1],names,colors)]
-        self.currRunPieChart.updateData(values)
-        self.currRunPieChart.draw(screen,"Current Run",mousebuttons,txtSize=35)
+            self.vertScroll.setCard(obj=self.sideScrollCards[run.name])# sets the card to the best run
     
-    def drawBlitzInfo(self,screen,mousebuttons,gametime):
-        """Draws the information for the blitz run"""
-
-        blitzTxt = s_render("Blitz",85,(200,200,200))
-        drawCenterRendered(screen,blitzTxt,(215,105),centerX=False,centerY=False)
-        # line under the title
-        pygame.draw.line(screen,(200,200,200),(210,170),(220+blitzTxt.get_width(),170),4)
-        pygame.draw.rect(screen,(0,0,0),(195,180,350,360),5,10)
-
-        txt = "Compete for the highest networth with limited time! Heightened market volatility will make investments more risky, but also rewarding..."
-        for i,t in enumerate(separate_strings(txt,5)):
-            drawCenterTxt(screen,t,30,(200,200,200),(370,190+i*45),centerY=False)
-        
-        pygame.draw.rect(screen,(0,0,0),(205,405,320,60),5,10)# displays the starting duration
-
-        txt = "Blitz Duration : " + self.currentRun.gameDuration
-        drawCenterTxt(screen,txt,35,(200,200,200),(365,420),centerY=False)
+    def drawBarGraphs(self,screen,mousebuttons):
+        colors = [(255, 205, 78),(191, 85, 178),(239, 131, 84),(12, 89, 27)]#[stocks, options, indexFunds, cash]
+        for i in range(4):
+            x = 215+i*300
+            pygame.draw.rect(screen,colors[i],(x,930,20,20),border_radius=5)
+            drawCenterTxt(screen,['Stocks','Options','Index Funds','Cash'][i],45,(200,200,200),(x+30,940),centerX=False)
 
 
-        pygame.draw.rect(screen,(0,0,0),(205,470,320,60),5,10)# displays the time remaining
-        timeleft = self.currentRun.endGameDate - gametime.time
+        pygame.draw.rect(screen,(0,0,0),(195,560,540,355),5,10)# draws the box for the current run
+        maxScale = max(self.currentRun.getAssets()[:-1]) if self.selectedRun == None else max(self.selectedRun.getAssets()[:-1]+self.currentRun.getAssets()[:-1])
+        # print(maxScale)
+        self.currBarGraph.updateValues(self.currentRun.getAssets()[:-1],colors,['$']*4)
+        self.currBarGraph.draw(screen,absoluteScale=maxScale)
+        if self.selectedRun != None:
+            pygame.draw.rect(screen,(0,0,0),(745,560,540,355),5,10)
+            self.selcBarGraph.changeName(self.selectedRun.name)
+            self.selcBarGraph.updateValues(self.selectedRun.getAssets()[:-1],colors,['$']*4)
+            self.selcBarGraph.draw(screen,absoluteScale=maxScale)
+        else:
+            drawCenterTxt(screen,"No Selected Run",65,(210, 50, 50),(1015,650),centerY=False)
 
-        txt = "Remaining : " + str(timeleft.days) + " days"
-        drawCenterTxt(screen,txt,35,(200,200,200),(365,485),centerY=False)
-        
+    def drawPieChart(self,screen,mousebuttons):
+        colors = [(255, 205, 78),(191, 85, 178),(239, 131, 84),(12, 89, 27)]#[stocks, options, indexFunds, cash]
+        names = ['Stocks','Options','Index Funds','Cash']
+        values = [(val,name,color) for (val,name,color) in zip(self.currentRun.assetSpread[:-1],names,colors)]
+        self.pieChart.updateData(values)
+        self.pieChart.draw(screen,"",mousebuttons,txtSize=35)
 
-    def drawRunsInfo(self,screen,mousebuttons,gametime,run:BlitzRun=None,maxRun=False):
-        """Draws the information for the past runs"""
-        drawCenterTxt(screen,"Current Run",65,(0,200,0),(1662,105),centerY=False)
-        pygame.draw.rect(screen,(0,0,0),(1445,155,455,380),5,10)# draws box for current run info
-        info = [
-            (f"Name",f"{self.currentRun.name}"),
-            (f"Start Time",f"{self.currentRun.getFormattedStartTime()}"),
-            (f"End Time",f"{self.currentRun.getRealEndTimeTxt()}"),
-            (f"Liabilities (Loans)",f"${limit_digits(self.currentRun.getLoans(),25,True)}"),
+    def drawVertScroll(self,screen,mousebuttons):
+        drawCenterTxt(screen,"Other Runs",80,(200,200,200),(1595,110),centerY=False)
+        pygame.draw.rect(screen,(0,0,0),(1290,195,610,770),5,10)
+        if len(self.pastRuns) > 0:
+            self.vertScroll.draw(screen,mousebuttons)
+        else:
+            drawCenterTxt(screen,"No Other Runs",65,(210, 50, 50),(1595,220),centerY=False)
+            
 
-        ]
-        drawLinedInfo(screen,(1450,160),(450,375),info,40,(180,180,180))
-        
-        
-        if run != None:
-            drawCenterTxt(screen,"Selected Run" if not maxRun else "Best Run",65,(200,200,200),(1662,540),centerY=False)
-            pygame.draw.rect(screen,(0,0,0),(1445,590,455,380),5,10)# draws box for current run info
-            info = [
-                (f"Name",f"{run.name}"),
-                (f"Start Time",f"{run.getFormattedStartTime()}"),
-                (f"End Time",f"{run.getRealEndTimeTxt()}"),
-                (f"Liabilities (Loans)",f"${limit_digits(run.getLoans(),25,True)}"),
-            ]
-            drawLinedInfo(screen,(1450,600),(450,375),info,40,(180,180,180))
+    def drawRunInfo(self,screen,mousebuttons,gametime):
+        raise NotImplementedError("drawRunInfo must be implemented in the child class")
 
     def draw(self,screen,mousebuttons,gametime):
+        if self.currentRun in self.pastRuns:
+            self.pastRuns.remove(self.currentRun)
+        self.selectedRun = None if self.vertScroll.getCard() == None else self.vertScroll.getCard().runObj# gets the selected run
+        drawCenterTxt(screen,self.currentRun.name,95,(200,200,200),(740,105),centerY=False)
+        self.drawPieChart(screen,mousebuttons)
+        self.drawVertScroll(screen,mousebuttons)
+        self.drawRunInfo(screen,mousebuttons,gametime)
+        self.drawBarGraphs(screen,mousebuttons)
+
+class BlitzScreen(BlitzAndGoalScreen):
+    def __init__(self,pastRuns:list[BlitzRun],curentRun:BlitzRun) -> None:
+        super().__init__(pastRuns,curentRun)
         
-        self.drawBlitzInfo(screen,mousebuttons,gametime)
-        if len(self.pastRuns) > 0:# if there are more than just the current run
-            self.selectedRun = None if self.sideScroll.getCard() == None else self.sideScroll.getCard().runObj# gets the selected run
-            maxRun = max(self.pastRuns,key=lambda x:x.getNetworth())
-            run = self.selectedRun if self.selectedRun != None else maxRun# if the run is None then make it the best run
-            if self.selectedRun == None:# if the selected run was None then set the card to the best run
-                self.sideScroll.setCard(obj=self.sideScrollCards[run.name])
-
-            self.sideScroll.getCard().dataConfig(run); self.sideScroll.getCard().updateSurf()
-                
-            
-            # self.drawPastRuns()'
-
-            self.selectedRun = run
-            self.sideScroll.draw(screen,mousebuttons)
-            self.drawPieCharts(screen,mousebuttons,run,maxRun=self.selectedRun == maxRun)
-            self.drawRunsInfo(screen,mousebuttons,gametime,run,maxRun=self.selectedRun == maxRun)
-
-            
-
-        else:
-            # self.sideScroll.setCard(None)
-            self.drawPieCharts(screen,mousebuttons)
-            self.drawRunsInfo(screen,mousebuttons,gametime)
-        # pass
+    def drawRunInfo(self,screen,mousebuttons,gametime):
+        infoList = [
+            (f"Mode",f"{self.currentRun.gameMode}"),
+            (f"Rank",f"{self.currentRun.getRankStr()}"),
+            (f"Time Left",f"{self.currentRun.getRemainingTimeStr(gametime)}"),
+            (f"Start Date",f"{self.currentRun.getFormattedStartTime()}"),
+        ]
         
+        modeColors = {['Career','Blitz','Goal'][i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
+        
+        rankColor = (200,200,200) if self.currentRun.getRankInt() > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][self.currentRun.getRankInt()-1]
+        timeLeftCol = (0, 150, 136) if self.currentRun.getTimeLeftInt(gametime) > 10 else (255, 69, 0)
+        colors = [modeColors[self.currentRun.gameMode],rankColor,timeLeftCol,(200,200,200)]
+        pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
+        drawLinedInfo(screen,(200,185),(490,380),infoList,45,colors=colors)
+    
+class GoalScreen(BlitzAndGoalScreen):
+    def __init__(self,pastRuns:list[GoalRun],curentRun:GoalRun) -> None:
+        super().__init__(pastRuns,curentRun)
+    def drawRunInfo(self,screen,mousebuttons,gametime):
+        infoList = [
+            (f"Mode",f"{self.currentRun.gameMode}"),
+            (f"Rank",f"{self.currentRun.getRankStr()}"),
+            (f"Goal Networth",f"${limit_digits(self.currentRun.getGoalNetworth(),30)}"),
+            (f"Start Date",f"{self.currentRun.getFormattedStartTime()}"),
+        ]
+        
+        modeColors = {['Career','Blitz','Goal'][i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
+        
+        rankColor = (200,200,200) if self.currentRun.getRankInt() > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][self.currentRun.getRankInt()-1]
+        timeLeftCol = (0, 150, 136) if self.currentRun.getNetworth() > self.currentRun.getGoalNetworth()*.75 else (255, 69, 0)# if the networth is greater than 75% of the goal
+        colors = [modeColors[self.currentRun.gameMode],rankColor,timeLeftCol,(200,200,200)]
+        pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
+        drawLinedInfo(screen,(200,185),(490,380),infoList,45,colors=colors)
 
-class Career:
-    def __init__(self) -> None:
-        pass
-    def draw(self):
-        pass
-
-class Goal:
-    def __init__(self) -> None:
+class CareerScreen:
+    def __init__(self,pastRuns:list[CareerRun],curentRun:CareerRun) -> None:
         pass
     def draw(self):
         pass

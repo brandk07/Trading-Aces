@@ -10,6 +10,10 @@ class OrderBox:
         self.extraData = []
         self.stage = 0# 0 is the first stage (proceeding to confirm screen), 1 is the second stage (confirming the order)
         self.middleData = []
+    def reset(self):
+        self.stage = 0
+        self.extraData = []
+        self.quantStr = ""
         
     def loadData(self,quantStr:str,totalStr:str,extraData:list[tuple[str,str,str]]) -> None:
         """extraData is [(key,value,middleVal)]"""
@@ -49,7 +53,7 @@ class OrderBox:
             if self.extraData:
                 data = [(key,value) for key,value,middle in self.extraData]
                 middle = [middle for key,value,middle in self.extraData]
-                drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middle)
+                drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middleData=middle)
             
             # DRAWING THE PROCEED BUTTON
             x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)*4-5
@@ -70,7 +74,7 @@ class OrderBox:
                 
             data = [(key,value) for key,value,middle in self.extraData]
             middle = [middle for key,value,middle in self.extraData]
-            drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middle)
+            drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middleData=middle)
 
         if result:
             if self.gametime.speedBar.getValue() > 0 and not self.gametime.speedBar.frozen:

@@ -62,13 +62,13 @@ class News():
 
         percentChange = self.stock.getPercentDate(report.getTime(),gametime)
         txt = f"Stock {'Up' if percentChange > 0 else 'Down'} {'+' if percentChange > 0 else ''}{limit_digits(percentChange,20)}%"
-        drawCenterTxt(screen, txt, 40, p3choice((200,0,0),(0,200,0),(200,200,200),percentChange), (310, 1010), centerX=False, centerY=False)
+        drawCenterTxt(screen, txt, 40, p3choice((200,0,0),(0,200,0),(200,200,200),percentChange), (310, 1005), centerX=False, centerY=False)
         
         txt = f"Next Report In {self.stock.priceEffects.daysTillNextReport(gametime)} Days"
-        drawCenterTxt(screen, txt, 40, (200, 200, 200), (1455, 1010), centerX=False, centerY=False,fullX=True)
+        drawCenterTxt(screen, txt, 40, (200, 200, 200), (1455, 1005), centerX=False, centerY=False,fullX=True)
 
-        txt = f"Volatility: {limit_digits(self.stock.getVolatility()*100,20)}%"
-        drawCenterTxt(screen, txt, 40, (200, 200, 200), (882, 1010), centerX=True, centerY=False)
+        # txt = f"Volatility: {limit_digits(self.stock.getVolatility()*100,20)}%"
+        # drawCenterTxt(screen, txt, 40, (200, 200, 200), (882, 1005), centerX=True, centerY=False)
 
         for i, text in enumerate(separate_strings(self.txt, 3)):
             x = 290 + (i * 10)

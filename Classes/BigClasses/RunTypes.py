@@ -43,6 +43,18 @@ class GameRun:
         return sum(self.assetSpread[:-1]) - self.assetSpread[-1]
     def getLoans(self):
         return self.assetSpread[-1]
+    def getFormattedStartTime(self):
+        """Returns the start time in a formatted string"""
+        return self.startTime.strftime("%m/%d/%Y") 
+    def getRankInt(self) -> int:
+        """Returns the rank of the run"""
+        return self.runManager.getRanking(self)
+    def getRankStr(self) -> str:
+        """Returns the rank of the run"""
+        return ordinal(self.runManager.getRanking(self))
+    def getAssets(self):
+        """Returns all the assets of the run"""
+        return self.assetSpread# [stocks, options, indexFunds, cash, loans]
     def massFileCreation(self,save_dir):
         """Creates the files for the new game"""
         basicInfo = {"name": self.name,"assetSpread": [],"gameMode": self.gameMode,"gameDate": self.gameDate.strftime(DFORMAT),"iconIndex":self.iconIndex,"startTime":self.startTime.strftime(DFORMAT),"lastPlayed":datetime.now().strftime(DFORMAT)}
@@ -50,14 +62,9 @@ class GameRun:
         os.makedirs(save_dir, exist_ok=True)
 
         with open(os.path.join(save_dir, "BasicInfo.json"), "w") as f:
-            json.dump(basicInfo, f)
+            json.dump(basicInfo, f)        
 
-        # source = rf"Classes\BigClasses\RunIcons\image {self.iconIndex+1}.png"
-        # dest = os.path.join(save_dir, "RunIcon.png")
-        # shutil.copy2(source, dest)
-        
-
-        os.makedirs(os.path.join("Saves", "Blitz", self.name, "ScreenShots"), exist_ok=True)# create the screenshot folder
+        os.makedirs(os.path.join("Saves", self.gameMode, self.name, "ScreenShots"), exist_ok=True)# create the screenshot folder
 
         with open(os.path.join(save_dir, "ExtraData.json"), "w+") as f:
             json.dump([], f)
@@ -103,14 +110,14 @@ class GameRun:
 
 class BlitzRun(GameRun):
 
-    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,gameDuration:str,runManager,endGameDate=None,startTime:str=None,endTime:str=None,lastPlayed:str=None) -> None:
+    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,gameDuration:str,runManager,endGameDate=None,startTime:str=None,realWrldEndTime:str=None,lastPlayed:str=None) -> None:
         """Being Clear, the gameDate and endGameDate are the dates in the game not the real time
-        and the startTime and endTime are the real-life time that the player created and ended the run"""
- 
+        and the startTime and realWrldEndTime are the real-life time that the player created and ended the run"""
+
         # These below need to be set before the super call since CreateCustomFile is called in the super call
         self.gameDuration = gameDuration# 1M, 3M, 6M, 1Y, 3Y, 5Y
-        self.endTime = None if endTime == None else datetime.strptime(endTime,"%m/%d/%Y %I:%M:%S %p")# need this cause we don't track how many days have gone by so when gameDate reaches this then game over
-        self.endGameDate = endGameDate# temporary until the createCustomFile is called
+        self.realWrldEndTime = None if realWrldEndTime == None else datetime.strptime(realWrldEndTime,"%m/%d/%Y %I:%M:%S %p")# the time when the run ended/was completed
+        self.endGameDate = endGameDate# temporary until the createCustomFile is called - need endGameDate cause we don't track how many days have gone by so when gameDate reaches this then game over
 
         super().__init__(name,assetSpread,'Blitz',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed)
 
@@ -119,41 +126,38 @@ class BlitzRun(GameRun):
             self.endGameDate = self.gameDate + TIME_PERIODS[self.gameDuration] if self.endGameDate == None else datetime.strptime(self.endGameDate,"%m/%d/%Y %I:%M:%S %p")
 
 
-
     def createCustomFile(self):
         self.endGameDate = datetime.strptime(self.endGameDate,"%m/%d/%Y %I:%M:%S %p") if self.endGameDate != None else self.gameDate + TIME_PERIODS[self.gameDuration]# the date the game ends
         save_dir = os.path.join("Saves", "Blitz", self.name)
         # os.makedirs(save_dir, exist_ok=True)
         info_path = os.path.join(save_dir, "ModeSpecificInfo.json")
         
-        game_info = self.getModeSpecificInfo()# change for blitz mode
+        game_info = self.getModeSpecificInfo()
         with open(info_path, 'w') as f:
             json.dump(game_info, f) 
 
     def getModeSpecificInfo(self):
         """Returns the mode specific info for the run"""
-        endTimestr = None if self.endTime == None else self.endTime.strftime(DFORMAT)
-        return {"duration": self.gameDuration,"endGameDate": self.endGameDate.strftime(DFORMAT),"endTime":endTimestr}
-
-    def getRealEndTimeTxt(self):
-        """Returns the end time in a string format"""
-        return "N/a" if self.endTime == None else self.endTime.strftime("%m/%d/%Y")
-    def getFormattedStartTime(self):
-        """Returns the start time in a formatted string"""
-        return self.startTime.strftime("%m/%d/%Y")
-
+        endTimestr = None if self.realWrldEndTime == None else self.realWrldEndTime.strftime(DFORMAT)# the time when the run ended/was completed
+        return {"duration": self.gameDuration,"endGameDate": self.endGameDate.strftime(DFORMAT),"endTime":endTimestr} 
+    
+    def getTimeLeftInt(self,gametime):
+        """Returns the time left in days"""
+        return (self.endGameDate - gametime.time).days
+    
+    def getRemainingTimeStr(self,gametime):
+        """Returns the remaining time in a string format"""
+        timeleft = self.getTimeLeftInt(gametime)
+        return f"{timeleft} days"
     # def getStarRating(self):
     #     """Returns the star rating of the run"""
     #     return min(5,int((self.getNetworth()/20_000)*5))
-    def getRankStr(self) -> str:
-        """Returns the rank of the run"""
-        return ordinal(self.runManager.getRanking(self))
+    
 
 class CareerRun(GameRun):
     def __init__(self, name, assetSpread, gameMode, gameDate, startTime = None):
         super().__init__(name, assetSpread, gameMode, gameDate, startTime)
 
-        self.runIcon = pygame.image.load(os.path.join(self.getFileDir(),'RunIcon.png')).convert_alpha()
     def createCustomFile(self):
         save_dir = os.path.join("Saves", "Career", self.name)
         os.makedirs(save_dir, exist_ok=True)
@@ -161,17 +165,32 @@ class CareerRun(GameRun):
         game_info = {"duration": time}# change for career mode
         with open(info_path, 'w') as f:
             json.dump(game_info, f) 
+        
 class GoalRun(GameRun):
-    def __init__(self, name, assetSpread, gameMode, gameDate, startTime = None):
-        super().__init__(name, assetSpread, gameMode, gameDate, startTime)
+    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,goalNetworth:int,runManager,startTime:str=None,realWrldEndTime:str=None,lastPlayed:str=None) -> None:
+        """Being Clear, the gameDate is the date in the game not the real time
+        and the startTime and realWrldEndTime are the real-life time that the player created and ended the run"""
+        try:
+            self.goalNetworth = int(goalNetworth)# the net worth the player needs to reach
+        except:
+            raise ValueError("The goal networth must be an integer or a string that can be converted to an integer")
+        
+        self.realWrldEndTime = None if realWrldEndTime == None else datetime.strptime(realWrldEndTime,"%m/%d/%Y %I:%M:%S %p")# the time when the run ended/was completed
+        super().__init__(name,assetSpread,'Goal',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed)
 
-        self.runIcon = pygame.image.load(os.path.join(self.getFileDir(),'RunIcon.png')).convert_alpha()
-    
+    def getModeSpecificInfo(self):
+        """Returns the mode specific info for the run"""
+        endTimestr = None if self.realWrldEndTime == None else self.realWrldEndTime.strftime(DFORMAT)# the time when the run ended/was completed
+        return {"duration": self.goalNetworth,"endTime":endTimestr,"goalNetworth":self.goalNetworth}
+    def getGoalNetworth(self):
+        return self.goalNetworth
+    def getNetworthDelta(self):
+        return self.goalNetworth - self.getNetworth()
     def createCustomFile(self):
         save_dir = os.path.join("Saves", "Goal", self.name)
         os.makedirs(save_dir, exist_ok=True)
-        info_path = os.path.join(save_dir, "GameModeInfo.json")
-        game_info = {"duration": time}# change for goal mode
+        info_path = os.path.join(save_dir, "ModeSpecificInfo.json")
+        game_info = self.getModeSpecificInfo()
         with open(info_path, 'w') as f:
             json.dump(game_info, f) 
 
@@ -200,6 +219,7 @@ class RunManager():
         # return "1"
     def loadPastRuns(self):
         for mode in self.pastRuns:
+            print(os.listdir(os.path.join("Saves",mode)))
             for runName in os.listdir(os.path.join("Saves",mode)):
                 with open(os.path.join("Saves",mode,runName,"BasicInfo.json"),"r") as f:
                     basicInfo = json.load(f)
@@ -208,9 +228,9 @@ class RunManager():
                 if mode == 'Career':
                     pass
                 elif mode == 'Blitz':
-                    run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],self,endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],endTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
+                    run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],self,endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
                 elif mode == 'Goal':
-                    pass
+                    run = GoalRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['goalNetworth'],self,startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
                 self.pastRuns[mode].append(run)
     def validName(self,name:str):
         """returns True if the name is valid"""

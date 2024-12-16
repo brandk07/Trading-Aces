@@ -27,7 +27,7 @@ class PlayMenu:
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(715,115,1040,920),5,border_radius=25)# outline for the latter scroll
 
-        cards = [StartRunCard(self.vertScroll,c) for c in self.runManager.getRuns("Blitz")]
+        cards = [StartRunCard(self.vertScroll,c) for c in runs]
         self.vertScroll.loadCards(cards)
         self.vertScroll.draw(screen,mousebuttons)
 
@@ -37,9 +37,7 @@ class PlayMenu:
             runs.extend(self.runManager.getRuns(r))
         self.drawLatterScroll(screen,runs,mousebuttons)
 
-
-        # centered at 1235
-        self.selectionBar.draw(screen,["Blitz","Career","Goal"],(985,20),(500,85),mousebuttons,txtsize=50)
+        self.selectionBar.draw(screen,["Blitz","Career","Goal"],(985,20),(500,85),mousebuttons,colors=[(19, 133, 100), (199, 114, 44), (196, 22, 62)],txtsize=50)
 
         drawCenterTxt(screen,"Select A Run",85,(200,200,200),(175,25),centerX=False,centerY=False)
 

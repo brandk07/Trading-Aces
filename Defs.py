@@ -511,17 +511,20 @@ def drawBoxedLines(screen,coords:tuple,txt:str,linesNum:int,txtSize:int,color:tu
 
     
 
-def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsize,color,middleData=None,diffSizes=None):
+def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsize,color=None,colors=None,middleData=None,diffSizes=None):
     """Draws the info in infoList [str (left side), value:int/str (right side)], in the box at coord with width and height wh
     Diff sizes can be a tuple containing the sizes of the left and right side text"""
     if middleData != None:
         assert len(infoList) == len(middleData), 'The middleData must be the same length as the infoList'
+    if color == None and colors == None:
+        color = (255,255,255)
 
     sep = wh[1]//len(infoList)
     x,y = coord
     y += sep/3
     for i, (string,value) in enumerate(infoList):
         newY = y+(i*sep)
+        color = color if colors == None else colors[i]
         screen.blit(s_render(string,txtsize if not diffSizes else diffSizes[0],color),(x+10,newY))# display the string on the left
         valueText = s_render(str(value),txtsize if not diffSizes else diffSizes[1],color)# render the value
         screen.blit((valueText),(x+wh[0]-valueText.get_width()-10,newY))
@@ -573,8 +576,9 @@ def time_it(func):
         print(f"{func.__name__} took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-def limit_digits(num, max_digits,truncate=False) -> str:
-    
+def limit_digits(num:int|float, max_digits,truncate=False) -> str:
+    assert max_digits > 0, "Max digits must be greater than 0"
+    assert isinstance(num, (int, float)), "Number must be an int or float"
     if len("{:,.2f}".format(num)) > max_digits:
         return "{:,.2e}".format(num)    
     else:

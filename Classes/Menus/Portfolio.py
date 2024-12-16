@@ -27,7 +27,7 @@ class Portfolio(Menu):
         self.networthGraph = StockVisualizer(gametime,player,stocklist)
         self.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
         self.piechart = PieChartSideInfo(150, (200, 650))
-        self.barGraphs = [BarGraph("Value",[175,175],[875,400]),BarGraph("Allocation",[175,175],[1150,400])]
+        self.barGraphs = [BarGraph("Value",[875,400],[175,175]),BarGraph("Allocation",[1150,400],[175,175])]
         self.orderBox = OrderBox((465,605),(385,370),gametime)
         self.barSelection : SelectionBar = SelectionBar()
 

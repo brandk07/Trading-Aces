@@ -9,6 +9,8 @@ from Classes.imports.UIElements.Latterscroll import PortfolioLatter,LatterScroll
 from Classes.BigClasses.Stock import Stock
 from Classes.imports.UIElements.BarGraph import BarGraph
 from Classes.imports.UIElements.SelectionElements import SelectionBar
+from Classes.imports.UIElements.Numpad import SideWaysNumPad
+from Classes.imports.UIElements.OrderBox import OrderBox
 import datetime
 
 TXTCOLOR = (220,220,220)
@@ -25,13 +27,16 @@ class Stockbook(Menu):
         # self.purchasetext = [fontlist[65].render(text, color)[0] for text,color in zip(['PURCHASE','PURCHASE','INSUFFICIENT'],[(0,150,0),(225,225,225),(150,0,0)])]
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockLS : PortfolioLatter = PortfolioLatter()
+        self.numPad : SideWaysNumPad = SideWaysNumPad(maxDecimals=0)
+        # 760,625 - 1450,950
+        self.orderBox : OrderBox = OrderBox((780,430),(640,325),gametime)
         # self.futureRepLS, self.pastRepLS = LatterScroll(), LatterScroll()
         self.orderScreen = orderScreen
         # self.middleDisplays = ["Info","Reports","News"]
-        self.middleDisplays = ["Info","Reports"]
+        self.middleDisplays = ["Purchase","Info","Reports"]
         self.currentMDisp = self.middleDisplays[0]
         self.oScreenDisp = False
-        self.reportBarGraph : BarGraph = BarGraph("Report Outlook",(450,190),(940,740))
+        self.reportBarGraph : BarGraph = BarGraph("Report Outlook",(940,740),(450,190))
         self.barSelection : SelectionBar = SelectionBar()
 
         
@@ -195,13 +200,12 @@ class Stockbook(Menu):
         # screen.blit(s_render(f"Volatility {self.selectedStock.ceo.getVolatility()}",50,(220,220,220)),(760,630))
         drawCenterTxt(screen,f"Volatility {self.selectedStock.givenVolatility}",50,(220,220,220),(960,635),centerY=False)
 
-    def drawCompanyInfo(self,screen:pygame.Surface,stockname:str,coords:tuple,player):
+    def drawCompanyInfo(self,screen:pygame.Surface,player,mousebuttons:int):
         """Draws the company info for the stock on the right middle """
-        # def pil_to_pygame(image):
-        #     """Convert a PIL Image to a Pygame Surface."""
-        #     return pygame.image.fromstring(image.tobytes(), image.size, image.mode)
+
         
         self.drawVolatilityElement(screen)
+        
         # Draw the stock name & description
         
         pygame.draw.rect(screen,(20,20,20),(200,625,550,325),border_radius=10)
@@ -236,12 +240,35 @@ class Stockbook(Menu):
         #     screen.blit(txt,(xCeo+(wCeo/2)-(txt.get_width()/2),yCeo+240+(i*35)))
         #     # screen.blit(s_render(ex1+line+ex2,30,(220,220,220)),(1180+(i*10),875+(i*35)))
         # pygame.draw.rect(screen,(0,0,0),(1165,625,290,240+35*numslines),5,10)
+
+    def drawPurchase(self,screen:pygame.Surface,player,mousebuttons:int,gametime):
+        pygame.draw.rect(screen,(0,0,0),(780,770,640,190),width=5,border_radius=10)# Box for numPad
+        self.numPad.draw(screen,(750,770),(700,200),"",mousebuttons,player.cash//self.selectedStock.getValue())
+
+        data = [("Price",f"${limit_digits(self.selectedStock.getValue(),20)}","x"),("Quantity",str(self.numPad.numstr),"x")]
+        
+        self.orderBox.loadData(self.numPad.numstr,f"${limit_digits(self.numPad.getValue()*self.selectedStock.getValue(),20)}",data)
+        result = self.orderBox.draw(screen,mousebuttons)
+        if result:
+            print('Buying',self.selectedStock.name,self.numPad.getValue())
+            player.buyAsset(StockAsset(player,self.selectedStock,gametime.getTime(),self.selectedStock.price,self.numPad.getValue()))
+            self.orderBox.reset()
+            self.numPad.reset()
+
+        pygame.draw.rect(screen,(0,0,0),(200,625,550,325),5,10)# border for the lined info
+
+        infoList = [
+            ("Price Per Share",f"${limit_digits(self.selectedStock.getValue(),12)}"),
+            ("Max Quantity",f"{int(player.cash//self.selectedStock.getValue())} Share{'s' if int(self.selectedStock.getValue()//player.cash) != 1 else ''}"),
+            ("Quantity Owned",f"{player.getStockQuantity(self.selectedStock)} Share{'s' if player.getStockQuantity(self.selectedStock) != 1 else ''}"),
+        ]
+        drawLinedInfo(screen,(205,625),(540,325),infoList,40,color=TXTCOLOR)
         
     def drawNews(self,screen:pygame.Surface,stockname:str,coords:tuple):
         """Draws the news for the stock on the right middle """
         pass
 
-    def drawBuySellInfo(self,screen:pygame.Surface,gametime):
+    def drawInDepthInfo(self,screen:pygame.Surface,gametime):
         """Draws the info underneath the stock graph on the left"""
         strings = ["Open","High (1M)","Low (1M)","Dividend","Volatility"]
         g = gametime.time
@@ -266,18 +293,20 @@ class Stockbook(Menu):
        
 
         self.drawStockLatter(screen, mousebuttons, player)
-        if drawClickableBox(screen,(879,420),"Create Order",95,(130,130,130),(0,170,0),mousebuttons):
-            self.oScreenDisp = True 
+        # if drawClickableBox(screen,(879,420),"Create Order",95,(130,130,130),(0,170,0),mousebuttons):
+        #     self.oScreenDisp = True 
 
-        self.barSelection.draw(screen,self.middleDisplays,(195,560),(545,45),mousebuttons,txtsize=35)
+        self.barSelection.draw(screen,self.middleDisplays,(195,560),(545,55),mousebuttons,colors=[(19, 133, 100), (199, 114, 44), (196, 22, 62)],txtsize=35)
 
-        self.drawBuySellInfo(screen,gametime)
+        self.drawInDepthInfo(screen,gametime)
 
         # match self.currentMDisp:
         match self.barSelection.getSelected():
             case "Info":
-                self.drawCompanyInfo(screen,self.selectedStock.name,(190,100),player)
+                self.drawCompanyInfo(screen,player,mousebuttons)
                 pass
+            case "Purchase":
+                self.drawPurchase(screen,player,mousebuttons,gametime)
             case "News":
                 # self.drawNews(screen,self.selectedStock.name,(190,100))
                 pass

@@ -3,7 +3,7 @@ import pygame.gfxdraw
 from Defs import *
 
 class BarGraph:
-    def __init__(s,name:str,wh:list,pos:list) -> None:
+    def __init__(s,name:str,pos:list,wh:list) -> None:
         """Creates a bar graph with values and colors, make sure the indices of the values and colors match up."""
         s.width = wh[0]
         s.height = wh[1]
@@ -19,11 +19,14 @@ class BarGraph:
         s.values = values
         s.colors = colors
         s.units = units
-    
+    def changeName(s,name:str):
+        """Changes the name of the bar graph."""
+        s.nametext = name
+        s.name = s_render(name,47,(255,255,255))
     def draw(s,screen:pygame.Surface,position=None,absoluteScale=None):
         """Draws the bar graph to the screen, position is optional,
         with absoluteScale you can input the max it will always scale to that value rather than the max value of the data"""
-        assert absoluteScale == None or type(absoluteScale) == int or type(absoluteScale) == float, 'absoluteScale must be an int or float'
+        # assert absoluteScale == None or type(absoluteScale) == int or type(absoluteScale) == float, 'absoluteScale must be an int or float'
         assert position == None or type(position) == list or type(position) == tuple, 'position must be a list/tuple'
 
         pos = s.pos if position == None else position
@@ -51,7 +54,8 @@ class BarGraph:
             pygame.draw.rect(screen,color,(startx,starty-value*scaleFactor,barwidth-10,value*scaleFactor),border_top_left_radius=10,border_top_right_radius=10)
         
         if selectIndex != None:# Drawing the box of text, after so it is on top of the bars
-            newstr = str(round(s.values[selectIndex],2))+s.units[i] if s.units[i] == '%' else s.units[i]+str(round(s.values[selectIndex],2))
+            valueTxt = str(limit_digits(s.values[selectIndex],24,s.values[selectIndex]>1000))
+            newstr = valueTxt+s.units[i] if s.units[i] == '%' else s.units[i]+valueTxt
             valueText = s_render(newstr,50,(0,0,0))
             x = s.pos[0]+s.width/2-valueText.get_width()/2
             y = s.pos[1]+s.height/2-20

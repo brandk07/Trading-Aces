@@ -49,10 +49,13 @@ class HomeScreen:
         self.draw_time(screen,gametime)
 
 
-        gfxdraw.filled_polygon(screen,[(250,705),(275,1050),(1475,1050),(1450,705)],(10,10,10,175))# the News bar at the bottom
-        pygame.draw.polygon(screen,(0,0,0),[(250,705),(275,1050),(1475,1050),(1450,705)],5)# the News bar at the bottom Outline
+        gfxdraw.filled_polygon(screen,[(250,705),(270,983),(1470,983),(1450,705)],(25,25,25,175))# the News bar at the bottom
+        pygame.draw.polygon(screen,(0,0,0),[(250,705),(270,983),(1470,983),(1450,705)],5)# the News bar at the bottom Outline
+
+        gfxdraw.filled_polygon(screen,[(270,983),(1470,983),(1475,1050),(275,1050)],(40,40,40,175))# the News bar at the botto
+        pygame.draw.polygon(screen,(0,0,0),[(270,983),(1470,983),(1475,1050),(275,1050)],5)# the News bar at the bottom Outline
         
-        pygame.draw.line(screen,(0,0,0),(270,985),(1469,985),5)# line between the news bar and the stock bar
+        # pygame.draw.line(screen,(0,0,0),(270,985),(1469,985),5)# line between the news bar and the stock bar
 
         self.drawPieChart(screen,player,stocklist,mousebuttons)
     

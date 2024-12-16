@@ -13,10 +13,10 @@ from Classes.Menus.GameModeMenu import GameRun,BlitzRun,CareerRun,GoalRun,RunMan
 class CreateMenu:
     def __init__(self,runManager) -> None:
         self.modeselectionBar : SelectionBar = SelectionBar()
-        self.customizeBar : SelectionBar = SelectionBar(allowSelcNone=True)# the bar for the customization (blits is time, career is mode[career/sandbox], goal is target)
+        self.customizeBar : SelectionBar = SelectionBar(allowSelcNone=True)# the bar for the customization (blits is time, Career is mode[Career/sandbox], Goal is target)
         
-        self.mode = 'blitz'# career, goal, or blitz
-        self.gameModes = ['career','blitz','goal']
+        self.mode = 'Blitz'# Career, Goal, or Blitz
+        self.gameModes = ['Career','Blitz','Goal']
         self.modeColors = {self.gameModes[i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
         self.currentName = 'Game Name'
         self.runManager : RunManager = runManager
@@ -35,7 +35,7 @@ class CreateMenu:
         # self.surf.fill((60,60,60,200))
     def reset(self):
         self.currentName = 'Game Name'
-        self.mode = 'blitz'
+        self.mode = 'Blitz'
         self.customizeBar.setSelected(None)
         self.modeselectionBar.setSelected(None)
         self.gameIconScroll.setCard(index=0)
@@ -46,18 +46,18 @@ class CreateMenu:
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(1360,65,395,955),5,border_radius=10)# box for the mode info on right
 
         descriptions = {
-            "blitz": "Make risky trades in this intense trading sprint.",
-            "career": "Make strategic investments and grow your wealth over years.",
-            "goal": "Reach specific financial targets within set timeframes."
+            "Blitz": "Make risky trades in this intense trading sprint.",
+            "Career": "Make strategic investments and grow your wealth over years.",
+            "Goal": "Reach specific financial targets within set timeframes."
         }
         extraDescriptions = {
-            "blitz": ["• 1M to 5Y time frame","• All stocks are twice as volatile","• Maximize ending net worth"],
-            "career": ["• Unlimited time","• Unlockable trading methods","• Grow your net worth over time"],
-            "goal": ["• Unlimited Time","• Reach specific financial targets","• Achieve goals as fast as possible"]
+            "Blitz": ["• 1M to 5Y time frame","• All stocks are twice as volatile","• Maximize ending net worth"],
+            "Career": ["• Unlimited time","• Unlockable trading methods","• Grow your net worth over time"],
+            "Goal": ["• Unlimited Time","• Reach specific financial targets","• Achieve goals as fast as possible"]
         }
         for i in range(3):
             color = (0,0,0) if self.gameModes[i] != self.mode else self.modeColors[self.mode]
-            drawCenterTxt(screen,self.gameModes[i].capitalize(),65,color,(1370,75+(i*330)),centerX=False,centerY=False)
+            drawCenterTxt(screen,self.gameModes[i],65,color,(1370,75+(i*330)),centerX=False,centerY=False)
 
             color = (140,140,140) if self.gameModes[i] != self.mode else (195,195,195)
             for j,txt in enumerate(separate_strings(descriptions[self.gameModes[i]],2)):# draws the quick description of the mode
@@ -71,12 +71,12 @@ class CreateMenu:
 
     def drawInDepthInfo(self,screen):
         """Draws the in depth info about the mode under the mode selection"""
-        drawCenterTxt(screen,self.mode.capitalize(),85,self.modeColors[self.mode],(180,600),centerX=False,centerY=False)# title
+        drawCenterTxt(screen,self.mode,85,self.modeColors[self.mode],(180,600),centerX=False,centerY=False)# title
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(170,590,540,310),5,border_radius=10)# rect under the game mode selector (says more info about the mode)
         descriptions = {
-            "blitz": "In blitz mode, you have limited time to maximize networth in a high-volatility market. All stocks have 2x normal price swings, requiring quick analysis and decisive trading.",
-            "career": "In career mode, you unlimited time to build wealth in a standard market. Start with $10k and unlock advanced tools at wealth milestones.",
-            "goal": "In goal mode, you start with 10k, and must reach a specific goal within as little time as possible. Boost to your networth as quick as possible."
+            "Blitz": "In Blitz mode, you have limited time to maximize networth in a high-volatility market. All stocks have 2x normal price swings, requiring quick analysis and decisive trading.",
+            "Career": "In Career mode, you unlimited time to build wealth in a standard market. Start with $10k and unlock advanced tools at wealth milestones.",
+            "Goal": "In Goal mode, you start with 10k, and must reach a specific Goal within as little time as possible. Boost to your networth as quick as possible."
         }
         
         for i,txt in enumerate(separate_strings(descriptions[self.mode],5)):
@@ -96,33 +96,33 @@ class CreateMenu:
         
         drawCenterTxt(screen,"Mode",65,(0,0,0),(730,270),centerX=False,centerY=False)
 
-        self.modeselectionBar.draw(screen,[g.capitalize() for g in self.gameModes],(710,320),(640,125),mousebuttons,list(self.modeColors.values()),50)
+        self.modeselectionBar.draw(screen,[g for g in self.gameModes],(710,320),(640,125),mousebuttons,list(self.modeColors.values()),50)
 
         if self.modeselectionBar.getSelected() != None:
-            self.mode = (self.modeselectionBar.getSelected()).lower()
+            self.mode = self.modeselectionBar.getSelected()
 
     def drawCustomizeInfo(self,screen,mousebuttons):
         """Draws the customize info on the right side of the screen"""
 
         drawCenterTxt(screen,"Customization",65,(0,0,0),(730,525),centerX=False,centerY=False,fullY=True)
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(720,530,620,195),5,border_radius=10)# rect under the game mode selector (says more info about the mode)
-        if self.mode == 'blitz':
+        if self.mode == 'Blitz':
             if self.customizeBar.getSelected() == None:
                 self.haveError = True
                 drawCenterTxt(screen,"-Must select a time period for Blitz Mode",40,(210,0,0),(730,665),centerX=False,centerY=False)
 
             drawCenterTxt(screen,"Time Period",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
             self.customizeBar.draw(screen,['1M','1Y','5Y'],(730,595),(600,60),mousebuttons)
-        elif self.mode == 'career':
+        elif self.mode == 'Career':
             
             drawCenterTxt(screen,"Starting Progress",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
             self.customizeBar.draw(screen,['Normal','Sandbox'],(730,595),(600,60),mousebuttons)
             if self.customizeBar.getSelected() == None:
                 self.customizeBar.setSelected('Normal')
-        elif self.mode == 'goal':
+        elif self.mode == 'Goal':
             if self.customizeBar.getSelected() == None:
                 self.haveError = True
-                drawCenterTxt(screen,"-Must select a financial target for Blitz Mode",40,(210,0,0),(730,665),centerX=False,centerY=False)
+                drawCenterTxt(screen,"-Must select a financial target for Goal Mode",40,(210,0,0),(730,665),centerX=False,centerY=False)
 
             drawCenterTxt(screen,"Financial Target",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
             self.customizeBar.draw(screen,['100k','500k','1 Mil'],(730,595),(600,60),mousebuttons)
@@ -142,28 +142,25 @@ class CreateMenu:
             size = getTSizeNums(line,260,65)
             drawCenterTxt(screen,line,size,(200,200,200),(x,80+65*i),centerY=False)
 
-    
-
     def createNewRun(self):
-        if self.mode == 'blitz':# if the mode is blitz
+        imageInd = self.gameIconScroll.getCard(index=True)
+        if self.mode == 'Blitz':# if the mode is Blitz
             gameDuration = self.customizeBar.getSelected()
-            ind = self.gameIconScroll.getCard(index=True)
-            self.currentRun = BlitzRun(self.currentName,[],None,ind,gameDuration,self.runManager)
+            # ind = self.gameIconScroll.getCard(index=True)
+            self.currentRun = BlitzRun(self.currentName,[],None,imageInd,gameDuration,self.runManager)
 
-        elif self.mode == 'career':
-            mode = self.customizeBar.getSelected()
-            self.currentRun = CareerRun(self.currentName,mode)
+        elif self.mode == 'Career':
+            self.currentRun = CareerRun(self.currentName,[],)
 
-        elif self.mode == 'goal':
-            target = self.customizeBar.getSelected()
-            self.currentRun = GoalRun(self.currentName,target)
+        elif self.mode == 'Goal':
+            goalNetworth = {key:value for key,value in zip(['100k','500k','1 Mil'],[100000,500000,1000000])}[self.customizeBar.getSelected()]# converts the selected string to a number
+            self.currentRun = GoalRun(self.currentName,[],None,imageInd,goalNetworth,self.runManager)
 
         
     def drawCreateGameBox(self,screen,mousebuttons):
         """Draws the create game box"""
         color = (0,210,0) if not self.haveError else (210,0,0)
         mousex,mousey = pygame.mouse.get_pos()          
-            
 
         n = drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),color,mousebuttons)
 
