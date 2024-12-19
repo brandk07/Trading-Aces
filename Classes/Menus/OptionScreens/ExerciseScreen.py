@@ -17,8 +17,10 @@ class ExerciseOptionScreen:
         self.selectOption = None
         self.forced = False
 
-        self.orderBox = OrderBox((1050,605),(510,365),gametime)
-        self.exerciseSelection : SelectionBar = SelectionBar()# Exercise, Sell, or Dimiss
+        # self.orderBox = OrderBox((1050,605),(510,365),gametime)
+        self.orderBox = OrderBox((665,605),(510,365),gametime)
+        self.exerciseSelection : SelectionBar = SelectionBar(horizontal=False)# Exercise, Sell, or Dimiss
+        self.exerciseSelection.setSelected("Exercise")
         self.numPad = Numpad(displayText=False,nums=('DEL','0','MAX'))
         
         self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
@@ -54,7 +56,7 @@ class ExerciseOptionScreen:
         """Handles the logic for exercising a call option"""
         # Draws the numpad for the quantity of shares to buy
         maxQuantity = min(self.selectOption.getQuantity(), int(self.player.cash/(self.selectOption.getStrike()*100)))# the maximum quantity of options that can be exercised
-        self.numPad.draw(screen,(650,645),(390,345),"Shares",mousebuttons,maxQuantity)# draw the numpad
+        self.numPad.draw(screen,(1180,605),(390,385),"Shares",mousebuttons,maxQuantity)# draw the numpad
         
         # Loads the orderBox with the information for the call option based on the numPad's quantity
         cost = self.numPad.getValue()*self.selectOption.getStrike()*100
@@ -70,7 +72,7 @@ class ExerciseOptionScreen:
         # Draws the numpad for the quantity of shares to sell
         numShares = self.player.getNumStocks(self.selectOption.stockObj)
         maxQuantity = min(int(numShares/100), self.selectOption.getQuantity())# the maximum quantity of options that can be exercised
-        self.numPad.draw(screen,(650,645),(390,345),"Shares",mousebuttons,maxQuantity)# draw the numpad
+        self.numPad.draw(screen,(1180,605),(390,385),"Shares",mousebuttons,maxQuantity)# draw the numpad
 
         # Loads the orderBox with the information for the put option based on the numPad's quantity
         amt = self.numPad.getValue()*100# the amount of shares that the player is selling
@@ -85,7 +87,8 @@ class ExerciseOptionScreen:
         """Handles the logic for selling an option"""
         # Draws the numpad for the quantity of shares to sell
         maxQuantity = self.selectOption.getQuantity()# the maximum quantity of options that can be sold
-        self.numPad.draw(screen,(650,645),(390,345),"Options",mousebuttons,maxQuantity)# draw the numpad
+        # self.numPad.draw(screen,(650,645),(390,345),"Options",mousebuttons,maxQuantity)# draw the numpad
+        self.numPad.draw(screen,(1180,605),(390,385),"Options",mousebuttons,maxQuantity)# draw the numpad
 
         # Loads the orderBox with the information for the put option based on the numPad's quantity
         sellInfotxts = f"Allows the the option to be sold for it's estimated value at a 2% fee instead of exercising it"
@@ -102,31 +105,36 @@ class ExerciseOptionScreen:
     def drawExerciseChoices(self,screen:pygame.Surface,mousebuttons:int):
         """Draws the Choices for exercising the option"""
 
-        drawCenterTxt(screen, 'EXERCISE CHOICES', 120, (180, 180, 180), (1257, 105), centerY=False)
+        drawCenterTxt(screen, 'CHOICES', 100, (180, 180, 180), (1735, 120), centerY=False)
+        drawCenterTxt(screen, self.exerciseSelection.getSelected(), 120, (180, 180, 180), (1110, 105), centerY=False)
 
-        self.exerciseSelection.draw(screen,["Exercise","Sell","Dismiss"],(650, 210),(1250,100),mousebuttons,txtsize=75)
+
+        self.exerciseSelection.draw(screen,["Exercise","Sell","Dismiss"],(1560, 210),(340,380),mousebuttons,colors=[(19, 133, 100), (199, 114, 44), (196, 22, 62)],txtsize=75)
 
         separatedTxts = []
         if self.exerciseSelection.getSelected() != "Dismiss":
-            drawCenterTxt(screen, 'Option Quantity', 60, (180, 180, 180), (845, 600), centerY=False)# draws the title for the numpad
+            # drawCenterTxt(screen, 'Option Quantity', 60, (180, 180, 180), (1735, 600), centerY=False)# draws the title for the numpad
+            for i,string in enumerate(separate_strings("Use numpad for quantity selection",3)):# loop through the textlist and store the text info in the textinfo list
+                drawCenterTxt(screen, string, 60, (180, 180, 180), (1735, 650+55*i),centerX=True,centerY=False)
 
-
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(660, 210, 890, 115),5,10)# box around the explaination text and the information
+        # pygame.draw.rect(screen,(0,0,0),pygame.Rect(1185, 595, 360, 375),5,10)# box around the numpad
+        pygame.draw.rect(screen,(0,0,0),pygame.Rect(1185, 605, 720, 365),5,10)# box around the numpad
         match self.exerciseSelection.getSelected():
             case "Exercise":
                 if self.selectOption.getType() == "call":
                     exerciseInfotxts = self.exerciseCallLogic(screen,mousebuttons)
                 else:
                     exerciseInfotxts = self.exercisePutLogic(screen,mousebuttons)
-                separatedTxts = separate_strings(exerciseInfotxts,5)
+                separatedTxts = separate_strings(exerciseInfotxts,2)
             case "Sell":
-                separatedTxts = separate_strings(self.sellOptionLogic(screen,mousebuttons),5)
+                separatedTxts = separate_strings(self.sellOptionLogic(screen,mousebuttons),2)
             case "Dismiss":
-                separatedTxts = separate_strings(f"Dismisses and removes the option without any action. This is useful if the option is worthless",5)
+                separatedTxts = separate_strings(f"Dismisses and removes the option without any action. This is useful if the option is worthless",2)
                 self.orderBox.loadData("Removing Option",f"$0",[("Action Irreversible","-","")])
 
         for i,string in enumerate(separatedTxts):# loop through the textlist and store the text info in the textinfo list
-            # drawCenterTxt(screen, string, 55, (180, 180, 180), (940, 325+45*i),centerY=False)
-            drawCenterTxt(screen, string, 55, (180, 180, 180), (670, 325+45*i),centerX=False,centerY=False)
+            drawCenterTxt(screen, string, 55, (180, 180, 180), (1110, 225+45*i),centerX=True,centerY=False)
 
 
         result = self.orderBox.draw(screen,mousebuttons)
@@ -150,11 +158,11 @@ class ExerciseOptionScreen:
     def drawReqAndPay(self,screen:pygame.Surface,mousebuttons:int):
         """Draws the requirements and payment info for the exercise option"""
 
-        pygame.draw.rect(screen,(0,0,0),pygame.Rect(660, 315, 1230, 280),5,10)# box around the explaination text and the information
+        # pygame.draw.rect(screen,(0,0,0),pygame.Rect(660, 315, 1230, 280),5,10)# box around the explaination text and the information
         
-        drawCenterTxt(screen, 'Max Potential', 65, (170, 170, 170), (1655, 335), centerY=False)
+        # drawCenterTxt(screen, 'Max Potential', 65, (170, 170, 170), (1655, 335), centerY=False)
 
-        drawCenterTxt(screen, 'Exercising One', 60, (170, 170, 170), (1250, 335), centerY=False)
+        # drawCenterTxt(screen, 'Exercising One', 60, (170, 170, 170), (1250, 335), centerY=False)
 
         req = f"{limit_digits(self.selectOption.getQuantity(),20,True)} Option{'s' if self.selectOption.getQuantity() != 1 else ''}"
         maxPayment, onePayment, maxReq = "None","None","None"
@@ -170,8 +178,8 @@ class ExerciseOptionScreen:
                     maxPayment = f"{limit_digits(amt,20,True)} shares of {self.selectOption.stockObj.name}"# shares to buy
                     oneReq = f"${limit_digits(self.selectOption.getStrike()*100,20)}"# cost to exercise one option
                     onePayment = f"100 Shares of {self.selectOption.stockObj.name}"# shares to buy with one option
-                    possessed = f"{limit_digits(self.player.cash,25,True)}"
-                    capacity = f"{limit_digits(self.player.cash/(self.selectOption.getStrike()*100),25,True)} Shares"
+                    possessed = f"{limit_digits(self.player.cash,25,True)} Shares"
+                    capacity = f"{limit_digits(self.player.cash/(self.selectOption.getStrike()*100),25,True)}"
                     
 
                 case "put":
@@ -180,7 +188,7 @@ class ExerciseOptionScreen:
                     oneReq = f"100 Shares of {self.selectOption.stockObj.name}"# shares to sell with one option
                     onePayment = f"${limit_digits(self.selectOption.getStrike()*100,20)}"# payment for selling one option
                     possessed = f"{self.player.getNumStocks(self.selectOption.stockObj)} Shares"
-                    capacity = f"{limit_digits(self.player.getNumStocks(self.selectOption.stockObj)/100,25,True)} Options"
+                    capacity = f"{limit_digits(self.player.getNumStocks(self.selectOption.stockObj)/100,25,True)}"
 
         elif self.exerciseSelection.getSelected() == "Sell":
             maxPayment = f"${limit_digits(self.selectOption.getValue(fullvalue=False),20)} Per Option"
@@ -191,9 +199,20 @@ class ExerciseOptionScreen:
         elif self.exerciseSelection.getSelected() == "Dismiss":
             possessed = f"{limit_digits(self.selectOption.getQuantity(),20,True)} Options"
             onePayment = "$0"
-
-        drawLinedInfo(screen,(1460,375),(420,215),[("Requires",f"{maxReq}"),("Yields",f"{maxPayment}"),("Present Capacity",capacity)],38,TXTCOLOR)
-        drawLinedInfo(screen,(1040,375),(420,215),[("Requires",f"{oneReq}"),("Yields",f"{onePayment}"),("Possessed",possessed)],38,TXTCOLOR)
+        # colors = [
+        #     # (25, 40, 80),    # Deep navy blue
+        #     # (224, 27, 165),   # Violet 
+        #     (207, 185, 21),   # Gold
+            
+        #     (186, 167, 19),      # Gold
+        #     # (0, 170, 170),   # Aqua
+        #     (143, 128, 14)
+        # ]
+        drawLinedInfo(screen,(1100,330),(420,260),[("Option Qty","Max"),("Requires",f"{maxReq}"),("Yields",f"{maxPayment}"),("Present Capacity",capacity)],38,color=(207, 142, 21))
+        ownedOrcash = "Cash" if self.exerciseSelection.getSelected() == "Sell" else "Shares Owned" 
+        drawLinedInfo(screen,(665,330),(420,260),[("Option Qty","1"),("Requires",f"{oneReq}"),("Yields",f"{onePayment}"),(ownedOrcash,possessed)],38,color=(207, 185, 21))
+        # drawLinedInfo(screen,(1460,375),(420,215),[("Requires",f"{maxReq}"),("Yields",f"{maxPayment}"),("Present Capacity",capacity)],38,TXTCOLOR)
+        # drawLinedInfo(screen,(1040,375),(420,215),[("Requires",f"{oneReq}"),("Yields",f"{onePayment}"),("Possessed",possessed)],38,TXTCOLOR)
         
 
     def drawScreen(self,screen,mousebuttons):
@@ -209,6 +228,6 @@ class ExerciseOptionScreen:
         self.drawOptionInfo(screen,self.gametime)
         self.drawExerciseChoices(screen,mousebuttons)
         self.drawReqAndPay(screen,mousebuttons)
-        if not self.forced:
-            result = drawClickableBoxWH(screen, (1575,880),(325,80),"Cancel", 45, (180,180,180), (45,0,0), mousebuttons,fill=True)
-            if result: self.selectOption = None; self.forced = False
+
+        result = drawClickableBoxWH(screen, (1565,880),(325,80),"Cancel", 45, (180,180,180), (45,0,0), mousebuttons,fill=True)
+        if result: self.selectOption = None; self.forced = False

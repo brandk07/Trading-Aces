@@ -47,8 +47,10 @@ startmenu = StartMain(runManager)
 if __name__ == "__main__":
     while True:
         startmenu.reset()# resets the start menu
-        currentRun : GameRun = startmenu.drawStartMenu(screen,clock)
+        # currentRun : GameRun = startmenu.drawStartMenu(screen,clock)
+        
         pastRuns = runManager.pastRuns# remember that this is using the real past runs so if it is modified then it will mess stuff up - also deep copy issue b/c there are lists inside
+        currentRun = pastRuns["Blitz"][1]
 
         gametime = GameTime(DEFAULTSTARTDATE.strftime(DFORMAT),GAMESPEED)
         setGameTime(gametime,currentRun.getFileDir())

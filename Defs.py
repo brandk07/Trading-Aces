@@ -165,7 +165,8 @@ def getScreenRefreshBackGrounds(screen:pygame.Surface):
     menuSurface = surface.copy()
     screenSurface = surface.copy()
     menupoints = [(185,95),(1910,95),(1910,980),(185,980)]
-    gfxdraw.filled_polygon(menuSurface, menupoints,(40,40,40,150))
+    # gfxdraw.filled_polygon(menuSurface, menupoints,(40,40,40,150))
+    gfxdraw.filled_polygon(menuSurface, menupoints,(40,40,40,200))
     pygame.draw.polygon(menuSurface, (0,0,0), menupoints,5)
         
     return menuSurface,screenSurface

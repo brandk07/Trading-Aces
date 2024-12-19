@@ -110,7 +110,7 @@ class OptionAsset(Asset):
         self.expirationDate = getCloseOpenDate(self.expirationDate)# Makes sure the expiration date is a trading day
         self.optionType = optionType# "call" or "put"
     
-        self.option = Op(european=True,kind=self.optionType,s0=float(self.stockObj.price)*100,k=self.strikePrice*100,t=self.daysToExpiration(),sigma=self.getVolatility(),r=0.05)
+        self.option = Op(european=True,kind=self.optionType,s0=float(self.stockObj.price)*100,k=self.strikePrice*100,t=self.daysToExpiration(),sigma=self.getVolatility(),r=0.05,dv=0)
         self.ogValue = self.ogValue if self.ogValue != None else self.getValue(bypass=True,fullvalue=False)# ogValue is the value the asset orginally had, just for 1 asset
         
         # print(f"{self.name}, {porfolioPercent} {self.portfolioPercent}")
@@ -179,7 +179,7 @@ class OptionAsset(Asset):
             #     self.playerObj.sellAsset(self,self.quantity)
             # return self.lastvalue * self.quantity
         if bypass or self.updateCount > 60:
-            self.option.setValues(underPrice=float(self.stockObj.price)*100,volatility=self.getVolatility(),days=self.daysToExpiration()/365)
+            self.option.setValues(underPrice=float(self.stockObj.price)*100,volatility=self.getVolatility(),days=self.daysToExpiration()/365,dv=self.stockObj.dividendYield/100)
   
             self.option.t = self.option.t if self.option.t > 0 else 0
 

@@ -209,7 +209,7 @@ class Optiontrade(Menu):
         
         self.stockGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
         self.stockSelection : SelectionBar = SelectionBar()
-        self.screenSelection : MenuSelection = MenuSelection((200, 105), (375, 100),["Buy","Sell"],45,colors=[(100,200,100),(200,100,100)])
+        self.screenSelection : MenuSelection = MenuSelection((200, 105), (375, 100),["Buy","Owned"],45,colors=[(100,200,100),(200,100,100)])
         self.screenSelection.setSelected("Buy")
 
         self.orderBox = OrderBox((1040,570),(450,370),gametime)
@@ -230,15 +230,15 @@ class Optiontrade(Menu):
         self.selectOption = None
 
     def setSelectedAsset(self,option):
-        """Sets the selected asset to the given option, takes to Sell screen"""
+        """Sets the selected asset to the given option, takes to Owned screen"""
 
         self.customOptionSc.stopCreating()
-        self.screenSelection.setSelected("Sell")
+        self.screenSelection.setSelected("Owned")
         self.sellingScreen.setSelectOption(option)
 
     def forceExerciseOption(self,option):
-        """Sets the selected asset to the given option, takes to Sell screen"""
-        self.screenSelection.setSelected("Sell")
+        """Sets the selected asset to the given option, takes to Owned screen"""
+        self.screenSelection.setSelected("Owned")
         self.sellingScreen.setSelectOption(option)
         self.sellingScreen.exerciseMenu.setSelected(option,forced=True)
     def isForced(self):
@@ -424,8 +424,8 @@ class Optiontrade(Menu):
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
         if self.preMadeOptions == {}:
             self.fillPreMadeOptions()
-        if not (self.screenSelection.getSelected() == "Sell" and self.isForced()):# don't draw menu switcher if the exercise menu is forced
-            self.screenSelection.draw(screen,mousebuttons)
+        # if not (self.screenSelection.getSelected() == "Owned" and self.isForced()):# don't draw menu switcher if the exercise menu is forced
+        self.screenSelection.draw(screen,mousebuttons)
         if self.screenSelection.getSelected() == "Buy":
             self.checkOptionDates()# Ensures that the options are still live
 
@@ -442,7 +442,7 @@ class Optiontrade(Menu):
             self.drawAvailableOptions(screen,mousebuttons,gametime,stock)
             self.drawCustomOptions(screen,mousebuttons,gametime,stock)
             self.drawselectOption(screen,mousebuttons,gametime,stock)
-        elif self.screenSelection.getSelected() == "Sell":
+        elif self.screenSelection.getSelected() == "Owned":
             self.sellingScreen.drawScreen(screen,mousebuttons,gametime)
 
 

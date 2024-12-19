@@ -363,6 +363,7 @@ class Player(Stock):
     def getCurrentDebt(self):
         """returns the total amount of money owed by the player"""
         return sum([loan.principalLeft for loan in self.loans])
+
     def getCurrentMaxLoan(self):
         """returns the maximum amount of money the player can borrow minus the total amount of money owed"""
         est = self.getMaxLoan()-sum([loan.principalLeft for loan in self.loans])

@@ -39,7 +39,10 @@ class OrderBox:
 
     def draw(self,screen:pygame.Surface,mousebuttons:int,resetClicked=True) -> bool:
         """Returns True if the confirm button is pressed resets after confirm button is pressed"""
+        
+        pygame.draw.rect(screen,(50,50,50),pygame.Rect(self.coords[0],self.coords[1],self.wh[0],self.wh[1]),border_radius=15)
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(self.coords[0],self.coords[1],self.wh[0],self.wh[1]),5,15)
+
 
         if self.stage == 0:
             # DRAWING THE VALUE STRING

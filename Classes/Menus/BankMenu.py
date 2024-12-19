@@ -19,7 +19,7 @@ class BankMenu(Menu):
         super().__init__()
         self.menuSelection = MenuSelection((200,105),(520,100),["Investments","Loans","Transactions"],45)
         # self.overView = OverView(player,transactions)
-        self.menuSelection.setSelected("Loans")
+        self.menuSelection.setSelected("Investments")
         self.transactionScreen = TransactionScreen(transactions,player)
         self.loanScreen = LoanScreen(gametime,player,stocklist)
         self.investScreen = InvestmentScreen(stocklist.copy(),gametime,player,tmarket,indexFunds.copy())

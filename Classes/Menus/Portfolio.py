@@ -23,7 +23,7 @@ class Portfolio(Menu):
         # self.allrenders = []
         self.selectedAsset = None
         self.player = player
-        self.displayedStocks = [StockVisualizer(gametime,stocklist[i],stocklist) for i in range(3)]# the stock visualizers for the stocks that are displayed
+        self.displayedStocks = [StockVisualizer(gametime,stocklist[i],stocklist) for i in range(2)]# the stock visualizers for the stocks that are displayed
         self.networthGraph = StockVisualizer(gametime,player,stocklist)
         self.selectedGraph = StockVisualizer(gametime,stocklist[0],stocklist)
         self.piechart = PieChartSideInfo(150, (200, 650))
@@ -333,7 +333,23 @@ class Portfolio(Menu):
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(870, 700, 745, 250), 5, border_radius=10)# border for both the lined infos
         
 
-        
+    def drawLoanInfo(self,screen,player,mousebuttons):
+        """Draws the loan info"""
+        # draws the loan info on the right side of the screen
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(1400, 100, 500, 285), 5, border_radius=10)
+        drawCenterTxt(screen,"Loan Info",70,(163, 12, 7),(1420,115),centerX=False,centerY=False)
+
+        if drawClickableBoxWH(screen,(1690,110),(195,60),"Go to Loans", 45, (0,0,0),(200,200,200),mousebuttons):
+            self.player.screenManager.setScreen("Bank")
+            self.player.screenManager.screens['Bank'].menuSelection.setSelected("Loans")
+
+        drawLinedInfo(screen,(1410,180),(480,205),[
+            ("Total Debt",f"${limit_digits(player.getCurrentDebt(),24)}"),
+            ("Max Loans",f"${limit_digits(player.getMaxLoan(),24)}"),
+            ("Num Loans",f"{limit_digits(len(player.loans),24,True)} Loans"),
+        ],40,(222, 66, 27))
+
+
 
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player, gametime):
         """Draws all of the things in the portfolio menu"""
@@ -362,11 +378,13 @@ class Portfolio(Menu):
             
             self.piechart.draw(screen,mousebuttons,self.player.screenManager)
             
+            self.drawLoanInfo(screen,player,mousebuttons)# draws the loan info on the right side of the screen
+
             wh = (500,285)
             for i,stock in enumerate(self.displayedStocks):
                 # 870/3 = 290
                 # if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),mousebuttons,0,rangecontroldisp=False,graphrange="1D") and mousebuttons == 1:# if the stock name is clicked
-                coords = (1400,100+(i*290))
+                coords = (1400,390+(i*290))
                 stock.drawFull(screen,coords,wh,f"PortfolioExtra{i}",True,"Normal",mousebuttons)
 
         

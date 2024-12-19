@@ -1,6 +1,21 @@
 
 # from datetime import datetime, timedelta
 
+
+import numpy as np
+import math
+
+prices = np.array(stockPoints)
+returns = np.diff(prices) / prices[:-1]
+std_dev = np.std(returns)
+annualized_volatility = std_dev * math.sqrt(500)
+
+print("Annualized Volatility:", annualized_volatility)
+
+
+
+
+
 # ytime = datetime(2023, 1, 1, 17, 30, 0)
 # mytime2 = datetime(2023, 1, 2, 9, 30, 0)
 t= "hello"

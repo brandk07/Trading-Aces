@@ -54,7 +54,7 @@ class OptionVal:
     :parm iteration: the iteration times for "BT" and "MC"
     :return price
     """
-    def setValues(self, underPrice=None, interestRate=None, volatility=None, strike=None, optionType=None, dividend=None, days=None):
+    def setValues(self, underPrice=None, interestRate=None, volatility=None, strike=None, optionType=None, dividend=None, days=None, dv=None):
         if underPrice: self.s0 = underPrice
         if interestRate: self.r = interestRate
         if volatility: self.sigma = volatility
@@ -63,6 +63,7 @@ class OptionVal:
         if strike: self.k = strike
         if optionType: self.kind = 1 if optionType.lower() == 'call' else -1
         if self.k == 0: self.k = 1
+        if dv: self.dv = dv
 
 
     def getPrice(self,method="BSM",iteration = 5000):
