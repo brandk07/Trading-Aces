@@ -76,7 +76,7 @@ class PerfChart:
 
 # lastfps = deque(maxlen=300)
 # clock = pygame.time.Clock()
-# mousebuttons = 0
+# = 0
 # while True:
 #     screen.fill((60,60,60))
 #     # pygame.event.pump()
@@ -87,14 +87,13 @@ class PerfChart:
 #     screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(850,0),(850,30),(850,60)]))
 #     pygame.display.flip()
     
-#     mousebuttons = 0
-#     for event in pygame.event.get():
+#     mousebut in pygame.event.get():
 #         if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
 #             pygame.quit()
 #             quit()
 #         elif event.type == pygame.MOUSEBUTTONDOWN:
-#             mousebuttons = event.button
-#             if mousebuttons == 1:
+#             = event.button
+#             if == 1:
 #                 print("Mouse button pressed",pygame.mouse.get_pos())
             
 #         elif event.type == pygame.KEYDOWN and event.key == pygame.K_j:

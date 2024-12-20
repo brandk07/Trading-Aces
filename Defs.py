@@ -81,7 +81,54 @@ def s_render(string:str, size, color,font='reg') -> pygame.Surface:
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 errors = ErrorMessageHandler(s_render)# error messages DO errors.addMessage(txt:str,coords:list=None)
 animationList : list[BuyAnimation] = []
-# bigMessageList = []
+# mouseButton.getButton('left')
+class Mouse:
+    def __init__(self):
+        """Always use the getButton method to get the state of the button, since it takes in account if the mouse is live"""
+        self.live = True# if nothing is stopping the mouse
+        # Requires the two dicts since you still want to know if button is pressed for button overide
+        self.livebuttons = {
+            "left": False,
+            "right": False,
+            "middle": False,
+            "scrollUp": False,
+            "scrollDown": False,
+            "scrollLeft": False,
+            "scrollRight": False
+        }
+        self.buttons = self.livebuttons.copy()
+    def getButton(self,button:str) -> bool:
+        """Returns the state of the button 
+        ----FACTORS IN IF THE MOUSE IS LIVE-----
+        left, right, middle, scrollUp, scrollDown, scrollLeft, scrollRight"""
+        return self.livebuttons[button]
+    
+    def getButtonOveride(self,button:str) -> bool:
+        """Returns the state of the button, regardless of if the mouse is live
+        left, right, middle, scrollUp, scrollDown, scrollLeft, scrollRight"""
+        return self.buttons[button]
+    
+    def update(self):
+        """Resets the button states"""
+        for button in self.buttons:
+            self.buttons[button] = False
+        for button in self.livebuttons:
+            self.livebuttons[button] = False
+
+    def addEvent(self,eventButton):
+        """Adds the event button to the button states"""
+        self.buttons[list(self.buttons)[eventButton-1]] = True
+        if self.live:
+            self.livebuttons[list(self.livebuttons)[eventButton-1]] = True
+        self.live = True
+
+    def stop(self):
+        """Stops the mouse from being live, still get the button states from getButtonOveride"""
+        self.live = False
+        for button in self.livebuttons:
+            self.livebuttons[button] = False
+
+mouseButton = Mouse()
 
 soundEffects = {# soundEffects['generalClick'].play()
     # 'menuClick': pygame.mixer.Sound(r'Assets\Soundeffects\menuClick.wav'),
@@ -289,7 +336,7 @@ def drawCenterRendered(screen,renderedTxt,coords:tuple,centerX=True,centerY=True
     if fullX: x -= valueText.get_width()
     if fullY: y -= valueText.get_height()
     screen.blit(valueText,(x,y))
-def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,centerX=False,centerY=False,fill=False,border=True,topLeftX=False) -> bool:
+def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,color2:tuple,centerX=False,centerY=False,fill=False,border=True,topLeftX=False) -> bool:
     """Draws a clickable box on the screen, returns True if the box is clicked
     Will center the X position onto coords[0] of the text if centerX is True"""
     
@@ -311,13 +358,13 @@ def drawClickableBox(screen,coords:tuple,text:str,textsize:int,color1:tuple,colo
         else:# The text will change color
             valueText = s_render(text,textsize,color2)# re-render the text with a different color
 
-        if mousebuttons == 1:
+        if mouseButton.getButton('left'):
             soundEffects['generalClick'].play()
             return True
         
     screen.blit(valueText,(x+25,y+15))
     return False
-def drawClickableTxt(screen,coords,text,textsize,color1,color2,mousebuttons,centerX=False,centerY=False):
+def drawClickableTxt(screen,coords,text,textsize,color1,color2,centerX=False,centerY=False):
     """Draws a clickable text on the screen, returns True if the text is clicked"""
     valueText = s_render(text,textsize,color1)
     x,y = coords
@@ -327,11 +374,11 @@ def drawClickableTxt(screen,coords,text,textsize,color1,color2,mousebuttons,cent
 
     if myrect.collidepoint(pygame.mouse.get_pos()):
         valueText = s_render(text,textsize,color2)# re-render the text with a different color
-        if mousebuttons == 1:
+        if mouseButton.getButton('left'):
             soundEffects['generalClick'].play()
             return True
     screen.blit(valueText,(x,y))
-def drawClickableBoxWH(screen,coords:tuple,wh:tuple,text:str,textsize:int,color1:tuple,color2:tuple,mousebuttons:int,fill=False) -> bool:
+def drawClickableBoxWH(screen,coords:tuple,wh:tuple,text:str,textsize:int,color1:tuple,color2:tuple,fill=False) -> bool:
     """Same as drawClickable Box, but you give width and height and the text will be centered"""
     
     valueText = s_render(text,textsize,color1)
@@ -349,7 +396,7 @@ def drawClickableBoxWH(screen,coords:tuple,wh:tuple,text:str,textsize:int,color1
         else:# The text will change color
             valueText = s_render(text,textsize,color2)# re-render the text with a different color
 
-        if mousebuttons == 1:
+        if mouseButton.getButton('left'):
             soundEffects['generalClick'].play()
             return True
         
@@ -380,7 +427,7 @@ def drawBoxedTextWH(screen,coords,wh,text,size,textcolor,centerX=False,centerY=F
     drawCenterTxt(screen,text,size,textcolor,(x+w//2,y+h//2),centerX=True,centerY=True)
 
 
-def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:int,getpoints,shifts:tuple,selected_value:int,mousebuttons:int,defaultHeight:int,alltexts,percents) -> list:
+def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:int,getpoints,shifts:tuple,selected_value:int,defaultHeight:int,alltexts,percents) -> list:
     """Draws the scroll bar for the latter menu"""
     xshift,yshift = shifts
     mousex, mousey = pygame.mouse.get_pos()
@@ -399,7 +446,7 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
         hover = False
         if point_in_polygon((mousex, mousey), totalpolyon):  # check if mouse is inside the polygon
             hover = True
-            if mousebuttons == 1:
+            if mouseButton.getButton('left'):
                 soundEffects['generalClick'].play()
                 selected_value = ioffset
 
@@ -455,7 +502,7 @@ def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:
 
 
 
-def checkboxOptions(screen,options,selectedOptions,pos,wh,mousebuttons,disabledOptions=None,txtSize=30) -> tuple:
+def checkboxOptions(screen,options,selectedOptions,pos,wh,disabledOptions=None,txtSize=30) -> tuple:
     """Displays the options in options, will return the option that is click (option,index), 
     disabledOptions is a list of options that are disabled,"""
     width = wh[0]//len(options)
@@ -472,7 +519,7 @@ def checkboxOptions(screen,options,selectedOptions,pos,wh,mousebuttons,disabledO
         if rect.collidepoint(pygame.mouse.get_pos()):
             color = (160,160,160) if not option in disabledOptions else (200,0,0)
             pygame.draw.rect(screen, color, rect, width=3,border_radius=10)
-            if mousebuttons == 1:
+            if mouseButton.getButton('left'):
                 soundEffects['generalClick'].play()
                 return (option, i)
                 # screen.blit(s_render(disabledOptions[option], 40, (180,0,0)), (x,y-20))
@@ -595,31 +642,34 @@ def time_loop(loop):
     return wrapper
 def setGameTime(gametime,dataDir):
     with open(os.path.join(dataDir,"ExtraData.json"),'r') as file:
-        data = json.load(file)
-        if data:
+        data = [json.loads(line) for line in file]
+        if len(data) > 1:
             gametime.setTimeStr(data[0])
             # return gametime
-def Getfromfile(stockdict:dict,indexFunds:dict,player,gametime,dataDir):
+def Getfromfile(stockdict:dict,indexFunds:dict,player,gametime,dataDir,optionTrade):
     with open(os.path.join(dataDir,"ExtraData.json"),'r') as file:
-        data = json.load(file)
-        if data:
+        # data = json.load(file)
+        data = [json.loads(line) for line in file]
+        if len(data) > 1:
             player.stocks = [StockAsset(player,stockdict[stock[0]],stock[1],stock[2],stock[3],dividends=stock[4],portfolioPercent=stock[5]) for stock in data[1]]# [stockobj,creationdate,ogprice,quantity]
             player.options = [OptionAsset(player,stockdict[option[0]],option[1],option[2],option[3],option[4],option[5],porfolioPercent=option[6],ogValue=option[7],color=tuple(option[8])) for option in data[2]]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity,ogprice]
             player.loans = [LoanAsset(loan[0],loan[1],loan[2],loan[3],loan[4],loan[5]) for loan in data[3]]# loans storage is [rate,term,principal,principalLeft,interestpaid, termleft]
             player.indexFunds = [IndexFundAsset(player,indexFunds[indexfund[0]],indexfund[1],indexfund[2],indexfund[3],dividends=indexfund[4],portfolioPercent=indexfund[5]) for indexfund in data[4]]# indexfunds storage is [name,creationdate,ogprice,quantity,dividends]
-            player.cash = data[5] if data[5] != 0 else 2500
-            player.getExtraData(data[6],gametime)
+            optionTrade.loadingData(data[5],stockdict)
+            player.cash = data[6] if data[6] != 0 else 2500
+            player.getExtraData(data[7],gametime)
            
         else:
             player.getExtraData(None,gametime)
 
-def saveGame(stocklist,player,dataDir,gametime,transact,currentRun):
+def saveGame(stocklist,player,dataDir,gametime,transact,currentRun,optionTrade):
     stockdata = [stock.savingInputs() for stock in player.stocks]
     optiondata = [option.savingInputs() for option in player.options]# options storage is [stockname,strikeprice,expirationdate,optiontype,quantity]
     loanData = [loan.savingInputs() for loan in player.loans]
     indexFundData = [indexfund.savingInputs() for indexfund in player.indexFunds]
-    
-    data = [str(gametime),stockdata,optiondata,loanData,indexFundData,float(player.cash)]
+    optionMenuData = optionTrade.savingData() 
+
+    data = [str(gametime),stockdata,optiondata,loanData,indexFundData,optionMenuData,float(player.cash)]
     data.append(player.extraSavingData())
 
     for stock in stocklist:
@@ -630,7 +680,9 @@ def saveGame(stocklist,player,dataDir,gametime,transact,currentRun):
     with open(os.path.join(dataDir,"ExtraData.json"),'w') as file:
         file.seek(0)# go to the start of the file
         file.truncate()# clear the file
-        json.dump(data,file)
+        for d in data:
+            file.write(json.dumps(d)+'\n')
+        # json.dump(data,file)
 
 def closest_point(master_point, points):
     return min(points, key=lambda point: math.sqrt((point[0] - master_point[0])**2 + (point[1] - master_point[1])**2))

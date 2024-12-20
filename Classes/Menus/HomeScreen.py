@@ -33,15 +33,15 @@ class HomeScreen:
         txt = f"MARKET {'OPEN' if gametime.isOpen()[0] else 'CLOSED'}"
         drawCenterTxt(screen,txt,115,color,(1515,35),centerY=False)
     
-    def drawPieChart(self,screen,player,stocklist,mousebuttons):
+    def drawPieChart(self,screen,player,stocklist):
         assets = player.getAssets()
         values = [[asset.getValue(),asset.name,asset.color] for asset in assets]
         values.append([player.cash, "Cash",player.color])
 
         self.pieChart.updateData(values)
-        self.pieChart.draw(screen,"Portfolio Breakdown",mousebuttons)
+        self.pieChart.draw(screen,"Portfolio Breakdown")
 
-    def draw_home(self,screen:pygame.Surface,stocklist:list,gametime,player,mousebuttons):
+    def draw_home(self,screen:pygame.Surface,stocklist:list,gametime,player):
         """Draws the home screen"""
         timebarpoints = [(200,10),(250,150),(1910,150),(1860,10)]
         gfxdraw.filled_polygon(screen,timebarpoints,(10,10,10,225))# time etc
@@ -57,20 +57,20 @@ class HomeScreen:
         
         # pygame.draw.line(screen,(0,0,0),(270,985),(1469,985),5)# line between the news bar and the stock bar
 
-        self.drawPieChart(screen,player,stocklist,mousebuttons)
+        self.drawPieChart(screen,player,stocklist)
     
 
-    def draw(self,screen,mousebuttons,stocklist,player,gametime):                    
+    def draw(self,screen,stocklist,player,gametime):                    
 
-        self.draw_home(screen,stocklist,gametime,player,mousebuttons)            
+        self.draw_home(screen,stocklist,gametime,player)            
         self.marketStatus(screen,gametime)
-        self.totalMarketGraph.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"hoverName",mousebuttons)
+        self.totalMarketGraph.drawFull(screen,(250,160),(680,540),"Home Total Market",True,"hoverName")
         self.newsobj.draw(screen,gametime)
         
         screen.blit(s_render(f'GAMEPLAY SPEED',60,(247, 223, 0)),(830,20))
 
         # result = self.speedBar.draw_bar(screen,[740,75],[450,65],'horizontal',reversedscroll=True,text=gametime.skipText())
-        self.speedBar.drawBar(screen,(747,65),mousebuttons)
+        self.speedBar.drawBar(screen,(747,65))
 
         self.gameplay_speed = self.speedBar.getValue()
     

@@ -32,22 +32,22 @@ class Bar():
             )
             pygame.draw.line(surf, color, (self.wh[0]-i, 0),(self.wh[0]-i, self.wh[1]))
         return surf
-    def scrollDetection(self,mousebuttons):
+    def scrollDetection(self):
         """Look for mousewheel scrolling"""
-        if mousebuttons == 4:
+        if mouseButton.getButton('scrollUp'):
             self.val = min(self.maxVal,self.val+1)
             return True
-        elif mousebuttons == 5:
+        elif mouseButton.getButton('scrollDown'):
             self.val = max(0,self.val-1)
             return True
         return False
 
-    def collisionDetection(self,coords,mousebuttons) -> bool:
+    def collisionDetection(self,coords) -> bool:
         """Returns True if the value has changed"""
         mousex,mousey = pygame.mouse.get_pos()
         n = False
         if pygame.Rect(coords[0],coords[1],self.wh[0],self.wh[1]).collidepoint(mousex,mousey):
-            n = self.scrollDetection(mousebuttons)
+            n = self.scrollDetection()
             if pygame.mouse.get_pressed()[0]:
                 ratio = (self.wh[0]-self.sliderW) / self.maxVal
                 spotInRatio = int(((mousex+self.sliderW*.5) - coords[0] - self.sliderW) / ratio)
@@ -74,8 +74,8 @@ class Bar():
         drawCenterTxt(self.barSurf,txt,45,(0,0,0),(self.wh[0]*.5,self.wh[1]*.5))# draw the value of the bar
         pygame.draw.rect(self.barSurf,(0,0,0),pygame.Rect(0,0,self.wh[0],self.wh[1]),width=5,border_radius=20)# redraw the border (self.baseSurf has one, but it get drawn over sometimes)
     
-    def drawBar(self,screen,coords,mousebuttons):
-        changedVal = self.collisionDetection(coords,mousebuttons)# Need to check if the value has changed first
+    def drawBar(self,screen,coords):
+        changedVal = self.collisionDetection(coords)# Need to check if the value has changed first
 
         if (txt:=self.determineExtraTxt()) != "" or changedVal:# if the value changed or the extra text is not empty
             self.barSurf.blit(self.baseSurf,(0,0))# reset the bar surf
@@ -94,8 +94,8 @@ class TimeBar(Bar):
     def determineExtraTxt(self):
         txt = "Time Frozen" if self.frozen else ""
         return txt
-    def drawBar(self, screen, coords, mousebuttons):
-        n = super().drawBar(screen, coords, mousebuttons)
+    def drawBar(self, screen, coords):
+        n = super().drawBar(screen, coords)
         if self.frozen and n:
             errors.addMessage("Time Frozen")
         return n
@@ -180,11 +180,11 @@ class TimeBar(Bar):
 #         self.value = 0 if self.value < 0 else self.value
 #         self.updatebarxy(self.reversedscroll)
 
-#     def scroll(self,mousebuttons):
+#     def scroll(self,mousettons):
 #         """changes the current value by the offset"""
-#         if mousebuttons == 4:
+#         if == 4:
 #             self.changecurrentvalue(-1)
-#         elif mousebuttons == 5:
+#         elif == 5:
 #             self.changecurrentvalue(1)
 
 #     def creategradient(self):

@@ -15,6 +15,7 @@ class StockVisualizer:
         self.longHovers = {}# all the long hovers that different places need, different key for each range
         self.longHover = None# the index of the point that is being hovered over
         self.stocklist = stocklist
+        self.nameHover = False# if the name of the stock is being hovered over for swapping
 
         # Used since when calling a draw function you can give a key rather than a graphrange and then that key will be stored in this class
         # if a parameter is truegraphrange then it has used the getVaildRange function to get the true graphrange
@@ -211,7 +212,7 @@ class StockVisualizer:
             # screen.blit(text,(coords[0]+wh[0]-blnkspacex-text.get_width()-10,(graphingpoints[yvalpos]-text.get_height())))
             screen.blit(txt,(coords[0]+8,(yval-txt.get_height()/2)))
 
-    def drawRangeControls(self,screen:pygame.Surface,coords,wh,graphrange,mousebuttons:int):
+    def drawRangeControls(self,screen:pygame.Surface,coords,wh,graphrange):
         """Draws the range controls for the stock to the screen
         needs the inputed graphrange, not the valid graphrange,"""	
         blnkspacex = ((coords[0]+wh[0]-coords[0])//10)
@@ -235,12 +236,12 @@ class StockVisualizer:
             if pygame.Rect(coords[0]+wh[0],coords[1]+(i*drawingy),blnkspacex,extraheight).collidepoint(pygame.mouse.get_pos()):
                 points = [(coords[0]+wh[0],coords[1]+(i*drawingy)), (coords[0]+wh[0],coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex, coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex,coords[1]+(i*drawingy))]
                 gfxdraw.filled_polygon(screen, points,(100,100,100,150))
-                if mousebuttons == 1 and self.longHover == None and self.longHovers.get(graphrange) == None:
+                if mouseButton.getButton('left') and self.longHover == None and self.longHovers.get(graphrange) == None:
                     soundEffects['generalClick'].play()
                     self.storedRanges[graphrange] = txt
           
 
-    def _defaultDraw(self,screen:pygame.Surface,coords,wh,graphrange,customRange,mousebuttons:int):
+    def _defaultDraw(self,screen:pygame.Surface,coords,wh,graphrange,customRange):
         """Draws the basic elements of the stock to the screen, Shouldn't really be called directly"""
         truegraphrange = self.getValidRange(graphrange)
         backcolor = p3choice((55,0,0),(0,55,0),(55,55,55),self.stockObj.getPercent(truegraphrange))
@@ -256,15 +257,15 @@ class StockVisualizer:
         
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0],coords[1],graphwidth,graphheight), 5)
         if customRange:
-            self.drawRangeControls(screen,coords,wh,graphrange,mousebuttons)
+            self.drawRangeControls(screen,coords,wh,graphrange)
         return graphingpoints,spacing,minmax_same
     
 
-    def drawBare(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset,mousebuttons:int):
+    def drawBare(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset):
         """Draws the basic graph of the stock to the screen,
         Graphrange can be a valid range or it will be used as a key in a dict to store the range"""
         truegraphrange = self.getValidRange(graphrange)
-        graphingpoints,spacing,minmax_same = self._defaultDraw(screen,coords,wh,graphrange,False,mousebuttons)# draw the basic graph, no range controls
+        graphingpoints,spacing,minmax_same = self._defaultDraw(screen,coords,wh,graphrange,False)# draw the basic graph, no range controls
 
         if detectmouseover:
             self.longPriceOver(screen,graphingpoints,spacing,coords,wh,graphrange)
@@ -272,7 +273,7 @@ class StockVisualizer:
 
         # return self.drawNamePreset(screen,coords,wh,truegraphrange,preset)
     
-    def drawFull(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset,mousebuttons,customRange=True):
+    def drawFull(self,screen:pygame.Surface,coords,wh,graphrange,detectmouseover:bool,preset,customRange=True):
         """Draws the full graph of the stock to the screen, 
         Graphrange can be a valid range or it will be used as a key in a dict to store the range"""
         truegraphrange = self.getValidRange(graphrange)
@@ -286,7 +287,7 @@ class StockVisualizer:
 
         graphwh = (wh[0]-blnkspacexr-blnkspacel,wh[1]-blnkspacey)# Giving blankspace for the graph
 
-        graphingpoints,spacing,minmax_same = self._defaultDraw(screen,(coords[0]+blnkspacel,coords[1]),graphwh,graphrange,customRange,mousebuttons)# draw the basic graph
+        graphingpoints,spacing,minmax_same = self._defaultDraw(screen,(coords[0]+blnkspacel,coords[1]),graphwh,graphrange,customRange)# draw the basic graph
 
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coords[0], coords[1], (coords[0]+wh[0] - coords[0]+1),(coords[1]+wh[1] - coords[1]+1)), 6)# outline of the whole display
         
@@ -300,12 +301,49 @@ class StockVisualizer:
   
         self.drawNamePreset(screen,coords,wh,truegraphrange,preset)# draw the name of the stock based on the preset
 
-    def swapGraph(self,screen,coords,wh):
+    def swapGraph(self,screen,coords,wh,nametext):
+        w,h = nametext.get_width(),nametext.get_height()
+        xoffset = ((coords[0]+wh[0]-coords[0])//10)+int(w//2)# blnkspacex + half the width of the name
+
+        x,y = coords[0]+xoffset,coords[1]+10
         
+        mousex,mousey = pygame.mouse.get_pos()
+
+        if not pygame.Rect(x-w//2,y,w+10,h).collidepoint(pygame.mouse.get_pos()) and not self.nameHover:#if the mouse is not over the name of the stock and it isn't being hovered over
+            self.nameHover = False
+            return nametext
+            
+        elif ((coords[0]+xoffset-(mousex))**2+(coords[1]+25-mousey)**2)**.5 < 190 and self.nameHover == True:# if the was over the name of the stock and now it is still over the circle, just continue on
+            pass
+        elif pygame.Rect(x-w//2,y,w+10,h).collidepoint(pygame.mouse.get_pos()):# if the mouse is over the name of the stock
+            self.nameHover = True
+        else:
+            self.nameHover = False
+            return nametext
+        mouseButton.stop()
+        numStocks = len([s for s in self.stocklist if s != self.stockObj])
+
+        gfxdraw.filled_circle(screen,int(coords[0]+xoffset),int(coords[1]+25),190,(60,60,60,180))
+        pygame.draw.circle(screen,(0,0,0),(int(coords[0]+xoffset)+1,int(coords[1]+25)),192,6)
+
         for i,stock in enumerate([s for s in self.stocklist if s != self.stockObj]):
-            pygame.draw.rect(screen,(200,200,200),pygame.Rect(coords[0],coords[1],50,25))
-            name = s_render(f"{stock.name}",30,stock.color)
-            screen.blit(name,(coords[0]+10,coords[1]+10+(i*30)))
+            # pygame.draw.rect(screen,(200,200,200),pygame.Rect(coords[0],coords[1],50,25),border_radius=10)
+            otherName = s_render(f"{stock.name}",45,stock.color)
+            
+            x,y = math.cos(math.radians(360/numStocks*i))*135+coords[0]+xoffset,math.sin(math.radians(360/numStocks*i))*135+coords[1]+10
+            newW,newH = otherName.get_width(),otherName.get_height()
+            pygame.draw.rect(screen,(0,0,0),pygame.Rect(x-10-newW//2,y-10,newW+20,newH+20),border_radius=10)
+            # screen.blit(name,(x,y))
+            drawCenterRendered(screen,otherName,(x,y),centerY=False)
+            if pygame.Rect(x-10,y-10,newW+20,newH+20).collidepoint(pygame.mouse.get_pos()):
+                if mouseButton.getButtonOveride('left'):
+                    soundEffects['generalClick'].play()
+                    self.setStockObj(stock)
+                    self.nameHover = False
+                    return s_render(f"{self.stockObj.name}",50,(230,230,230))
+            # screen.blit(name,(coords[0]+10,coords[1]+10+(i*30)))
+
+        return s_render(f"{self.stockObj.name}",50,(230,230,230))
 
 
     def drawNamePreset(self,screen:pygame.Surface,coords,wh,graphrange,preset) -> bool:
@@ -323,10 +361,9 @@ class StockVisualizer:
         pricex = coords[0]+wh[0]/2-pricetext.get_width()/2; pricey = coords[1]+wh[1]-pricetext.get_height()-15# the x and y position of the price text
         change_text_rendered = s_render(change_text, 40, percentColor)# rendering the percent change         
         nametext = s_render(f"{self.stockObj.name}",50,self.stockObj.color)# rendering the name of the stock
-
-        if swappable and pygame.Rect(coords[0]+10,coords[1]+10,nametext.get_width(),nametext.get_height()).collidepoint(pygame.mouse.get_pos()):#if the mouse is over the name of the stock
-            nametext = s_render(f"{self.stockObj.name}",50,(230,230,230))# change the color of the name
-            self.swapGraph(screen,coords,wh)
+        
+        if swappable:
+            nametext = self.swapGraph(screen,coords,wh,nametext)
         # match preset:
         #     case "Normal":#no special things, just drawing the name and percent change
                 # pricetext = s_render(f"${limit_digits(self.stockObj.price,15)}", 45 if 45 > int((coords[1]+wh[1]-coords[1])/12.5) else int((coords[1]+wh[1]-coords[1])/12.5), (200,200,200))

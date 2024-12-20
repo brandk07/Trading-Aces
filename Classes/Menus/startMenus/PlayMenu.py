@@ -23,27 +23,27 @@ class PlayMenu:
     def reset(self):
         # self.vertScroll.reset()
         self.selectionBar.setSelected(["Blitz","Career","Goal"])# sets all the options to be selected
-    def drawLatterScroll(self,screen:pygame.Surface,runs:list[GameRun],mousebuttons:int):
+    def drawLatterScroll(self,screen:pygame.Surface,runs:list[GameRun]):
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(715,115,1040,920),5,border_radius=25)# outline for the latter scroll
 
         cards = [StartRunCard(self.vertScroll,c) for c in runs]
         self.vertScroll.loadCards(cards)
-        self.vertScroll.draw(screen,mousebuttons)
+        self.vertScroll.draw(screen)
 
-    def draw(self,screen:pygame.Surface,mousebuttons:int):
+    def draw(self,screen:pygame.Surface):
         runs = []
         for r in self.selectionBar.getSelected():
             runs.extend(self.runManager.getRuns(r))
-        self.drawLatterScroll(screen,runs,mousebuttons)
+        self.drawLatterScroll(screen,runs)
 
-        self.selectionBar.draw(screen,["Blitz","Career","Goal"],(985,20),(500,85),mousebuttons,colors=[(19, 133, 100), (199, 114, 44), (196, 22, 62)],txtsize=50)
+        self.selectionBar.draw(screen,["Blitz","Career","Goal"],(985,20),(500,85),colors=[(19, 133, 100), (199, 114, 44), (196, 22, 62)],txtsize=50)
 
         drawCenterTxt(screen,"Select A Run",85,(200,200,200),(175,25),centerX=False,centerY=False)
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(150,10,1620,1060),5,border_radius=25)# main box border
 
-        if self.vertScroll.getCard() != None and  drawClickableBoxWH(screen,(170,115),(540,130),"Play", 75, (0,0,0),(0,210,0),mousebuttons):
+        if self.vertScroll.getCard() != None and  drawClickableBoxWH(screen,(170,115),(540,130),"Play", 75, (0,0,0),(0,210,0)):
             return self.vertScroll.getCard().runObj
 
         

@@ -47,10 +47,10 @@ startmenu = StartMain(runManager)
 if __name__ == "__main__":
     while True:
         startmenu.reset()# resets the start menu
-        # currentRun : GameRun = startmenu.drawStartMenu(screen,clock)
+        currentRun : GameRun = startmenu.drawStartMenu(screen,clock)
         
         pastRuns = runManager.pastRuns# remember that this is using the real past runs so if it is modified then it will mess stuff up - also deep copy issue b/c there are lists inside
-        currentRun = pastRuns["Blitz"][1]
+        # currentRun = pastRuns["Blitz"][0]
 
         gametime = GameTime(DEFAULTSTARTDATE.strftime(DFORMAT),GAMESPEED)
         setGameTime(gametime,currentRun.getFileDir())
@@ -71,14 +71,15 @@ if __name__ == "__main__":
         indexFunds.append(tmarket)
         indexFundDict = {fund.name: fund for fund in indexFunds}
 
-        Getfromfile(stockdict,indexFundDict,player,gametime,currentRun.getFileDir())
+        optiontrade = Optiontrade(stocklist,gametime,player)
+        Getfromfile(stockdict,indexFundDict,player,gametime,currentRun.getFileDir(),optiontrade)
 
         stockScreen = StockScreen(stocklist,gametime)
         orderScreen = OrderScreen()
         homeScreen = HomeScreen(stocklist,gametime,tmarket,player)
         stockbook = Stockbook(stocklist,gametime,orderScreen)
         portfolio = Portfolio(stocklist,player,gametime,tmarket)
-        optiontrade = Optiontrade(stocklist,gametime,player)
+        
         bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
 
         gameModeMenu = GameModeMenu(stocklist,player,pastRuns,currentRun)
@@ -88,8 +89,7 @@ if __name__ == "__main__":
         autofastforward = True
 
         # LAST DECLARATIONS
-        lastfps = deque(maxlen=300)
-        mousebuttons = 0           
+        lastfps = deque(maxlen=300)     
             
 
         timer = timeit.default_timer()
@@ -132,10 +132,10 @@ if __name__ == "__main__":
                 gametime.speedBar.frozen = False
                 gametime.speedBar.redraw()
 
-        
+            # print(mouseButton.livebuttons,mouseButton.buttons,mouseButton.live)
             player.updateRunAssetSpread()# updates the asset spread for the current run
 
-            screenManager.drawCurrentScreen(screen,mousebuttons,stocklist,player,gametime)
+            screenManager.drawCurrentScreen(screen,stocklist,player,gametime)
 
             screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,980),(1900,1010),(1900,1040)]))
             errors.update(screen)# draws the error messages
@@ -144,22 +144,23 @@ if __name__ == "__main__":
             for animation in animationList:
                 animation.update(screen)
 
-            if drawClickableBoxWH(screen,(10,970),(180,100),"Main Menu", 50, (0,0,0),(0,210,0),mousebuttons):
+            if drawClickableBoxWH(screen,(10,970),(180,100),"Main Menu", 50, (0,0,0),(0,210,0)):
                 break
-
-            mousebuttons = 0
+            
+            mouseButton.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):                
-                    saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun)
+                    saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)
                     pygame.quit()
                     quit()
 
-                elif event.type == pygame.MOUSEBUTTONDOWN and mousebuttons == 0:
+                # elif event.type == pygame.MOUSEBUTTONDOWN:
+                elif event.type == pygame.MOUSEBUTTONUP:
                     # print(event.button)
-                    mousebuttons = event.button
-                    if mousebuttons == 1:
+                    mouseButton.addEvent(event.button)
+                    if mouseButton.getButtonOveride('left') == 1:
                         print(mousex,mousey)
-
+                    
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_j:
                     # Get timestamp for unique filename
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -178,7 +179,7 @@ if __name__ == "__main__":
             clock.tick(180)
 
         # Saves the game when the user goes back to the main menu
-        saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun)
+        saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)
 
 
 # {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"1Y":5_896_800,"5Y":29_484_000}

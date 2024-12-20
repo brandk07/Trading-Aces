@@ -22,7 +22,7 @@ class ScreenManager:
         """Returns the current screen obj, """
         return self.selectedScreen if returnName else self.screens[self.selectedScreen]
     
-    def drawSelector(self,screen,mousebuttons):  
+    def drawSelector(self,screen):  
 
         if self.selectedScreen not in self.screens:
             self.selectedScreen = "Home"
@@ -33,8 +33,8 @@ class ScreenManager:
         drawCenterTxt(screen,self.selectedScreen,getTSizeNums(self.selectedScreen,150,80),colors[list(self.screens).index(self.selectedScreen)],(90,50))
         
         
-        # self.screenSelection.draw(screen,list(self.screens.keys()),(10,225),(170,415),mousebuttons,colors=colors)
-        result = self.screenSelection.draw(screen,list(self.screens.keys()),(10,90),(170,415),mousebuttons,colors=colors)
+        # self.screenSelection.draw(screen,list(self.screens.keys()),(10,225),(170,415),colors=colors)
+        result = self.screenSelection.draw(screen,list(self.screens.keys()),(10,90),(170,415),colors=colors)
 
         self.selectedScreen = self.screenSelection.getSelected()
 
@@ -51,13 +51,13 @@ class ScreenManager:
         drawCenterTxt(screen,f"{timeStrs['dayname'][:3]} {timeStrs['monthname'][:3]} {timeStrs['day']}",50,(200,200,200),(92,765),centerY=False)
         drawCenterTxt(screen,f"{timeStrs['year']}",80,(200,200,200),(92,820),centerY=False)
         
-    def drawCurrentScreen(self,screen,mousebuttons,stocklist,player,gametime):
-        self.drawSelector(screen,mousebuttons)
+    def drawCurrentScreen(self,screen,stocklist,player,gametime):
+        self.drawSelector(screen)
         if self.screens['Options'].isForced():#if the options screen is forced
             self.gameTime.speedBar.frozen = True
         self.drawTime(screen,gametime)
         
-        self.screens[self.selectedScreen].draw(screen,mousebuttons,stocklist,player,gametime)
+        self.screens[self.selectedScreen].draw(screen,stocklist,player,gametime)
         
 
 class Menu():
@@ -66,23 +66,23 @@ class Menu():
         self.menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
         self.topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]        
 
-    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,mousebuttons:int,player,gametime):
+    def draw_menu_content(self,screen:pygame.Surface,stocklist:list,player,gametime):
         """Mearly a placeholder for the child classes to override"""
         pass
 
-    def drawbottombar(self,screen,gametime,player,mousebuttons):
+    def drawbottombar(self,screen,gametime,player):
         """Draws the bottom bar of the screen"""
-        gametime.speedBar.drawBar(screen,(825,990),mousebuttons)
+        gametime.speedBar.drawBar(screen,(825,990))
         
     def drawCash(self,screen,player):
         txt = limit_digits(player.cash,30)
         txt = "Cash $" + limit_digits(player.cash,30)
         drawCenterTxt(screen,txt,75,(220,220,220),(1890,15),centerX=False,fullX=True,centerY=False)
     
-    def draw(self,screen,mousebuttons:int,stocklist:list,player,gametime):
+    def draw(self,screen,stocklist:list,player,gametime):
         
         # self.topbar(screen,gametime,player)
         self.drawCash(screen,player)
-        self.drawbottombar(screen,gametime,player,mousebuttons)
-        self.draw_menu_content(screen,stocklist,mousebuttons,player,gametime)#draws the content of the menu, defined in the child classes
+        self.drawbottombar(screen,gametime,player)
+        self.draw_menu_content(screen,stocklist,player,gametime)#draws the content of the menu, defined in the child classes
 

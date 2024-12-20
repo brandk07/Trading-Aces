@@ -33,17 +33,17 @@ class StartMenu:
         # pygame.draw.line(screen,color,(0,self.linePlace),(1920,self.linePlace),lineWidth)
 
 
-    def draw(self,screen:pygame.Surface,mousebuttons):
+    def draw(self,screen:pygame.Surface):
         
         # Title
         drawCenterTxt(screen,"TRADING ACES",200,(0,0,0),(960,50),centerX=True,centerY=False,font='bold')
         
-        # n = self.customizeBar.draw(screen,["Play","Create","Settings","Credits"],(660,350),(600,550),mousebuttons)
+        # n = self.customizeBar.draw(screen,["Play","Create","Settings","Credits"],(660,350),(600,550))
         # draw a polygon from 0,350 to 1920,890
         # gfxdraw.filled_polygon(screen,[(0,350),(1920,350),(1920,890),(0,890)],(60,60,60,200))
         changeScreen = False
         for i,txt in enumerate(['Play','Create','Settings','Credits']):
-            if drawClickableBoxWH(screen,(660,350+(140*i)),(600,135),txt, 75, (0,0,0),(200,200,200),mousebuttons) != False:
+            if drawClickableBoxWH(screen,(660,350+(140*i)),(600,135),txt, 75, (0,0,0),(200,200,200)) != False:
                 changeScreen = txt
 
         # self.drawLineEffect(screen)

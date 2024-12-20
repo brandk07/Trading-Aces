@@ -17,7 +17,7 @@ class SelectionBar:
         """Sets the selected string"""
         self.selected = selected
         
-    def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],mousebuttons,colors:list[tuple]=None,txtsize:int=36,condensed=False):
+    def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],colors:list[tuple]=None,txtsize:int=36,condensed=False):
         """Data is a list of strings that can be selected
         the length of data can be changed, but it must be at least 1
         will auto select the first element in the list"""	
@@ -53,7 +53,7 @@ class SelectionBar:
                 rect = pygame.Rect(x,y+(i*spacing),w,spacing)
             screen.blit(rtxt,(txtx,txty))
 
-            if rect.collidepoint(pygame.mouse.get_pos()) and mousebuttons == 1:
+            if rect.collidepoint(pygame.mouse.get_pos()) and mouseButton.getButton('left'):
                 if not self.selected == txt:
                     soundEffects['generalClick'].play()
                 self.selected = txt if txt != self.selected else None
@@ -77,7 +77,7 @@ class MultiSelectionBar:
         assert type(selected) == list, "Selected must be a list"
         self.selected = selected
         
-    def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],mousebuttons,colors:list[tuple]=None,txtsize:int=36,condensed=False):
+    def draw(self,screen:pygame.Surface,data:list[str],coords:tuple[int],wh:tuple[int],colors:list[tuple]=None,txtsize:int=36,condensed=False):
         """Data is a list of strings that can be selected
         the length of data can be changed, but it must be at least 1
         will auto select the first element in the list"""	
@@ -113,7 +113,7 @@ class MultiSelectionBar:
                 rect = pygame.Rect(x,y+(i*spacing),w,spacing)
             screen.blit(rtxt,(txtx,txty))
 
-            if rect.collidepoint(pygame.mouse.get_pos()) and mousebuttons == 1:
+            if rect.collidepoint(pygame.mouse.get_pos()) and mouseButton.getButton('left'):
                 # if not txt in self.selected:
                 #     soundEffects['generalClick'].play()
                 # self.selected = txt if txt != self.selected else None
@@ -149,7 +149,7 @@ class MenuSelection:
         else:
             assert index in self.choiceTxts, "The index must be in the list of choices"
             self.selected = self.choiceTxts.index(index)
-    def draw(self,screen,mousebuttons):
+    def draw(self,screen):
         """Draws the menu selection onto the screen"""
         width  = self.wh[0]//len(self.choices)
         for i,choice in enumerate(self.choices):
@@ -162,7 +162,7 @@ class MenuSelection:
             if i != len(self.choices)-1:# Draws a vertical line to separate the choices
                 pygame.draw.line(screen,(0,0,0),(self.coords[0]+width*(i+1),self.coords[1]+20),(self.coords[0]+width*(i+1),self.coords[1]+self.wh[1]-20),4)
 
-            if pygame.Rect(self.coords[0]+i*width,self.coords[1],width,self.wh[1]).collidepoint(*pygame.mouse.get_pos()) and mousebuttons == 1:
+            if pygame.Rect(self.coords[0]+i*width,self.coords[1],width,self.wh[1]).collidepoint(*pygame.mouse.get_pos()) and mouseButton.getButton('left'):
                 self.selected = i
                 soundEffects['menuClick'].play()
         pygame.draw.rect(screen,(0,0,0),(*self.coords,*self.wh),5,10)# draw the border of the whole menu

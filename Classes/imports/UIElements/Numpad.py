@@ -51,12 +51,12 @@ class Numpad:
         #     return f"{self.getValue():,.0f} "+extraText+("S" if self.getValue() != 1 else "")
         # return f"{self.getValue():,.0f} "+extraText+("s" if self.getValue() != 1 else "")
 
-    def doLogic(self,screen:pygame.Surface,mousebuttons,rect:pygame.Rect,ind,maxvalue):
+    def doLogic(self,screen:pygame.Surface,rect:pygame.Rect,ind,maxvalue):
         if rect.collidepoint(pygame.mouse.get_pos()):
                     
             color = (135,135,135,120)
             pygame.draw.rect(screen,color,rect,border_radius=10)
-            if mousebuttons == 1:
+            if mouseButton.getButton('left'):
                 if self.nums[ind] == 'DEL' and len(self.numstr) > 1:
                     self.numstr = self.numstr[:-1]
                 elif self.nums[ind] == 'DEL' and len(self.numstr) == 1:
@@ -96,7 +96,7 @@ class Numpad:
         # screen.blit(self.numrenders[self.nums[ind]], (pos_x, pos_y))
         drawCenterRendered(screen,numRender,(pos_x,pos_y))
 
-    def draw(self,screen,coords,wh,extratext,mousebuttons,maxvalue):
+    def draw(self,screen,coords,wh,extratext,maxvalue):
 
         maxvalue = round(maxvalue,self.maxDecimals) if self.maxDecimals != 0 else int(maxvalue)
 
@@ -119,7 +119,7 @@ class Numpad:
                 h = ((wh[1])*.9)/4 - 10 
 
                 rect = pygame.Rect(x,y,w,h)
-                self.doLogic(screen,mousebuttons,rect,ind,maxvalue)
+                self.doLogic(screen,rect,ind,maxvalue)
 
                 
         # for i in range(12):
@@ -131,7 +131,7 @@ class SideWaysNumPad(Numpad):
         self.nums = list(nums)
         self.nums.extend([str(i) for i in [1,4,7,2,5,8,3,6,9]])
 
-    def draw(self,screen,coords,wh,extratext,mousebuttons,maxvalue):
+    def draw(self,screen,coords,wh,extratext,maxvalue):
 
         maxvalue = round(maxvalue,self.maxDecimals) if self.maxDecimals != 0 else int(maxvalue)
 
@@ -154,4 +154,4 @@ class SideWaysNumPad(Numpad):
                 h = ((wh[1])*.9)/3 - 10 
 
                 rect = pygame.Rect(x,y,w,h)
-                self.doLogic(screen,mousebuttons,rect,ind,maxvalue)
+                self.doLogic(screen,rect,ind,maxvalue)

@@ -63,7 +63,7 @@ class Portfolio(Menu):
         return [p1, p2, p3, total]
     
 
-    def draw_assetscroll(self,sortedassets,screen,mousebuttons):
+    def draw_assetscroll(self,sortedassets,screen):
         """Draws the assetscroll"""
         # asset is the class name (the class should have a str method that returns the name of the asset)
 
@@ -95,7 +95,7 @@ class Portfolio(Menu):
 
         # drawing the latter scroll and assigning the selected asset
         selectedindex = None if self.selectedAsset == None else sortedassets.index(self.selectedAsset)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
-        newselected = self.latterscrollnorm.draw_polys(screen, (855, 200), scrollmaxcoords, mousebuttons, selectedindex, True, *[sasset[0].getPercent() for sasset in sortedassets[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.latterscrollnorm.draw_polys(screen, (855, 200), scrollmaxcoords, selectedindex, True, *[sasset[0].getPercent() for sasset in sortedassets[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         if newselected == None:
             self.selectedAsset = None
         else:# if the selected asset is not None
@@ -111,10 +111,10 @@ class Portfolio(Menu):
         totalTxt = "Displaying " + str(ommitted[0]) + " - " + str(ommitted[1]-1) + " out of " + str(len(sortedassets))
         drawCenterTxt(screen,totalTxt,35,(220,220,220),(1025,105),centerX=False,centerY=False)
 
-    def assetscroll_controls(self,screen,mousebuttons):
+    def assetscroll_controls(self,screen):
         """Controls for the asset scroll"""
 
-        result = checkboxOptions(screen,self.assetoptions,self.displayed_asset_type,(860,160),(530,35),mousebuttons)
+        result = checkboxOptions(screen,self.assetoptions,self.displayed_asset_type,(860,160),(530,35))
 
 
         if result != None:
@@ -146,7 +146,7 @@ class Portfolio(Menu):
             if asset[0].getValue() == value and asset[0].name == name:
                 return asset
         return None
-    def drawselectedScroll(self,screen,asset,mousebuttons):
+    def drawselectedScroll(self,screen,asset):
         """Draws the selected asset scroll"""
         asset,secondtext = asset
         
@@ -166,11 +166,11 @@ class Portfolio(Menu):
         scrollmaxcoords = (770,335)
         self.latterscrollselect.store_rendercoords((855, 200), scrollmaxcoords,135,0,0)
         # drawing the latter scroll and assigning the selected asset
-        newselected = self.latterscrollselect.draw_polys(screen, (875, 200), scrollmaxcoords, mousebuttons, 0, True, *[asset.getPercent()])# draws the latter scroll and returns the selected asset
+        newselected = self.latterscrollselect.draw_polys(screen, (875, 200), scrollmaxcoords, 0, True, *[asset.getPercent()])# draws the latter scroll and returns the selected asset
         if newselected == None:
             self.selectedAsset = None
         
-    def draw_selected_description(self,screen,asset,mousebuttons,player,gametime):
+    def draw_selected_description(self,screen,asset,player,gametime):
         """Draws the description of the selected asset"""
         asset,secondtext= asset
 
@@ -197,12 +197,12 @@ class Portfolio(Menu):
         # draws the calculator
         extratext = self.classtext[type(asset)].upper()
         
-        self.numpad.draw(screen,(190,600),(290,350),extratext,mousebuttons,asset.quantity)
-        # self.numpad.draw(screen,(870,620),(300,330),extratext,mousebuttons,asset.quantity)
+        self.numpad.draw(screen,(190,600),(290,350),extratext,asset.quantity)
+        # self.numpad.draw(screen,(870,620),(300,330),extratext,asset.quantity)
         yamt = int(780/len(asset.getStockObj().graphrangeoptions))
         for i,graphname in enumerate(asset.getStockObj().graphrangeoptions):# 1H, 1D, etc...
             # asset.getStockObj().baredraw(screen,(1630,200+(i*125)),(270,115),graphname)# draws the graph on the right side of the screen
-            self.selectedGraph.drawBare(screen,(1630,200+(i*(yamt))),(270,yamt-10),graphname,True,"Normal",mousebuttons)
+            self.selectedGraph.drawBare(screen,(1630,200+(i*(yamt))),(270,yamt-10),graphname,True,"Normal")
             
             text = s_render(graphname, 40, (230, 230, 230))
             screen.blit(text, (1640, 315+(i*(yamt))-text.get_height()-20))
@@ -224,7 +224,7 @@ class Portfolio(Menu):
             data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),15)}","x"),(f"{(player.taxrate*100)}% Tax", f"${limit_digits(taxedAmt,22)}","-")]
             self.orderBox.loadData(self.numpad.getNumstr(self.classtext[type(asset)]),f"${limit_digits(value,22)}",data)
 
-        result = self.orderBox.draw(screen,mousebuttons)
+        result = self.orderBox.draw(screen)
 
         if result:
             # asset.sell(player,quantity,(1.02 if type(asset) == OptionAsset else 1))
@@ -333,13 +333,13 @@ class Portfolio(Menu):
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(870, 700, 745, 250), 5, border_radius=10)# border for both the lined infos
         
 
-    def drawLoanInfo(self,screen,player,mousebuttons):
+    def drawLoanInfo(self,screen,player):
         """Draws the loan info"""
         # draws the loan info on the right side of the screen
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(1400, 100, 500, 285), 5, border_radius=10)
         drawCenterTxt(screen,"Loan Info",70,(163, 12, 7),(1420,115),centerX=False,centerY=False)
 
-        if drawClickableBoxWH(screen,(1690,110),(195,60),"Go to Loans", 45, (0,0,0),(200,200,200),mousebuttons):
+        if drawClickableBoxWH(screen,(1690,110),(195,60),"Go to Loans", 45, (0,0,0),(200,200,200)):
             self.player.screenManager.setScreen("Bank")
             self.player.screenManager.screens['Bank'].menuSelection.setSelected("Loans")
 
@@ -351,7 +351,7 @@ class Portfolio(Menu):
 
 
 
-    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player, gametime):
+    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, player, gametime):
         """Draws all of the things in the portfolio menu"""
         mousex, mousey = pygame.mouse.get_pos()
         
@@ -365,39 +365,39 @@ class Portfolio(Menu):
 
         
         if self.selectedAsset == None:# if the selected asset is None
-            self.networthGraph.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal",mousebuttons)
+            self.networthGraph.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")
 
             if len(sortedassets) > 0:
                 # draws the stocks on the right of the screen
-                self.draw_assetscroll(sortedassets,screen,mousebuttons)
+                self.draw_assetscroll(sortedassets,screen)
 
             assets = player.getAssets()
             values = [[asset.getValue(),asset.name,asset.color] for asset in assets]
             values.append([player.cash, "Cash",player.color])
             self.piechart.updateData(values)
             
-            self.piechart.draw(screen,mousebuttons,self.player.screenManager)
+            self.piechart.draw(screen,self.player.screenManager)
             
-            self.drawLoanInfo(screen,player,mousebuttons)# draws the loan info on the right side of the screen
+            self.drawLoanInfo(screen,player)# draws the loan info on the right side of the screen
 
             wh = (500,285)
             for i,stock in enumerate(self.displayedStocks):
                 # 870/3 = 290
-                # if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),mousebuttons,0,rangecontroldisp=False,graphrange="1D") and mousebuttons == 1:# if the stock name is clicked
+                # if stock.draw(screen,stock,(1400,200+(i*255)),(500,245),0,rangecontroldisp=False,graphrange="1D") and == 1:# if the stock name is clicked
                 coords = (1400,390+(i*290))
-                stock.drawFull(screen,coords,wh,f"PortfolioExtra{i}",True,"Normal",mousebuttons)
+                stock.drawFull(screen,coords,wh,f"PortfolioExtra{i}",True,"hoverName")
 
         
         else:# if the selected asset is NOT None
 
             self.selectedGraph.setStockObj(self.selectedAsset[0].getStockObj())
-            self.selectedGraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal",mousebuttons)# draws the selected stock graph on the left
+            self.selectedGraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
 
-            self.draw_selected_description(screen,self.selectedAsset,mousebuttons,player,gametime)# draws the description of the selected asset
+            self.draw_selected_description(screen,self.selectedAsset,player,gametime)# draws the description of the selected asset
             if self.selectedAsset != None:
-                self.drawselectedScroll(screen,self.selectedAsset,mousebuttons)# draws the selected asset scroll on the right
+                self.drawselectedScroll(screen,self.selectedAsset)# draws the selected asset scroll on the right
 
             
-        self.assetscroll_controls(screen,mousebuttons)
+        self.assetscroll_controls(screen)
 
         

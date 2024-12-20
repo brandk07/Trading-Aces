@@ -161,13 +161,13 @@ class LatterScroll():
     #             (points[2][0]-10,points[2][1]),
     #             (points[1][0]+10,points[1][1]),]
     
-    def scrollcontrols(self, mousebuttons, coords, wh):
+    def scrollcontrols(self, coords, wh):
         mousex,mousey = pygame.mouse.get_pos()
         svalue = self.scrollvalue# the scroll value before it changes
         if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]),mousex,mousey):
-            if mousebuttons == 4 and self.scrollvalue > 0:
+            if mouseButton.getButton('scrollUp') and self.scrollvalue > 0:
                 self.scrollvalue -= 30
-            elif mousebuttons == 5 and self.scrollvalue < len(self.texts)*self.polyheight - self.polyheight*2:
+            elif mouseButton.getButton('scrollDown') and self.scrollvalue < len(self.texts)*self.polyheight - self.polyheight*2:
                 self.scrollvalue += 30
         # checking if the scroll value is out of bounds
         if self.scrollvalue < 0:# if the scroll value is less than 0
@@ -177,16 +177,16 @@ class LatterScroll():
         if self.scrollvalue != svalue:# if the scroll value changed
             self.updatetexts = 0# update the texts next frame
 
-    def draw_polys(self,screen,coords,wh,mousebuttons,selectedVal,drawbottom,*args):
+    def draw_polys(self,screen,coords,wh,selectedVal,drawbottom,*args):
         """Draws the polygons to the screen, and returns the value of the polygon that is selected"""
         # Selected value is a index
 
-        self.scrollcontrols(mousebuttons,coords,wh)
+        self.scrollcontrols(coords,wh)
         for numdrawn,(text_renders,points) in enumerate(zip(self.renderedtexts,self.polycoords)):
             
             # check if the mouse is hovering over the polygon
             if (hover:=point_in_polygon(pygame.mouse.get_pos(),points)):
-                if mousebuttons == 1:
+                if mouseButton.getButton('left'):
                     if numdrawn+self.omittedstocks[0] == selectedVal:
                         selectedVal = None
                     else:
@@ -303,17 +303,17 @@ class LinedLatter():
                 for ii,(string,size,color) in enumerate(element):
                     drawCenterTxt(self.surf,string,size,color,(self.coords[ii][0],self.coords[ii][1]+y),centerY=False)
 
-    def scrollcontrols(self, mousebuttons, coords, wh):
+    def scrollcontrols(self, coords, wh):
         mousex,mousey = pygame.mouse.get_pos()
         if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]),mousex,mousey):
-            if mousebuttons == 5 and (self.scrollvalue+len(self.data)*self.elementHeight)-self.elementHeight > 0:
+            if mouseButton.getButton('scrollDown') and (self.scrollvalue+len(self.data)*self.elementHeight)-self.elementHeight > 0:
                 self.scrollvalue -= 30; self.needToUpdate = True
-            elif mousebuttons == 4 and self.scrollvalue < self.elementHeight:
+            elif mouseButton.getButton('scrollUp') and self.scrollvalue < self.elementHeight:
                 self.scrollvalue += 30; self.needToUpdate = True
 
-    def draw(self,screen,mousebuttons:int,coords:tuple):
+    def draw(self,screen,coords:tuple):
         if self.needToUpdate:
             self.updateSurf()
         # pygame.draw.rect(screen,(0,0,0),pygame.Rect(0,0,self.wh[0],self.wh[1]))
         screen.blit(self.surf,(coords))
-        self.scrollcontrols(mousebuttons,coords,self.wh)
+        self.scrollcontrols(coords,self.wh)

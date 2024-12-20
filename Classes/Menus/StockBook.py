@@ -78,7 +78,7 @@ class Stockbook(Menu):
         else:
             raise ValueError('You must provide either a valid name or an object')
 
-    def drawStockLatter(self,screen:pygame.Surface,mousebuttons:int,player):
+    def drawStockLatter(self,screen:pygame.Surface,player):
         """Draws the Latterscroll with all the stocks in the middle"""
 
         get_text = lambda stock : [f'{stock} ',f'{"+" if stock.getPercent() > 0 else ""}{limit_digits(stock.getPercent(),15)}%',f'${limit_digits(stock.getValue(),15)}']# returns the text for the stock
@@ -98,12 +98,12 @@ class Stockbook(Menu):
         self.selectedStock = self.selectedStock if self.selectedStock in self.stocklist else None# Ensuring that the selected stock is in the stocklist
 
         selectedindex = None if self.selectedStock == None else self.stocklist.index(self.selectedStock)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
-        newselected = self.stockLS.draw_polys(screen, (1470, 135), (435,975), mousebuttons, selectedindex, True, *[sasset.getPercent() for sasset in self.stocklist[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.stockLS.draw_polys(screen, (1470, 135), (435,975), selectedindex, True, *[sasset.getPercent() for sasset in self.stocklist[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         self.selectedStock = self.selectedStock if newselected == None else self.stocklist[newselected]# Changes selected stock if the new selected has something
 
         # screen.blit(s_render(f"Displaying {ommitted[0]} - {ommitted[1]-1} out of {len(self.stocklist)}",35,(220,220,220)),(1535,105))
     
-    def drawQuarterlyReports(self,screen:pygame.Surface,gametime,mousebuttons):
+    def drawQuarterlyReports(self,screen:pygame.Surface,gametime):
         """Draws the quarterly reports for the stock on the right top"""
 
         # -----------------Drawing the future and past reports----------------
@@ -200,7 +200,7 @@ class Stockbook(Menu):
         # screen.blit(s_render(f"Volatility {self.selectedStock.ceo.getVolatility()}",50,(220,220,220)),(760,630))
         drawCenterTxt(screen,f"Volatility {self.selectedStock.givenVolatility}",50,(220,220,220),(960,635),centerY=False)
 
-    def drawCompanyInfo(self,screen:pygame.Surface,player,mousebuttons:int):
+    def drawCompanyInfo(self,screen:pygame.Surface,player):
         """Draws the company info for the stock on the right middle """
 
         
@@ -241,14 +241,14 @@ class Stockbook(Menu):
         #     # screen.blit(s_render(ex1+line+ex2,30,(220,220,220)),(1180+(i*10),875+(i*35)))
         # pygame.draw.rect(screen,(0,0,0),(1165,625,290,240+35*numslines),5,10)
 
-    def drawPurchase(self,screen:pygame.Surface,player,mousebuttons:int,gametime):
+    def drawPurchase(self,screen:pygame.Surface,player,gametime):
         pygame.draw.rect(screen,(0,0,0),(780,770,640,190),width=5,border_radius=10)# Box for numPad
-        self.numPad.draw(screen,(750,770),(700,200),"",mousebuttons,player.cash//self.selectedStock.getValue())
+        self.numPad.draw(screen,(750,770),(700,200),"",player.cash//self.selectedStock.getValue())
 
         data = [("Price",f"${limit_digits(self.selectedStock.getValue(),20)}","x"),("Quantity",str(self.numPad.numstr),"x")]
         
         self.orderBox.loadData(self.numPad.numstr,f"${limit_digits(self.numPad.getValue()*self.selectedStock.getValue(),20)}",data)
-        result = self.orderBox.draw(screen,mousebuttons)
+        result = self.orderBox.draw(screen)
         if result:
             print('Buying',self.selectedStock.name,self.numPad.getValue())
             player.buyAsset(StockAsset(player,self.selectedStock,gametime.getTime(),self.selectedStock.price,self.numPad.getValue()))
@@ -284,36 +284,36 @@ class Stockbook(Menu):
         info = [(string,value) for string,value in zip(strings,values)]
         drawLinedInfo(screen,(750,100),(700,300),info,40,TXTCOLOR)
 
-    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player,gametime):
+    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, player,gametime):
         mousex, mousey = pygame.mouse.get_pos()
 
         # Draw the stock graph
         self.stockGraph.setStockObj(self.selectedStock)
-        self.stockGraph.drawFull(screen, (190,100),(550,450),"StockBook Graph",True,"Normal",mousebuttons)
+        self.stockGraph.drawFull(screen, (190,100),(550,450),"StockBook Graph",True,"Normal")
        
 
-        self.drawStockLatter(screen, mousebuttons, player)
-        # if drawClickableBox(screen,(879,420),"Create Order",95,(130,130,130),(0,170,0),mousebuttons):
+        self.drawStockLatter(screen, player)
+        # if drawClickableBox(screen,(879,420),"Create Order",95,(130,130,130),(0,170,0)):
         #     self.oScreenDisp = True 
 
-        self.barSelection.draw(screen,self.middleDisplays,(195,560),(545,55),mousebuttons,colors=[(19, 133, 100), (199, 114, 44), (196, 22, 62)],txtsize=35)
+        self.barSelection.draw(screen,self.middleDisplays,(195,560),(545,55),colors=[(19, 133, 100), (199, 114, 44), (196, 22, 62)],txtsize=35)
 
         self.drawInDepthInfo(screen,gametime)
 
         # match self.currentMDisp:
         match self.barSelection.getSelected():
             case "Info":
-                self.drawCompanyInfo(screen,player,mousebuttons)
+                self.drawCompanyInfo(screen,player)
                 pass
             case "Purchase":
-                self.drawPurchase(screen,player,mousebuttons,gametime)
+                self.drawPurchase(screen,player,gametime)
             case "News":
                 # self.drawNews(screen,self.selectedStock.name,(190,100))
                 pass
             case "Reports":
-                self.drawQuarterlyReports(screen,gametime,mousebuttons)
+                self.drawQuarterlyReports(screen,gametime)
         
         if self.oScreenDisp:
-            self.oScreenDisp = self.orderScreen.draw(screen,self.selectedStock,mousebuttons,player,gametime,maxCoords=[1450,1500],minCoords=[190,-500])
+            self.oScreenDisp = self.orderScreen.draw(screen,self.selectedStock,player,gametime,maxCoords=[1450,1500],minCoords=[190,-500])
 
 

@@ -58,7 +58,7 @@ class OrderScreen:
             elif self.orderType == 'Stop':
                 pass
     
-    def draw(self,screen,stockObj,mousebuttons:int,player,gametime,maxCoords=None,minCoords=None):
+    def draw(self,screen,stockObj,player,gametime,maxCoords=None,minCoords=None):
         # self.uicontrols.bar.changeMaxValue(5)
         
         mousex,mousey = pygame.mouse.get_pos()
@@ -108,24 +108,24 @@ class OrderScreen:
         # --------------draw the order type and transaction type--------------
         orderTypeText = s_render('Order & Transaction Type',35,TXTCOLOR)
         screen.blit((orderTypeText),(20+x,80+y))
-        result = checkboxOptions(screen,self.orderTypes,self.orderType,(20+x,y+90+orderTypeText.get_height()),(500,35),mousebuttons)# draws the checkbox for the order type
+        result = checkboxOptions(screen,self.orderTypes,self.orderType,(20+x,y+90+orderTypeText.get_height()),(500,35))# draws the checkbox for the order type
         if result != None and result[0] != self.orderType:
             self.orderType = result[0]
             self.reBlitDisplays()
 
-        result = checkboxOptions(screen,self.transactionTypes,self.transactionType,(20+x,170+y),(500,35),mousebuttons)# draws the checkbox for the sell vs buy
+        result = checkboxOptions(screen,self.transactionTypes,self.transactionType,(20+x,170+y),(500,35))# draws the checkbox for the sell vs buy
         if result != None and result[0] != self.transactionType:
             self.transactionType = result[0]
             self.reBlitDisplays()
 
         if self.orderType == 'Market':
-            self.drawMarketInfo(screen,stockObj,mousebuttons,player,(x,y))
+            self.drawMarketInfo(screen,stockObj,player,(x,y))
             
         # --------------Cancel button and confirm button --------------
         cancelButton = s_render('Cancel',40,(200,200,200))
         if pygame.Rect.collidepoint(pygame.Rect(wh[0]+x-cancelButton.get_width()-10,610+y,cancelButton.get_width(),cancelButton.get_height()),mousex,mousey):# if the mouse is colliding with the cancel button
             cancelButton = s_render('Cancel',40,(180,0,0))
-            if mousebuttons == 1:
+            if mouseButton.getButton('left'):
                 soundEffects['generalClick'].play()
                 self.lastMousePos = None
                 return False
@@ -136,7 +136,7 @@ class OrderScreen:
         confirmColor = TXTCOLOR
         if pygame.Rect.collidepoint(pygame.Rect(x+50, y+380, 350, 50),mousex,mousey):
             confirmColor = (0,180,0) if self.numPad.getValue() > 0 else (180,0,0)
-            if mousebuttons == 1:
+            if mouseButton.getButton('left'):
                 if self.numPad.getValue() == 0:
                     errors.addMessage("Please Enter a Value")
                 else:
@@ -149,7 +149,7 @@ class OrderScreen:
         return True# if the cancel button is not clicked, return True
     
 
-    def drawMarketInfo(self,screen,stockObj,mousebuttons:int,player,relaviveCoords):
+    def drawMarketInfo(self,screen,stockObj,player,relaviveCoords):
         """Drawing the Shares, price Per, and cost text"""
         x,y = relaviveCoords
         # --------SHARES TEXT AND THE LINE UNDERNEATH--------
@@ -169,13 +169,13 @@ class OrderScreen:
         screen.blit(cost,(470-cost.get_width()+x,330+y))
         # DIFFERENT SPECIFIC FUNCTIONS FOR BUY AND SELL
         if self.transactionType == "Sell":
-            self.drawMarketSell(screen,stockObj,mousebuttons,player,relaviveCoords)
+            self.drawMarketSell(screen,stockObj,player,relaviveCoords)
             maxNum = 0 if self.selectedAsset == None else self.selectedAsset.quantity
-            self.numPad.draw(screen,(-5+x,445+y),(450,210),"SHARE",mousebuttons,maxNum)# draws the numpad for the shares
+            self.numPad.draw(screen,(-5+x,445+y),(450,210),"SHARE",maxNum)# draws the numpad for the shares
         else:# buy
-            self.numPad.draw(screen,(-5+x,445+y),(450,210),"SHARE",mousebuttons,int(player.cash/stockObj.price))# draws the numpad for the shares
+            self.numPad.draw(screen,(-5+x,445+y),(450,210),"SHARE",int(player.cash/stockObj.price))# draws the numpad for the shares
 
-    def drawMarketSell(self,screen,stockObj,mousebuttons:int,player,relaviveCoords):
+    def drawMarketSell(self,screen,stockObj,player,relaviveCoords):
         """Draws the latter scroll on the right side"""
         x,y = relaviveCoords
         wh = self.whDict[self.orderType+self.transactionType]
@@ -210,7 +210,7 @@ class OrderScreen:
         if self.selectedAsset not in stocks:
             self.selectedAsset = None
         selectedindex = None if self.selectedAsset == None else stocks.index(self.selectedAsset)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
-        newselected = self.latterScroll.draw_polys(screen, (x+wh[0]-440, y+80), scrollmaxcoords, mousebuttons, selectedindex, True, *[sasset.getPercent() for sasset in stocks[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.latterScroll.draw_polys(screen, (x+wh[0]-440, y+80), scrollmaxcoords, selectedindex, True, *[sasset.getPercent() for sasset in stocks[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         if newselected == None:
             self.selectedAsset = None
         else:# if the selected asset is not None

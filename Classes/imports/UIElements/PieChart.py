@@ -126,7 +126,7 @@ class PieChart:
             # pygame.draw.polygon(wholesurf, color, [(x[0]-coords[0],x[1]-coords[1]) for x in points]) 
             self.pieSegments.append([color,[(x[0]-self.coords[0],x[1]-self.coords[1]) for x in points],value,name])
     
-    def getClickedAsset(self,mousebuttons):
+    def getClickedAsset(self):
         """Gets the asset that the mouse is over"""
         mousex,mousey = pygame.mouse.get_pos()
 
@@ -134,7 +134,7 @@ class PieChart:
         for i,(color,points,value,name) in enumerate(self.pieSegments):# loop through the pie segments
             if point_in_polygon((mousex-self.coords[0],mousey-self.coords[1]-60),points):# set collided to the one the mouse is over
                 collided = i
-                if mousebuttons == 1:# if the mouse is clicked, then set the selected asset to the one the mouse is over
+                if mouseButton.getButton('left'):# if the mouse is clicked, then set the selected asset to the one the mouse is over
                     if self.selectedAssetIndex == i:
                         self.selectedAssetIndex = None
                     else:
@@ -146,7 +146,7 @@ class PieChart:
         for color,points,value,name in self.pieSegments:
             pygame.draw.line(pieSurf,(1,1,1),(self.radius,self.radius),points[1],5)
 
-    def drawBottomNames(self,wholeSurf:pygame.Surface,mousebuttons:int,txtSize):
+    def drawBottomNames(self,wholeSurf:pygame.Surface,txtSize):
         numNames = len(self.pieSegments)
         nameRenders = [s_render(name, txtSize, color) for i,(color,points,value,name) in enumerate(self.pieSegments)]
         numLines = 0
@@ -195,7 +195,7 @@ class PieChart:
 
                 if (n:=rect.collidepoint(*pygame.mouse.get_pos())) or place == self.selectedAssetIndex:
                     pygame.draw.line(wholeSurf,(255,255,255),(xOff+currentWidth,ylevel+15),(xOff+currentWidth+23+w,ylevel+15),3)
-                    if n and mousebuttons == 1:
+                    if n and mouseButton.getButton('left'):
                         if self.selectedAssetIndex == place:
                             self.selectedAssetIndex = None
                         else:
@@ -205,19 +205,19 @@ class PieChart:
                 currentWidth += w+spaceings[i]+15
             currentWidth = 5
 
-    def draw(self,screen:pygame.Surface,title:str,mousebuttons:int,txtSize=35):
+    def draw(self,screen:pygame.Surface,title:str,txtSize=35):
         """"""        
         totalValue = sum([v[0] for v in self.data])# originally the displayed value is the total value of the stocks - might change if mouseover
 
         
         wholeSurf = pygame.Surface((self.wh[0],self.wh[1]))
-        self.drawBottomNames(wholeSurf,mousebuttons,txtSize)
+        self.drawBottomNames(wholeSurf,txtSize)
         pieSurf = pygame.Surface((self.radius*2,self.radius*2))
 
        
         
         if pointInCircle(pygame.mouse.get_pos(),(self.coords[0]+self.radius,self.coords[1]+60+self.radius),self.radius-10):# if the mouse is in the pie chart
-            collided = self.getClickedAsset(mousebuttons)# get the asset that the mouse is over
+            collided = self.getClickedAsset()# get the asset that the mouse is over
 
             for i,(color,points,value,name) in enumerate(self.pieSegments):# draws all the segments darker except the one the mouse is over
                 newcolor = brightenCol(color,0.5) if i != collided else brightenCol(color,1.5)
@@ -368,7 +368,7 @@ class PieChartSideInfo:
             # pygame.draw.polygon(wholesurf, color, [(x[0]-coords[0],x[1]-coords[1]) for x in points]) 
             self.pieSegments.append([color,[(x[0]-self.coords[0],x[1]-self.coords[1]) for x in points],value,name])
             
-    def getClickedAsset(self,mousebuttons):
+    def getClickedAsset(self):
         """Gets the asset that the mouse is over"""
         mousex,mousey = pygame.mouse.get_pos()
 
@@ -376,7 +376,7 @@ class PieChartSideInfo:
         for i,(color,points,value,name) in enumerate(self.pieSegments):# loop through the pie segments
             if point_in_polygon((mousex-self.coords[0],mousey-self.coords[1]),points):# set collided to the one the mouse is over
                 collided = i
-                if mousebuttons == 1:# if the mouse is clicked, then set the selected asset to the one the mouse is over
+                if mouseButton.getButton('left'):# if the mouse is clicked, then set the selected asset to the one the mouse is over
                     if self.selectedAssetIndex == i:
                         self.selectedAssetIndex = None
                     else:
@@ -388,7 +388,7 @@ class PieChartSideInfo:
         for color,points,value,name in self.pieSegments:
             pygame.draw.line(pieSurf,(1,1,1),(self.radius,self.radius),points[1],5)
 
-    def draw(self,screen:pygame.Surface,mousebuttons:int,screenManager):
+    def draw(self,screen:pygame.Surface,screenManager):
         """"""        
         totalValue = sum([v[0] for v in self.data])# originally the displayed value is the total value of the stocks - might change if mouseover
 
@@ -397,7 +397,7 @@ class PieChartSideInfo:
         mousex,mousey = pygame.mouse.get_pos()
 
 
-        def drawInfoBox(pieSegment,mousebuttons):
+        def drawInfoBox(pieSegment):
             """Draws the information box to the right of the pie chart"""	
             color,points,value,name = pieSegment
             corners = [self.coords, (self.coords[0] + self.radius*2, self.coords[1]), (self.coords[0] + self.radius*2, self.coords[1] + self.radius*2), (self.coords[0], self.coords[1] + self.radius*2)]
@@ -435,7 +435,7 @@ class PieChartSideInfo:
                 pygame.draw.rect(screen, (0,0,0), myRect, 3, 5)
                 if myRect.collidepoint(mousex,mousey):
                     pygame.draw.rect(screen, (220,220,220), myRect, 5, 5)
-                    if mousebuttons == 1:
+                    if mouseButton.getButton('left'):
                         screenManager.setScreen(iconName)
 
                         if iconName == 'Stockbook':# if the stockbook is clicked, then set the selected asset to the one the mouse is over
@@ -453,7 +453,7 @@ class PieChartSideInfo:
                             menuDict['Bank'].investScreen.fundSelection.setSelected(name)
         
         if pointInCircle(pygame.mouse.get_pos(),(self.coords[0]+self.radius,self.coords[1]+self.radius),self.radius-10):# if the mouse is in the pie chart
-            collided = self.getClickedAsset(mousebuttons)# get the asset that the mouse is over
+            collided = self.getClickedAsset()# get the asset that the mouse is over
 
             for i,(color,points,value,name) in enumerate(self.pieSegments):# draws all the segments darker except the one the mouse is over
                 newcolor = brightenCol(color,0.5) if i != collided else brightenCol(color,1.5)
@@ -505,7 +505,7 @@ class PieChartSideInfo:
         if self.selectedAssetIndex != None:
             if self.selectedAssetIndex >= len(self.pieSegments):
                 self.selectedAssetIndex = 0
-            drawInfoBox(self.pieSegments[self.selectedAssetIndex],mousebuttons)# draw the information box to the right of the pie chart
+            drawInfoBox(self.pieSegments[self.selectedAssetIndex])# draw the information box to the right of the pie chart
         wholesurf.blit(createbacksurf(self.radius), (0,0))  # blit the backsurface to the screen
         wholesurf.set_colorkey((0,0,0))
         screen.blit(wholesurf, self.coords)

@@ -28,15 +28,15 @@ class GameModeMenu(Menu):
         self.careerReports = pastRuns['Career'].copy()# full of CareerRun objects
         self.goalReports = pastRuns['Goal'].copy()# full of GoalRun objects
 
-    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, mousebuttons: int, player, gametime):
+    def draw_menu_content(self, screen: pygame.Surface, stocklist: list, player, gametime):
 
         match self.gameMode:
             case 'Blitz':
-                self.blitz.draw(screen,mousebuttons,gametime)
+                self.blitz.draw(screen,gametime)
             case 'Career':
                 self.career.draw()
             case 'Goal':
-                self.goal.draw(screen,mousebuttons,gametime)
+                self.goal.draw(screen,gametime)
 
 class BlitzAndGoalScreen:
     def __init__(self,pastRuns:list[BlitzRun|GoalRun],curentRun:BlitzRun|GoalRun) -> None:
@@ -60,7 +60,7 @@ class BlitzAndGoalScreen:
             run = max(self.pastRuns,key=lambda x:x.getNetworth())# gets the best run to start
             self.vertScroll.setCard(obj=self.sideScrollCards[run.name])# sets the card to the best run
     
-    def drawBarGraphs(self,screen,mousebuttons):
+    def drawBarGraphs(self,screen):
         colors = [(255, 205, 78),(191, 85, 178),(239, 131, 84),(12, 89, 27)]#[stocks, options, indexFunds, cash]
         for i in range(4):
             x = 215+i*300
@@ -81,40 +81,40 @@ class BlitzAndGoalScreen:
         else:
             drawCenterTxt(screen,"No Selected Run",65,(210, 50, 50),(1015,650),centerY=False)
 
-    def drawPieChart(self,screen,mousebuttons):
+    def drawPieChart(self,screen):
         colors = [(255, 205, 78),(191, 85, 178),(239, 131, 84),(12, 89, 27)]#[stocks, options, indexFunds, cash]
         names = ['Stocks','Options','Index Funds','Cash']
         values = [(val,name,color) for (val,name,color) in zip(self.currentRun.assetSpread[:-1],names,colors)]
         self.pieChart.updateData(values)
-        self.pieChart.draw(screen,"",mousebuttons,txtSize=35)
+        self.pieChart.draw(screen,"",txtSize=35)
 
-    def drawVertScroll(self,screen,mousebuttons):
+    def drawVertScroll(self,screen):
         drawCenterTxt(screen,"Other Runs",80,(200,200,200),(1595,110),centerY=False)
         pygame.draw.rect(screen,(0,0,0),(1290,195,610,770),5,10)
         if len(self.pastRuns) > 0:
-            self.vertScroll.draw(screen,mousebuttons)
+            self.vertScroll.draw(screen)
         else:
             drawCenterTxt(screen,"No Other Runs",65,(210, 50, 50),(1595,220),centerY=False)
             
 
-    def drawRunInfo(self,screen,mousebuttons,gametime):
+    def drawRunInfo(self,screen,gametime):
         raise NotImplementedError("drawRunInfo must be implemented in the child class")
 
-    def draw(self,screen,mousebuttons,gametime):
+    def draw(self,screen,gametime):
         if self.currentRun in self.pastRuns:
             self.pastRuns.remove(self.currentRun)
         self.selectedRun = None if self.vertScroll.getCard() == None else self.vertScroll.getCard().runObj# gets the selected run
         drawCenterTxt(screen,self.currentRun.name,95,(200,200,200),(740,105),centerY=False)
-        self.drawPieChart(screen,mousebuttons)
-        self.drawVertScroll(screen,mousebuttons)
-        self.drawRunInfo(screen,mousebuttons,gametime)
-        self.drawBarGraphs(screen,mousebuttons)
+        self.drawPieChart(screen)
+        self.drawVertScroll(screen)
+        self.drawRunInfo(screen,gametime)
+        self.drawBarGraphs(screen)
 
 class BlitzScreen(BlitzAndGoalScreen):
     def __init__(self,pastRuns:list[BlitzRun],curentRun:BlitzRun) -> None:
         super().__init__(pastRuns,curentRun)
         
-    def drawRunInfo(self,screen,mousebuttons,gametime):
+    def drawRunInfo(self,screen,gametime):
         infoList = [
             (f"Mode",f"{self.currentRun.gameMode}"),
             (f"Rank",f"{self.currentRun.getRankStr()}"),
@@ -133,7 +133,7 @@ class BlitzScreen(BlitzAndGoalScreen):
 class GoalScreen(BlitzAndGoalScreen):
     def __init__(self,pastRuns:list[GoalRun],curentRun:GoalRun) -> None:
         super().__init__(pastRuns,curentRun)
-    def drawRunInfo(self,screen,mousebuttons,gametime):
+    def drawRunInfo(self,screen,gametime):
         infoList = [
             (f"Mode",f"{self.currentRun.gameMode}"),
             (f"Rank",f"{self.currentRun.getRankStr()}"),

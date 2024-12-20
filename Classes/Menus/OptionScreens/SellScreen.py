@@ -62,10 +62,10 @@ class SellOptionScreen:
         info = [(string,value) for string,value in zip(strings,values)]
         drawLinedInfo(screen,(1535,270),(370,360),info,37,TXTCOLOR)
 
-    def drawOwnedOptions(self,screen:pygame.Surface,mousebuttons:int):
+    def drawOwnedOptions(self,screen:pygame.Surface):
 
-        strike = drawClickableBoxWH(screen, (210, 910), (220,50), "Value", 45, (0,0,0), (200,200,200), mousebuttons,fill=True)
-        exp = drawClickableBoxWH(screen, (455, 910), (220,50),"Expiration", 45, (0,0,0), (200,200,200), mousebuttons,fill=True)
+        strike = drawClickableBoxWH(screen, (210, 910), (220,50), "Value", 45, (0,0,0), (200,200,200),fill=True)
+        exp = drawClickableBoxWH(screen, (455, 910), (220,50),"Expiration", 45, (0,0,0), (200,200,200),fill=True)
         self.sortby = "Value" if strike else self.sortby
         self.sortby = "Expiration" if exp else self.sortby
 
@@ -107,8 +107,8 @@ class SellOptionScreen:
         select = self.selectOption if self.selectOption in optionList else None# Ensuring that the selected stock is in the optionlist
         selectedindex = None if select == None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
 
-        # newselected = self.ownedScroll.draw_polys(screen, (205, 270), (370,950), mousebuttons, selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
-        newselected = self.ownedScroll.draw_polys(screen, (205, 270), (455,875), mousebuttons, selectedindex, True, *[brightenCol(self.determineColor(option.getType()),0.25) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        # newselected = self.ownedScroll.draw_polys(screen, (205, 270), (370,950), selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+        newselected = self.ownedScroll.draw_polys(screen, (205, 270), (455,875), selectedindex, True, *[brightenCol(self.determineColor(option.getType()),0.25) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
 
         if select == None:# if the latterscroll didn't contain the selected asset before
             self.selectOption = self.selectOption if newselected == None else optionList[newselected]# Changes selected stock if the new selected has something
@@ -117,16 +117,16 @@ class SellOptionScreen:
 
         drawCenterTxt(screen, f"{ommitted[0]} - {ommitted[1]-1} out of {len(optionList)} Options", 35, (0, 0, 0), (432, 875), centerY=False)
     
-    def drawExerciseAndOther(self,screen,mousebuttons,gametime):
+    def drawExerciseAndOther(self,screen,gametime):
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(670, 620, 1230, 270),5,10)# box around the entire bottom
 
         drawCenterTxt(screen, 'Go to Exercise Screen', 55, (0, 0, 0), (865, 770), centerY=False, fullY=True)
-        result = drawClickableBoxWH(screen, (685, 780), (360,95), "Exercise Screen", 55, (0,0,0), (200,200,200), mousebuttons,fill=True)
+        result = drawClickableBoxWH(screen, (685, 780), (360,95), "Exercise Screen", 55, (0,0,0), (200,200,200),fill=True)
         if result:
             self.exerciseMenu.setSelected(self.selectOption)
 
         drawCenterTxt(screen, 'See in Portfolio', 55, (0, 0, 0), (1235, 770), centerY=False, fullY=True)
-        result = drawClickableBoxWH(screen, (1055, 780), (360,95), "Portfolio", 55, (0,0,0), (200,200,200), mousebuttons,fill=True)
+        result = drawClickableBoxWH(screen, (1055, 780), (360,95), "Portfolio", 55, (0,0,0), (200,200,200),fill=True)
         if result:
             self.player.screenManager.setScreen("Portfolio")
             self.player.screenManager.screens["Portfolio"].setSelectedAsset(self.selectOption)
@@ -151,10 +151,10 @@ class SellOptionScreen:
 
         
 
-    def drawScreen(self,screen,mousebuttons,gametime:GameTime):
+    def drawScreen(self,screen,gametime:GameTime):
         
         if self.exerciseMenu.drawn():# if the exercise menu is drawn
-            self.exerciseMenu.drawScreen(screen,mousebuttons)
+            self.exerciseMenu.drawScreen(screen)
         else:# if the exercise menu is not drawn
             if self.selectOption != None and self.selectOption not in self.player.getOptions():
                 self.selectOption = None
@@ -163,12 +163,12 @@ class SellOptionScreen:
             if self.selectOption == None:
                 pygame.draw.rect(screen,(0,0,0),pygame.Rect(670, 210, 675, 550),5,10)# box around the select an option
                 drawCenterTxt(screen, 'Select An Option', 80, (180, 180, 180), (1005, 225), centerY=False)
-                self.netWorthGraph.drawFull(screen, (1350,210),(550,550),"SellNetWorth",True,"Normal",mousebuttons)
+                self.netWorthGraph.drawFull(screen, (1350,210),(550,550),"SellNetWorth",True,"Normal")
 
-            self.drawOwnedOptions(screen,mousebuttons)
+            self.drawOwnedOptions(screen)
             
             if self.selectOption != None:
                 self.drawOptionInfo(screen,self.gametime)
-                self.drawExerciseAndOther(screen,mousebuttons,gametime)
+                self.drawExerciseAndOther(screen,gametime)
                 self.selectedGraph.setStockObj(self.selectOption.stockObj)
-                self.selectedGraph.drawFull(screen, (670,210),(465,405),"SellSelected",True,"Normal",mousebuttons)
+                self.selectedGraph.drawFull(screen, (670,210),(465,405),"SellSelected",True,"Normal")

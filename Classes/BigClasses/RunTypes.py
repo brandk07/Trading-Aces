@@ -33,7 +33,7 @@ class GameRun:
             self.gameDate = DEFAULTSTARTDATE# default start date
         else:
             self.gameDate = datetime.strptime(gameDate,"%m/%d/%Y %I:%M:%S %p")# the date the game started
-        # self.networth = sum(self.assetSpread[:-1]) - self.assetSpread[-1]# the net worth of the player
+        # self.networth = sum(self.assetSpread[:-1]) - self.assetSpread[-1]# the networth of the player
 
         if not os.path.exists(self.getFileDir()):# if the run does not exist create the files
             self.massFileCreation(self.getFileDir())# moves/creates all the files for the new run 
@@ -75,7 +75,7 @@ class GameRun:
         stockDataDir = os.path.join(save_dir, "StockData")
         os.makedirs(stockDataDir, exist_ok=True)
 
-        for name in STOCKNAMES+["Net Worth"]:# create the data files for each stock
+        for name in STOCKNAMES+["Networth"]:# create the data files for each stock
             # file_path = f"{stockDataDir}/{name}/data.json"
             file_path = os.path.join(stockDataDir, name, "data.json")
 
@@ -171,7 +171,7 @@ class GoalRun(GameRun):
         """Being Clear, the gameDate is the date in the game not the real time
         and the startTime and realWrldEndTime are the real-life time that the player created and ended the run"""
         try:
-            self.goalNetworth = int(goalNetworth)# the net worth the player needs to reach
+            self.goalNetworth = int(goalNetworth)# the networth the player needs to reach
         except:
             raise ValueError("The goal networth must be an integer or a string that can be converted to an integer")
         

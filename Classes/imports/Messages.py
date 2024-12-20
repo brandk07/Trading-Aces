@@ -101,7 +101,7 @@ class ErrorMessageHandler:
         
 #     def getPoly(self):
 #         return [(self.coords[0],self.coords[1]),(self.wh[0]+self.coords[0],self.coords[1]),(self.wh[0]+self.coords[0],self.wh[1]+self.coords[1]),(self.coords[0],self.wh[1]+self.coords[1])]
-#     def draw(self,screen,uiControls,mousebuttons,*args):
+#     def draw(self,screen,uiControls,*args):
 #         """Args are all the arguments that are passed to the result1 and result2 methods"""
 #         uiControls.bar.set_currentvalue(0)
 #         self.adjustCoords()
@@ -129,12 +129,12 @@ class ErrorMessageHandler:
 #         x2,y2 = self.coords[0]+self.wh[0]-w-20,self.coords[1]+self.wh[1]//2
 #         txt1,size1,color1 = self.boxTxts[0]
         
-#         result1 = drawClickableBoxWH(screen,(x1,y1),(w,h),txt1,size1,color1,(255,255,255),mousebuttons,fill=True)
+#         result1 = drawClickableBoxWH(screen,(x1,y1),(w,h),txt1,size1,color1,(255,255,255),fill=True)
 #         txt2,size2,color2 = self.boxTxts[1]
 #         if result1:
 #             self.result1(*args)
 
-#         result2 = drawClickableBoxWH(screen,(x2,y2),(w,h),txt2,size2,color2,(255,255,255),mousebuttons,fill=True)
+#         result2 = drawClickableBoxWH(screen,(x2,y2),(w,h),txt2,size2,color2,(255,255,255),fill=True)
 #         if result2:
 #             self.result2(*args)
 

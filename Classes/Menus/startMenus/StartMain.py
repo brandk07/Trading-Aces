@@ -88,7 +88,7 @@ class StartMain:
         return createSurf,extraSurf
     
     def drawStartMenu(self, screen: pygame.Surface, clock:pygame.time.Clock):
-        mousebuttons,key = 0,None
+        key = None
 
         createSurf,backSurf = self.getSurfs()
         
@@ -103,34 +103,36 @@ class StartMain:
             
             match self.gameMode:
                 case 'start':
-                    n = self.menus['start'].draw(screen,mousebuttons)
+                    n = self.menus['start'].draw(screen)
                     if n != None:
                         self.gameMode = n.lower()
                 case 'create':
-                    if self.menus['create'].draw(screen,mousebuttons,key):
+                    if self.menus['create'].draw(screen,key):
                         self.runManager.addRun(self.menus['create'].currentRun)
                         return self.menus['create'].currentRun
                 case 'play':
-                    if run:=self.menus['play'].draw(screen,mousebuttons):
+                    if run:=self.menus['play'].draw(screen):
                         return run
                 case 'settings':
                     pass
                 case 'credit':
                     pass
             if self.gameMode != 'start':
-                if drawClickableBoxWH(screen,(170,905),(540,130),"Return Home", 75, (0,0,0),(0,210,0),mousebuttons):
+                if drawClickableBoxWH(screen,(170,905),(540,130),"Return Home", 75, (0,0,0),(0,210,0)):
                     self.gameMode = 'start'
                 
 
-            mousebuttons,key = 0,None
+            key = None
             screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
+            mouseButton.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     quit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    mousebuttons = event.button
-                    if mousebuttons == 1:
+                    
+                    mouseButton.addEvent(event.button)
+                    if mouseButton.getButtonOveride('left') == 1:
                         print("Mouse button pressed",pygame.mouse.get_pos())
                     
                 elif event.type == pygame.KEYDOWN:

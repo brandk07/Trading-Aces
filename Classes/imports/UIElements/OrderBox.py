@@ -37,7 +37,7 @@ class OrderBox:
         
 
 
-    def draw(self,screen:pygame.Surface,mousebuttons:int,resetClicked=True) -> bool:
+    def draw(self,screen:pygame.Surface,resetClicked=True) -> bool:
         """Returns True if the confirm button is pressed resets after confirm button is pressed"""
         
         pygame.draw.rect(screen,(50,50,50),pygame.Rect(self.coords[0],self.coords[1],self.wh[0],self.wh[1]),border_radius=15)
@@ -61,13 +61,13 @@ class OrderBox:
             # DRAWING THE PROCEED BUTTON
             x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)*4-5
             w,h = self.wh[0]-20,self.wh[1]//5-10
-            result = drawClickableBoxWH(screen,(x,y),(w,h),"Proceed",35,(0,0,0),(255,255,255),mousebuttons,fill=True)
+            result = drawClickableBoxWH(screen,(x,y),(w,h),"Proceed",35,(0,0,0),(255,255,255),fill=True)
 
         elif self.stage == 1:
             # DRAWING THE CONFIRMATION SCREEN
             x,y = self.coords[0]+10,self.coords[1]+10
             w,h = self.wh[0]-20,self.wh[1]//5
-            result = drawClickableBoxWH(screen,(x,y),(w,h),"Confirm",35,(0,0,0),(255,255,255),mousebuttons,fill=True)
+            result = drawClickableBoxWH(screen,(x,y),(w,h),"Confirm",35,(0,0,0),(255,255,255),fill=True)
 
             # DRAWING THE EXTRA DATA
             x,y = self.coords[0]+10,self.coords[1]+(self.wh[1]//5)+10

@@ -36,7 +36,7 @@ class ScrollCard:
         elif direction == "bottom":
             return self.surf.subsurface(pygame.Rect(0,0,self.wh[0],self.wh[1]-cutOff))
 
-    def draw(self,screen,coords,mousebuttons,minX=None,maxX=None,minY=None,maxY=None,customWh=None) -> bool:
+    def draw(self,screen,coords,minX=None,maxX=None,minY=None,maxY=None,customWh=None) -> bool:
         """Draws the card onto the screen at the given coords"""
         if minX == None and maxX == None:
             minX,maxX = 0,screen.get_width()
@@ -70,7 +70,7 @@ class ScrollCard:
         screen.blit(newSurf,coords)
         
         if pygame.Rect(coords[0],coords[1],self.wh[0],self.wh[1]).collidepoint(pygame.mouse.get_pos()):
-            if mousebuttons == 1:
+            if mouseButton.getButton('left'):
                 soundEffects['generalClick'].play()
                 return True
         return False
@@ -364,10 +364,10 @@ class SideScroll:
         for i,card in enumerate(self.cards):
             card.updateData(data[i])
 
-    def scrollControls(self,mousebuttons):
-        if mousebuttons == 4:
+    def scrollControls(self):
+        if mouseButton.getButton('scrollUp'):
             self.scroll += self.scrollSpeed
-        elif mousebuttons == 5:
+        elif mouseButton.getButton('scrollDown'):
             self.scroll -= self.scrollSpeed
 
         maxVal = (-self.cardWH[0]*(len(self.cards)-1))+175
@@ -375,13 +375,13 @@ class SideScroll:
 
         self.scroll = max(maxVal,min(self.scroll,minVal))
         
-    def draw(self,screen,mousebuttons):
+    def draw(self,screen):
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(self.coords[0],self.coords[1],self.wh[0],self.wh[1]),5)
 
         if not self.cards:# if there are no cards, then there is nothing to do
             return
         
-        self.scrollControls(mousebuttons)
+        self.scrollControls()
         
         # middle = self.coords[0]+self.wh[0]//2
         ypos = self.coords[1]+20
@@ -407,7 +407,7 @@ class SideScroll:
                 
                 
                 pygame.draw.rect(screen,(255,255,255),pygame.Rect(x,ypos-5,w,self.cardWH[1]+10),5)
-            if card.draw(screen,(xcoord,ypos),mousebuttons,minX,maxX):# if the card is clicked
+            if card.draw(screen,(xcoord,ypos),minX,maxX):# if the card is clicked
                 if self.lastSelected != i:# if the card is not already selected
                     self.setCard(i)
                 else:# if the card is already selected - deselect it
@@ -418,14 +418,14 @@ class VerticalScroll(SideScroll):
         super().__init__(coords, wh, cardWH)
         self.scroll = 25
         
-    def draw(self, screen, mousebuttons):
+    def draw(self, screen):
         """Draws the cards vertically instead of horizontally"""
         minY, maxY = self.coords[1]+20, self.coords[1]+self.wh[1]-20
         
         # Handle scrolling
-        if mousebuttons == 4:  # Scroll up
+        if mouseButton.getButton('scrollUp'):  # Scroll up
             self.scroll = min(25, self.scroll + 50)
-        elif mousebuttons == 5:  # Scroll down
+        elif mouseButton.getButton('scrollDown'):  # Scroll down
             maxScroll = -(len(self.cards) * (self.cardWH[1] + 25) - self.wh[1])
             self.scroll = max(maxScroll, self.scroll - 50)
         xpos = self.coords[0] + (self.wh[0]//2) - (self.cardWH[0] // 2) 
@@ -449,7 +449,7 @@ class VerticalScroll(SideScroll):
                 pygame.draw.rect(screen, (255,255,255), 
                                pygame.Rect(xpos-5, y, self.cardWH[0]+10, h), 5)
             # Draw card and handle click
-            if card.draw(screen, (xpos, ycoord), mousebuttons,minY=minY, maxY=maxY):
+            if card.draw(screen, (xpos, ycoord),minY=minY, maxY=maxY):
                 if self.lastSelected != i:
                     self.setCard(i)
                 else:

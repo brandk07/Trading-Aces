@@ -83,7 +83,7 @@ class CreateMenu:
             drawCenterTxt(screen,txt,45,(160,160,160),(195,665+(i*45)),centerX=False,centerY=False)
 
         
-    def drawModeNameSelection(self,screen,mousebuttons,key):
+    def drawModeNameSelection(self,screen,key):
 
 
         drawCenterTxt(screen,"Name",65,(0,0,0),(730,65),centerX=False,centerY=False)
@@ -96,12 +96,12 @@ class CreateMenu:
         
         drawCenterTxt(screen,"Mode",65,(0,0,0),(730,270),centerX=False,centerY=False)
 
-        self.modeselectionBar.draw(screen,[g for g in self.gameModes],(710,320),(640,125),mousebuttons,list(self.modeColors.values()),50)
+        self.modeselectionBar.draw(screen,[g for g in self.gameModes],(710,320),(640,125),list(self.modeColors.values()),50)
 
         if self.modeselectionBar.getSelected() != None:
             self.mode = self.modeselectionBar.getSelected()
 
-    def drawCustomizeInfo(self,screen,mousebuttons):
+    def drawCustomizeInfo(self,screen):
         """Draws the customize info on the right side of the screen"""
 
         drawCenterTxt(screen,"Customization",65,(0,0,0),(730,525),centerX=False,centerY=False,fullY=True)
@@ -112,11 +112,11 @@ class CreateMenu:
                 drawCenterTxt(screen,"-Must select a time period for Blitz Mode",40,(210,0,0),(730,665),centerX=False,centerY=False)
 
             drawCenterTxt(screen,"Time Period",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
-            self.customizeBar.draw(screen,['1M','1Y','5Y'],(730,595),(600,60),mousebuttons)
+            self.customizeBar.draw(screen,['1M','1Y','5Y'],(730,595),(600,60))
         elif self.mode == 'Career':
             
             drawCenterTxt(screen,"Starting Progress",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
-            self.customizeBar.draw(screen,['Normal','Sandbox'],(730,595),(600,60),mousebuttons)
+            self.customizeBar.draw(screen,['Normal','Sandbox'],(730,595),(600,60))
             if self.customizeBar.getSelected() == None:
                 self.customizeBar.setSelected('Normal')
         elif self.mode == 'Goal':
@@ -125,9 +125,9 @@ class CreateMenu:
                 drawCenterTxt(screen,"-Must select a financial target for Goal Mode",40,(210,0,0),(730,665),centerX=False,centerY=False)
 
             drawCenterTxt(screen,"Financial Target",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
-            self.customizeBar.draw(screen,['100k','500k','1 Mil'],(730,595),(600,60),mousebuttons)
+            self.customizeBar.draw(screen,['100k','500k','1 Mil'],(730,595),(600,60))
 
-    def drawImageSelection(self,screen,mousebuttons):
+    def drawImageSelection(self,screen):
         """Draws the image selection on the left top side of the screen"""
         
         if (n:=self.gameIconScroll.getCard(index=True)) != None:# if a card is selected
@@ -157,12 +157,12 @@ class CreateMenu:
             self.currentRun = GoalRun(self.currentName,[],None,imageInd,goalNetworth,self.runManager)
 
         
-    def drawCreateGameBox(self,screen,mousebuttons):
+    def drawCreateGameBox(self,screen):
         """Draws the create game box"""
         color = (0,210,0) if not self.haveError else (210,0,0)
         mousex,mousey = pygame.mouse.get_pos()          
 
-        n = drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),color,mousebuttons)
+        n = drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),color)
 
         if n and not self.haveError:# if the create game button is pressed and its all good, then create the game and enter it
             self.createNewRun()
@@ -171,7 +171,7 @@ class CreateMenu:
             drawCenterTxt(screen,"Please fill out all fields",40,(255,150,150),(mousex+20,mousey),centerX=False,centerY=False,font='light')
         return (n and not self.haveError)
         
-    def draw(self,screen,mousebuttons,key):
+    def draw(self,screen,key):
         """Draws the create game menu"""
         self.haveError = False# resets the error for each draw
 
@@ -181,16 +181,16 @@ class CreateMenu:
 
         self.drawModeInfo(screen)# draws the mode info on the right
 
-        self.drawModeNameSelection(screen,mousebuttons,key)# draws the name and mode selection
+        self.drawModeNameSelection(screen,key)# draws the name and mode selection
 
         self.drawInDepthInfo(screen)# draws the in depth info about the mode
 
-        self.drawCustomizeInfo(screen,mousebuttons)# draws the customize info on the right side of the screen
+        self.drawCustomizeInfo(screen)# draws the customize info on the right side of the screen
         
-        self.gameIconScroll.draw(screen,mousebuttons)# draws the side scroll
+        self.gameIconScroll.draw(screen)# draws the side scroll
 
-        self.drawImageSelection(screen,mousebuttons)# draws the image selection on the left top side of the screen
+        self.drawImageSelection(screen)# draws the image selection on the left top side of the screen
 
-        # return not drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),(200,200,200),mousebuttons)# returns False if the create game button is pressed
-        return self.drawCreateGameBox(screen,mousebuttons)
+        # return not drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),(200,200,200),)# returns False if the create game button is pressed
+        return self.drawCreateGameBox(screen)
 

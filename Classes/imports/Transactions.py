@@ -37,7 +37,7 @@ class Transactions:
             Action Ex. = Sold 1 STAR call Option"""
         self.transactlog.insert(0,[Date,Action,balanceChange,ProfitUnit,Balance])
      
-    # def drawscroll(self,screen,coords:tuple,wholewh:tuple,polywh,mousebuttons:int):
+    # def drawscroll(self,screen,coords:tuple,wholewh:tuple,polywh:int):
     #     """Wholewh is the wh of the whole element
     #     polywh is the wh of each transaction displayed"""
     #     textlist = self.transactlog
@@ -69,17 +69,17 @@ class Transactions:
     #     self.latterscroll.store_rendercoords(coords, scrollmaxcoords,polywh[1],0,0,updatefreq=10)
 
     #     # drawing the latter scroll and assigning the selected asset
-    #     self.latterscroll.draw_polys(screen, coords, scrollmaxcoords, mousebuttons, 0,drawbottom=False)# draws the latter scroll and returns the selected asset
+    #     self.latterscroll.draw_polys(screen, coords, scrollmaxcoords,, 0,drawbottom=False)# draws the latter scroll and returns the selected asset
 
 
 
     
 
-    # def draw(self,screen,mousebuttons,coords:tuple,wh:tuple,polywh):
+    # def draw(self,screen,coords:tuple,wh:tuple,polywh):
     #     if self.transactlog:
     #         pygame.draw.rect(screen,(0,0,0),pygame.Rect(coords[0],coords[1],polywh[0],wh[1]-coords[1]),5)
 
-    #         self.drawscroll(screen,(coords[0]+10,coords[1]+95),(wh[0]-20,wh[1]),polywh,mousebuttons)
+    #         self.drawscroll(screen,(coords[0]+10,coords[1]+95),(wh[0]-20,wh[1]),polywh)
 
     #         ttext = s_render('Transactions',65,(255,255,255))
     #         screen.blit(ttext,(coords[0]+(polywh[0]/2)-(ttext.get_width()/2),coords[1]+10))
@@ -104,17 +104,17 @@ class Transactions:
     #         totalwidth += text.get_width()
 
     #     self.surfs.append(surf)
-    # def scrollcontrols(self, mousebuttons, coords, wh):
+    # def scrollcontrols(self,, coords, wh):
     #     mousex,mousey = pygame.mouse.get_pos()
     #     if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]),mousex,mousey):
-    #         if mousebuttons == 4 and self.scrollvalue > 0:
+    #         if == 4 and self.scrollvalue > 0:
     #             self.scrollvalue -= 30
-    #         elif mousebuttons == 5:
+    #         elif == 5:
     #             self.scrollvalue += 30
 
         
-    # def draw(self,screen,coords:tuple,maxheight:int,mousebuttons:int):
-    #     self.scrollcontrols(mousebuttons,coords,(self.width,maxheight))
+    # def draw(self,screen,coords:tuple,maxheight:int:int):
+    #     self.scrollcontrols,coords,(self.width,maxheight))
 
         # points = [(coords[0],coords[1]),(coords[0]+self.width,coords[1]),(coords[0]+self.width,maxheight),(coords[0],maxheight)]
         # gfxdraw.filled_polygon(screen,points,(60,60,60,200))
