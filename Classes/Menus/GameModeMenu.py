@@ -34,7 +34,7 @@ class GameModeMenu(Menu):
             case 'Blitz':
                 self.blitz.draw(screen,gametime)
             case 'Career':
-                self.career.draw()
+                self.career.draw(screen,gametime)
             case 'Goal':
                 self.goal.draw(screen,gametime)
 
@@ -149,8 +149,23 @@ class GoalScreen(BlitzAndGoalScreen):
         pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
         drawLinedInfo(screen,(200,185),(490,380),infoList,45,colors=colors)
 
-class CareerScreen:
+class CareerScreen(BlitzAndGoalScreen):
     def __init__(self,pastRuns:list[CareerRun],curentRun:CareerRun) -> None:
-        pass
-    def draw(self):
-        pass
+
+        super().__init__(pastRuns,curentRun)
+        self.currentRun : CareerRun = self.currentRun# just for type hinting
+    def drawRunInfo(self,screen,gametime):
+        infoList = [
+            (f"Mode",f"{self.currentRun.gameMode}"),
+            (f"Rank",f"{self.currentRun.getRankStr()}"),
+            (f"Networth Unlock",f"{self.currentRun.nextUnlock("Networth")}"),
+            (f"Paid for Unlock",f"{self.currentRun.nextUnlock("Paid")}"),
+            (f"Start Date",f"{self.currentRun.getFormattedStartTime()}"),
+        ]
+        
+        modeColors = {['Career','Blitz','Goal'][i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
+        
+        rankColor = (200,200,200) if self.currentRun.getRankInt() > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][self.currentRun.getRankInt()-1]
+        colors = [modeColors[self.currentRun.gameMode],rankColor,(0, 170, 170),(0, 170, 170),(200,200,200)]
+        pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
+        drawLinedInfo(screen,(200,185),(490,380),infoList,45,colors=colors)

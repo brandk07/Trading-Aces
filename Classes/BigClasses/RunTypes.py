@@ -46,6 +46,11 @@ class GameRun:
     def getFormattedStartTime(self):
         """Returns the start time in a formatted string"""
         return self.startTime.strftime("%m/%d/%Y") 
+    
+    def updateAssetSpread(self,assetSpread:list):
+        """Updates the asset spread"""
+        self.assetSpread = assetSpread.copy()
+
     def getRankInt(self) -> int:
         """Returns the rank of the run"""
         return self.runManager.getRanking(self)
@@ -155,14 +160,124 @@ class BlitzRun(GameRun):
     
 
 class CareerRun(GameRun):
-    def __init__(self, name, assetSpread, gameMode, gameDate, startTime = None):
-        super().__init__(name, assetSpread, gameMode, gameDate, startTime)
+    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,gameUnlocks:dict,sandBox:bool,runManager,startTime:str=None,lastPlayed:str=None) -> None:
+        """Being Clear, the gameDate and endGameDate are the dates in the game not the real time
+        and the startTime and realWrldEndTime are the real-life time that the player created and ended the run"""
+        self.sandBoxMode = sandBox# if the player is in sandbox mode
+        # self.verifyGameUnlocks(gameUnlocks)
+        self.gameUnlocks = gameUnlocks# temporary until the verifyGameUnlocks is called
+        super().__init__(name,assetSpread,'Career',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed)
+        
+        self.verifyGameUnlocks(gameUnlocks)
+
+
+    def verifyGameUnlocks(self,gameUnlocks:dict):
+        self.gameUnlocksInd = {
+            "Storage Ind" : [6, 8, 10, 12, 14, 16],# index of asset storage unlock (0-5) (6, 8, 10, 12, 14, 16 items)
+            "Interest Ind" : [5.5, 4.5, 3.5, 2.5, 1.5, 0.5],# index of interest for loans unlock (0-5)
+            "LoanAmt Ind" : [1, 1.2, 1.4, 1.6, 1.8, 2],# index of loan amount unlock (0-5) (up to 200% of networth)
+            "Tax Ind" : [15, 12.5, 10, 7.5, 5, 2.5]}# index of tax unlock (0-5) (15, 12.5, 10, 7.5, 5, 2.5% tax rate)
+        self.gameUnlockCosts = {
+            "Storage Ind" : [0, 25_000, 45_000, 91_000, 175_000, 335_000],# cost of asset storage unlock (0-5) (6, 8, 10, 12, 14, 16 items)
+            "Interest Ind" : [0, 50_000, 105_000, 225_000, 475_000, 1_005_000],# cost of interest for loans unlock (0-5) (5.5, 4.5, 3.5, 2.5, 1.5, 0.5% interest)
+            "StockReports Enabled" : 250_000,# cost of stock reports unlock
+            "Tax Ind" : [0, 105_000, 225_000, 475_000, 1_005_000, 2_125_000]}# cost of tax unlock (0-5) (15, 12.5, 10, 7.5, 5, 2.5% tax rate)
+        self.networthReq = {
+            "PreMadeOptions Enabled" : 50_000,# if the premade options are enabled
+            "CustomOptions Enabled" : 150_000,# if the custom options are enabled 
+            "LoanAmt Ind" : [0, 300_000, 600_000, 900_000, 1_200_000, 1_500_000]}# if the loan amount is enabled (0-5) (up to $1,020,000 networth)
+
+        if gameUnlocks != None and len(gameUnlocks) > 0:
+            self.gameUnlocks = gameUnlocks# the unlocks the player has unlocked
+        else:
+            
+            # If Gameunlocks hasn't been set then set it to the default values
+            self.gameUnlocks = {
+                "Storage Ind" : 0,# index of asset storage unlock (0-5) (6, 8, 10, 12, 14, 16 items) [Cost Based]            
+                "PreMadeOptions Enabled" : self.getNetworth() >= self.networthReq["PreMadeOptions Enabled"],# if the premade options are enabled [Networth Based]
+                "CustomOptions Enabled" : self.getNetworth() >= self.networthReq["CustomOptions Enabled"],# if the custom options are enabled [Networth Based]
+                "LoanAmt Ind" : min(5,int(self.getNetworth()//170_000)),# Maxes out at $1,020,000 networth which would be a loan with 200% of networth [Networth Based]
+                "Interest Ind" : 0,# index of interest in gameUnlocksInd - costs in gameUnlockCosts [Cost Based]
+                "StockReports Enabled" : False,# if the stock reports are enabled - costs 250,000 [Cost Based]
+                "Tax Ind" : 0,# index of tax in gameUnlocksInd - costs in gameUnlockCosts [Cost Based]
+            }
+        if self.sandBoxMode:# if the player is in sandbox mode then unlock everything
+            self.gameUnlocks["PreMadeOptions Enabled"] = True
+            self.gameUnlocks["CustomOptions Enabled"] = True
+            self.gameUnlocks["StockReports Enabled"] = True
+            self.gameUnlocks["LoanAmt Ind"] = 5
+            self.gameUnlocks["Storage Ind"] = 5
+            self.gameUnlocks["Interest Ind"] = 5
+            self.gameUnlocks["Tax Ind"] = 5
+
+    def updateGameUnlocks(self):
+        if not self.gameUnlocks["PreMadeOptions Enabled"] and self.getNetworth() >= self.networthReq["PreMadeOptions Enabled"]:
+            self.gameUnlocks["PreMadeOptions Enabled"] = True
+        if not self.gameUnlocks["CustomOptions Enabled"] and self.getNetworth() >= self.networthReq["CustomOptions Enabled"]:
+            self.gameUnlocks["CustomOptions Enabled"] = True
+        if not self.gameUnlocks["StockReports Enabled"] and self.getNetworth() >= self.gameUnlockCosts["StockReports Enabled"]:
+            self.gameUnlocks["StockReports Enabled"] = True
+        if self.gameUnlocks["LoanAmt Ind"] < 5:
+            self.gameUnlocks["LoanAmt Ind"] = min(5,int(self.getNetworth()//170_000))
+
+    def nextUnlock(self,type:str):
+        """Returns the closest unlock for the type (Networth or paid)"""
+        if type.lower() == "paid" or type.lower() == "cost":
+            # lowest = "Storage Ind"
+            lowest = [key for key in ["Storage Ind","Interest Ind","Tax Ind"] if self.gameUnlocks[key] < 5]# finds which of the unlocks are not maxed out
+            if lowest == [] and self.gameUnlocks["StockReports Enabled"] == False:# if all the unlocks are maxed out and stock reports are not enabled
+                return "StockReports Enabled"
+            elif lowest == [] and self.gameUnlocks["StockReports Enabled"]:# if all the unlocks are maxed out and stock reports are enabled
+                return None
+            lowest = lowest[0]# gets the first unlock that is not maxed out
+            for unlock in ["Interest Ind","Tax Ind"]:
+                if self.gameUnlocks[unlock] > 5:# if the unlock is maxed out then skip it
+                    continue
+                index1 = self.gameUnlocks[unlock]+1# index of the next unlock
+                index2 = self.gameUnlocks[lowest]+1# index of the (current) lowest unlock
+                if self.gameUnlockCosts[unlock][index1] < self.gameUnlockCosts[lowest][index2]:# if the cost of the next unlock is lower than the (current) lowest unlock
+                    lowest = unlock
+            index = self.gameUnlocks[lowest]+1# index of the next unlock for the current lowest
+            if not self.gameUnlocks["StockReports Enabled"] and self.gameUnlockCosts["StockReports Enabled"] < self.gameUnlockCosts[lowest][index]:
+                lowest = "StockReports Enabled"
+            return lowest
+        
+        elif type.lower() == "networth":
+            lowest = None
+            if not self.gameUnlocks["PreMadeOptions Enabled"]:# if the premade options are not enabled
+                lowest = "PreMadeOptions Enabled"# the next unlock is the premade options
+            elif not self.gameUnlocks["CustomOptions Enabled"]:# if the premade options are enabled but custom options are not enabled
+                lowest = "CustomOptions Enabled"# the next unlock is the custom options
+            else:
+                if self.gameUnlocks["LoanAmt Ind"] <= 5:
+                    return "LoanAmt Ind"
+                lowest = None
+
+            if self.gameUnlocks["LoanAmt Ind"] > 5:# if the loan amount is maxed out
+                return lowest
+            index = self.gameUnlocks["LoanAmt Ind"]+1# index of the next unlock
+            if self.networthReq[lowest] < self.networthReq["LoanAmt Ind"][index]:# if the next unlock is less than the loan amount unlock
+                return lowest
+            return "LoanAmt Ind"# the next unlock is the loan amount
+        
+    
+        
+    def updateAssetSpread(self, assetSpread):
+        """Updates the asset spread and the game unlocks"""
+        super().updateAssetSpread(assetSpread)
+        self.updateGameUnlocks()
+
+    def getModeSpecificInfo(self):
+        """Returns the mode specific info for the run"""
+        newDict = self.gameUnlocks.copy()
+        newDict["sandBox"] = self.sandBoxMode  
+        return newDict
 
     def createCustomFile(self):
         save_dir = os.path.join("Saves", "Career", self.name)
         os.makedirs(save_dir, exist_ok=True)
-        info_path = os.path.join(save_dir, "GameModeInfo.json")
-        game_info = {"duration": time}# change for career mode
+        info_path = os.path.join(save_dir, "ModeSpecificInfo.json")
+        game_info = self.getModeSpecificInfo()# change for career mode
         with open(info_path, 'w') as f:
             json.dump(game_info, f) 
         
@@ -224,9 +339,11 @@ class RunManager():
                 with open(os.path.join("Saves",mode,runName,"BasicInfo.json"),"r") as f:
                     basicInfo = json.load(f)
                 with open(os.path.join("Saves",mode,runName,"ModeSpecificInfo.json"),"r") as f:
-                    modeSpecificInfo = json.load(f)
+                    modeSpecificInfo : dict = json.load(f)
                 if mode == 'Career':
-                    pass
+                    if len(modeSpecificInfo) > 0:
+                        sandBox = modeSpecificInfo.popitem()[1]
+                    run = CareerRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo,sandBox,self,startTime=basicInfo['startTime'],lastPlayed=basicInfo['lastPlayed'])
                 elif mode == 'Blitz':
                     run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],self,endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
                 elif mode == 'Goal':

@@ -144,7 +144,7 @@ if __name__ == "__main__":
             for animation in animationList:
                 animation.update(screen)
 
-            if drawClickableBoxWH(screen,(10,970),(180,100),"Main Menu", 50, (0,0,0),(0,210,0)):
+            if drawClickableBoxWH(screen,(10,970),(165,100),"Main Menu", 50, (0,0,0),(0,210,0)):
                 break
             
             mouseButton.update()

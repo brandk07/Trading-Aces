@@ -30,7 +30,8 @@ class Optiontrade(Menu):
         self.savedOptions = []# stores the saved options OptionAsset objects
         self.selectOption = None
         self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
-
+        # if self.preMadeOptions == {}:
+        self.fillPreMadeOptions()
     def removeSelc(self):
         self.selectOption = None
 
@@ -248,8 +249,7 @@ class Optiontrade(Menu):
             self.selectOption = None
             
     def draw_menu_content(self, screen: pygame.Surface, stocklist: list, player,gametime):
-        if self.preMadeOptions == {}:
-            self.fillPreMadeOptions()
+        
         # if not (self.screenSelection.getSelected() == "Owned" and self.isForced()):# don't draw menu switcher if the exercise menu is forced
         self.screenSelection.draw(screen,)
         if self.screenSelection.getSelected() == "Buy":

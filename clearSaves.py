@@ -1,7 +1,7 @@
 import os
 import shutil
 
-saveToClear = 0# 0 = Blitz, 1 = Career, 2 = Goal
+saveToClear = 1# 0 = Blitz, 1 = Career, 2 = Goal
 
 # List of save types
 if saveToClear == None:

@@ -116,9 +116,10 @@ class CreateMenu:
         elif self.mode == 'Career':
             
             drawCenterTxt(screen,"Starting Progress",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
-            self.customizeBar.draw(screen,['Normal','Sandbox'],(730,595),(600,60))
+            self.customizeBar.draw(screen,['Career','Sandbox'],(730,595),(600,60))
             if self.customizeBar.getSelected() == None:
-                self.customizeBar.setSelected('Normal')
+                self.customizeBar.setSelected('Career')
+
         elif self.mode == 'Goal':
             if self.customizeBar.getSelected() == None:
                 self.haveError = True
@@ -150,7 +151,8 @@ class CreateMenu:
             self.currentRun = BlitzRun(self.currentName,[],None,imageInd,gameDuration,self.runManager)
 
         elif self.mode == 'Career':
-            self.currentRun = CareerRun(self.currentName,[],)
+            mode = {'Career':False,'Sandbox':True}[self.customizeBar.getSelected()]# converts the selected string to a boolean            
+            self.currentRun = CareerRun(self.currentName,[],None,imageInd,{},mode,self.runManager)
 
         elif self.mode == 'Goal':
             goalNetworth = {key:value for key,value in zip(['100k','500k','1 Mil'],[100000,500000,1000000])}[self.customizeBar.getSelected()]# converts the selected string to a number

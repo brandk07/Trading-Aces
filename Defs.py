@@ -81,6 +81,7 @@ def s_render(string:str, size, color,font='reg') -> pygame.Surface:
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 errors = ErrorMessageHandler(s_render)# error messages DO errors.addMessage(txt:str,coords:list=None)
 animationList : list[BuyAnimation] = []
+popUpAuth = []
 # mouseButton.getButton('left')
 class Mouse:
     def __init__(self):

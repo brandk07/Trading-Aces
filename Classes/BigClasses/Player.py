@@ -310,7 +310,7 @@ class Player(Stock):
                 self.options.remove(optionObj)
     def updateRunAssetSpread(self):
         """updates the asset spread of the game run"""
-        self.gameRun.assetSpread = [sum([asset.getValue() for asset in self.stocks]),sum([asset.getValue() for asset in self.options]),sum([asset.getValue() for asset in self.indexFunds]),self.cash,self.getCurrentDebt()]
+        self.gameRun.updateAssetSpread([sum([asset.getValue() for asset in self.stocks]),sum([asset.getValue() for asset in self.options]),sum([asset.getValue() for asset in self.indexFunds]),self.cash,self.getCurrentDebt()])
     def getStockQuantity(self,stockObj):
         """returns the number of stocks the player has of the stockObj"""
         return sum([stock.quantity for stock in self.stocks if stock.stockObj == stockObj])
