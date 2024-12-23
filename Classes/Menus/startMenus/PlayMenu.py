@@ -20,14 +20,24 @@ class PlayMenu:
         self.runManager = runManager
         self.selectionBar = MultiSelectionBar()
         self.selectionBar.setSelected(["Blitz","Career","Goal"])# sets all the options to be selected
+        self.updateRunCards()
+
+    def updateRunCards(self):
+        """Fills/Updates the run cards that are used in the vertScroll
+        MUST be called anytime something changes like deleting or adding a run"""
+        self.runCards : dict = {r.name:StartRunCard(self.vertScroll,r) for r in self.runManager.getAllRuns(True)}
+
     def reset(self):
         # self.vertScroll.reset()
         self.selectionBar.setSelected(["Blitz","Career","Goal"])# sets all the options to be selected
+        self.updateRunCards()
+
     def drawLatterScroll(self,screen:pygame.Surface,runs:list[GameRun]):
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(715,115,1040,920),5,border_radius=25)# outline for the latter scroll
 
-        cards = [StartRunCard(self.vertScroll,c) for c in runs]
+        # cards = [StartRunCard(self.vertScroll,c) for c in runs]
+        cards = [self.runCards[r.name] for r in runs]
         self.vertScroll.loadCards(cards)
         self.vertScroll.draw(screen)
 
