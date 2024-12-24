@@ -9,20 +9,32 @@ from datetime import datetime, timedelta
 from Classes.AssetTypes.LoanAsset import LoanAsset
 # from Classes.AssetTypes.
 # from Classes.imports.Messages import OptionMessage
+class CashStock(Stock):
+    def __init__(self, color, gametime, gameRun, player):
+        """CashStock is a child of the Stock class, it is really just for the cash graph"""
+        self.name = "Cash"
+        self.player = player
+        super().__init__(self.name, color, gametime, 0, gameRun, player)
 
+        if not all([len(graph) == POINTSPERGRAPH for graph in self.graphs.values()]):
+            for key in self.graphs.keys():
+                self.graphs[key] = deque([self.player.cash],maxlen=POINTSPERGRAPH)
+                for _ in range(POINTSPERGRAPH):
+                    self.graphs[key].append(self.player.cash)
+        
 class Player(Stock):
     
 
     def __init__(self,stocknames,color,transact,gametime,gameRun) -> None:
         """Player class is a child of the Stock class price is the networth of the player"""
         name = 'Networth'
-        super().__init__(name,color,gametime,0,gameRun)
+        super().__init__(name,color,gametime,0,gameRun,self)
         
         self.name = name
         
         self.cash = 25000
         # if self.graphs[MINRANGE].size == 1:
-        if  not all([len(graph) == POINTSPERGRAPH for graph in self.graphs.values()]):
+        if not all([len(graph) == POINTSPERGRAPH for graph in self.graphs.values()]):
             # print('cash is',self.cash)
             for key in self.graphs.keys():
                 # self.graphs[key] = np.array([],dtype=object)
@@ -33,14 +45,12 @@ class Player(Stock):
 
             # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
             
-           
-        # for (key,graph) in self.graphs.items():
-        #     if graph.size == 1:
-        #         self.graphs[key] = np.array([self.cash],dtype=object)
+
         self.stocks = []# list of lists containing the stockAsset objects
         self.options = []#list of option objects
         self.indexFunds = []#list of index fund objects
         self.lastLoanPayment = None#gets set right away in defs
+        self.cashStock = CashStock(color,gametime,gameRun,self)
         self.stockvalues = []
         self.loans = []
         self.menuList = None
@@ -59,6 +69,9 @@ class Player(Stock):
         self.updateOptions = 0# used to update the options every 120 frames
 
         # self.recent_movementvar = (None,None,(180,180,180)
+    def save_data(self):
+        self.cashStock.save_data()
+        super().save_data()
     def getOptions(self):
         return self.options
     def getStocks(self):
@@ -160,7 +173,8 @@ class Player(Stock):
                     # indexfund.giveDividend()
                     self.payDividend(indexFundObj=indexfund.stockObj)
 
-        self.update_price(gamespeed,Player,step)
+        self.update_price(gamespeed,step)
+        self.cashStock.update_price(gamespeed,step)
         
 
     def buyAsset(self,newasset,customValue=None):
@@ -355,7 +369,9 @@ class Player(Stock):
         
         animationList.append(BuyAnimation(pygame.mouse.get_pos(),100,animationList))
         self.cash += loanObj.principal
-
+    def getCash(self):
+        """returns the cash of the player"""
+        return self.cash
     def getMaxLoan(self):
         """returns the maximum amount of money the player can borrow"""
         est = self.getNetworth()*0.2

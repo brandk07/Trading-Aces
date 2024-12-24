@@ -28,7 +28,8 @@ class ScreenManager:
             self.selectedScreen = "Home"
         
         # drawBoxedImage(screen,(5,7),self.screens[self.selectedScreen].icon,(170,170),borderRadius=5)
-        colors = [(86, 130, 189),(239, 131, 84),(92, 131, 116),(255, 205, 78),(191, 85, 178),(87, 167, 115),(255, 145, 164)]
+        colors = [(179, 12, 0),(255, 205, 78),(239, 131, 84),(86, 130, 189),(191, 85, 178),(87, 167, 115),(255, 145, 164)]
+        
         # drawCenterTxt(screen,self.selectedScreen,55,colors[list(self.screens).index(self.selectedScreen)],(90,180),centerY=False)
         drawCenterTxt(screen,self.selectedScreen,getTSizeNums(self.selectedScreen,150,80),colors[list(self.screens).index(self.selectedScreen)],(90,50))
         

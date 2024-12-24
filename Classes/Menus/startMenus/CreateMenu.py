@@ -152,7 +152,7 @@ class CreateMenu:
 
         elif self.mode == 'Career':
             mode = {'Career':False,'Sandbox':True}[self.customizeBar.getSelected()]# converts the selected string to a boolean            
-            self.currentRun = CareerRun(self.currentName,[],None,imageInd,{},mode,self.runManager)
+            self.currentRun = CareerRun(self.currentName,[],None,imageInd,{},{},mode,self.runManager)
 
         elif self.mode == 'Goal':
             goalNetworth = {key:value for key,value in zip(['100k','500k','1 Mil'],[100000,500000,1000000])}[self.customizeBar.getSelected()]# converts the selected string to a number

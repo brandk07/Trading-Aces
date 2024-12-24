@@ -627,7 +627,7 @@ def time_it(func):
     return wrapper
 def limit_digits(num:int|float, max_digits,truncate=False) -> str:
     assert max_digits > 0, "Max digits must be greater than 0"
-    assert isinstance(num, (int, float)), "Number must be an int or float"
+    assert isinstance(num, (int, float)), "Number must be an int or float not a " + str(type(num))
     if len("{:,.2f}".format(num)) > max_digits:
         return "{:,.2e}".format(num)    
     else:
@@ -675,7 +675,7 @@ def saveGame(stocklist,player,dataDir,gametime,transact,currentRun,optionTrade):
 
     for stock in stocklist:
         stock.save_data()
-    player.save_data()
+    player.save_data()# Saves the portfolio and the cashStock data
     transact.storeTransactions(currentRun.getFileDir())
     currentRun.saveRun()
     with open(os.path.join(dataDir,"ExtraData.json"),'w') as file:

@@ -354,7 +354,7 @@ class StockVisualizer:
         percentTxt = limit_digits(percent,24)
         change_text = p3choice(f'{percentTxt}%',f'+{percentTxt}%',f'{percentTxt}%',percent)
         swappable = False
-        if preset in ["hoverName"]:# if it is a preset that allows for the stock to be swapped 
+        if preset in ["hoverName","swap"]:# if it is a preset that allows for the stock to be swapped 
             swappable = True
         blnkspacex = ((coords[0]+wh[0]-coords[0])//10)# Giving blankspace for the graph
         pricetext = s_render(f"${limit_digits(self.stockObj.price,15,(self.stockObj.price > 1000))}", 45 if 45 > int((coords[1]+wh[1]-coords[1])/12.5) else int((coords[1]+wh[1]-coords[1])/12.5), (200,200,200))

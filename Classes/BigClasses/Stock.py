@@ -71,9 +71,10 @@ class Stock():
     """Class contains the points and ability to modify the points of the stock
     an object of stockVisualizer is created to visualize the stock"""
 
-    def __init__(self,name,color,gametime,volatility,gameRun) -> None:
+    def __init__(self,name,color,gametime,volatility,gameRun,player) -> None:
         self.color,self.name = color,name
         self.gameRun = gameRun
+        self.player = player
         
         #variables for graphing the stock 
         #make graphingrangeoptions a dict with the name of the option as the key and the value as the amount of points to show
@@ -367,7 +368,7 @@ class Stock():
                     else:
                         self.graphs[key].append(stockvalues)
             
-    def update_price(self,gamespeed,PlayerClass,step=1):
+    def update_price(self,gamespeed,step=1):
         # if self.bankrupcy(False):#if stock is not bankrupt
         #     pass
         
@@ -379,8 +380,13 @@ class Stock():
 
             self.price = self.graphs[MINRANGE][-1]
             return step
-        elif type(self) == PlayerClass:# if Player object
+        elif type(self) == type(self.player):# if Player object
             self.price = self.getNetworth()
             for _ in range(0,gamespeed,step):
                 self.update_range_graphs(self.getNetworth(),step=step)#updates the range graphs
+
+        elif type(self) == type(self.player.cashStock):# if CashStock object
+            self.price = self.player.cash
+            for _ in range(0,gamespeed,step):
+                self.update_range_graphs(self.player.cash,step=step)
     

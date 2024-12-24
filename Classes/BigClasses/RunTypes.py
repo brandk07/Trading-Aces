@@ -80,7 +80,7 @@ class GameRun:
         stockDataDir = os.path.join(save_dir, "StockData")
         os.makedirs(stockDataDir, exist_ok=True)
 
-        for name in STOCKNAMES+["Networth"]:# create the data files for each stock
+        for name in STOCKNAMES+["Networth","Cash"]:# create the data files for each stock
             # file_path = f"{stockDataDir}/{name}/data.json"
             file_path = os.path.join(stockDataDir, name, "data.json")
 
@@ -160,116 +160,206 @@ class BlitzRun(GameRun):
     
 
 class CareerRun(GameRun):
-    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,gameUnlocks:dict,sandBox:bool,runManager,startTime:str=None,lastPlayed:str=None) -> None:
+    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,unlocks:dict,upgrades:dict,sandBox:bool,runManager,startTime:str=None,lastPlayed:str=None) -> None:
         """Being Clear, the gameDate and endGameDate are the dates in the game not the real time
         and the startTime and realWrldEndTime are the real-life time that the player created and ended the run"""
         self.sandBoxMode = sandBox# if the player is in sandbox mode
-        # self.verifyGameUnlocks(gameUnlocks)
-        self.gameUnlocks = gameUnlocks# temporary until the verifyGameUnlocks is called
+        # self.verifyunlocks(unlocks)
+        self.unlocks = unlocks# temporary until the verifyunlocks is called
+        self.upgrades = upgrades# temporary until the verifyunlocks is called
         super().__init__(name,assetSpread,'Career',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed)
         
-        self.verifyGameUnlocks(gameUnlocks)
+        self.verifyGameData(unlocks,upgrades)
 
-
-    def verifyGameUnlocks(self,gameUnlocks:dict):
-        self.gameUnlocksInd = {
-            "Storage Ind" : [6, 8, 10, 12, 14, 16],# index of asset storage unlock (0-5) (6, 8, 10, 12, 14, 16 items)
-            "Interest Ind" : [5.5, 4.5, 3.5, 2.5, 1.5, 0.5],# index of interest for loans unlock (0-5)
-            "LoanAmt Ind" : [1, 1.2, 1.4, 1.6, 1.8, 2],# index of loan amount unlock (0-5) (up to 200% of networth)
-            "Tax Ind" : [15, 12.5, 10, 7.5, 5, 2.5]}# index of tax unlock (0-5) (15, 12.5, 10, 7.5, 5, 2.5% tax rate)
-        self.gameUnlockCosts = {
-            "Storage Ind" : [0, 25_000, 45_000, 91_000, 175_000, 335_000],# cost of asset storage unlock (0-5) (6, 8, 10, 12, 14, 16 items)
-            "Interest Ind" : [0, 50_000, 105_000, 225_000, 475_000, 1_005_000],# cost of interest for loans unlock (0-5) (5.5, 4.5, 3.5, 2.5, 1.5, 0.5% interest)
-            "StockReports Enabled" : 250_000,# cost of stock reports unlock
-            "Tax Ind" : [0, 105_000, 225_000, 475_000, 1_005_000, 2_125_000]}# cost of tax unlock (0-5) (15, 12.5, 10, 7.5, 5, 2.5% tax rate)
+    def setSandboxMode(self):
+        self.unlocks = {"Pre-Made Options" : True,"Custom Options" : True,"Stock Reports" : True}
+        self.upgrades = {"Asset Storage" : 5,"Loan Interest" : 5,"Max Loan Amount" : 5,"Tax Rate" : 5}
+    
+    def getNetOrCash(self,string:str):
+        """Returns whether the string (Upgrade or Unlock) is based on the networth or the cash"""
+        assert string in list(self.unlocks.keys())+list(self.upgrades.keys()), "The string must be a key in the unlocks or upgrades"
+        if string in ["Pre-Made Options","Custom Options","Max Loan Amount"]:
+            return "Networth"
+        return "Cash"
+    
+    def verifyGameData(self,unlocks:dict,upgrades:dict):
+        self.upgradesLevels = {
+            "Asset Storage" : [6, 8, 10, 12, 14, 16],# (6, 8, 10, 12, 14, 16 items)
+            "Loan Interest" : [5.5, 4.5, 3.5, 2.5, 1.5, 0.5],# % interest
+            "Max Loan Amount" : [0.2, 0.4, 0.5, 0.9, 1.4, 2],# Networth to loan amount ratio
+            "Tax Rate" : [15, 12.5, 10, 7.5, 5, 2.5]}# tax rate
+        self.gameCosts = {
+            "Loan Interest" : [0, 50_000, 105_000, 225_000, 475_000, 1_005_000],
+            "Asset Storage" : [0, 25_000, 45_000, 91_000, 175_000, 335_000],            
+            "Tax Rate" : [0, 105_000, 225_000, 475_000, 1_005_000, 2_125_000],
+            "Stock Reports" : 250_000}
         self.networthReq = {
-            "PreMadeOptions Enabled" : 50_000,# if the premade options are enabled
-            "CustomOptions Enabled" : 150_000,# if the custom options are enabled 
-            "LoanAmt Ind" : [0, 300_000, 600_000, 900_000, 1_200_000, 1_500_000]}# if the loan amount is enabled (0-5) (up to $1,020,000 networth)
+            "Max Loan Amount" : [0, 300_000, 600_000, 900_000, 1_200_000, 1_500_000],# Networth required for upgrade levels
+            "Pre-Made Options" : 50_000,
+            "Custom Options" : 150_000,}
 
-        if gameUnlocks != None and len(gameUnlocks) > 0:
-            self.gameUnlocks = gameUnlocks# the unlocks the player has unlocked
+        if unlocks != None and len(unlocks) > 0:# if the unlocks has been set
+            self.unlocks = unlocks# the unlocks the player has unlocked
         else:
+            self.unlocks = {
+                "Pre-Made Options" : False,# (bool) [Networth Based]
+                "Custom Options" : False,# (bool) [Networth Based]
+                "Stock Reports" : False,}# (bool) [Cost Based]
             
-            # If Gameunlocks hasn't been set then set it to the default values
-            self.gameUnlocks = {
-                "Storage Ind" : 0,# index of asset storage unlock (0-5) (6, 8, 10, 12, 14, 16 items) [Cost Based]            
-                "PreMadeOptions Enabled" : self.getNetworth() >= self.networthReq["PreMadeOptions Enabled"],# if the premade options are enabled [Networth Based]
-                "CustomOptions Enabled" : self.getNetworth() >= self.networthReq["CustomOptions Enabled"],# if the custom options are enabled [Networth Based]
-                "LoanAmt Ind" : min(5,int(self.getNetworth()//170_000)),# Maxes out at $1,020,000 networth which would be a loan with 200% of networth [Networth Based]
-                "Interest Ind" : 0,# index of interest in gameUnlocksInd - costs in gameUnlockCosts [Cost Based]
-                "StockReports Enabled" : False,# if the stock reports are enabled - costs 250,000 [Cost Based]
-                "Tax Ind" : 0,# index of tax in gameUnlocksInd - costs in gameUnlockCosts [Cost Based]
-            }
+        if upgrades != None and len(upgrades) > 0:# if the upgrades has been set
+            self.upgrades = upgrades
+        else:
+            self.upgrades = {
+                "Asset Storage" : 0,# (Index) [Cost Based]
+                "Loan Interest" : 0,# (Index) [Cost Based]
+                "Max Loan Amount" : 0,# (Index) [Networth Based]
+                "Tax Rate" : 0}# (Index) [Cost Based]
+            
         if self.sandBoxMode:# if the player is in sandbox mode then unlock everything
-            self.gameUnlocks["PreMadeOptions Enabled"] = True
-            self.gameUnlocks["CustomOptions Enabled"] = True
-            self.gameUnlocks["StockReports Enabled"] = True
-            self.gameUnlocks["LoanAmt Ind"] = 5
-            self.gameUnlocks["Storage Ind"] = 5
-            self.gameUnlocks["Interest Ind"] = 5
-            self.gameUnlocks["Tax Ind"] = 5
+            self.setSandboxMode()
+    def getCurrVal(self,uString:str):
+        """Returns the current value of the upgrade"""
+        if uString in ["Pre-Made Options","Custom Options","Stock Reports"]:
+            return self.unlocks[uString]
+        return self.upgradesLevels[uString][self.upgrades[uString]]
+    def getCurrValStr(self,uString:str):
+        """Returns the current value of the upgrade as a string"""
 
-    def updateGameUnlocks(self):
-        if not self.gameUnlocks["PreMadeOptions Enabled"] and self.getNetworth() >= self.networthReq["PreMadeOptions Enabled"]:
-            self.gameUnlocks["PreMadeOptions Enabled"] = True
-        if not self.gameUnlocks["CustomOptions Enabled"] and self.getNetworth() >= self.networthReq["CustomOptions Enabled"]:
-            self.gameUnlocks["CustomOptions Enabled"] = True
-        if not self.gameUnlocks["StockReports Enabled"] and self.getNetworth() >= self.gameUnlockCosts["StockReports Enabled"]:
-            self.gameUnlocks["StockReports Enabled"] = True
-        if self.gameUnlocks["LoanAmt Ind"] < 5:
-            self.gameUnlocks["LoanAmt Ind"] = min(5,int(self.getNetworth()//170_000))
+        valStrs = {"Asset Storage" : f"{self.getCurrVal("Asset Storage")} items",
+                    "Loan Interest" : f"{self.getCurrVal('Loan Interest')}% interest",
+                    "Max Loan Amount" : f"{self.getCurrVal('Max Loan Amount')*100}% Networth",
+                    "Tax Rate" : f"{self.getCurrVal('Tax Rate')}% tax rate",
+                    "Stock Reports" : "Reports Enabled" if self.unlocks['Stock Reports'] else "Reports Disabled",
+                    "Pre-Made Options" : "Trading Enabled" if self.unlocks['Pre-Made Options'] else "Trading Disabled",
+                    "Custom Options" : "Trading Enabled" if self.unlocks['Custom Options'] else "Trading Disabled",}
 
-    def nextUnlock(self,type:str):
-        """Returns the closest unlock for the type (Networth or paid)"""
-        if type.lower() == "paid" or type.lower() == "cost":
-            # lowest = "Storage Ind"
-            lowest = [key for key in ["Storage Ind","Interest Ind","Tax Ind"] if self.gameUnlocks[key] < 5]# finds which of the unlocks are not maxed out
-            if lowest == [] and self.gameUnlocks["StockReports Enabled"] == False:# if all the unlocks are maxed out and stock reports are not enabled
-                return "StockReports Enabled"
-            elif lowest == [] and self.gameUnlocks["StockReports Enabled"]:# if all the unlocks are maxed out and stock reports are enabled
-                return None
-            lowest = lowest[0]# gets the first unlock that is not maxed out
-            for unlock in ["Interest Ind","Tax Ind"]:
-                if self.gameUnlocks[unlock] > 5:# if the unlock is maxed out then skip it
-                    continue
-                index1 = self.gameUnlocks[unlock]+1# index of the next unlock
-                index2 = self.gameUnlocks[lowest]+1# index of the (current) lowest unlock
-                if self.gameUnlockCosts[unlock][index1] < self.gameUnlockCosts[lowest][index2]:# if the cost of the next unlock is lower than the (current) lowest unlock
-                    lowest = unlock
-            index = self.gameUnlocks[lowest]+1# index of the next unlock for the current lowest
-            if not self.gameUnlocks["StockReports Enabled"] and self.gameUnlockCosts["StockReports Enabled"] < self.gameUnlockCosts[lowest][index]:
-                lowest = "StockReports Enabled"
-            return lowest
+        return valStrs[uString]
+    
+    def isMaxed(self,uString:str):
+        """Returns True if the upgrade is maxed out"""
+        if self.getNetOrCash(uString) == "Networth":
+            if uString == "Max Loan Amount":
+                return self.upgrades[uString] == 5
+            return self.unlocks[uString]# if the unlock is networth based and not Max Loan Amount
+        if uString == "Stock Reports":
+            return self.unlocks[uString]
+        return self.upgrades[uString] == 5# if the upgrade is cash based and not Stock Reports
+    
+    def getNextGrantStr(self,uString):
+        """Returns the next grant string for the upgrade"""
+        if self.isMaxed(uString):
+            return None
+        extraTxt = {
+            "Asset Storage" : f"+2 items",
+            "Loan Interest" : f"-1 loan interest",
+            "Max Loan Amount" : f"+20% Networth",
+            "Tax Rate" : f"-2.5 tax rate",
+            "Stock Reports" : "Reports Enabled",
+            "Pre-Made Options" : "Trading Enabled",
+            "Custom Options" : "Trading Enabled",}
+        return extraTxt[uString]
+        # if self.getNetOrCash(uString) == "Networth":
+        #     if uString == "Max Loan Amount":
+        #         return self.upgradesLevels[uString][self.upgrades[uString]+1]
+        #     return self.upgradesLevels[uString]
+        # if uString == "Stock Reports":
+        #     return self.gameCosts[uString]
+        # return self.gameCosts[uString][self.upgrades[uString]+1]
+
+    def getAllUStrings(self):
+        """Returns all the upgrade strings"""
+        return list(self.unlocks.keys())+list(self.upgrades.keys())
+    def getNextCost(self,uString:str):
+        """Returns the cost of the next upgrade"""
+        if self.isMaxed(uString):
+            return None
+        if self.getNetOrCash(uString) == "Networth":
+            if uString == "Max Loan Amount":
+                return self.networthReq[uString][self.upgrades[uString]+1]
+            return self.networthReq[uString]
+        if uString == "Stock Reports":
+            return self.gameCosts[uString]
+        return self.gameCosts[uString][self.upgrades[uString]+1]
+    
+    def getProximity(self,uString:str,player):
+        """Returns the proximity of the upgrade"""
+        netW = player.getNetworth()
+        cash = player.getCash()
+        if self.isMaxed(uString):
+            return 100
+        if self.getNetOrCash(uString) == "Networth":
+            if uString == "Max Loan Amount":
+                cost = self.networthReq[uString][self.upgrades[uString]+1]
+                return int(min(100,(1-((cost - netW) / cost)) * 100))
+            cost = self.networthReq[uString]
+            return int(min(100,(1-((cost - netW) / cost)) * 100))
+        if uString == "Stock Reports":
+            cost = self.gameCosts[uString]
+            return int(min(100,(1-((cost - cash) / cost)) * 100))
+        cost = self.gameCosts[uString][self.upgrades[uString]+1]
+        return int(min(100,(1-((cost - cash) / cost)) * 100))
+
+    def updateunlocks(self):
+        if not self.unlocks["Pre-Made Options"] and self.getNetworth() >= self.networthReq["Pre-Made Options"]:
+            self.unlocks["Pre-Made Options"] = True
+        if not self.unlocks["Custom Options"] and self.getNetworth() >= self.networthReq["Custom Options"]:
+            self.unlocks["Custom Options"] = True
+        if not self.unlocks["Stock Reports"] and self.getNetworth() >= self.gameCosts["Stock Reports"]:
+            self.unlocks["Stock Reports"] = True
+        if self.upgrades["Max Loan Amount"] < 5:
+            self.upgrades["Max Loan Amount"] = min(5,int(self.getNetworth()//170_000))
+
+    # def nextUnlock(self,type:str):
+    #     """Returns the closest unlock for the type (Networth or paid)"""
+    #     if type.lower() == "paid" or type.lower() == "cost":
+    #         # lowest = "Asset Storage"
+    #         lowest = [key for key in ["Asset Storage","Loan Interest","Tax Rate"] if self.unlocks[key] < 5]# finds which of the unlocks are not maxed out
+    #         if lowest == [] and self.unlocks["Stock Reports"] == False:# if all the unlocks are maxed out and Stock Reports are not enabled
+    #             return "Stock Reports"
+    #         elif lowest == [] and self.unlocks["Stock Reports"]:# if all the unlocks are maxed out and Stock Reports are enabled
+    #             return None
+    #         lowest = lowest[0]# gets the first unlock that is not maxed out
+    #         for unlock in ["Loan Interest","Tax Rate"]:
+    #             if self.unlocks[unlock] > 5:# if the unlock is maxed out then skip it
+    #                 continue
+    #             index1 = self.unlocks[unlock]+1# index of the next unlock
+    #             index2 = self.unlocks[lowest]+1# index of the (current) lowest unlock
+    #             if self.gameUnlockCosts[unlock][index1] < self.gameUnlockCosts[lowest][index2]:# if the cost of the next unlock is lower than the (current) lowest unlock
+    #                 lowest = unlock
+    #         index = self.unlocks[lowest]+1# index of the next unlock for the current lowest
+    #         if not self.unlocks["Stock Reports"] and self.gameUnlockCosts["Stock Reports"] < self.gameUnlockCosts[lowest][index]:
+    #             lowest = "Stock Reports"
+    #         return lowest
         
-        elif type.lower() == "networth":
-            lowest = None
-            if not self.gameUnlocks["PreMadeOptions Enabled"]:# if the premade options are not enabled
-                lowest = "PreMadeOptions Enabled"# the next unlock is the premade options
-            elif not self.gameUnlocks["CustomOptions Enabled"]:# if the premade options are enabled but custom options are not enabled
-                lowest = "CustomOptions Enabled"# the next unlock is the custom options
-            else:
-                if self.gameUnlocks["LoanAmt Ind"] <= 5:
-                    return "LoanAmt Ind"
-                lowest = None
+    #     elif type.lower() == "networth":
+    #         lowest = None
+    #         if not self.unlocks["Pre-Made Options"]:# if the premade options are not enabled
+    #             lowest = "Pre-Made Options"# the next unlock is the premade options
+    #         elif not self.unlocks["Custom Options"]:# if the premade options are enabled but custom options are not enabled
+    #             lowest = "Custom Options"# the next unlock is the custom options
+    #         else:
+    #             if self.unlocks["Max Loan Amount"] <= 5:
+    #                 return "Max Loan Amount"
+    #             lowest = None
 
-            if self.gameUnlocks["LoanAmt Ind"] > 5:# if the loan amount is maxed out
-                return lowest
-            index = self.gameUnlocks["LoanAmt Ind"]+1# index of the next unlock
-            if self.networthReq[lowest] < self.networthReq["LoanAmt Ind"][index]:# if the next unlock is less than the loan amount unlock
-                return lowest
-            return "LoanAmt Ind"# the next unlock is the loan amount
+    #         if self.unlocks["Max Loan Amount"] > 5:# if the loan amount is maxed out
+    #             return lowest
+    #         index = self.unlocks["Max Loan Amount"]+1# index of the next unlock
+    #         if self.networthReq[lowest] < self.networthReq["Max Loan Amount"][index]:# if the next unlock is less than the loan amount unlock
+    #             return lowest
+    #         return "Max Loan Amount"# the next unlock is the loan amount
         
     
         
     def updateAssetSpread(self, assetSpread):
         """Updates the asset spread and the game unlocks"""
         super().updateAssetSpread(assetSpread)
-        self.updateGameUnlocks()
+        self.updateunlocks()
 
     def getModeSpecificInfo(self):
         """Returns the mode specific info for the run"""
-        newDict = self.gameUnlocks.copy()
+        newDict = self.unlocks.copy()
+        newDict.update(self.upgrades)
         newDict["sandBox"] = self.sandBoxMode  
         return newDict
 
@@ -342,8 +432,10 @@ class RunManager():
                     modeSpecificInfo : dict = json.load(f)
                 if mode == 'Career':
                     if len(modeSpecificInfo) > 0:
+                        unlocks = {key:modeSpecificInfo[key] for key in ["Pre-Made Options","Custom Options","Stock Reports"]}
+                        upgrades = {key:modeSpecificInfo[key] for key in ["Asset Storage","Loan Interest","Max Loan Amount","Tax Rate"]}
                         sandBox = modeSpecificInfo.popitem()[1]
-                    run = CareerRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo,sandBox,self,startTime=basicInfo['startTime'],lastPlayed=basicInfo['lastPlayed'])
+                    run = CareerRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],unlocks,upgrades,sandBox,self,startTime=basicInfo['startTime'],lastPlayed=basicInfo['lastPlayed'])
                 elif mode == 'Blitz':
                     run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],self,endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
                 elif mode == 'Goal':

@@ -63,11 +63,11 @@ if __name__ == "__main__":
 
         transact = Transactions(currentRun.getFileDir())
         player = Player(stocknames,stockcolors[-1],transact,gametime,currentRun)
-        stockdict = {name:Stock(name,stockcolors[i],gametime,stockVolatilities[i],currentRun) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
+        stockdict = {name:Stock(name,stockcolors[i],gametime,stockVolatilities[i],currentRun,player) for i,name in enumerate(stocknames)}#name, startingvalue_range, volatility, Playerclass, stocknames,time
         stocklist = [stockdict[name] for name in stocknames]
         indexfundColors = [(217, 83, 149),(64, 192, 128),(138, 101, 235)]
-        indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3],currentRun) for i,name in enumerate(["TDIF","IEIF", "FHMF"])]# Tech, industrial, health
-        tmarket = TotalMarket(gametime,stocklist,currentRun)
+        indexFunds = [IndexFund(gametime,name,stockcolors[i],stocklist[i*3:i*3+3],currentRun,player) for i,name in enumerate(["TDIF","IEIF", "FHMF"])]# Tech, industrial, health
+        tmarket = TotalMarket(gametime,stocklist,currentRun,player)
         indexFunds.append(tmarket)
         indexFundDict = {fund.name: fund for fund in indexFunds}
 
@@ -82,7 +82,7 @@ if __name__ == "__main__":
         
         bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
 
-        gameModeMenu = GameModeMenu(stocklist,player,pastRuns,currentRun)
+        gameModeMenu = GameModeMenu(stocklist,player,pastRuns,currentRun,gametime)
         menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
         screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
         player.screenManager = screenManager
@@ -119,7 +119,7 @@ if __name__ == "__main__":
                 if gametime.speedBar.getValue() > 0:# if the game is not paused
                     
                     for stock in stocklist:
-                        step = stock.update_price(gametime.speedBar.getValue(),Player)
+                        step = stock.update_price(gametime.speedBar.getValue())
                         if stock.priceEffects.update(gametime,screen,player):
                             homeScreen.newsobj.changeStock(stock)
 

@@ -2,20 +2,25 @@ import pygame
 from Defs import *
 from Classes.Menus.Menu import Menu
 from Classes.imports.UIElements.PieChart import PieChart
-from Classes.imports.UIElements.SideScroll import VerticalScroll,ModeMenuRunCard
+from Classes.imports.UIElements.SideScroll import VerticalScroll,ModeMenuRunCard,UnlockUpgradeCard
 from Classes.BigClasses.RunTypes import *
 from Classes.imports.UIElements.BarGraph import BarGraph
+from Classes.imports.UIElements.SelectionElements import MenuSelection
+from Classes.imports.StockVisualizer import StockVisualizer
 
 class GameModeMenu(Menu):
-    def __init__(self,stocklist,player,pastRuns:dict,currentRun) -> None:
+    def __init__(self,stocklist,player,pastRuns:dict,currentRun,gametime) -> None:
         """Gets the past runs {'Blitz':[BlitzRun : obj],'Career':[],'Goal':[]}"""
         super().__init__()
         self.loadRuns(pastRuns)# loads the runs from the save file
         self.currentRun = currentRun
-
-        self.blitz : BlitzScreen = BlitzScreen(self.blitzReports,self.currentRun)
-        self.career = CareerScreen(self.careerReports,self.currentRun)
-        self.goal = GoalScreen(self.goalReports,self.currentRun)
+        match self.currentRun.gameMode:
+            case 'Blitz':
+                self.blitz : BlitzScreen = BlitzScreen(self.blitzReports,self.currentRun)
+            case 'Career':
+                self.career = CareerScreen(self.careerReports,self.currentRun,player,gametime)
+            case 'Goal':
+                self.goal = GoalScreen(self.goalReports,self.currentRun)
         self.player = player
         self.stocklist = stocklist
     
@@ -150,22 +155,88 @@ class GoalScreen(BlitzAndGoalScreen):
         drawLinedInfo(screen,(200,185),(490,380),infoList,45,colors=colors)
 
 class CareerScreen(BlitzAndGoalScreen):
-    def __init__(self,pastRuns:list[CareerRun],curentRun:CareerRun) -> None:
-
+    def __init__(self,pastRuns:list[CareerRun],curentRun:CareerRun,player,gametime) -> None:
         super().__init__(pastRuns,curentRun)
         self.currentRun : CareerRun = self.currentRun# just for type hinting
+        self.player = player
+        self.menuSelect : MenuSelection = MenuSelection((200, 105), (375, 100),["Unlock","Compare"],45,colors=[(100,200,100),(200,100,100)])
+        self.menuSelect.setSelected(0)
+        self.cashGraph = StockVisualizer(gametime,player.cashStock,[player,player.cashStock])
+        self.networthGraph = StockVisualizer(gametime,player,[player,player.cashStock])
+        self.uStringScroll = VerticalScroll((1450,105),(450,850),(430,175))
+        self.cards = [UnlockUpgradeCard(self.uStringScroll,self.currentRun,uString,player) for uString in self.currentRun.getAllUStrings()]
+        self.uStringScroll.loadCards(self.cards)
+
+    def drawCompare(self,screen,gametime):
+        """Couldn't use the super draw b/c of current name being drawn elsewhere"""
+        if self.currentRun in self.pastRuns:
+            self.pastRuns.remove(self.currentRun)
+        self.selectedRun = None if self.vertScroll.getCard() == None else self.vertScroll.getCard().runObj# gets the selected run
+        drawCenterTxt(screen,self.currentRun.name,85,(200,200,200),(932,110),centerY=False)
+        self.drawPieChart(screen)
+        self.drawVertScroll(screen)
+        self.drawRunInfo(screen,gametime)
+        self.drawBarGraphs(screen)
+
+    def drawUnlock(self,screen):
+        self.uStringScroll.draw(screen)
+        if self.uStringScroll.getCard() == None:
+            # drawCenterTxt(screen,"No Unlock Selected",65,(210, 50, 50),(1015,260),centerY=False)
+            pygame.draw.rect(screen,(0,0,0),(200,210,1200,275),5,10)# box for the explanation 
+            txt = "There are Unlocks and Upgrades on the right. Unlocks allow you to access new parts of the game, and upgrades enhance your experience. Some unlocks/upgrades are based on networth and will be automatically unlocked, but others must be purchased with cash."
+            for i,txt in enumerate(separate_strings(txt,4)):
+                drawCenterTxt(screen,txt,55,(200,200,200),(800,220+i*50),centerY=False)
+                
+            drawCenterTxt(screen,"Select an unlock/upgrade to see more information",65,(210, 50, 50),(800,500),centerY=False)
+
+            self.networthGraph.drawFull(screen,(200,560),(590,400),"Networth Graph",True,"")
+            self.cashGraph.drawFull(screen,(810,560),(590,400),"Cash Graph",True,"")
+
+            # pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
+        else:
+            currentCard = self.uStringScroll.getCard()
+            uString = currentCard.uString
+            pygame.draw.rect(screen,(0,0,0),(750,210,700,370),5,10)# box for the explanation 
+
+            
+            cost = self.currentRun.getNextCost(uString)
+            costTxt = "Maxed" if cost == None else f"${limit_digits(cost,30,True)}"
+            if self.currentRun.getNetOrCash(uString) == "Networth":
+                self.networthGraph.drawFull(screen,(200,210),(540,370),uString,True,"")
+                
+                infolist = [("Requires",costTxt),("Current",self.currentRun.getCurrValStr(uString)),("Grants",f"{self.currentRun.getNextGrantStr(uString)}")]
+            else:
+                self.cashGraph.drawFull(screen,(200,210),(540,370),uString,True,"")
+
+                level = "Enabled"# if the uString is an unlock
+                if uString in self.currentRun.upgrades:# if the uString is an upgrade
+                    level = f"Level {self.currentRun.upgrades[uString]+2}"
+                infolist = [("Cost",costTxt),("Current",self.currentRun.getCurrValStr(uString)),("Grants",f"{self.currentRun.getNextGrantStr(uString)}"),("Next Lvl",level)]
+            
+            pygame.draw.rect(screen,(0,0,0),(195,585,550,380),5,10)
+            drawLinedInfo(screen,(200,585),(540,380),infolist,50,color=(200,200,200))
+        
+
+    def draw(self, screen, gametime):
+        self.menuSelect.draw(screen)
+        if self.menuSelect.getSelected() == "Unlock":
+            self.drawUnlock(screen)
+        else:
+            self.drawCompare(screen,gametime)
+        
     def drawRunInfo(self,screen,gametime):
         infoList = [
             (f"Mode",f"{self.currentRun.gameMode}"),
             (f"Rank",f"{self.currentRun.getRankStr()}"),
-            (f"Networth Unlock",f"{self.currentRun.nextUnlock("Networth")}"),
-            (f"Paid for Unlock",f"{self.currentRun.nextUnlock("Paid")}"),
+            # (f"Networth Unlock",f"{self.currentRun.nextUnlock("Networth")}"),
+            # (f"Paid for Unlock",f"{self.currentRun.nextUnlock("Paid")}"),
             (f"Start Date",f"{self.currentRun.getFormattedStartTime()}"),
         ]
         
         modeColors = {['Career','Blitz','Goal'][i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
         
         rankColor = (200,200,200) if self.currentRun.getRankInt() > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][self.currentRun.getRankInt()-1]
-        colors = [modeColors[self.currentRun.gameMode],rankColor,(0, 170, 170),(0, 170, 170),(200,200,200)]
-        pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
-        drawLinedInfo(screen,(200,185),(490,380),infoList,45,colors=colors)
+        # colors = [modeColors[self.currentRun.gameMode],rankColor,(0, 170, 170),(0, 170, 170),(200,200,200)]
+        colors = [modeColors[self.currentRun.gameMode],rankColor,(200,200,200)]
+        pygame.draw.rect(screen,(0,0,0),(195,205,500,350),5,10)
+        drawLinedInfo(screen,(200,205),(490,360),infoList,45,colors=colors)

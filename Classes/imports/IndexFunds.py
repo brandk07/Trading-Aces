@@ -6,9 +6,9 @@ from Classes.BigClasses.Stock import Stock
 
 
 class TotalMarket(Stock):
-    def __init__(self,gametime,stocklist,gameRun) -> None:
+    def __init__(self,gametime,stocklist,gameRun,player) -> None:
         # name,volatility,color,gametime
-        super().__init__('Total',(213, 219, 44),gametime,0,gameRun)
+        super().__init__('Total',(213, 219, 44),gametime,0,gameRun,player)
         self.stocks = stocklist.copy()
         self.combinStocks = stocklist.copy()# the stocks that are combined to make the total market
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
@@ -76,9 +76,9 @@ class TotalMarket(Stock):
 from collections import deque
 
 class IndexFund(Stock):
-    def __init__(self,gametime,fundName:str,color:tuple,combinationStocks:list,gameRun) -> None:
+    def __init__(self,gametime,fundName:str,color:tuple,combinationStocks:list,gameRun,player) -> None:
         # name,volatility,color,gametime
-        super().__init__(fundName,color,gametime,0,gameRun)
+        super().__init__(fundName,color,gametime,0,gameRun,player)
         # self.stocks = stocks
         self.combinStocks = combinationStocks# the stocks that are combined to make the index Fund
         # self.graphs = {key:np.array([],dtype=object) for key in self.graphrangeoptions.keys()}#the lists for each graph range
