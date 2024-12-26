@@ -51,9 +51,9 @@ class CreateMenu:
             "Goal": "Reach specific financial targets within set timeframes."
         }
         extraDescriptions = {
-            "Blitz": ["• 1M to 5Y time frame","• All stocks are twice as volatile","• Maximize ending net worth"],
-            "Career": ["• Unlimited time","• Unlockable trading methods","• Grow your net worth over time"],
-            "Goal": ["• Unlimited Time","• Reach specific financial targets","• Achieve goals as fast as possible"]
+            "Blitz": ["1M to 5Y time frame","All stocks are twice as volatile","Maximize ending net worth"],
+            "Career": ["Unlimited time","Unlockable trading methods","Grow your net worth over time"],
+            "Goal": ["Unlimited Time","Reach specific financial targets","Achieve goals as fast as possible"]
         }
         for i in range(3):
             color = (0,0,0) if self.gameModes[i] != self.mode else self.modeColors[self.mode]
@@ -63,9 +63,15 @@ class CreateMenu:
             for j,txt in enumerate(separate_strings(descriptions[self.gameModes[i]],2)):# draws the quick description of the mode
                 drawCenterTxt(screen,txt,40,color,(1380,140+(i*330)+(j*40)),centerX=False,centerY=False)
 
-            color = (0,0,0) if self.gameModes[i] != self.mode else (59, 171, 22)
+            # color = (0,0,0) if self.gameModes[i] != self.mode else (59, 171, 22)
+            color = (0,0,0) if self.gameModes[i] != self.mode else (0, 130, 0)
             for j,txt in enumerate(extraDescriptions[self.gameModes[i]]):# draws the extra info about the mode
                 drawCenterTxt(screen,txt,35,color,(1400,220+(i*330)+(j*35)),centerX=False,centerY=False)
+
+            if pygame.Rect(1360,65+(i*330),395,330).collidepoint(*pygame.mouse.get_pos()) and mouseButton.getButton("left"):
+                self.mode = self.gameModes[i]  
+                self.modeselectionBar.setSelected(self.mode)
+
 
         drawCenterTxt(screen,"Mode Info",65,(0,0,0),(1360+395/2,15),centerX=True,centerY=False)
 
@@ -109,7 +115,7 @@ class CreateMenu:
         if self.mode == 'Blitz':
             if self.customizeBar.getSelected() == None:
                 self.haveError = True
-                drawCenterTxt(screen,"-Must select a time period for Blitz Mode",40,(210,0,0),(730,665),centerX=False,centerY=False)
+                drawCenterTxt(screen,"-Must select a time period for Blitz Mode",40,(220,0,0),(730,665),centerX=False,centerY=False)
 
             drawCenterTxt(screen,"Time Period",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
             self.customizeBar.draw(screen,['1M','1Y','5Y'],(730,595),(600,60))
@@ -123,7 +129,7 @@ class CreateMenu:
         elif self.mode == 'Goal':
             if self.customizeBar.getSelected() == None:
                 self.haveError = True
-                drawCenterTxt(screen,"-Must select a financial target for Goal Mode",40,(210,0,0),(730,665),centerX=False,centerY=False)
+                drawCenterTxt(screen,"-Must select a financial target for Goal Mode",40,(220,0,0),(730,665),centerX=False,centerY=False)
 
             drawCenterTxt(screen,"Financial Target",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
             self.customizeBar.draw(screen,['100k','500k','1 Mil'],(730,595),(600,60))

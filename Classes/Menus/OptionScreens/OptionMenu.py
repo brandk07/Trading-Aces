@@ -168,7 +168,7 @@ class Optiontrade(Menu):
             f"{self.selectOption.daysToExpiration()}",
             f"{limit_digits(stock.dividendYield,12)}%",
             f"{limit_digits(stock.getVolatility()*100,12)}%",
-            f"{limit_digits(getAllo(self.selectOption.getValue()),12)}%"
+            f"{limit_digits(getAllo(self.selectOption.getValue()),17)}%"
         ]
         # info = {key:value for key,value in zip(keys,values)}
         info = [(string,value) for string,value in zip(strings,values)]

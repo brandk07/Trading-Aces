@@ -276,6 +276,7 @@ class UnlockUpgradeCard(ScrollCard):
         """Draws Everything onto the card's surface - Only needs to be called when data changes"""
         # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
         # self.surf.fill((60,60,60,120))
+        self.data = self.dataConfig()
         if wh == None:
             wh = self.wh
         self.surf = pygame.Surface(wh).convert_alpha()

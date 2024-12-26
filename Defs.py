@@ -560,13 +560,18 @@ def drawBoxedLines(screen,coords:tuple,txt:str,linesNum:int,txtSize:int,color:tu
 
     
 
-def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsize,color=None,colors=None,middleData=None,diffSizes=None):
+def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsize,color=None,colors=None,middleData=None,diffSizes=None,border=False):
     """Draws the info in infoList [str (left side), value:int/str (right side)], in the box at coord with width and height wh
     Diff sizes can be a tuple containing the sizes of the left and right side text"""
     if middleData != None:
         assert len(infoList) == len(middleData), 'The middleData must be the same length as the infoList'
     if color == None and colors == None:
         color = (255,255,255)
+    if border:
+        assert type(border) == int, 'Border must be an int'
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coord,wh), width=border)
+    coord = (coord[0]+10,coord[1]+10)
+    wh = (wh[0]-20,wh[1]-20)
 
     sep = wh[1]//len(infoList)
     x,y = coord
@@ -574,13 +579,15 @@ def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsi
     for i, (string,value) in enumerate(infoList):
         newY = y+(i*sep)
         color = color if colors == None else colors[i]
-        screen.blit(s_render(string,txtsize if not diffSizes else diffSizes[0],color),(x+10,newY))# display the string on the left
+        # screen.blit(s_render(string,txtsize if not diffSizes else diffSizes[0],color),(x+10,newY))# display the string on the left/
+        drawCenterTxt(screen,string,txtsize,color,(x+10,newY),centerX=False,centerY=True)
         valueText = s_render(str(value),txtsize if not diffSizes else diffSizes[1],color)# render the value
-        screen.blit((valueText),(x+wh[0]-valueText.get_width()-10,newY))
+        # screen.blit((valueText),(x+wh[0]-valueText.get_width()-10,newY))
+        drawCenterRendered(screen,valueText,(x+wh[0]-10,newY),centerX=False,centerY=True,fullX=True)
         if middleData != None and middleData[i] != "":
-            drawCenterTxt(screen,middleData[i],txtsize,color,(x+wh[0]//2,newY),centerX=True,centerY=False)
+            drawCenterTxt(screen,middleData[i],txtsize,color,(x+wh[0]//2,newY),centerX=True,centerY=True)
         if i != len(infoList)-1:
-            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x, newY+(sep/2)*1.2, wh[0], 3))
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(x, newY+(sep/2), wh[0], 3))
 
 def drawLinedInfoBigColored(screen,coord:tuple,wh:tuple,infoListL:list,infoListR:list,sizeLg:int,sizeSm:int,colors:list):
     """Displays two lists with str1,value1 on left and str2,value2 on right

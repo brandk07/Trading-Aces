@@ -7,6 +7,7 @@ from pygame import gfxdraw
 import numpy as np
 from datetime import datetime, timedelta
 from Classes.AssetTypes.LoanAsset import LoanAsset
+from Classes.BigClasses.RunTypes import CareerRun
 # from Classes.AssetTypes.
 # from Classes.imports.Messages import OptionMessage
 class CashStock(Stock):
@@ -97,26 +98,14 @@ class Player(Stock):
         for option in self.options:
             option.getValue(bypass=True)
         for i in range(len(self.options)-1,-1,-1):
-            # print("Option has expired")
             if not self.options[i].optionLive():
-                # for menu in menuList:
-                #     menu.drawn = False
-                # menuList[2].drawn = True# draw the options menu
                 self.screenManager.setScreen('Options')
                 self.screenManager.screens['Options'].forceExerciseOption(self.options[i])
                 
-                # print("Option has expired for the player")
+
         for stock in stocklist:
             stock.updateDividendYield(gametime)
-                # if not bigMessageList:
-                    # bigMessageList.append(OptionMessage(self.options[i]))
-            # self.options.pop(i)
-            # print(self.options[i].name,self.options[i].daysToExpiration(gametime.time))
-            # if self.options[i].daysToExpiration() <= 0:
-            #     self.options[i].option.t = 0
-            #     self.cash += self.options[i].option.getPrice(method="BSM",iteration=1)*self.options[i].quantity
-            #     self.options.pop(i)
-        # print('new day')
+
         
     def payDividend(self,stockObj=None,indexFundObj=None):
         """Pays the dividend to the player, called by the stock/index object when it reaches a new quarter/Month
@@ -133,9 +122,9 @@ class Player(Stock):
                 text = [
                     f"{self.gametime.getDate()}",
                     f"Received Dividend from {stockObj.name}",
-                    f"+${limit_digits(amt,15)}",
+                    f"+${limit_digits(amt,20)}",
                     f"{round(stockObj.dividendYield/4,2)}%",
-                    f"${limit_digits(self.cash,15)}"
+                    f"${limit_digits(self.cash,20)}"
                 ]
                 self.transact.addTransaction(*text)
 
@@ -149,9 +138,9 @@ class Player(Stock):
                 text = [
                     f"{self.gametime.getDate()}",
                     f"Received Dividend from {indexFundObj.name}",
-                    f"+${limit_digits(amt,15)}",
+                    f"+${limit_digits(amt,20)}",
                     f"{round(indexfund.getDividendYield()/12,2)}%",
-                    f"${limit_digits(self.cash,15)}"
+                    f"${limit_digits(self.cash,20)}"
                 ]
                 self.transact.addTransaction(*text)
 
@@ -194,10 +183,10 @@ class Player(Stock):
             
             text = [
                 f"{self.gametime.getDate()}",
-                f"Added {limit_digits(newasset.quantity,15,True)} {newasset.getStockObj().name} {newasset.getType() if type(newasset) == OptionAsset else ''} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
-                f"-${limit_digits(newasset.getValue(bypass=True),15)}",
-                f"${limit_digits(value,15)}",
-                f"${limit_digits(self.cash-newasset.getValue(bypass=True),15)}"
+                f"Added {limit_digits(newasset.quantity,20,True)} {newasset.getStockObj().name} {newasset.getType() if type(newasset) == OptionAsset else ''} {self.assetText[type(newasset)]+('s' if newasset.quantity > 1 else '')}",
+                f"-${limit_digits(newasset.getValue(bypass=True),20)}",
+                f"${limit_digits(value,20)}",
+                f"${limit_digits(self.cash-newasset.getValue(bypass=True),20)}"
             ]
             self.transact.addTransaction(*text)
             soundsDict = {StockAsset:"buyStock",OptionAsset:"buyOption",IndexFundAsset:"buyStock"}
@@ -244,10 +233,10 @@ class Player(Stock):
         soundEffects['sellGain' if loss_gain > 0 else 'sellLoss'].play()
         text = [
             f"{self.gametime.getDate()}",
-            f"Sold {limit_digits(quantity,15,True)} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
-             f"+${limit_digits(value,15)}",
-            f"{'-' if loss_gain < 0 else '+'} ${limit_digits(abs(loss_gain),15) if loss_gain != 0 else '0'}",
-            f"${limit_digits(self.cash+value,15)}"
+            f"Sold {limit_digits(quantity,20,True)} {asset.name} {self.assetText[type(asset)]+('s' if quantity > 1 else '')}",
+             f"+${limit_digits(value,20)}",
+            f"{'-' if loss_gain < 0 else '+'} ${limit_digits(abs(loss_gain),20) if loss_gain != 0 else '0'}",
+            f"${limit_digits(self.cash+value,20)}"
         ]
         self.transact.addTransaction(*text)
         value = asset.getValue(bypass=True,fullvalue=False)*quantity*feePercent
@@ -272,7 +261,7 @@ class Player(Stock):
             f"Removed {asset.getQuantity()} {asset.name} {self.assetText[type(asset)]+('s' if asset.getQuantity() > 1 else '')}",
             f"0",
             f"-{asset.ogValue*asset.getQuantity()}",
-            f"${limit_digits(self.cash,15)}"
+            f"${limit_digits(self.cash,20)}"
         ]
         soundEffects['sellLoss'].play()
         self.transact.addTransaction(*text)
@@ -289,9 +278,9 @@ class Player(Stock):
             text = [
                 f"{self.gametime.getDate()}",
                 f"Executed {optionObj.getQuantity()} {optionObj.stockObj.name} Option{'s' if optionObj.getQuantity() != 1 else ''}",
-                f"-${limit_digits(cost,15)}",
+                f"-${limit_digits(cost,20)}",
                 f"+{limit_digits(quantity*100,20,True)} Share of {optionObj.stockObj.name}",
-                f"${limit_digits(self.cash,15)}"
+                f"${limit_digits(self.cash,20)}"
             ]
             self.transact.addTransaction(*text)
             soundEffects['buyStock'].play()
@@ -313,15 +302,35 @@ class Player(Stock):
             text = [
                 f"{self.gametime.getDate()}",
                 f"Executed {optionObj.getQuantity()} {optionObj.stockObj.name} Option{'s' if optionObj.getQuantity() != 1 else ''}",
-                f"+${limit_digits(value,15)}",
+                f"+${limit_digits(value,20)}",
                 f"-{limit_digits(quantity*100,20,True)} Shares of {optionObj.stockObj.name}",
-                f"${limit_digits(self.cash,15)}"
+                f"${limit_digits(self.cash,20)}"
             ]
             self.transact.addTransaction(*text)
             soundEffects['sellGain'].play()
             optionObj.quantity -= quantity
             if optionObj.getQuantity() == 0:
                 self.options.remove(optionObj)
+    
+    def purchaseCareerUpgrade(self,uString:str,careerRun:CareerRun):
+        """Purchases the career upgrade"""
+        cost = careerRun.getNextCost(uString)
+
+        if self.cash >= cost:
+            self.cash -= cost
+            text = [
+                f"{self.gametime.getDate()}",
+                f"Purchased {uString}",
+                f"-${limit_digits(cost,20)}",
+                f"N/A",
+                f"${limit_digits(self.cash,20)}"]
+            careerRun.advanceUpgradeOrUnlock(uString)
+            self.transact.addTransaction(*text)
+            soundEffects['buyStock'].play()
+        else:
+            soundEffects['error'].play()
+            errors.addMessage('Not Enough Cash',txtSize=100,coords=[960,540])
+
     def updateRunAssetSpread(self):
         """updates the asset spread of the game run"""
         self.gameRun.updateAssetSpread([sum([asset.getValue() for asset in self.stocks]),sum([asset.getValue() for asset in self.options]),sum([asset.getValue() for asset in self.indexFunds]),self.cash,self.getCurrentDebt()])

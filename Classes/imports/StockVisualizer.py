@@ -143,8 +143,8 @@ class StockVisualizer:
                     gfxdraw.line(screen,x2,coords[1]+wh[1]-5,x2,coords[1]+5,(255,255,255))
                     gfxdraw.filled_circle(screen,x1,int(graphpoints[int(pos1)]),5,(255,255,255))
                     gfxdraw.filled_circle(screen,x2,int(graphpoints[int(pos2)]),5,(255,255,255))
-                    amtTxt = f'${limit_digits(amtChange,12,abs(amtChange) > 1000)}'
-                    pTxt = f'{limit_digits(percentChange,12)}%'
+                    amtTxt = f'${limit_digits(amtChange,17,abs(amtChange) > 1000)}'
+                    pTxt = f'{limit_digits(percentChange,17,abs(percentChange)>1000)}%'
                     # amtChangeTxt = s_render(,60,color)
                     # percentChangeTxt = s_render(f'{limit_digits(percentChange,12)}%',60,color)
                     valsTxt = s_render(f'{"+" if amtChange > 0 else ""}{amtTxt} ({pTxt})',55,color)
@@ -204,7 +204,7 @@ class StockVisualizer:
             #gets the position of the point in the graphingpoints (the y values) - the sorted list moves the points around so the index of the point is different
             # yvalpos = np.where(self.stockObj.graphs[truegraphrange] == point)[0][0]
 
-            txt = str(limit_digits(point,13,point > 1000))
+            txt = str(limit_digits(point,17,point > 1000))
             size = getTSizeNums(txt,blnkspacex-12)
             # print(size)
             txt = s_render(txt,size,(255,255,255))
@@ -335,7 +335,8 @@ class StockVisualizer:
             pygame.draw.rect(screen,(0,0,0),pygame.Rect(x-10-newW//2,y-10,newW+20,newH+20),border_radius=10)
             # screen.blit(name,(x,y))
             drawCenterRendered(screen,otherName,(x,y),centerY=False)
-            if pygame.Rect(x-10,y-10,newW+20,newH+20).collidepoint(pygame.mouse.get_pos()):
+
+            if pygame.Rect(x-10-newW//2,y-10,newW+20,newH+20).collidepoint(pygame.mouse.get_pos()):# if the mouse is over the name of the stock
                 if mouseButton.getButtonOveride('left'):
                     soundEffects['generalClick'].play()
                     self.setStockObj(stock)
@@ -351,13 +352,13 @@ class StockVisualizer:
         # Setting variables that are used in all presets
         percent = self.stockObj.getPercent(graphrange)
         percentColor = p3choice((175,0,0),(0,175,0),(175,175,175),percent)
-        percentTxt = limit_digits(percent,24)
+        percentTxt = limit_digits(percent,24,abs(percent) > 1000)
         change_text = p3choice(f'{percentTxt}%',f'+{percentTxt}%',f'{percentTxt}%',percent)
         swappable = False
         if preset in ["hoverName","swap"]:# if it is a preset that allows for the stock to be swapped 
             swappable = True
         blnkspacex = ((coords[0]+wh[0]-coords[0])//10)# Giving blankspace for the graph
-        pricetext = s_render(f"${limit_digits(self.stockObj.price,15,(self.stockObj.price > 1000))}", 45 if 45 > int((coords[1]+wh[1]-coords[1])/12.5) else int((coords[1]+wh[1]-coords[1])/12.5), (200,200,200))
+        pricetext = s_render(f"${limit_digits(self.stockObj.price,17,(self.stockObj.price > 1000))}", 45 if 45 > int((coords[1]+wh[1]-coords[1])/12.5) else int((coords[1]+wh[1]-coords[1])/12.5), (200,200,200))
         pricex = coords[0]+wh[0]/2-pricetext.get_width()/2; pricey = coords[1]+wh[1]-pricetext.get_height()-15# the x and y position of the price text
         change_text_rendered = s_render(change_text, 40, percentColor)# rendering the percent change         
         nametext = s_render(f"{self.stockObj.name}",50,self.stockObj.color)# rendering the name of the stock

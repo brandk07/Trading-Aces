@@ -100,6 +100,57 @@ class TimeBar(Bar):
             errors.addMessage("Time Frozen")
         return n
 
+class ProgressBar():
+    def __init__(self,wh,color=(0,255,0),txtsize=45) -> None:
+        self.progress : float|int = 0
+        self.wh = wh
+        self.color = color
+        self.txtSize = txtsize
+        self.barSurf = pygame.Surface((wh[0],wh[1])).convert_alpha()
+        self.barSurf.fill((0,0,0,0))
+        self.baseSurf = self.barSurf.copy().convert_alpha()# base surf is draw over the bar surf to reset the bar surf each time it needs to be updated
+        self.changedVal = True
+
+        drawBoxedImage(self.baseSurf,(0,0),self.createBaseSurf(color),borderRadius=20)# draws the rounded gradient to the base surface
+        self.barSurf.blit(self.baseSurf,(0,0))# blit the base surface to the bar surface
+        drawCenterTxt(self.barSurf,f"{round(self.progress,2)}%",self.txtSize,(0,0,0),(10,self.wh[1]*.5),centerX=False)
+
+    def setProgress(self,progress:int|float):
+        """Progress should be a number 0,100"""
+        self.progress = progress
+        self.changedVal = True
+
+    def createBaseSurf(self, gradient_start):
+        surf = self.baseSurf.copy()
+        numLines = int(self.wh[0] * (self.progress/100))
+        
+        for i in range(numLines):
+            percent = i / self.wh[0]
+            
+            color = (
+                int(220 - ((220 - gradient_start[0]) * percent)),
+                int(220 - ((220 - gradient_start[1]) * percent)),
+                int(220 - ((220 - gradient_start[2]) * percent))
+            )
+            
+            color = tuple(max(0, min(255, c)) for c in color)
+            
+            pygame.draw.line(surf, color, (i, 0), (i, self.wh[1]))
+        return surf
+            
+
+    def redraw(self):
+        self.barSurf.fill((0,0,0,0))
+        drawBoxedImage(self.barSurf,(0,0),self.createBaseSurf(self.color),borderRadius=20)# draws the rounded gradient to the base surface
+        drawCenterTxt(self.barSurf,f"{round(self.progress,2)}%",self.txtSize,(0,0,0),(10,self.wh[1]*.5),centerX=False)# draw the value of the bar
+        pygame.draw.rect(self.barSurf,(0,0,0),pygame.Rect(0,0,self.wh[0],self.wh[1]),width=5,border_radius=20)# redraw the border (self.baseSurf has one, but it get drawn over sometimes)
+    
+    def drawBar(self,screen,coords):
+
+        if self.changedVal:# if the value changed or the extra text is not empty
+            self.redraw()
+        screen.blit(self.barSurf,coords)
+        self.changedVal = False
 # def barpos(points:list,wh:int,xy:int,maxspeed:int,gamespeed:int,barwh:int,horizontal=True,reverse=False):
 #     """wh is width or height of the bar, xy is the x or y position of the bar"""
 #     mousex,mousey = pygame.mouse.get_pos()

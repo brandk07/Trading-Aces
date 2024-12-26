@@ -7,6 +7,8 @@ from Classes.BigClasses.RunTypes import *
 from Classes.imports.UIElements.BarGraph import BarGraph
 from Classes.imports.UIElements.SelectionElements import MenuSelection
 from Classes.imports.StockVisualizer import StockVisualizer
+from Classes.imports.UIElements.OrderBox import OrderBox
+from Classes.imports.Bar import ProgressBar
 
 class GameModeMenu(Menu):
     def __init__(self,stocklist,player,pastRuns:dict,currentRun,gametime) -> None:
@@ -166,6 +168,17 @@ class CareerScreen(BlitzAndGoalScreen):
         self.uStringScroll = VerticalScroll((1450,105),(450,850),(430,175))
         self.cards = [UnlockUpgradeCard(self.uStringScroll,self.currentRun,uString,player) for uString in self.currentRun.getAllUStrings()]
         self.uStringScroll.loadCards(self.cards)
+        self.orderBox = OrderBox((775,595),(675,375),gametime)
+        # self.progressBar = ProgressBar((675,140),txtsize=60)
+
+        self.uStringDesc : dict = {
+            "Asset Storage" : "Increases the maximum amount of assets you can hold in portfolio.",
+            "Loan Interest" : "Decreases the interest rate on loans.",
+            "Max Loan Amount" : f"Increases the max amount of money you can borrow. (% of networth)",
+            "Tax Rate" : "Decreases the tax rate on all sales and other taxable actions.",
+            "Stock Reports" : "Allows you to see the stock reports.",
+            "Pre-Made Options" : "Allows you to trade options with pre-made options.",
+            "Custom Options" : "Allows you to trade and create custom made options."}
 
     def drawCompare(self,screen,gametime):
         """Couldn't use the super draw b/c of current name being drawn elsewhere"""
@@ -178,8 +191,84 @@ class CareerScreen(BlitzAndGoalScreen):
         self.drawRunInfo(screen,gametime)
         self.drawBarGraphs(screen)
 
+    def drawSelectedUstring(self,screen):
+        currentCard = self.uStringScroll.getCard()
+        uString = currentCard.uString
+
+        # pygame.draw.rect(screen,(0,0,0),(750,210,700,370),5,10)# box for the explanation 
+        pygame.draw.rect(screen,(0,0,0),(775,210,675,125),5,10)# box for the explanation
+
+        for i,txt in enumerate(separate_strings(self.uStringDesc.get(uString,"No Description"),2)):# Draws the description of the unlock/upgrade
+            drawCenterTxt(screen,txt,55,(200,200,200),(1100,225+i*50),centerY=False)
+
+        drawCenterTxt(screen,uString,95,(200,200,200),(1010,105),centerY=False)# draws the name of the unlock/upgrade
+        
+        requiredVal = self.currentRun.getNextCost(uString)
+        # costTxt = "Maxed" if cost == None else f"${limit_digits(cost,30,True)}"
+        
+        cashNet = self.currentRun.getNetOrCash(uString)
+        deficit = max(0,requiredVal-self.player.cash) if cashNet == "Cash" else max(0,requiredVal-self.currentRun.getNetworth())
+        # drawBoxedTextWH(screen,(775,345),(675,85),f"Cost :   ${limit_digits(cost,30,True)}",55,(200,200,200))
+        # drawBoxedTextWH(screen,(775,440),(675,85),f"Cash Needed :   ${limit_digits(neededCash,30,True)}",55,(200,200,200))
+        # make the color a gradient between a dark red and a dark green depeneding on how far away the needed cash is from zero (zero is dark green and over 100k is dark red)
+        def get_gradient_color(deficit: float) -> tuple:
+            """
+            Returns RGB color tuple that gradients from dark green (0) to dark red (100k+)
+            """
+            maxGreen = (0, 255, 0)  # RGB for dark green
+            maxRed = (255, 0, 0)    # RGB for dark red
+            maxDeficit = 100_000        # Maximum cash threshold
+            
+            # Calculate percentage (0.0 to 1.0)
+           
+            
+            # Interpolate between colors
+            if deficit > maxDeficit/2:# red
+                percent = min(deficit/maxDeficit, 1.0)
+                return (max(120,maxRed[0]*percent),0,0)
+            else:# green
+                percent = min((50_000-deficit)/(maxDeficit/2), 1.0)
+                return (0,max(120,maxGreen[1]*percent),0)
+
+        # Usage example:
+
+        # color = get_gradient_color(50000)  # Returns color halfway between dark green and dark red
+        # pygame.draw.rect(screen,(0,0,0),(775,345,675,85),5,10)# box below stock graph for lineddata
+        drawLinedInfo(screen,(775,345),(675,235),[(f"{cashNet} Needed",f"${limit_digits(requiredVal,30,True)}"),(f"Deficit",f"${limit_digits(deficit,30,True)}")],55,colors=[(200,200,200),get_gradient_color(deficit)],border=5)
+
+        level = "Enabled";buyTxt = f"Purchasing Unlock" # if the uString is an unlock
+        if uString in self.currentRun.upgrades:# if the uString is an upgrade
+            level = f"Level {self.currentRun.upgrades[uString]+2}"; buyTxt = f"Buying Upgrade"
+
+        drawBoxedTextWH(screen,(200,595),(565,85),f"Current :   {self.currentRun.getCurrValStr(uString)}",55,(200,200,200))
+        drawBoxedTextWH(screen,(250,685),(465,140),f"{self.currentRun.getNextGrantStr(uString)}",65,(200,200,200))
+        drawBoxedTextWH(screen,(250,830),(465,140),f"{level}",65,(200,200,200))
+        # pygame.draw.rect(screen,(0,0,0),(200,595,675,85),5,10)# box below stock graph for lineddata
+        # drawLinedInfo(screen,(200,595),(560,355),[("Current",self.currentRun.getCurrValStr(uString)),("Grants",f"{self.currentRun.getNextGrantStr(uString)}"),("Next Lvl",level)],55,color=(200,200,200),border=7)
+
+
+
+        if self.currentRun.getNetOrCash(uString) == "Networth":
+            self.networthGraph.drawFull(screen,(200,210),(565,370),uString,True,"")
+            # self.progressBar.setProgress((deficit/requiredVal)*100) 
+            # self.progressBar.drawBar(screen,(775,830))
+            
+            # infolist = [("Requires",costTxt),("Current",self.currentRun.getCurrValStr(uString)),("Grants",f"{self.currentRun.getNextGrantStr(uString)}")]
+        else:
+            self.cashGraph.drawFull(screen,(200,210),(565,370),uString,True,"")
+
+            self.orderBox.loadData(str(buyTxt),f"${limit_digits(requiredVal,24,True)}",[(uString,level,"")])
+            result = self.orderBox.draw(screen)
+            if result:
+                self.player.purchaseCareerUpgrade(uString,self.currentRun)
+                for card in self.cards:
+                    card.updateSurf()
+
+
     def drawUnlock(self,screen):
         self.uStringScroll.draw(screen)
+
+
         if self.uStringScroll.getCard() == None:
             # drawCenterTxt(screen,"No Unlock Selected",65,(210, 50, 50),(1015,260),centerY=False)
             pygame.draw.rect(screen,(0,0,0),(200,210,1200,275),5,10)# box for the explanation 
@@ -194,27 +283,12 @@ class CareerScreen(BlitzAndGoalScreen):
 
             # pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
         else:
-            currentCard = self.uStringScroll.getCard()
-            uString = currentCard.uString
-            pygame.draw.rect(screen,(0,0,0),(750,210,700,370),5,10)# box for the explanation 
+            self.drawSelectedUstring(screen)
+            
 
             
-            cost = self.currentRun.getNextCost(uString)
-            costTxt = "Maxed" if cost == None else f"${limit_digits(cost,30,True)}"
-            if self.currentRun.getNetOrCash(uString) == "Networth":
-                self.networthGraph.drawFull(screen,(200,210),(540,370),uString,True,"")
-                
-                infolist = [("Requires",costTxt),("Current",self.currentRun.getCurrValStr(uString)),("Grants",f"{self.currentRun.getNextGrantStr(uString)}")]
-            else:
-                self.cashGraph.drawFull(screen,(200,210),(540,370),uString,True,"")
 
-                level = "Enabled"# if the uString is an unlock
-                if uString in self.currentRun.upgrades:# if the uString is an upgrade
-                    level = f"Level {self.currentRun.upgrades[uString]+2}"
-                infolist = [("Cost",costTxt),("Current",self.currentRun.getCurrValStr(uString)),("Grants",f"{self.currentRun.getNextGrantStr(uString)}"),("Next Lvl",level)]
             
-            pygame.draw.rect(screen,(0,0,0),(195,585,550,380),5,10)
-            drawLinedInfo(screen,(200,585),(540,380),infolist,50,color=(200,200,200))
         
 
     def draw(self, screen, gametime):

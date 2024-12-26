@@ -56,7 +56,7 @@ class News():
         # screen.blit(self.prerendertext, (300, 820))
         report = self.stock.priceEffects.pastReports[0]
 
-        txt = f'{"Beat" if report.getPerf() > 0 else "Miss"} Expectations {"+" if report.getPerf() > 0 else ""}{limit_digits(report.getPerf(),15)}%'
+        txt = f'{"Beat" if report.getPerf() > 0 else "Miss"} Expectations {"+" if report.getPerf() > 0 else ""}{limit_digits(report.getPerf(),16)}%'
         drawCenterTxt(screen, txt, 50, (200, 0, 0) if report.getPerf() < 0 else (0,200,0), (1440, 715), centerX=False,centerY=False,fullX=True)
         
 

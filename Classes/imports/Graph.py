@@ -81,9 +81,9 @@ class Graph:
             
         else:
             minmaxsame = True
-            gfxdraw.line(self.surface,x,int(y+height),x+width-5,int(y+height),(255,255,255))#draws a line across the graph
+            gfxdraw.line(self.surface,x,int(y+height*.5),x+width-5,int(y+height*.5),(255,255,255))#draws a line across the graph
             spacing = width/len(self.graphpoints)#the spacing between each point
-            self.graphpoints = [y+height]*(width)#makes the graphingpoints a list of the same y value\
+            self.graphpoints = [y+height*.5]*(width)#makes the graphingpoints a list of the same y value\
         for i in range(len(self.graphpoints)):
             self.graphpoints[i] = self.graphpoints[i]+coords[1]
         self.lastSpacing,self.lastMinMaxSame = spacing,minmaxsame

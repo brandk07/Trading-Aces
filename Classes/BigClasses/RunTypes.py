@@ -173,14 +173,27 @@ class CareerRun(GameRun):
 
     def setSandboxMode(self):
         self.unlocks = {"Pre-Made Options" : True,"Custom Options" : True,"Stock Reports" : True}
-        self.upgrades = {"Asset Storage" : 5,"Loan Interest" : 5,"Max Loan Amount" : 5,"Tax Rate" : 5}
-    
+        self.upgrades = {"Asset Storage" : 4,"Loan Interest" : 4,"Max Loan Amount" : 4,"Tax Rate" : 4}
+    def getUpgradeOrUnlock(self,string:str):
+        """Returns whether the string (Upgrade or Unlock) is an upgrade or an unlock"""
+        assert string in list(self.unlocks.keys())+list(self.upgrades.keys()), "The string must be a key in the unlocks or upgrades"
+        if string in list(self.unlocks.keys()):
+            return "Unlock"
+        return "Upgrade"
     def getNetOrCash(self,string:str):
         """Returns whether the string (Upgrade or Unlock) is based on the networth or the cash"""
         assert string in list(self.unlocks.keys())+list(self.upgrades.keys()), "The string must be a key in the unlocks or upgrades"
         if string in ["Pre-Made Options","Custom Options","Max Loan Amount"]:
             return "Networth"
         return "Cash"
+
+    def advanceUpgradeOrUnlock(self,string:str):
+        """Advances the upgrade or gives the unlock"""
+        if self.isMaxed(string): return# if the upgrade is maxed out then return
+        if self.getUpgradeOrUnlock(string) == "Upgrade":# if the string is an upgrade
+            self.upgrades[string] += 1
+        else:# if the string is an unlock
+            self.unlocks[string] = True
     
     def verifyGameData(self,unlocks:dict,upgrades:dict):
         self.upgradesLevels = {
@@ -252,7 +265,7 @@ class CareerRun(GameRun):
         extraTxt = {
             "Asset Storage" : f"+2 items",
             "Loan Interest" : f"-1 loan interest",
-            "Max Loan Amount" : f"+20% Networth",
+            "Max Loan Amount" : f"+20% Max Loan",
             "Tax Rate" : f"-2.5 tax rate",
             "Stock Reports" : "Reports Enabled",
             "Pre-Made Options" : "Trading Enabled",

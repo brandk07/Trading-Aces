@@ -72,7 +72,7 @@ class Portfolio(Menu):
         get_text = lambda asset,secondtext : [f'{asset} ',
                                     # f"{limit_digits(asset[2],10,False)} Share{'' if asset[2] == 1 else 'self'}",
                                     secondtext,
-                                    f'${limit_digits(asset.getValue(),15)}',]
+                                    f'${limit_digits(asset.getValue(),17)}',]
         # getting the text for each asset
         textlist = [get_text(asset,secondtext) for [asset,secondtext] in sortedassets]# stores 3 texts for each asset in the sortedassets list
 
@@ -150,7 +150,7 @@ class Portfolio(Menu):
         """Draws the selected asset scroll"""
         asset,secondtext = asset
         
-        text = [f'{asset} ',secondtext,f'${limit_digits(asset.getValue(),15)}',f'{"+" if asset.getPercent() > 0 else ""}{limit_digits(asset.getPercent(),15)}%']
+        text = [f'{asset} ',secondtext,f'${limit_digits(asset.getValue(),17)}',f'{"+" if asset.getPercent() > 0 else ""}{limit_digits(asset.getPercent(),17)}%']
         polytexts = []# temporary list to store the text info for each asset
         polytexts.append([text[0],50,asset.color])
         polytexts.append([text[1],35,(190,190,190)])
@@ -217,7 +217,7 @@ class Portfolio(Menu):
         
         if type(asset) == OptionAsset:# Options need the extra fee
             value -= feeAmt
-            data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),15)}","x"),(f"{(player.taxrate*100)}% Tax", f"${limit_digits(taxedAmt,22)}","-"),(f"2% Option Fee", f"${limit_digits(feeAmt,22)}","-")]
+            data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),17)}","x"),(f"{(player.taxrate*100)}% Tax", f"${limit_digits(taxedAmt,22)}","-"),(f"2% Option Fee", f"${limit_digits(feeAmt,22)}","-")]
             self.orderBox.loadData(self.numpad.getNumstr(self.classtext[type(asset)]),f"${limit_digits(value,22)}",data)
  
         else:

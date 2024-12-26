@@ -35,7 +35,7 @@ class ScreenManager:
         
         
         # self.screenSelection.draw(screen,list(self.screens.keys()),(10,225),(170,415),colors=colors)
-        result = self.screenSelection.draw(screen,list(self.screens.keys()),(10,90),(170,415),colors=colors)
+        result = self.screenSelection.draw(screen,list(self.screens.keys()),(10,90),(170,440),colors=colors)
 
         self.selectedScreen = self.screenSelection.getSelected()
 
@@ -47,10 +47,10 @@ class ScreenManager:
         hour = ("0" if (timeStrs['hour']) < 10 else "")+str(timeStrs['hour'])
         # pygame.draw.rect(screen,(0,0,0),pygame.Rect(2,515,180,370),width=5)
 
-        drawCenterTxt(screen,hour,150,(200,200,200),(92,530),centerY=False)
-        drawCenterTxt(screen,f"{timeStrs['minute']}",150,(200,200,200),(92,650),centerY=False)
-        drawCenterTxt(screen,f"{timeStrs['dayname'][:3]} {timeStrs['monthname'][:3]} {timeStrs['day']}",50,(200,200,200),(92,765),centerY=False)
-        drawCenterTxt(screen,f"{timeStrs['year']}",80,(200,200,200),(92,820),centerY=False)
+        drawCenterTxt(screen,hour,150,(200,200,200),(92,550),centerY=False)
+        drawCenterTxt(screen,f"{timeStrs['minute']}",150,(200,200,200),(92,670),centerY=False)
+        drawCenterTxt(screen,f"{timeStrs['dayname'][:3]} {timeStrs['monthname'][:3]} {timeStrs['day']}",50,(200,200,200),(92,785),centerY=False)
+        drawCenterTxt(screen,f"{timeStrs['year']}",80,(200,200,200),(92,840),centerY=False)
         
     def drawCurrentScreen(self,screen,stocklist,player,gametime):
         self.drawSelector(screen)
