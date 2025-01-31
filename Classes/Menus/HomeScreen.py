@@ -16,7 +16,7 @@ class HomeScreen:
         self.newsobj = News(stocklist)
         self.speedBar : TimeBar = gametime.speedBar
         self.pieChart = PieChart((945,165),(520,530))
-        self.totalMarketGraph = StockVisualizer(gametime,tmarket,[tmarket,player])
+        self.totalMarketGraph = StockVisualizer(gametime,tmarket,[tmarket,player]+stocklist)
 
 
     def draw_time(self,screen,gametime):

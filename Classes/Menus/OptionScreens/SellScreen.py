@@ -17,6 +17,7 @@ class SellOptionScreen:
         self.screenSelection : SelectionBar = screenSelection# stores the screen selection object from the main game screen
         self.exerciseMenu : ExerciseOptionScreen = ExerciseOptionScreen(stocklist,gametime,player)
         self.orderBox = OrderBox((1030,615),(385,345),gametime)
+        self.displayedStocks = [StockVisualizer(gametime,stocklist[i],stocklist) for i in range(3)]# the stock visualizers for the stocks that are displayed
         
         self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
     def setSelectOption(self,option:OptionAsset):
@@ -145,9 +146,8 @@ class SellOptionScreen:
         drawCenterTxt(screen, 'Report Info', 65, (0, 0, 0), (1657, 695), centerY=False, fullY=True)
 
         daysTillNextR = stock.priceEffects.daysTillNextReport(gametime)
-        data = [("Quarterly Report In",f"{daysTillNextR} Day{'s' if daysTillNextR != 1 else ''}"),(f"Report Outlook",f"{round(stock.priceEffects.getQuarterlyLikelyhood(gametime),2)}%")]
-        drawLinedInfo(screen,(1425,705),(460,170),data,37,TXTCOLOR)
-        pygame.draw.rect(screen,(0,0,0),pygame.Rect(1425,705,465,170),5,10)
+        data = [("Quarterly Report in",f"{daysTillNextR} Day{'s' if daysTillNextR != 1 else ''}"),(f"Report Outlook",f"{round(stock.priceEffects.getQuarterlyLikelyhood(gametime),2)}%")]
+        drawLinedInfo(screen,(1425,705),(460,170),data,37,TXTCOLOR,border=5)
 
         
 
@@ -161,9 +161,17 @@ class SellOptionScreen:
 
 
             if self.selectOption == None:
-                pygame.draw.rect(screen,(0,0,0),pygame.Rect(670, 210, 675, 550),5,10)# box around the select an option
-                drawCenterTxt(screen, 'Select An Option', 80, (180, 180, 180), (1005, 225), centerY=False)
-                self.netWorthGraph.drawFull(screen, (1350,210),(550,550),"SellNetWorth",True,"Normal")
+                # pygame.draw.rect(screen,(0,0,0),pygame.Rect(670, 210, 675, 550),5,10)# box around the select an option
+                drawCenterTxt(screen, 'Select An Option', 80, (180, 180, 180), (1005, 210), centerY=False)
+                drawCenterTxt(screen, 'Once selected, It can be sold or exercised', 40, (180, 180, 180), (1005, 280), centerY=False)
+                drawCenterTxt(screen, 'None Selected', 100, (200, 200, 200), (1005, 590), centerY=False)
+
+                # self.netWorthGraph.drawFull(screen, (675,450),(715,425),"SellNetWorth",True,"Normal")
+
+                for i,stock in enumerate(self.displayedStocks):
+                    coords = (1400,100+(i*290))
+                    stock.drawFull(screen,coords,(500,285),f"PortfolioExtra{i}",True,"hoverName")
+
 
             self.drawOwnedOptions(screen)
             

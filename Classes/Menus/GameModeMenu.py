@@ -8,6 +8,7 @@ from Classes.imports.UIElements.BarGraph import BarGraph
 from Classes.imports.UIElements.SelectionElements import MenuSelection
 from Classes.imports.StockVisualizer import StockVisualizer
 from Classes.imports.UIElements.OrderBox import OrderBox
+from Classes.imports.UIElements.SelectionElements import SelectionBar
 from Classes.imports.Bar import ProgressBar
 
 class GameModeMenu(Menu):
@@ -161,24 +162,56 @@ class CareerScreen(BlitzAndGoalScreen):
         super().__init__(pastRuns,curentRun)
         self.currentRun : CareerRun = self.currentRun# just for type hinting
         self.player = player
-        self.menuSelect : MenuSelection = MenuSelection((200, 105), (375, 100),["Unlock","Compare"],45,colors=[(100,200,100),(200,100,100)])
+        self.menuSelect : MenuSelection = MenuSelection((200, 105), (375, 95),["Unlock","Compare"],45,colors=[(100,200,100),(200,100,100)])
         self.menuSelect.setSelected(0)
         self.cashGraph = StockVisualizer(gametime,player.cashStock,[player,player.cashStock])
         self.networthGraph = StockVisualizer(gametime,player,[player,player.cashStock])
-        self.uStringScroll = VerticalScroll((1450,105),(450,850),(430,175))
-        self.cards = [UnlockUpgradeCard(self.uStringScroll,self.currentRun,uString,player) for uString in self.currentRun.getAllUStrings()]
-        self.uStringScroll.loadCards(self.cards)
-        self.orderBox = OrderBox((775,595),(675,375),gametime)
+        self.uStringScroll = VerticalScroll((200,210),(450,750),(430,190))
+        # self.cards = [UnlockUpgradeCard(self.uStringScroll,self.currentRun,uString,player) for uString in self.currentRun.getAllUStrings()]
+        
+        self.orderBox = OrderBox((1390,635),(510,340),gametime)
+   
+
+        self.modeSelection : SelectionBar = SelectionBar(horizontal=True,rounded=5)
         # self.progressBar = ProgressBar((675,140),txtsize=60)
+        self.menuSpecficContent = {
+            "Portfolio" : ["Asset Storage"],
+            "Stockbook" : ["Stock Reports"],
+            "Options" : ["Pre-Made Options","Custom Options"],
+            "Bank" : ["Loan Interest","Max Loan Amount","Tax Rate"]
+        }
+        self.menuSpecficCards = {
+            "Portfolio" : [UnlockUpgradeCard(self.uStringScroll,self.currentRun,uString,player) for uString in self.menuSpecficContent["Portfolio"]],
+            "Stockbook" : [UnlockUpgradeCard(self.uStringScroll,self.currentRun,uString,player) for uString in self.menuSpecficContent["Stockbook"]],
+            "Options" : [UnlockUpgradeCard(self.uStringScroll,self.currentRun,uString,player) for uString in self.menuSpecficContent["Options"]],
+            "Bank" : [UnlockUpgradeCard(self.uStringScroll,self.currentRun,uString,player) for uString in self.menuSpecficContent["Bank"]]
+        }
+        self.menuColors = {
+            "Portfolio" : (239, 131, 84),
+            "Stockbook" : (86, 130, 189),
+            "Options" : (191, 85, 178),
+            "Bank" : (87, 167, 115)
+        }
+
+        # self.uStringDesc : dict = {
+        #     "Asset Storage" : "Increases the maximum amount of assets you can hold in portfolio.",
+        #     "Loan Interest" : "Decreases the interest rate on loans.",
+        #     "Max Loan Amount" : f"Increases the max amount of money you can borrow. (% of networth)",
+        #     "Tax Rate" : "Decreases the tax rate on all sales and other taxable actions.",
+        #     "Stock Reports" : "Allows you to see the stock reports.",
+        #     "Pre-Made Options" : "Allows you to trade options with pre-made options.",
+        #     "Custom Options" : "Allows you to trade and create custom made options."}
 
         self.uStringDesc : dict = {
-            "Asset Storage" : "Increases the maximum amount of assets you can hold in portfolio.",
-            "Loan Interest" : "Decreases the interest rate on loans.",
-            "Max Loan Amount" : f"Increases the max amount of money you can borrow. (% of networth)",
-            "Tax Rate" : "Decreases the tax rate on all sales and other taxable actions.",
-            "Stock Reports" : "Allows you to see the stock reports.",
-            "Pre-Made Options" : "Allows you to trade options with pre-made options.",
-            "Custom Options" : "Allows you to trade and create custom made options."}
+            "Asset Storage" : "Increases the maximum amount of assets you can hold in your portfolio. Each level allows you to diversify your investments further by expanding your storage capacity, letting you hold more unique stocks.",
+            "Loan Interest" : "Decreases the interest rate charged on all loans. Lower rates mean smaller monthly payments and more capital available for investing, making loans a more viable tool for expanding your trading capabilities.",
+            "Max Loan Amount" : "Increases the maximum amount of money you can borrow as a percentage of your total networth. Higher levels allow for larger loans, providing more leverage for when major trading opportunities arise.",
+            "Tax Rate" : "Decreases the tax rate applied to all sales and other taxable actions. Each level reduces the percentage taken from your profits, allowing you to keep more of your earnings from successful trades.",
+            "Stock Reports" : "Enables access to detailed stock analysis reports and market insights. These reports provide valuable information about stock performance, trends, and potential market movements to help inform your trading decisions.",
+            "Pre-Made Options" : "Unlocks the ability to trade pre-configured options contracts. This feature opens up new strategic possibilities through put and call options, allowing you to profit from both rising and falling markets.",
+            "Custom Options" : "Enables the creation and trading of custom-designed options contracts. This advanced feature gives you complete control over strike prices, expiration dates, and contract terms for maximum strategic flexibility."
+        }
+        
 
     def drawCompare(self,screen,gametime):
         """Couldn't use the super draw b/c of current name being drawn elsewhere"""
@@ -191,17 +224,20 @@ class CareerScreen(BlitzAndGoalScreen):
         self.drawRunInfo(screen,gametime)
         self.drawBarGraphs(screen)
 
-    def drawSelectedUstring(self,screen):
+    def drawSelectedUstring(self,screen,mode):
+        if self.uStringScroll.getCard() == None:
+            self.uStringScroll.setCard(obj=self.menuSpecficCards[mode][0])# sets the card to the first card if there is no card selected
+
         currentCard = self.uStringScroll.getCard()
         uString = currentCard.uString
 
         # pygame.draw.rect(screen,(0,0,0),(750,210,700,370),5,10)# box for the explanation 
-        pygame.draw.rect(screen,(0,0,0),(775,210,675,125),5,10)# box for the explanation
+        pygame.draw.rect(screen,(0,0,0),(655,350,730,280),5,10)# box for the explanation
 
-        for i,txt in enumerate(separate_strings(self.uStringDesc.get(uString,"No Description"),2)):# Draws the description of the unlock/upgrade
-            drawCenterTxt(screen,txt,55,(200,200,200),(1100,225+i*50),centerY=False)
+        for i,txt in enumerate(separate_strings(self.uStringDesc.get(uString,"No Description"),5)):# Draws the description of the unlock/upgrade
+            drawCenterTxt(screen,txt,46,(200,200,200),(1020,375+i*46),centerY=False)
 
-        drawCenterTxt(screen,uString,95,(200,200,200),(1010,105),centerY=False)# draws the name of the unlock/upgrade
+        drawCenterTxt(screen,uString,130,self.menuColors[mode],(1020,245),centerY=False)# draws the name of the unlock/upgrade
         
         requiredVal = self.currentRun.getNextCost(uString)
         # costTxt = "Maxed" if cost == None else f"${limit_digits(cost,30,True)}"
@@ -211,79 +247,103 @@ class CareerScreen(BlitzAndGoalScreen):
         # drawBoxedTextWH(screen,(775,345),(675,85),f"Cost :   ${limit_digits(cost,30,True)}",55,(200,200,200))
         # drawBoxedTextWH(screen,(775,440),(675,85),f"Cash Needed :   ${limit_digits(neededCash,30,True)}",55,(200,200,200))
         # make the color a gradient between a dark red and a dark green depeneding on how far away the needed cash is from zero (zero is dark green and over 100k is dark red)
-        def get_gradient_color(deficit: float) -> tuple:
-            """
-            Returns RGB color tuple that gradients from dark green (0) to dark red (100k+)
-            """
-            maxGreen = (0, 255, 0)  # RGB for dark green
-            maxRed = (255, 0, 0)    # RGB for dark red
-            maxDeficit = 100_000        # Maximum cash threshold
+        # def get_gradient_color(deficit: float) -> tuple:
+        #     """
+        #     Returns RGB color tuple that gradients from dark green (0) to dark red (100k+)
+        #     """
+        #     maxGreen = (0, 255, 0)  # RGB for dark green
+        #     maxRed = (255, 0, 0)    # RGB for dark red
+        #     maxDeficit = 100_000        # Maximum cash threshold
             
-            # Calculate percentage (0.0 to 1.0)
+        #     # Calculate percentage (0.0 to 1.0)
            
             
-            # Interpolate between colors
-            if deficit > maxDeficit/2:# red
-                percent = min(deficit/maxDeficit, 1.0)
-                return (max(120,maxRed[0]*percent),0,0)
-            else:# green
-                percent = min((50_000-deficit)/(maxDeficit/2), 1.0)
-                return (0,max(120,maxGreen[1]*percent),0)
+        #     # Interpolate between colors
+        #     if deficit > maxDeficit/2:# red
+        #         percent = min(deficit/maxDeficit, 1.0)
+        #         return (max(120,maxRed[0]*percent),0,0)
+        #     else:# green
+        #         percent = min((50_000-deficit)/(maxDeficit/2), 1.0)
+        #         return (0,max(120,maxGreen[1]*percent),0)
 
         # Usage example:
 
         # color = get_gradient_color(50000)  # Returns color halfway between dark green and dark red
         # pygame.draw.rect(screen,(0,0,0),(775,345,675,85),5,10)# box below stock graph for lineddata
-        drawLinedInfo(screen,(775,345),(675,235),[(f"{cashNet} Needed",f"${limit_digits(requiredVal,30,True)}"),(f"Deficit",f"${limit_digits(deficit,30,True)}")],55,colors=[(200,200,200),get_gradient_color(deficit)],border=5)
+        requirestxt = "Cost" if cashNet == "Cash" else "Networth Required"
+        # drawCenterTxt(screen,f"{requirestxt}",55,(200,200,200),(655,645),centerX=False,centerY=False)
+        # drawCenterTxt(screen,f"${limit_digits(requiredVal,30,True)}",55,(200,200,200),(1380,645),centerX=False,centerY=False,fullX=True)
 
+        # drawCenterTxt(screen,f"{self.currentRun.getNextGrantStr(uString)}",55,(200,200,200),(655,715),centerX=False,centerY=False)
+        infolist = [(f"{requirestxt}",f"${limit_digits(requiredVal,30,True)}"),(f"Current Lvl",self.currentRun.getCurrValStr(uString)),(f"Grants",f"{self.currentRun.getNextGrantStr(uString)}")]
+        drawLinedInfo(screen,(650,640),(730,330),infolist,55,middleData=["-","-","-"],color=(170,170,170),border=5)
+
+
+        # drawLinedInfo(screen,(775,345),(675,235),[(f"{cashNet} Needed",f"${limit_digits(requiredVal,30,True)}"),(f"Deficit",f"${limit_digits(deficit,30,True)}")],55,colors=[(200,200,200),get_gradient_color(deficit)],border=5)
+
+        # Used stuff from 
         level = "Enabled";buyTxt = f"Purchasing Unlock" # if the uString is an unlock
         if uString in self.currentRun.upgrades:# if the uString is an upgrade
             level = f"Level {self.currentRun.upgrades[uString]+2}"; buyTxt = f"Buying Upgrade"
 
-        drawBoxedTextWH(screen,(200,595),(565,85),f"Current :   {self.currentRun.getCurrValStr(uString)}",55,(200,200,200))
-        drawBoxedTextWH(screen,(250,685),(465,140),f"{self.currentRun.getNextGrantStr(uString)}",65,(200,200,200))
-        drawBoxedTextWH(screen,(250,830),(465,140),f"{level}",65,(200,200,200))
+
+        # drawBoxedTextWH(screen,(200,595),(565,85),f"Current :   {self.currentRun.getCurrValStr(uString)}",55,(200,200,200))
+        # drawBoxedTextWH(screen,(250,685),(465,140),f"{self.currentRun.getNextGrantStr(uString)}",65,(200,200,200))
+        # drawBoxedTextWH(screen,(250,830),(465,140),f"{level}",65,(200,200,200))
+
+
         # pygame.draw.rect(screen,(0,0,0),(200,595,675,85),5,10)# box below stock graph for lineddata
         # drawLinedInfo(screen,(200,595),(560,355),[("Current",self.currentRun.getCurrValStr(uString)),("Grants",f"{self.currentRun.getNextGrantStr(uString)}"),("Next Lvl",level)],55,color=(200,200,200),border=7)
 
 
 
         if self.currentRun.getNetOrCash(uString) == "Networth":
-            self.networthGraph.drawFull(screen,(200,210),(565,370),uString,True,"")
+            self.networthGraph.drawFull(screen,(1390,220),(510,410),uString,True,"")
             # self.progressBar.setProgress((deficit/requiredVal)*100) 
             # self.progressBar.drawBar(screen,(775,830))
             
             # infolist = [("Requires",costTxt),("Current",self.currentRun.getCurrValStr(uString)),("Grants",f"{self.currentRun.getNextGrantStr(uString)}")]
         else:
-            self.cashGraph.drawFull(screen,(200,210),(565,370),uString,True,"")
+            self.cashGraph.drawFull(screen,(1390,220),(510,410),uString,True,"")
 
             self.orderBox.loadData(str(buyTxt),f"${limit_digits(requiredVal,24,True)}",[(uString,level,"")])
             result = self.orderBox.draw(screen)
             if result:
                 self.player.purchaseCareerUpgrade(uString,self.currentRun)
-                for card in self.cards:
+                for card in self.menuSpecficCards[mode]:
                     card.updateSurf()
 
 
     def drawUnlock(self,screen):
+
+        # menuNames = ["Portfolio","Options","Bank","Stockbook"]
+
+        # for menu in menuNames:
+        self.modeSelection.draw(screen,["Portfolio","Stockbook","Options","Bank"],(585,105),(1300,95),colors=list(self.menuColors.values()),txtsize=55)
+
+        mode = self.modeSelection.getSelected()
+
+        self.uStringScroll.loadCards(self.menuSpecficCards[mode])
         self.uStringScroll.draw(screen)
 
+        self.drawSelectedUstring(screen,mode)
 
-        if self.uStringScroll.getCard() == None:
-            # drawCenterTxt(screen,"No Unlock Selected",65,(210, 50, 50),(1015,260),centerY=False)
-            pygame.draw.rect(screen,(0,0,0),(200,210,1200,275),5,10)# box for the explanation 
-            txt = "There are Unlocks and Upgrades on the right. Unlocks allow you to access new parts of the game, and upgrades enhance your experience. Some unlocks/upgrades are based on networth and will be automatically unlocked, but others must be purchased with cash."
-            for i,txt in enumerate(separate_strings(txt,4)):
-                drawCenterTxt(screen,txt,55,(200,200,200),(800,220+i*50),centerY=False)
+        # self.uStringScroll.draw(screen)
+        # if self.uStringScroll.getCard() == None:
+        #     # drawCenterTxt(screen,"No Unlock Selected",65,(210, 50, 50),(1015,260),centerY=False)
+        #     pygame.draw.rect(screen,(0,0,0),(200,210,1200,275),5,10)# box for the explanation 
+        #     txt = "There are Unlocks and Upgrades on the right. Unlocks allow you to access new parts of the game, and upgrades enhance your experience. Some unlocks/upgrades are based on networth and will be automatically unlocked, but others must be purchased with cash."
+        #     for i,txt in enumerate(separate_strings(txt,4)):
+        #         drawCenterTxt(screen,txt,55,(200,200,200),(800,220+i*50),centerY=False)
                 
-            drawCenterTxt(screen,"Select an unlock/upgrade to see more information",65,(210, 50, 50),(800,500),centerY=False)
+        #     drawCenterTxt(screen,"Select an unlock/upgrade to see more information",65,(210, 50, 50),(800,500),centerY=False)
 
-            self.networthGraph.drawFull(screen,(200,560),(590,400),"Networth Graph",True,"")
-            self.cashGraph.drawFull(screen,(810,560),(590,400),"Cash Graph",True,"")
+        #     self.networthGraph.drawFull(screen,(200,560),(590,400),"Networth Graph",True,"")
+        #     self.cashGraph.drawFull(screen,(810,560),(590,400),"Cash Graph",True,"")
 
-            # pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
-        else:
-            self.drawSelectedUstring(screen)
+        #     # pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
+        # else:
+        #     self.drawSelectedUstring(screen)
             
 
             

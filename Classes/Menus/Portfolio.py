@@ -301,7 +301,7 @@ class Portfolio(Menu):
             (f"Days",f"{(gametime.time-asset.dateobj).days}"),
             (f"Yearly Return",f"{limit_digits(yearlyReturn,15)}%"),       
         ]
-        drawLinedInfo(screen,(870,690),(355,260),info,40,(215,215,215))
+        drawLinedInfo(screen,(870,710),(355,260),info,40,(215,215,215))
         # ---------------Right bottom (Asset Specifics)----------------
         drawCenterTxt(screen,f"Asset Specifics",45,(220,220,220),(1422,655),centerY=False)
 
@@ -327,7 +327,7 @@ class Portfolio(Menu):
                 (f"Vs Market (1Y)",f"{limit_digits(percentDiff,15)}%"),  
                 (f"Voliatility" ,f"{limit_digits(asset.getVolatility()*100,15)}%"),
             ]
-        drawLinedInfo(screen,(1230,690),(385,260),info,40,(215,215,215))
+        drawLinedInfo(screen,(1230,710),(385,260),info,40,(215,215,215))
 
 
         pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(870, 700, 745, 250), 5, border_radius=10)# border for both the lined infos

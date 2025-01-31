@@ -569,7 +569,7 @@ def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsi
         color = (255,255,255)
     if border:
         assert type(border) == int, 'Border must be an int'
-        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coord,wh), width=border)
+        pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(coord[0],coord[1],wh[0],wh[1]-10), width=border)
     coord = (coord[0]+10,coord[1]+10)
     wh = (wh[0]-20,wh[1]-20)
 
