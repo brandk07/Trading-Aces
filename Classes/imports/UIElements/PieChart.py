@@ -62,6 +62,9 @@ class PieChart:
         self.pieSegments.clear()
 
         total = sum([v[0] for v in self.data])# get the total value of the stocks
+        if total == 0:
+            self.pieSegments.clear()
+            return
 
         # percentages is a list of lists, each list is [percentage, name, color, actual value]
         percentages = [[round((value[0]) / total,4)*100,value[1],value[2],value[0]] for value in self.data]
@@ -216,7 +219,7 @@ class PieChart:
 
        
         
-        if pointInCircle(pygame.mouse.get_pos(),(self.coords[0]+self.radius,self.coords[1]+60+self.radius),self.radius-10):# if the mouse is in the pie chart
+        if self.pieSegments and pointInCircle(pygame.mouse.get_pos(),(self.coords[0]+self.radius,self.coords[1]+60+self.radius),self.radius-10):# if the mouse is in the pie chart
             collided = self.getClickedAsset()# get the asset that the mouse is over
 
             for i,(color,points,value,name) in enumerate(self.pieSegments):# draws all the segments darker except the one the mouse is over
@@ -304,6 +307,9 @@ class PieChartSideInfo:
         self.pieSegments.clear()
 
         total = sum([v[0] for v in self.data])# get the total value of the stocks
+        if total == 0:
+            self.pieSegments.clear()
+            return
 
         # percentages is a list of lists, each list is [percentage, name, color, actual value]
         percentages = [[round((value[0]) / total,4)*100,value[1],value[2],value[0]] for value in self.data]
@@ -452,7 +458,7 @@ class PieChartSideInfo:
                             menuDict['Bank'].menuSelection.setSelected("Investments")
                             menuDict['Bank'].investScreen.fundSelection.setSelected(name)
         
-        if pointInCircle(pygame.mouse.get_pos(),(self.coords[0]+self.radius,self.coords[1]+self.radius),self.radius-10):# if the mouse is in the pie chart
+        if self.pieSegments and pointInCircle(pygame.mouse.get_pos(),(self.coords[0]+self.radius,self.coords[1]+self.radius),self.radius-10):# if the mouse is in the pie chart
             collided = self.getClickedAsset()# get the asset that the mouse is over
 
             for i,(color,points,value,name) in enumerate(self.pieSegments):# draws all the segments darker except the one the mouse is over

@@ -29,6 +29,7 @@ class GameRun:
         self.iconIndex = iconIndex
         self.runIcon = pygame.image.load(rf'Classes\BigClasses\RunIcons\image ({self.iconIndex}).png').convert_alpha()
         self.gameMode : str = gameMode.capitalize()# the mode of the game (Blitz, Career, Goal)
+
         if gameDate == None:
             self.gameDate = DEFAULTSTARTDATE# default start date
         else:
@@ -38,7 +39,14 @@ class GameRun:
         if not os.path.exists(self.getFileDir()):# if the run does not exist create the files
             self.massFileCreation(self.getFileDir())# moves/creates all the files for the new run 
             self.createCustomFile() # creates the mode specific file      
-        
+    def getCurrValStr(self,uString:str):
+        """Returns the current value of the upgrade as a string - by default all will be maxed for blitz and goal, career will override this"""
+        valStrs = {"Asset Storage" : f"16 slots","Loan Interest" : f"0.5% interest","Max Loan Amount" : f"200% Networth","Tax Rate" : f"2.5% tax rate","Stock Reports" : "Reports Enabled","Pre-Made Options" : "Trading Enabled","Custom Options" : "Trading Enabled"}
+        return valStrs[uString]
+    def getCurrVal(self,uString:str):
+        """Returns the current value of the upgrade - by default all will be maxed for blitz and goal, career will override this"""
+        valStrs = {"Asset Storage" : 16,"Loan Interest" : 0.5,"Max Loan Amount" : 2,"Tax Rate" : 2.5,"Stock Reports" : True,"Pre-Made Options" : True,"Custom Options" : True}
+        return valStrs[uString]
     def getNetworth(self):
         return sum(self.assetSpread[:-1]) - self.assetSpread[-1]
     def getLoans(self):
@@ -197,7 +205,7 @@ class CareerRun(GameRun):
     
     def verifyGameData(self,unlocks:dict,upgrades:dict):
         self.upgradesLevels = {
-            "Asset Storage" : [6, 8, 10, 12, 14, 16],# (6, 8, 10, 12, 14, 16 items)
+            "Asset Storage" : [4, 8, 10, 12, 14, 16],# (6, 8, 10, 12, 14, 16 slots)
             "Loan Interest" : [5.5, 4.5, 3.5, 2.5, 1.5, 0.5],# % interest
             "Max Loan Amount" : [0.2, 0.4, 0.5, 0.9, 1.4, 2],# Networth to loan amount ratio
             "Tax Rate" : [15, 12.5, 10, 7.5, 5, 2.5]}# tax rate
@@ -238,7 +246,7 @@ class CareerRun(GameRun):
     def getCurrValStr(self,uString:str):
         """Returns the current value of the upgrade as a string"""
 
-        valStrs = {"Asset Storage" : f"{self.getCurrVal("Asset Storage")} items",
+        valStrs = {"Asset Storage" : f"{self.getCurrVal("Asset Storage")} slots",
                     "Loan Interest" : f"{self.getCurrVal('Loan Interest')}% interest",
                     "Max Loan Amount" : f"{self.getCurrVal('Max Loan Amount')*100}% Networth",
                     "Tax Rate" : f"{self.getCurrVal('Tax Rate')}% tax rate",
@@ -263,7 +271,7 @@ class CareerRun(GameRun):
         if self.isMaxed(uString):
             return None
         extraTxt = {
-            "Asset Storage" : f"+2 items",
+            "Asset Storage" : f"+2 slots",
             "Loan Interest" : f"-1 loan interest",
             "Max Loan Amount" : f"+20% Max Loan",
             "Tax Rate" : f"-2.5 tax rate",

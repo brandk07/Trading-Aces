@@ -28,6 +28,8 @@ class BarGraph:
         with absoluteScale you can input the max it will always scale to that value rather than the max value of the data"""
         # assert absoluteScale == None or type(absoluteScale) == int or type(absoluteScale) == float, 'absoluteScale must be an int or float'
         assert position == None or type(position) == list or type(position) == tuple, 'position must be a list/tuple'
+        if absoluteScale == 0:
+            absoluteScale = 1
 
         pos = s.pos if position == None else position
         barwidth = (s.width/len(s.values))

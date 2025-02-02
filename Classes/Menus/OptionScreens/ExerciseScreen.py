@@ -8,8 +8,9 @@ from Classes.imports.StockVisualizer import StockVisualizer
 
 class ExerciseOptionScreen:
 
-    def __init__(self,stocklist,gametime,player) -> None:
+    def __init__(self,stocklist,gametime,player,currentRun) -> None:
         self.player = player
+        self.currentRun = currentRun
         self.stocklist:list = stocklist
         self.gametime = gametime
         self.selectedGraph : StockVisualizer = StockVisualizer(gametime,stocklist[0],stocklist)
@@ -97,9 +98,9 @@ class ExerciseOptionScreen:
         value = self.selectOption.getValue(bypass=True,fullvalue=False)# the value of the option just 1
         totalVal = value*amt# the total value of the options
         netgl = (value - self.selectOption.getOgVal())*amt# net gain/loss
-        tax,fee  = self.player.taxrate * (0 if netgl <= 0 else netgl), totalVal * .02# the tax and fee for selling the option
+        tax,fee  = self.currentRun.getCurrVal("Tax Rate")/100 * (0 if netgl <= 0 else netgl), totalVal * .02# the tax and fee for selling the option
         totalVal = totalVal - fee - tax
-        self.orderBox.loadData(f"{limit_digits(amt,20,True)} Share{'s' if amt!=1 else ''}",f"${limit_digits(totalVal,20,True)}",[("Value",f"${limit_digits(value,20,value>1000)}","x"),(f"{round(self.player.taxrate*100,2)}% Tax",f"${limit_digits(tax,20)}","-"),(f"2% Fee",f"${limit_digits(fee,20)}","-")])
+        self.orderBox.loadData(f"{limit_digits(amt,20,True)} Share{'s' if amt!=1 else ''}",f"${limit_digits(totalVal,20,True)}",[("Value",f"${limit_digits(value,20,value>1000)}","x"),(f"{round(self.currentRun.getCurrVal("Tax Rate"),2)}% Tax",f"${limit_digits(tax,20)}","-"),(f"2% Fee",f"${limit_digits(fee,20)}","-")])
         return sellInfotxts
     
     def drawExerciseChoices(self,screen:pygame.Surface):

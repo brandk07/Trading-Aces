@@ -14,9 +14,9 @@ from Classes.imports.Bar import ProgressBar
 class GameModeMenu(Menu):
     def __init__(self,stocklist,player,pastRuns:dict,currentRun,gametime) -> None:
         """Gets the past runs {'Blitz':[BlitzRun : obj],'Career':[],'Goal':[]}"""
-        super().__init__()
+        super().__init__(currentRun)
         self.loadRuns(pastRuns)# loads the runs from the save file
-        self.currentRun = currentRun
+
         match self.currentRun.gameMode:
             case 'Blitz':
                 self.blitz : BlitzScreen = BlitzScreen(self.blitzReports,self.currentRun)
@@ -207,7 +207,7 @@ class CareerScreen(BlitzAndGoalScreen):
             "Loan Interest" : "Decreases the interest rate charged on all loans. Lower rates mean smaller monthly payments and more capital available for investing, making loans a more viable tool for expanding your trading capabilities.",
             "Max Loan Amount" : "Increases the maximum amount of money you can borrow as a percentage of your total networth. Higher levels allow for larger loans, providing more leverage for when major trading opportunities arise.",
             "Tax Rate" : "Decreases the tax rate applied to all sales and other taxable actions. Each level reduces the percentage taken from your profits, allowing you to keep more of your earnings from successful trades.",
-            "Stock Reports" : "Enables access to detailed stock analysis reports and market insights. These reports provide valuable information about stock performance, trends, and potential market movements to help inform your trading decisions.",
+            "Stock Reports" : "Enables access to the date of upcoming stock reports and insight into the report. These reports provide valuable information about the likelihood of a positive report to help inform your trading decisions.",
             "Pre-Made Options" : "Unlocks the ability to trade pre-configured options contracts. This feature opens up new strategic possibilities through put and call options, allowing you to profit from both rising and falling markets.",
             "Custom Options" : "Enables the creation and trading of custom-designed options contracts. This advanced feature gives you complete control over strike prices, expiration dates, and contract terms for maximum strategic flexibility."
         }
@@ -240,10 +240,11 @@ class CareerScreen(BlitzAndGoalScreen):
         drawCenterTxt(screen,uString,130,self.menuColors[mode],(1020,245),centerY=False)# draws the name of the unlock/upgrade
         
         requiredVal = self.currentRun.getNextCost(uString)
+        requiredVal = 0 if requiredVal == None else requiredVal
         # costTxt = "Maxed" if cost == None else f"${limit_digits(cost,30,True)}"
         
         cashNet = self.currentRun.getNetOrCash(uString)
-        deficit = max(0,requiredVal-self.player.cash) if cashNet == "Cash" else max(0,requiredVal-self.currentRun.getNetworth())
+        # deficit = max(0,requiredVal-self.player.cash) if cashNet == "Cash" else max(0,requiredVal-self.currentRun.getNetworth())
         # drawBoxedTextWH(screen,(775,345),(675,85),f"Cost :   ${limit_digits(cost,30,True)}",55,(200,200,200))
         # drawBoxedTextWH(screen,(775,440),(675,85),f"Cash Needed :   ${limit_digits(neededCash,30,True)}",55,(200,200,200))
         # make the color a gradient between a dark red and a dark green depeneding on how far away the needed cash is from zero (zero is dark green and over 100k is dark red)
@@ -275,8 +276,11 @@ class CareerScreen(BlitzAndGoalScreen):
         # drawCenterTxt(screen,f"${limit_digits(requiredVal,30,True)}",55,(200,200,200),(1380,645),centerX=False,centerY=False,fullX=True)
 
         # drawCenterTxt(screen,f"{self.currentRun.getNextGrantStr(uString)}",55,(200,200,200),(655,715),centerX=False,centerY=False)
-        infolist = [(f"{requirestxt}",f"${limit_digits(requiredVal,30,True)}"),(f"Current Lvl",self.currentRun.getCurrValStr(uString)),(f"Grants",f"{self.currentRun.getNextGrantStr(uString)}")]
-        drawLinedInfo(screen,(650,640),(730,330),infolist,55,middleData=["-","-","-"],color=(170,170,170),border=5)
+        if self.currentRun.isMaxed(uString):
+            infolist = [(f"Current Lvl",self.currentRun.getCurrValStr(uString))]
+        else:
+            infolist = [(f"{requirestxt}",f"${limit_digits(requiredVal,30,True)}"),(f"Current Lvl",self.currentRun.getCurrValStr(uString)),(f"Grants",f"{self.currentRun.getNextGrantStr(uString)}")]
+        drawLinedInfo(screen,(650,640),(730,330),infolist,55,middleData=(["-"] *len(infolist)),color=(170,170,170),border=5)
 
 
         # drawLinedInfo(screen,(775,345),(675,235),[(f"{cashNet} Needed",f"${limit_digits(requiredVal,30,True)}"),(f"Deficit",f"${limit_digits(deficit,30,True)}")],55,colors=[(200,200,200),get_gradient_color(deficit)],border=5)
@@ -305,13 +309,16 @@ class CareerScreen(BlitzAndGoalScreen):
             # infolist = [("Requires",costTxt),("Current",self.currentRun.getCurrValStr(uString)),("Grants",f"{self.currentRun.getNextGrantStr(uString)}")]
         else:
             self.cashGraph.drawFull(screen,(1390,220),(510,410),uString,True,"")
-
-            self.orderBox.loadData(str(buyTxt),f"${limit_digits(requiredVal,24,True)}",[(uString,level,"")])
-            result = self.orderBox.draw(screen)
-            if result:
-                self.player.purchaseCareerUpgrade(uString,self.currentRun)
-                for card in self.menuSpecficCards[mode]:
-                    card.updateSurf()
+            if self.currentRun.isMaxed(uString):
+                drawCenterTxt(screen,"Maxed",80,(210, 50, 50),(1645,680),centerY=False)
+            else:
+                self.orderBox.loadData(str(buyTxt),f"${limit_digits(requiredVal,24,True)}",[(uString,level,"")])
+                result = self.orderBox.draw(screen)
+                if result:
+                    self.player.purchaseCareerUpgrade(uString,self.currentRun)
+                    for card in self.menuSpecficCards[mode]:
+                        card.updateSurf()
+                
 
 
     def drawUnlock(self,screen):
@@ -322,6 +329,7 @@ class CareerScreen(BlitzAndGoalScreen):
         self.modeSelection.draw(screen,["Portfolio","Stockbook","Options","Bank"],(585,105),(1300,95),colors=list(self.menuColors.values()),txtsize=55)
 
         mode = self.modeSelection.getSelected()
+        
 
         self.uStringScroll.loadCards(self.menuSpecficCards[mode])
         self.uStringScroll.draw(screen)

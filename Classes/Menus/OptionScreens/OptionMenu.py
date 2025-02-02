@@ -4,8 +4,8 @@ from Classes.imports.UIElements.SelectionElements import SelectionBar,MenuSelect
 from datetime import timedelta,datetime
 
 class Optiontrade(Menu):
-    def __init__(self,stocklist:list,gametime,player):
-        super().__init__()
+    def __init__(self,stocklist:list,gametime,player,currentRun):
+        super().__init__(currentRun)
         self.player = player
         self.stocklist = stocklist
         self.gametime = gametime

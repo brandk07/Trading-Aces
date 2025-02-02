@@ -15,13 +15,13 @@ from Classes.imports.UIElements.SideScroll import SideScroll,CdCard,LoanCard
 
 
 class BankMenu(Menu):
-    def __init__(self,stocklist,gametime,player,transactions,tmarket,indexFunds:list) -> None:
-        super().__init__()
+    def __init__(self,stocklist,gametime,player,transactions,tmarket,indexFunds:list,currentRun) -> None:
+        super().__init__(currentRun)
         self.menuSelection = MenuSelection((200,105),(520,100),["Investments","Loans","Transactions"],45)
         # self.overView = OverView(player,transactions)
         self.menuSelection.setSelected("Investments")
         self.transactionScreen = TransactionScreen(transactions,player)
-        self.loanScreen = LoanScreen(gametime,player,stocklist)
+        self.loanScreen = LoanScreen(gametime,player,stocklist,self.currentRun)
         self.investScreen = InvestmentScreen(stocklist.copy(),gametime,player,tmarket,indexFunds.copy())
         self.menudrawn = False
 
@@ -177,8 +177,9 @@ class CustomLoanCreator:
         
 
 class LoanScreen:
-    def __init__(self,gametime,player,stocklist) -> None:
+    def __init__(self,gametime,player,stocklist,currentRun) -> None:
         self.player = player
+        self.currentRun = currentRun
         self.gametime = gametime
         self.numpad = Numpad(False,maxDecimals=0)
         self.paymentNumpad = Numpad(False)
@@ -196,12 +197,12 @@ class LoanScreen:
         self.sideScroll.loadCards(cardList)
         self.addingPayment = False# Adding a payment to a existing loan (only in the modify state)
 
-        self.interestRate = 0.055
+
         
         
     def drawLoanCreator(self,screen,loanObj:LoanAsset):
        
-        self.customLoanCreator.drawLoanCreation(screen,self.interestRate)
+        self.customLoanCreator.drawLoanCreation(screen,self.currentRun.getCurrVal("Loan Interest")/100)
 
         result = drawClickableBoxWH(screen, (565,470), (300,65),"Cancel", 45, (180,180,180), (45,0,0),fill=True)
         if result:
@@ -301,9 +302,10 @@ class LoanScreen:
             ("Interest Paid",f"${limit_digits(loan.interestPaid,20,loan.interestPaid>1000)}"),
             ("Term Remaining",f"{loan.termLeft} Months"),
             ("Original Term",f"{loan.term} Months"),
+            ("Interest Rate",f"{limit_digits(loan.rate*100,20)}%")
         ]
-        drawLinedInfo(screen,(875,225),(550,300),info,40,(200,200,200))
-        pygame.draw.rect(screen,(0,0,0),(870,225,560,310),5,border_radius=10)# box for the loan info
+        drawLinedInfo(screen,(875,225),(550,315),info,40,(200,200,200),border=5)
+        # pygame.draw.rect(screen,(0,0,0),(870,225,560,310),5,border_radius=10)# box for the loan info
 
         if not self.addingPayment:
             result = drawClickableBoxWH(screen, (565,275), (300,85),"+ Add Payment", 45, (160,160,160), (0,0,0),fill=True)
@@ -371,7 +373,7 @@ class LoanScreen:
             ("Total Debt",f"${limit_digits(self.player.getCurrentDebt(),25,self.player.getCurrentDebt()>1000)}"),
             ("# of Loans",f"{len(self.player.loans)}"),
             ("Monthly Payment",f"${limit_digits(self.player.getMonthlyPayment(),25,self.player.getMonthlyPayment()>1000)}"),
-            ("Interest Rate",f"{limit_digits(self.interestRate*100,25)}%")
+            ("Interest Rate",f"{limit_digits(self.currentRun.getCurrVal("Loan Interest"),25)}%")
         ]
         drawLinedInfo(screen,(1455,615),(435,355),info,40,(215,215,215))
 

@@ -15,7 +15,7 @@ class SellOptionScreen:
         self.sortby = "Expiration"
         self.numpad = Numpad(displayText=False)
         self.screenSelection : SelectionBar = screenSelection# stores the screen selection object from the main game screen
-        self.exerciseMenu : ExerciseOptionScreen = ExerciseOptionScreen(stocklist,gametime,player)
+        self.exerciseMenu : ExerciseOptionScreen = ExerciseOptionScreen(stocklist,gametime,player,optionTrade.currentRun)
         self.orderBox = OrderBox((1030,615),(385,345),gametime)
         self.displayedStocks = [StockVisualizer(gametime,stocklist[i],stocklist) for i in range(3)]# the stock visualizers for the stocks that are displayed
         

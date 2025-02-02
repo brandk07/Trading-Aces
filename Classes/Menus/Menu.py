@@ -62,8 +62,9 @@ class ScreenManager:
         
 
 class Menu():
-    def __init__(self) -> None:
+    def __init__(self,currentRun) -> None:
         self.menudrawn = False
+        self.currentRun = currentRun
         self.menupoints = [(185,10),(1910,10),(1910,980),(185,980)]
         self.topbarpoints = [(185,10),(1910,10),(1910,95),(185,95)]        
 

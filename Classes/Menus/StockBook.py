@@ -15,9 +15,10 @@ import datetime
 
 TXTCOLOR = (220,220,220)
 class Stockbook(Menu):
-    def __init__(self,stocklist,gametime,orderScreen) -> None:
-        super().__init__()
+    def __init__(self,stocklist,gametime,orderScreen,currentRun) -> None:
+        super().__init__(currentRun)
         # self.quantity = 0
+        
         self.stocknames = [stock.name for stock in stocklist]
         self.stocktext = {name:[] for name in self.stocknames}# a dictionary containing the stock names as keys and the stock descriptions as values
         self.createDescriptions(self.stocknames)
@@ -103,57 +104,70 @@ class Stockbook(Menu):
 
         # screen.blit(s_render(f"Displaying {ommitted[0]} - {ommitted[1]-1} out of {len(self.stocklist)}",35,(220,220,220)),(1535,105))
     
-    def drawQuarterlyReports(self,screen:pygame.Surface,gametime):
+    def drawQuarterlyReports(self,screen:pygame.Surface,gametime,player):
         """Draws the quarterly reports for the stock on the right top"""
 
         # -----------------Drawing the future and past reports----------------
         getDate = lambda time : f"{time.month}/{time.day}/{time.year}"
 
-        # futureDict = {f"Q{report[1]} {getDate(report[0])}":f'{(report[0]-gametime.time).days+1} Day{"s" if (report[0]-gametime.time).days+1 > 1 else ""} Away' for report in self.selectedStock.priceEffects.futureReports}
-        # pastDict = {f'Q{report[1]} {getDate(report[0])}':f' {"Beat" if report[2] > 0 else "Miss"} {limit_digits(report[2],15)}%' for report in self.selectedStock.priceEffects.pastReports[:4]}
-        
-        pygame.draw.rect(screen,(0,0,0),(190,690,350,275),5,10)
-        pygame.draw.rect(screen,(0,0,0),(555,690,350,275),5,10)
+
+        pygame.draw.rect(screen,(0,0,0),(190,690,350,275),5,10)# border for the lined info on the left (past reports)
         
         pastListl = [(f'Q{report.getQ()}',f'{getDate(report.getTime())}') for report in self.selectedStock.priceEffects.pastReports[:4]]
         pastListr =[(f'{"Beat" if report.getPerf() > 0 else "Miss"}', f'{"+" if report.getPerf() > 0 else ""}{limit_digits(report.getPerf(),15)}%') for report in self.selectedStock.priceEffects.pastReports[:4]]
         colors = [(200,0,0) if val[0] == "Miss" else (0,190,0) for val in pastListr]
-        # print('dicts are',pastListl,pastListr)
+       
         drawLinedInfoBigColored(screen,(200,710),(330,280),pastListl,pastListr,45,25,colors)
-
-        futureListl = [(f'Q{report.getQ()}',f'{getDate(report.getTime())}') for report in self.selectedStock.priceEffects.futureReports]
-        futureListr = [(f'{(report.getTime()-gametime.time).days}',f'Day{"s" if (report.getTime()-gametime.time).days+1 > 1 else ""} Away') for report in self.selectedStock.priceEffects.futureReports]
-        colors = [p3choice((200,0,0),(190,190,190),(190,0,0),(val.getTime()-gametime.time).days-25) for val in self.selectedStock.priceEffects.futureReports]
-        drawLinedInfoBigColored(screen,(565,710),(330,280),futureListl,futureListr,45,25,colors)
-        # drawLinedInfo(screen,(540,710),(330,280),futureDict,30,TXTCOLOR)
         screen.blit(s_render("PAST",50,(220,220,220)),(205,645))
-        screen.blit(s_render("UPCOMING",50,(220,220,220)),(575,645))
-        # screen.blit(s_render("EXPERT PREDICTION",50,(220,220,220)),(930,645))
 
-        pastReportPer, perfReportPer = self.selectedStock.priceEffects.getLikelyHoods(gametime)
-        prediction = self.selectedStock.priceEffects.getQuarterlyLikelyhood(gametime)
- 
-        changeVals = lambda val : round(val,2) 
-        data = [
-            (changeVals(pastReportPer),(150,0,230)),
-            (changeVals(perfReportPer),(255,128,0)),
-            ((changeVals(pastReportPer)+changeVals(perfReportPer)),(140,140,140))
-        ]
 
-        self.reportBarGraph.updateValues([d[0] for d in data],[d[1] for d in data],["%"]*len(data))
-        self.reportBarGraph.draw(screen,absoluteScale=100)
+        if self.currentRun.getCurrVal("Stock Reports"):# if the stock reports are enabled
 
-        # The Text and the boxes indicating which color is which on the bar graph
-        pastRtxt = s_render("Past Reports", 40, (220, 220, 220))
-        perfRtxt = s_render("Performance", 40, (220, 220, 220))
-        predtxt = s_render("Prediction", 40, (220, 220, 220))
-        screen.blit(pastRtxt, (930, 640))
-        screen.blit(perfRtxt, (1090, 640))
-        screen.blit(predtxt, (1275, 640))
-        # The boxes indicating which color is which on the bar graph
-        pygame.draw.rect(screen, (150, 0, 230), pygame.Rect(930, 680, 35, 35), 0, 10)
-        pygame.draw.rect(screen, (255, 128, 0), pygame.Rect(1090, 680, 35, 35), 0, 10)
-        pygame.draw.rect(screen, (140, 140, 140), pygame.Rect(1275, 680, 35, 35), 0, 10)
+            pygame.draw.rect(screen,(0,0,0),(555,690,350,275),5,10)# border for the lined info on the right (future reports)
+
+            futureListl = [(f'Q{report.getQ()}',f'{getDate(report.getTime())}') for report in self.selectedStock.priceEffects.futureReports]
+            futureListr = [(f'{(report.getTime()-gametime.time).days}',f'Day{"s" if (report.getTime()-gametime.time).days+1 > 1 else ""} Away') for report in self.selectedStock.priceEffects.futureReports]
+            colors = [p3choice((200,0,0),(190,190,190),(190,0,0),(val.getTime()-gametime.time).days-25) for val in self.selectedStock.priceEffects.futureReports]
+            drawLinedInfoBigColored(screen,(565,710),(330,280),futureListl,futureListr,45,25,colors)
+
+            screen.blit(s_render("UPCOMING",50,(220,220,220)),(575,645))
+
+            pastReportPer, perfReportPer = self.selectedStock.priceEffects.getLikelyHoods(gametime)
+            # prediction = self.selectedStock.priceEffects.getQuarterlyLikelyhood(gametime)
+    
+            changeVals = lambda val : round(val,2) 
+            data = [
+                (changeVals(pastReportPer),(150,0,230)),
+                (changeVals(perfReportPer),(255,128,0)),
+                ((changeVals(pastReportPer)+changeVals(perfReportPer)),(140,140,140))
+            ]
+
+            self.reportBarGraph.updateValues([d[0] for d in data],[d[1] for d in data],["%"]*len(data))
+            self.reportBarGraph.draw(screen,absoluteScale=100)
+
+            pygame.draw.rect(screen, (150, 0, 230), pygame.Rect(945, 640, 140, 50), 0, 10)
+            pygame.draw.rect(screen, (255, 128, 0), pygame.Rect(1097, 640, 140, 50), 0, 10)
+            pygame.draw.rect(screen, (140, 140, 140), pygame.Rect(1250, 640, 140, 50), 0, 10)
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(945, 640, 140, 50), 5, 10)
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(1097, 640, 140, 50), 5, 10)
+            pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(1250, 640, 140, 50), 5, 10)
+
+            drawCenterTxt(screen,"Past Reports",35,(230,230,230),(1013,651),centerY=False)
+            drawCenterTxt(screen,"Performance",35,(230,230,230),(1165,651),centerY=False)
+            drawCenterTxt(screen,"Prediction",35,(230,230,230),(1318,651),centerY=False)
+        else:
+            string = "To see upcoming reports and report likelihoods, go to the Mode Menu and enable 'Stock Reports'"
+            for i,line in enumerate(separate_strings(string,3)):
+                drawCenterTxt(screen,line,50,(220,220,220),(1007,690+(i*50)),centerY=False)
+
+            result = drawClickableBoxWH(screen, (827, 870), (360,95), "Get Upgrade", 55, (0,0,0), (200,200,200),fill=True)
+            if result:
+                player.screenManager.setScreen("Mode")
+                player.screenManager.screens['Mode'].career.menuSelect.setSelected(0)# sets the screen to Unlock rather than compare
+                player.screenManager.screens['Mode'].career.modeSelection.setSelected("Stockbook")
+
+
+        
 
     def drawVolatilityElement(self,screen:pygame.Surface):
         def colorShifter(degree):
@@ -256,10 +270,11 @@ class Stockbook(Menu):
             self.numPad.reset()
 
         pygame.draw.rect(screen,(0,0,0),(200,625,550,325),5,10)# border for the lined info
-
+        
+        maxQty = 0 if player.cash == 0 else int(self.selectedStock.getValue()//player.cash)
         infoList = [
             ("Price Per Share",f"${limit_digits(self.selectedStock.getValue(),12)}"),
-            ("Max Quantity",f"{int(player.cash//self.selectedStock.getValue())} Share{'s' if int(self.selectedStock.getValue()//player.cash) != 1 else ''}"),
+            ("Max Quantity",f"{int(player.cash//self.selectedStock.getValue())} Share{'s' if maxQty != 1 else ''}"),
             ("Quantity Owned",f"{player.getStockQuantity(self.selectedStock)} Share{'s' if player.getStockQuantity(self.selectedStock) != 1 else ''}"),
         ]
         drawLinedInfo(screen,(205,625),(540,325),infoList,40,color=TXTCOLOR)
@@ -311,7 +326,7 @@ class Stockbook(Menu):
                 # self.drawNews(screen,self.selectedStock.name,(190,100))
                 pass
             case "Reports":
-                self.drawQuarterlyReports(screen,gametime)
+                self.drawQuarterlyReports(screen,gametime,player)
         
         if self.oScreenDisp:
             self.oScreenDisp = self.orderScreen.draw(screen,self.selectedStock,player,gametime,maxCoords=[1450,1500],minCoords=[190,-500])

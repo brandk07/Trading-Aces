@@ -33,7 +33,7 @@ class Player(Stock):
         
         self.name = name
         
-        self.cash = 25000
+        self.cash = STARTCASH
         # if self.graphs[MINRANGE].size == 1:
         if not all([len(graph) == POINTSPERGRAPH for graph in self.graphs.values()]):
             # print('cash is',self.cash)
@@ -52,12 +52,12 @@ class Player(Stock):
         self.indexFunds = []#list of index fund objects
         self.lastLoanPayment = None#gets set right away in defs
         self.cashStock = CashStock(color,gametime,gameRun,self)
+        self.currentRun = gameRun
         self.stockvalues = []
         self.loans = []
         self.menuList = None
         self.screenManager = None
         self.messagedict = {}
-        self.taxrate = 0.15
         self.transact = transact
         self.lifeTimeVolume,self.realizedGains,self.assetsTraded,self.taxesPaid,self.underTakenDebt,self.interestPaid = 0,0,0,0,0,0# Just some extra stats displayed in transaction menu
         self.assetText = {
@@ -177,7 +177,13 @@ class Player(Stock):
             assetlist = self.options
         elif isinstance(newasset,IndexFundAsset):
             assetlist = self.indexFunds
-        
+
+        if len(self.getAssets()) >= self.currentRun.getCurrVal('Asset Storage'):
+            if not [asset for asset in self.getAssets() if asset == newasset]:# if the asset is not already in the list - otherwise it will just add the quantity to the asset
+                errors.addMessage('Insufficient Asset Storage',txtSize=100,coords=[960,540])# player has too many assets
+                soundEffects['error'].play()
+                return
+
         if self.cash >= value*newasset.getQuantity():# if the player has enough money to buy the asset
             # ["Sold 39 Shares of","KSTON for $5,056.93","Balance $26,103.18"]
             
@@ -223,11 +229,12 @@ class Player(Stock):
         #     f"{asset.getStockObj().name} for ${limit_digits(asset.getValue(bypass=True,fullvalue=False),12)}",
         #     f"Balance ${limit_digits(self.cash+asset.getValue(bypass=True,fullvalue=False),12)}"
         # ]
+        
         self.lifeTimeVolume += asset.getValue(bypass=True,fullvalue=False)*quantity
         loss_gain = asset.getValue(bypass=True,fullvalue=False)*quantity-asset.getOgVal()*quantity
-        taxes = loss_gain*self.taxrate if loss_gain > 0 else 0
+        taxes = loss_gain*self.currentRun.getCurrVal("Tax Rate")/100 if loss_gain > 0 else 0
         self.taxesPaid += taxes
-        loss_gain = loss_gain if loss_gain <= 0 else loss_gain*(1-self.taxrate)
+        loss_gain = loss_gain if loss_gain <= 0 else loss_gain*(1-self.currentRun.getCurrVal("Tax Rate")/100)
         self.realizedGains += loss_gain if loss_gain > 0 else 0
         value = (asset.getValue(bypass=True,fullvalue=False)*quantity)-taxes
         soundEffects['sellGain' if loss_gain > 0 else 'sellLoss'].play()
@@ -383,7 +390,7 @@ class Player(Stock):
         return self.cash
     def getMaxLoan(self):
         """returns the maximum amount of money the player can borrow"""
-        est = self.getNetworth()*0.2
+        est = self.getNetworth()*self.currentRun.getCurrVal("Max Loan Amount")
         return est if est > 5000 else 5000 # 20% of the networth of the player or 5000 whichever is greater
     def getCurrentDebt(self):
         """returns the total amount of money owed by the player"""

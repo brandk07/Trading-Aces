@@ -57,7 +57,8 @@ if __name__ == "__main__":
         setGameTime(gametime,currentRun.getFileDir())
 
         stocknames = STOCKNAMES
-        stockVolatilities = [1045,985,890,865,795,825,1060,780,715]# 700=Low, 1075=High
+        
+        stockVolatilities = [i*(2 if currentRun.gameMode == 'Blitz' else 1) for i in [8.03, 7.42, 6.13, 5.58, 4.74, 5.13, 7.8, 4.2, 3.8]]# 700=Low, 1075=High
 
         stockcolors = [(0, 102, 204),(255, 0, 0),(0, 128, 0),(255, 165, 0),(255, 215, 0),(147,112,219),(46, 139, 87),(255, 69, 0),(0, 191, 255),(128, 0, 128),(12, 89, 27)]# -2 is for cash
 
@@ -72,16 +73,16 @@ if __name__ == "__main__":
         indexFunds.append(tmarket)
         indexFundDict = {fund.name: fund for fund in indexFunds}
 
-        optiontrade = Optiontrade(stocklist,gametime,player)
+        optiontrade = Optiontrade(stocklist,gametime,player,currentRun)
         Getfromfile(stockdict,indexFundDict,player,gametime,currentRun.getFileDir(),optiontrade)
 
         stockScreen = StockScreen(stocklist,gametime)
         orderScreen = OrderScreen()
         homeScreen = HomeScreen(stocklist,gametime,tmarket,player)
-        stockbook = Stockbook(stocklist,gametime,orderScreen)
-        portfolio = Portfolio(stocklist,player,gametime,tmarket)
+        stockbook = Stockbook(stocklist,gametime,orderScreen,currentRun)
+        portfolio = Portfolio(stocklist,player,gametime,tmarket,currentRun)
         
-        bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds)
+        bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds,currentRun)
 
         gameModeMenu = GameModeMenu(stocklist,player,pastRuns,currentRun,gametime)
         menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
@@ -98,9 +99,12 @@ if __name__ == "__main__":
             for stock in stocklist:
                 stock.fill_graphs()
             print('time to fill graphs',timeit.default_timer()-timer)
+            saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)
+
 
         for indexfund in indexFunds:
             indexfund.fill_graphs()
+
         
         menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(screen)
         # ------------------------------------------ Main Game Loop ------------------------------------------

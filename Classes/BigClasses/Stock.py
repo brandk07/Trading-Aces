@@ -249,7 +249,7 @@ class Stock():
     def addpoint(self, lastprice, multiplier=1,maxstep=MAXSTEP):
         """returns the new price of the stock
         maxstep is the maximum multiplier added to 1 price movement, a lower value will make it more accurate but slower"""
-        vol = int(self.givenVolatility+self.priceEffects._modifers["volatility"])# the volatility of the stock
+        vol = int((self.givenVolatility*160)+self.priceEffects._modifers["volatility"])# the volatility of the stock
         tempP = self.priceEffects._modifers["priceTrend"]# the temporary price trend
         while multiplier > 0:
             step = multiplier % maxstep if multiplier < maxstep else maxstep# how much to multiply the movement by
@@ -300,8 +300,8 @@ class Stock():
             totalTrend += runVal*runDistance
             emPoints += runDistance
         totalTrend /= emPoints
-        highvolitity = int(totalTrend + self.givenVolatility/distance)# the highest volitility that the stock can have
-        lowvolitity = int(totalTrend - self.givenVolatility/distance)# the lowest volitility that the stock can have
+        highvolitity = int(totalTrend + (self.givenVolatility*160)/distance)# the highest volitility that the stock can have
+        lowvolitity = int(totalTrend - (self.givenVolatility*160)/distance)# the lowest volitility that the stock can have
         try:
             factor = (randint(lowvolitity, highvolitity) / 20_000_000) * distance# the factor that the price will be multiplied by
         except:

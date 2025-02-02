@@ -15,8 +15,8 @@ DX = 300# default x
 DY = 230# default y
 DH = 120# default height
 class Portfolio(Menu):
-    def __init__(self,stocklist,player,gametime,totalmarket) -> None:
-        super().__init__()
+    def __init__(self,stocklist,player,gametime,totalmarket,currentRun) -> None:
+        super().__init__(currentRun)
         self.totalmarket = totalmarket
    
         self.menudrawn = False
@@ -108,8 +108,10 @@ class Portfolio(Menu):
         # screen.blit(currenttext,(1025+self.displayingtext.get_width(),105))
 
         # screen.blit(outoftext,(1025+self.displayingtext.get_width()+currenttext.get_width(),105))
-        totalTxt = "Displaying " + str(ommitted[0]) + " - " + str(ommitted[1]-1) + " out of " + str(len(sortedassets))
-        drawCenterTxt(screen,totalTxt,35,(220,220,220),(1025,105),centerX=False,centerY=False)
+        
+        totalTxt = f"Using {len(sortedassets)} out of {self.currentRun.getCurrValStr('Asset Storage')}"
+        # totalTxt = "Displaying " + str(ommitted[0]) + " - " + str(ommitted[1]-1) + " out of " + str(len(sortedassets))
+        drawCenterTxt(screen,totalTxt,40,(180,180,180),(1122,105),centerY=False)
 
     def assetscroll_controls(self,screen):
         """Controls for the asset scroll"""
@@ -210,18 +212,19 @@ class Portfolio(Menu):
         # color = ((200,0,0) if asset.getPercent() < 0 else (0,200,0)) if asset.getPercent() != 0 else (200,200,200)
         quantity = self.numpad.getValue()# gets the quantity from the numpad
         netgl = (asset.getValue(bypass=True,fullvalue=False) - asset.getOgVal())*quantity# net gain/loss
-        taxedAmt = 0 if netgl <= 0 else netgl*player.taxrate# the amount taxed
+        
+        taxedAmt = 0 if netgl <= 0 else netgl*self.currentRun.getCurrVal("Tax Rate")/100# the amount taxed
         value = asset.getValue(fullvalue=False)*quantity
         feeAmt = value*0.02# the amount taxed
         value -= taxedAmt
         
         if type(asset) == OptionAsset:# Options need the extra fee
             value -= feeAmt
-            data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),17)}","x"),(f"{(player.taxrate*100)}% Tax", f"${limit_digits(taxedAmt,22)}","-"),(f"2% Option Fee", f"${limit_digits(feeAmt,22)}","-")]
+            data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),17)}","x"),(f"{(self.currentRun.getCurrVal("Tax Rate"))}% Tax", f"${limit_digits(taxedAmt,22)}","-"),(f"2% Option Fee", f"${limit_digits(feeAmt,22)}","-")]
             self.orderBox.loadData(self.numpad.getNumstr(self.classtext[type(asset)]),f"${limit_digits(value,22)}",data)
  
         else:
-            data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),15)}","x"),(f"{(player.taxrate*100)}% Tax", f"${limit_digits(taxedAmt,22)}","-")]
+            data = [("Value",f"${limit_digits(asset.getValue(bypass=True,fullvalue=False),15)}","x"),(f"{(self.currentRun.getCurrVal("Tax Rate"))}% Tax", f"${limit_digits(taxedAmt,22)}","-")]
             self.orderBox.loadData(self.numpad.getNumstr(self.classtext[type(asset)]),f"${limit_digits(value,22)}",data)
 
         result = self.orderBox.draw(screen)
@@ -365,6 +368,8 @@ class Portfolio(Menu):
 
         
         if self.selectedAsset == None:# if the selected asset is None
+            self.assetscroll_controls(screen)
+
             self.networthGraph.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")
 
             if len(sortedassets) > 0:
@@ -389,6 +394,8 @@ class Portfolio(Menu):
 
         
         else:# if the selected asset is NOT None
+            gainloss = (self.selectedAsset[0].getValue(fullvalue=False)-self.selectedAsset[0].getOgVal())*self.selectedAsset[0].getQuantity()# the gain/loss of the asset
+            drawCenterTxt(screen,f"Unrealized {'gains' if gainloss >= 0 else 'loss'} : {'+' if gainloss >= 0 else ''}{limit_digits(gainloss,20)}",55,(200,200,200),(1240,120),centerY=False)
 
             self.selectedGraph.setStockObj(self.selectedAsset[0].getStockObj())
             self.selectedGraph.drawFull(screen,(200,100),(650,500),f"Main Portfolio",True,"Normal")# draws the selected stock graph on the left
@@ -397,7 +404,8 @@ class Portfolio(Menu):
             if self.selectedAsset != None:
                 self.drawselectedScroll(screen,self.selectedAsset)# draws the selected asset scroll on the right
 
+
             
-        self.assetscroll_controls(screen)
+        
 
         
