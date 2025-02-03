@@ -46,6 +46,7 @@ startmenu = StartMain(runManager)
 
 if __name__ == "__main__":
     while True:
+        runManager.reset()
         startmenu.reset()# resets the start menu
         currentRun : GameRun = startmenu.drawStartMenu(screen,clock)
         

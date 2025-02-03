@@ -182,6 +182,8 @@ class Stock():
     def getPercent(self,graphrange="1Y"):
         """Returns the percent change of the stock"""
         assert graphrange in self.graphrangeoptions.keys(), f"graphrange must be a valid key in the graphrangeoptions : {list(self.graphrangeoptions.keys())}"
+        if self.graphs[graphrange][0] == 0:
+            return 0
         return ((self.graphs[graphrange][-1]/self.graphs[graphrange][0])-1)*100
     
     def getPercentDate(self,date:datetime,gametime:GameTime):

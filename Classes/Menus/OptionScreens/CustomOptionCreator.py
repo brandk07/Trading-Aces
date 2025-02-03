@@ -162,7 +162,7 @@ class CustomOptionCreator:
             return None
         # DRAWING THE LATTER SCROLL
         daysLeft = lambda option: f'{option.daysToExpiration()} Day{"s" if option.daysToExpiration() > 1 else ""}'
-        get_text = lambda option : [f'${limit_digits(option.getStrike(),12)} ',f'{option.getType().capitalize()}',f'{daysLeft(option)}']# returns the text for the stock
+        get_text = lambda option : [f'${limit_digits(option.getValue(bypass=True),18)} ',f'{option.getType().capitalize()}',f'{daysLeft(option)}']# returns the text for the stock
         textlist = [get_text(option) for option in optionList]# stores 3 texts for each asset in the stocks list
 
         textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
@@ -171,14 +171,14 @@ class CustomOptionCreator:
         for i,(text,option) in enumerate(zip(textlist,optionList)):# loop through the textlist and store the text info in the textinfo list
            
             polytexts = []# temporary list to store the text info for each asset
-            polytexts.extend([[text[0],40,(255,255,255)],[text[1],40,self.determineColor(option.getType())],[text[2],40,(190,190,190)]])# appends the text info for the asset            
+            polytexts.extend([[text[0],43,(210,210,210)],[text[1],40,self.determineColor(option.getType())],[text[2],40,(190,190,190)]])# appends the text info for the asset            
             textinfo.append(polytexts)
-            coords[i].append(((text[0],25),15))
-            coords[i].append(((text[1],165),15))
+            coords[i].append((160,55))
+            coords[i].append((210,55))
 
         self.cucOptionScrll.storetextinfo(textinfo); self.cucOptionScrll.set_textcoords(coords)# stores the text info and the coords for the latter scroll
 
-        ommitted = self.cucOptionScrll.store_rendercoords((x, y), (w,y+h),80,0,0)
+        ommitted = self.cucOptionScrll.store_rendercoords((x, y), (w,y+h),120,0,0)
         select = self.selectOption if self.selectOption in optionList else None# Ensuring that the selected stock is in the optionlist
         selectedindex = None if select == None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
         

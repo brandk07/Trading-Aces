@@ -352,7 +352,7 @@ class Player(Stock):
         """returns the networth of the player"""
         allassets = self.stocks + self.options + self.indexFunds
         networth = self.cash + sum([asset.getValue() for asset in allassets])-sum([loan.principalLeft for loan in self.loans])
-        if networth < 0.01:
+        if networth < 0:
             errors.addMessage('Bankrupt',txtSize=100,coords=[960,540])
             print(Exception('Bankrupt'))
             return networth

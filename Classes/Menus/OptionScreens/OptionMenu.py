@@ -93,50 +93,63 @@ class Optiontrade(Menu):
         
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(200,210,380,740),5,10)
         # pygame.draw.rect(screen,(20,20,20),pygame.Rect(200,235,380,715),border_radius=10)
-        avOptiontxt = s_render('Available Options', 45, (255, 255, 255))
-        screen.blit(avOptiontxt, (390-avOptiontxt.get_width()/2, 220))
-
+        # avOptiontxt = s_render('Available Options', 45, (255, 255, 255))
+        #         # screen.blit(avOptiontxt, (390-avOptiontxt.get_width()/2, 220))
+        drawCenterTxt(screen, 'Available Options', 45, (200, 200, 200), (390, 220), centerY=False)
         
-        # DRAWING THE LATTER SCROLL
-        optionList = self.preMadeOptions[stock]
-        # determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
-        # dateText = lambda date: f'{date.month}/{date.day}/{date.year}'# returns the date in the format mm/dd/yyyy
-        daysLeft = lambda option: f'{int(option.daysToExpiration())} Day{"s" if option.daysToExpiration() > 1 else ""}'
-        get_text = lambda option : [f'{daysLeft(option)}',f'{option.getType().capitalize()}',f'${limit_digits(option.getValue(fullvalue=False),15,option.getValue(fullvalue=False)>100)} ']# returns the text for the stock
-        textlist = [get_text(option) for option in optionList]# stores 3 texts for each asset in the stocks list
+        if not self.currentRun.getCurrVal("Pre-Made Options"):# if the Pre-Made Options are not enabled
+            string = "You must reach a net worth of 50,000 to purchase options, go to the Mode Menu and to see more details"
+            for i,line in enumerate(separate_strings(string,4)):
+                drawCenterTxt(screen,line,42,(220,220,220),(390,415+(i*42)),centerY=False)
 
-        textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
-        coords = [[(15,10),(20,62)] for i in range(len(textlist))]
+            result = drawClickableBoxWH(screen, (210, 600), (360,95), "See Progress", 55, (0,0,0), (200,200,200),fill=True)
+            if result:
+                self.player.screenManager.setScreen("Mode")
+                self.player.screenManager.screens['Mode'].career.menuSelect.setSelected(0)# sets the screen to Unlock rather than compare
+                self.player.screenManager.screens['Mode'].career.modeSelection.setSelected("Options")
 
-        for i,(text,option) in enumerate(zip(textlist,optionList)):# loop through the textlist and store the text info in the textinfo list
-            if self.selectOption == option:
-                option.getValue(bypass=True)
+        else:# if the Pre-Made Options are enabled
 
-            polytexts = []# temporary list to store the text info for each asset
-            polytexts.extend([[text[1],55,self.determineColor(option.getType())],[text[0],40,(170,170,170)],[text[2],70,(190,190,190)]])# appends the text info for the asset            
-            textinfo.append(polytexts)
-            coords[i].append((140,25))
-            # coords[i].append(((text[1],155),60))
+            # DRAWING THE LATTER SCROLL
+            optionList = self.preMadeOptions[stock]
+            # determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
+            # dateText = lambda date: f'{date.month}/{date.day}/{date.year}'# returns the date in the format mm/dd/yyyy
+            daysLeft = lambda option: f'{int(option.daysToExpiration())} Day{"s" if option.daysToExpiration() > 1 else ""}'
+            get_text = lambda option : [f'{daysLeft(option)}',f'{option.getType().capitalize()}',f'${limit_digits(option.getValue(fullvalue=False),15,option.getValue(fullvalue=False)>100)} ']# returns the text for the stock
+            textlist = [get_text(option) for option in optionList]# stores 3 texts for each asset in the stocks list
 
-        self.avaOptionScrll.storetextinfo(textinfo); self.avaOptionScrll.set_textcoords(coords)# stores the text info and the coords for the latter scroll
-        ommitted = self.avaOptionScrll.store_rendercoords((205, 270), (370,950),135,0,0,updatefreq=60)
-    
-        select = self.selectOption if self.selectOption in optionList else None# Ensuring that the selected stock is in the optionlist
-        selectedindex = None if select == None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
+            textinfo = []# stores the text info for the latter scroll [text,fontsize,color]
+            coords = [[(15,10),(20,62)] for i in range(len(textlist))]
 
-        # newselected = self.avaOptionScrll.draw_polys(screen, (205, 270), (370,950), , selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
-        newselected = self.avaOptionScrll.draw_polys(screen, (205, 270), (370,950),selectedindex, True, *[brightenCol(self.determineColor(option.getType()),0.25) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
-        if newselected != None: self.customOptionSc.stopCreating()
+            for i,(text,option) in enumerate(zip(textlist,optionList)):# loop through the textlist and store the text info in the textinfo list
+                if self.selectOption == option:
+                    option.getValue(bypass=True)
 
-        if select == None:# if the latterscroll didn't contain the selected asset before
-            self.selectOption = self.selectOption if newselected == None else optionList[newselected]# Changes selected stock if the new selected has something
-        else:# if the latterscroll contained the selected asset before, then it can set it to none if you select it again
-            self.selectOption = None if newselected == None else optionList[newselected]
+                polytexts = []# temporary list to store the text info for each asset
+                polytexts.extend([[text[1],55,self.determineColor(option.getType())],[text[0],40,(170,170,170)],[text[2],70,(190,190,190)]])# appends the text info for the asset            
+                textinfo.append(polytexts)
+                coords[i].append((140,25))
+                # coords[i].append(((text[1],155),60))
 
-        if self.selectOption != None and self.selectOption not in self.savedOptions:
-            self.customOptionSc.removeSelc()
-        txt = s_render(f"{ommitted[0]} - {ommitted[1]-1} out of {len(optionList)} Options",35,(0,0,0))
-        screen.blit(txt,(390-txt.get_width()/2,950))
+            self.avaOptionScrll.storetextinfo(textinfo); self.avaOptionScrll.set_textcoords(coords)# stores the text info and the coords for the latter scroll
+            ommitted = self.avaOptionScrll.store_rendercoords((205, 270), (370,950),135,0,0,updatefreq=60)
+        
+            select = self.selectOption if self.selectOption in optionList else None# Ensuring that the selected stock is in the optionlist
+            selectedindex = None if select == None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
+
+            # newselected = self.avaOptionScrll.draw_polys(screen, (205, 270), (370,950), , selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+            newselected = self.avaOptionScrll.draw_polys(screen, (205, 270), (370,950),selectedindex, True, *[brightenCol(self.determineColor(option.getType()),0.25) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
+            if newselected != None: self.customOptionSc.stopCreating()
+
+            if select == None:# if the latterscroll didn't contain the selected asset before
+                self.selectOption = self.selectOption if newselected == None else optionList[newselected]# Changes selected stock if the new selected has something
+            else:# if the latterscroll contained the selected asset before, then it can set it to none if you select it again
+                self.selectOption = None if newselected == None else optionList[newselected]
+
+            if self.selectOption != None and self.selectOption not in self.savedOptions:
+                self.customOptionSc.removeSelc()
+            txt = s_render(f"{ommitted[0]} - {ommitted[1]-1} out of {len(optionList)} Options",35,(0,0,0))
+            screen.blit(txt,(390-txt.get_width()/2,950))
 
 
     def drawCustomOptions(self,screen:pygame.Surface,gametime:GameTime,stock:Stock):
@@ -146,16 +159,28 @@ class Optiontrade(Menu):
 
         drawCenterTxt(screen, 'Custom Options', 45, (200, 200, 200), (1700, 220), centerY=False)
 
-        self.savedOptions = self.customOptionSc.drawCustOptions(screen,gametime,stock)
+        if not self.currentRun.getCurrVal("Custom Options"):# if the Custom Options are not enabled
+            string = "You must reach a net worth of 150,000 to create custom options, go to the Mode Menu and to see more details"
+            for i,line in enumerate(separate_strings(string,4)):
+                drawCenterTxt(screen,line,42,(220,220,220),(1700,415+(i*42)),centerY=False)
 
-        changeIt = False# only should be changed if the result is not none
-        if self.selectOption != None and self.selectOption in self.savedOptions: 
-            changeIt = True# if the selectOption is in this list then it should be changed
-        result = self.customOptionSc.drawSavedOptions(screen,gametime,stock)
-        if changeIt:
-            self.selectOption = result
-        else: 
-            self.selectOption = self.selectOption if result == None else result
+            result = drawClickableBoxWH(screen, (1520, 600), (360,95), "See Progress", 55, (0,0,0), (200,200,200),fill=True)
+            if result:
+                self.player.screenManager.setScreen("Mode")
+                self.player.screenManager.screens['Mode'].career.menuSelect.setSelected(0)# sets the screen to Unlock rather than compare
+                self.player.screenManager.screens['Mode'].career.modeSelection.setSelected("Options")
+        else:
+
+            self.savedOptions = self.customOptionSc.drawCustOptions(screen,gametime,stock)
+
+            changeIt = False# only should be changed if the result is not none
+            if self.selectOption != None and self.selectOption in self.savedOptions: 
+                changeIt = True# if the selectOption is in this list then it should be changed
+            result = self.customOptionSc.drawSavedOptions(screen,gametime,stock)
+            if changeIt:
+                self.selectOption = result
+            else: 
+                self.selectOption = self.selectOption if result == None else result
 
 
     def drawOptionInfo(self,screen:pygame.Surface, gametime, stock:Stock):
@@ -215,8 +240,6 @@ class Optiontrade(Menu):
             
 
 
-
-
     def drawStockInfo(self,screen:pygame.Surface, gametime, stock:Stock):
         """Draws the info underneath the stock graph on the left"""
         if self.selectOption != None:
@@ -236,6 +259,7 @@ class Optiontrade(Menu):
             # info = {key:value for key,value in zip(keys,values)}
             info = [(string,value) for string,value in zip(strings,values)]
             drawLinedInfo(screen,(1055,200),(435,370),info,40,TXTCOLOR)
+
     def checkOptionDates(self):
         """Checks if the options are still live, if not then it replaces them"""
         for option in self.savedOptions:

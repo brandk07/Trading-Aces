@@ -425,6 +425,9 @@ class RunManager():
     def __init__(self):
         self.pastRuns : dict[str:list[GameRun]] = {'Career':[],'Blitz':[],'Goal':[]}# the past runs that the player has done
         self.loadPastRuns()
+    def reset(self):
+        self.pastRuns = {'Career':[],'Blitz':[],'Goal':[]}
+        self.loadPastRuns()
     def getRuns(self,mode:str):
         """Returns the runs of the mode"""
         return self.pastRuns[mode]

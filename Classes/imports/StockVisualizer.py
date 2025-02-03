@@ -66,6 +66,8 @@ class StockVisualizer:
         # if pygame.Rect(coords[0],coords[1],wh[0],wh[1]).collidepoint(mousex,mousey):
 
         # pos = (mousex-coords[0])//spacing
+        if self.stockObj.graphs[truegraphrange][0] == 0:
+            return
         pos = max(0,min(len(graphpoints)-1,(mousex-coords[0])//spacing))
         if pos < len(self.stockObj.graphs[truegraphrange]):
             mousepoint = (len(self.stockObj.graphs[truegraphrange])-pos)# the amount of points from the mouse to the end of the graph (just the index of the point in the graph list)
@@ -122,6 +124,8 @@ class StockVisualizer:
                         x1,x2 = x2,x1
                     # if x1 != x2:
                         # pos1 = (x1-coords[0])//spacing
+                    if spacing == 0:
+                        return
                     pos1 = max(0,min(len(graphpoints)-1,(x1-coords[0])//spacing))
                     pos2 = max(0,min(len(graphpoints)-1,(x2-coords[0])//spacing))
                     # pos1 = max(0,min(POINTSPERGRAPH-1,(x1-coords[0])//spacing))
@@ -133,7 +137,8 @@ class StockVisualizer:
                     if pos2 == len(graphpoints)-1:# if the second point is the most recent point
                         point2 = self.stockObj.getValue()
                         time2 = self.gametime.time
-
+                    if point1 == 0:
+                        return
                     percentChange = ((point2/point1)-1)*100
                     amtChange = point2-point1
 

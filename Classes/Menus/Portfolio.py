@@ -247,7 +247,8 @@ class Portfolio(Menu):
 
         
         self.barGraphs[0].updateValues([asset.getOgVal(),asset.getValue(fullvalue=False)],[(110,110,110),asset.color],["$","$"])# bar graph 1 with the original value and the current value
-        portfolioP = lambda x : x/(player.getNetworth())
+
+        portfolioP = lambda x : 0 if player.getNetworth() == 0 else x/(player.getNetworth())
         self.barGraphs[1].updateValues([asset.portfolioPercent*100,portfolioP(asset.getValue())*100],[(110,110,110),asset.color],["%","%"])# bar graph 2 with the orignial allocation and the current allocation
         for graph in self.barGraphs:
             graph.draw(screen)

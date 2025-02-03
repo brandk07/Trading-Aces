@@ -215,18 +215,21 @@ class LoanScreen:
             drawCenterTxt(screen,f"${limit_digits(payment,20,payment>1000)}",115,(220,220,220),(1115,295),centerX=False)# draw the monthly payment
 
             info = [("Principal",f"${limit_digits(loanObj.principal,20,loanObj.principal>1000)}"),("Interest",f"${limit_digits(totalInterest,20,totalInterest>1000)}"),("Total",f"${limit_digits(total,20,total>1000)}")]
-            debtLimitPercent = ((loanObj.principal/self.player.getMaxLoan())*100)
-            self.orderBox.loadData("1 Loan",f"$0",[("Principal",f"${limit_digits(loanObj.principal,20,loanObj.principal>1000)}",""),("Debt Limit %",f"{limit_digits(debtLimitPercent,20)}%","")])
-            result = self.orderBox.draw(screen)
-            if result:
-                self.player.addLoan(loanObj)
-                self.customLoanCreator.stopCreating()
-                self.state = "View"
-                # {"term":12,"monthly payment":random.randint(10,250_000),"principal":10000,"remaining":16000}
-                data = {"term":loanObj.termLeft,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}
-                spot = 1 if not self.sideScroll.cards else max([int(c.name.split()[1]) for c in self.sideScroll.cards])+1
-                self.sideScroll.addCard(LoanCard(f"Loan {spot}",self.sideScroll,data))
-                loanObj = None
+            if self.player.getMaxLoan() != 0:
+                debtLimitPercent = ((loanObj.principal/self.player.getMaxLoan())*100)
+                self.orderBox.loadData("1 Loan",f"$0",[("Principal",f"${limit_digits(loanObj.principal,20,loanObj.principal>1000)}",""),("Debt Limit %",f"{limit_digits(debtLimitPercent,20)}%","")])
+                result = self.orderBox.draw(screen)
+                if result:
+                    self.player.addLoan(loanObj)
+                    self.customLoanCreator.stopCreating()
+                    self.state = "View"
+                    # {"term":12,"monthly payment":random.randint(10,250_000),"principal":10000,"remaining":16000}
+                    data = {"term":loanObj.termLeft,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}
+                    spot = 1 if not self.sideScroll.cards else max([int(c.name.split()[1]) for c in self.sideScroll.cards])+1
+                    self.sideScroll.addCard(LoanCard(f"Loan {spot}",self.sideScroll,data))
+                    loanObj = None
+            else:
+                print("max loan is zero")
                 # self.sideScroll.addCard(LoanCard(f"Loan {len(self.player.loans)}",self.sideScroll,{"term":loanObj.term,"monthly payment":payment,"principal":loanObj.principal,"remaining":loanObj.principal}))
                 # self.customLoanCreator.stopCreating()
         else:
@@ -488,7 +491,8 @@ class InvestmentScreen:#
             self.fundPerfChart.updateData({f"Q{(i+(currentQ+1)-1)%4+1}":limit_digits(fund.getQuarterReturns((i+(currentQ+1)-1)%4+1,gametime),15) for i in range(4)})# update the data for the perf chart
             self.fundPerfChart.draw(screen,(305,670))# perf chart for the fund
 
-            self.fundNumpad.draw(screen,(930,670),(475,320),"Shares",int(self.player.cash/fund.price))# draw the numpad
+
+            self.fundNumpad.draw(screen,(930,670),(475,320),"Shares",(0 if fund.price == 0 else int(self.player.cash/fund.price)))# draw the numpad
             pygame.draw.rect(screen,(0,0,0),(930,670,475,300),5,border_radius=10)# draw the numpad box
 
             pricePer = limit_digits(fund.getValue(),15)# price per share

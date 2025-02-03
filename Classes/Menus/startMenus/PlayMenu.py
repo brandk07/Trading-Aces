@@ -26,6 +26,8 @@ class PlayMenu:
         """Fills/Updates the run cards that are used in the vertScroll
         MUST be called anytime something changes like deleting or adding a run"""
         self.runCards : dict = {r.name:StartRunCard(self.vertScroll,r) for r in self.runManager.getAllRuns(True)}
+        # sort the dict by the lastPlayed attribute - it is a datetime object
+        # self.runCards = dict(sorted(self.runCards.items(),key=lambda x: x[1].runObj.lastPlayed,reverse=True))
 
     def reset(self):
         # self.vertScroll.reset()
@@ -38,6 +40,7 @@ class PlayMenu:
 
         # cards = [StartRunCard(self.vertScroll,c) for c in runs]
         cards = [self.runCards[r.name] for r in runs]
+        cards.sort(key=lambda x: x.runObj.lastPlayed,reverse=True)
         self.vertScroll.loadCards(cards)
         self.vertScroll.draw(screen)
 

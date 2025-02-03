@@ -257,6 +257,9 @@ class Stockbook(Menu):
 
     def drawPurchase(self,screen:pygame.Surface,player,gametime):
         pygame.draw.rect(screen,(0,0,0),(780,770,640,190),width=5,border_radius=10)# Box for numPad
+        if self.selectedStock.getValue() == 0:
+            drawCenterTxt(screen,"This stock has no value",50,(220,220,220),(960,770),centerY=False)
+            return
         self.numPad.draw(screen,(750,770),(700,200),"",player.cash//self.selectedStock.getValue())
 
         data = [("Price",f"${limit_digits(self.selectedStock.getValue(),20)}","x"),("Quantity",str(self.numPad.numstr),"x")]

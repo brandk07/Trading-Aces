@@ -201,7 +201,7 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
         if text not in texts:
             renderlist[position].pop(text)
     return renderlist
-emptytext = fontlist[45].render('Empty',(190,190,190))[0]
+# emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 
 def getScreenRefreshBackGrounds(screen:pygame.Surface):
     background = pygame.image.load(r'Assets\GameBackground.png').convert_alpha()
@@ -426,81 +426,6 @@ def drawBoxedTextWH(screen,coords,wh,text,size,textcolor,centerX=False,centerY=F
 
     
     drawCenterTxt(screen,text,size,textcolor,(x+w//2,y+h//2),centerX=True,centerY=True)
-
-
-def drawLatterScroll(screen:pygame.Surface,values:list,allrenders:list,barvalue:int,getpoints,shifts:tuple,selected_value:int,defaultHeight:int,alltexts,percents) -> list:
-    """Draws the scroll bar for the latter menu"""
-    xshift,yshift = shifts
-    mousex, mousey = pygame.mouse.get_pos()
-
-    for i, stock in enumerate(values[barvalue:barvalue+5]):
-        ioffset = i+barvalue
-        texts = alltexts[i]
-        twidth = allrenders[i][texts[0]].get_width() + 25
-        twidth2 = max(allrenders[i][texts[1]].get_width(), allrenders[i][texts[2]].get_width()) + 40
-        twidth3 = max(allrenders[i][texts[3]].get_width(), allrenders[i][texts[4]].get_width()) + 45
-        
-        # find the points for the polygons
-        points,points2,points3,totalpolyon = getpoints(twidth, twidth2, twidth3, (i * xshift), (i * yshift))
-
-        # check if the mouse is hovering over the polygon
-        hover = False
-        if point_in_polygon((mousex, mousey), totalpolyon):  # check if mouse is inside the polygon
-            hover = True
-            if mouseButton.getButton('left'):
-                soundEffects['generalClick'].play()
-                selected_value = ioffset
-
-        polycolor = (30, 30, 30) if not hover else (80, 80, 80)
-        # polycolor = (60, 60, 60) if selected_value == ioffset else polycolor
-
-        # ----------Draw the text----------
-        screen.blit(allrenders[i][texts[0]], (points[0][0] + 20, points[0][1] + 35))  # display name of stock
-        screen.blit(allrenders[i][texts[2]], (points[0][0] + 45 + twidth, points[0][1] + 65))# display current price of stock
-
-        screen.blit(allrenders[i][texts[1]], (points[0][0] + 30 + twidth, points[0][1] + 10))# display bought price of stock
-        screen.blit(allrenders[i][texts[3]], (points[0][0] + 30 + twidth + twidth2, points[0][1] + 10))# display profit of stock
-        screen.blit(allrenders[i][texts[4]], (points[0][0] + 45 + twidth + twidth2, points[0][1] + 65))# display percent change of stock
-        
-        # top left, top right, bottom right, bottom left
-        bottom_polygon = [[totalpolyon[0][0]+12, totalpolyon[0][1] + defaultHeight - 15], 
-                            [totalpolyon[1][0], totalpolyon[1][1]], 
-                            [totalpolyon[2][0], totalpolyon[2][1]], 
-                            [totalpolyon[3][0], totalpolyon[3][1]],
-                            [totalpolyon[3][0]-15, totalpolyon[3][1]],
-                            [totalpolyon[3][0]-3, totalpolyon[3][1] + defaultHeight - 15],
-                            ]
-        if hover or selected_value == ioffset:
-            if percents[i] > 0:bottomcolor = (0, 200, 0)
-            elif percents[i] == 0:bottomcolor = (200, 200, 200)
-            else:bottomcolor = (200, 0, 0)
-        else:
-            if percents[i] > 0: bottomcolor = (0, 80, 0)
-            elif percents[i] == 0: bottomcolor = (80, 80, 80)
-            else: bottomcolor = (80, 0, 0)
-        if not selected_value == ioffset:
-            pygame.draw.polygon(screen, bottomcolor, bottom_polygon)
-        outlinecolor = (0, 0, 0) if selected_value != ioffset else (180, 180, 180)
-        pygame.draw.polygon(screen, outlinecolor, points, 5)  # draw the outline of the polygon
-        pygame.draw.polygon(screen, outlinecolor, points2, 5)  # draw the outline of the second polygon
-        pygame.draw.polygon(screen, outlinecolor, points3, 5)  # draw the outline of the third polygon
-            
-    emptyboxnum = 5-len([(stock) for i,stock in enumerate(values) if i >= barvalue and i < barvalue+5])
-    for i in range(emptyboxnum):
-        ioffset = i+(5-emptyboxnum)
-        points,points2,points3,totalpolyon = getpoints(150,200,200,(ioffset*xshift),(ioffset*yshift))
-        
-        gfxdraw.filled_polygon(screen, points, (30,30,30))
-        gfxdraw.filled_polygon(screen, points2, (30,30,30))
-        gfxdraw.filled_polygon(screen, points3, (30,30,30))
-        pygame.draw.polygon(screen, (0,0,0), points, 5)
-        pygame.draw.polygon(screen, (0,0,0), points2, 5)
-        pygame.draw.polygon(screen, (0,0,0), points3, 5)
-        # screen.blit(emptytext, (320 + (ioffset * xshift), 235 + (ioffset * yshift)))  # display name of stock
-        # Use the points from the first polygon to draw teh empty text
-        screen.blit(emptytext, (points[0][0]+40, points[0][1]+40))  # displays empty text
-    return allrenders,selected_value
-
 
 
 def checkboxOptions(screen,options,selectedOptions,pos,wh,disabledOptions=None,txtSize=30) -> tuple:
