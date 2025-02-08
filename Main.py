@@ -113,7 +113,7 @@ if __name__ == "__main__":
             mousex,mousey = pygame.mouse.get_pos()
 
             if screenManager.getCurrentScreen(True) in ['Home','Stock']:# if the current screen is a screen, not a menu then draw the background
-                screen.blit(screenBackRefresh,(0,0))
+                screen.blit(screenBackRefresh,(-200,0))
             else:
                 screen.blit(menuBackRefresh,(0,0))
 

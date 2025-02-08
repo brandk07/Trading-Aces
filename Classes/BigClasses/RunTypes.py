@@ -424,18 +424,28 @@ class RunManager():
     """This class Manages all the runs in one convenient place"""
     def __init__(self):
         self.pastRuns : dict[str:list[GameRun]] = {'Career':[],'Blitz':[],'Goal':[]}# the past runs that the player has done
+        self.terminatedRuns : dict[str:list[GameRun]] = {'Career':[],'Blitz':[],'Goal':[]}# the terminated runs that the player has don
         self.loadPastRuns()
     def reset(self):
         self.pastRuns = {'Career':[],'Blitz':[],'Goal':[]}
+        self.terminatedRuns = {'Career':[],'Blitz':[],'Goal':[]}
         self.loadPastRuns()
     def getRuns(self,mode:str):
         """Returns the runs of the mode"""
         return self.pastRuns[mode]
+    def getRunsTerminated(self,mode:str):
+        """Returns the terminated runs of the mode"""
+        return self.terminatedRuns[mode]
     def getAllRuns(self,inList=False):
         """Returns all the runs in a dictionary or list if inList is True"""
         if inList:
             return [run for mode in self.pastRuns for run in self.pastRuns[mode]]
         return self.pastRuns
+    def getAllTerminatedRuns(self,inList=False):
+        """Returns all the terminated runs in a dictionary or list if inList is True"""
+        if inList:
+            return [run for mode in self.terminatedRuns for run in self.terminatedRuns[mode]]
+        return self.terminatedRuns
     def addRun(self,run:GameRun):
         """Adds the run to the past runs"""
         self.pastRuns[run.gameMode].append(run)
@@ -465,6 +475,24 @@ class RunManager():
                 elif mode == 'Goal':
                     run = GoalRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['goalNetworth'],self,startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
                 self.pastRuns[mode].append(run)
+
+        for mode in self.terminatedRuns:
+            for runName in os.listdir(os.path.join("Saves","terminated",mode)):
+                with open(os.path.join("Saves","terminated",mode,runName,"BasicInfo.json"),"r") as f:
+                    basicInfo = json.load(f)
+                with open(os.path.join("Saves","terminated",mode,runName,"ModeSpecificInfo.json"),"r") as f:
+                    modeSpecificInfo : dict = json.load(f)
+                if mode == 'Career':
+                    if len(modeSpecificInfo) > 0:
+                        unlocks = {key:modeSpecificInfo[key] for key in ["Pre-Made Options","Custom Options","Stock Reports"]}
+                        upgrades = {key:modeSpecificInfo[key] for key in ["Asset Storage","Loan Interest","Max Loan Amount","Tax Rate"]}
+                        sandBox = modeSpecificInfo.popitem()[1]
+                    run = CareerRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],unlocks,upgrades,sandBox,self,startTime=basicInfo['startTime'],lastPlayed=basicInfo['lastPlayed'])
+                elif mode == 'Blitz':
+                    run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],self,endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
+                elif mode == 'Goal':
+                    run = GoalRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['goalNetworth'],self,startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
+                self.pastRuns[mode].append(run)
     def validName(self,name:str):
         """returns True if the name is valid"""
         if len(name) < 3:
@@ -476,3 +504,4 @@ class RunManager():
                 if run.name == name:
                     return "-Name already exists"
         return True
+    

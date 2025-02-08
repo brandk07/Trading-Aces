@@ -1,7 +1,7 @@
 import os
 import shutil
 
-saveToClear = 1# 0 = Blitz, 1 = Career, 2 = Goal
+saveToClear = 2# 0 = Blitz, 1 = Career, 2 = Goal
 
 # List of save types
 if saveToClear == None:
@@ -10,7 +10,7 @@ if saveToClear == None:
         save_to_clear = save_types[i]
         try:
             # Path to clear
-            save_path = os.path.join("Saves", save_to_clear)
+            save_path = os.path.join("Saves",save_to_clear)
             
             # Remove directory and contents if exists
             if os.path.exists(save_path):
@@ -29,7 +29,7 @@ save_to_clear = save_types[saveToClear]
 
 try:
     # Path to clear
-    save_path = os.path.join("Saves", save_to_clear)
+    save_path = os.path.join("Saves",save_to_clear)
     
     # Remove directory and contents if exists
     if os.path.exists(save_path):

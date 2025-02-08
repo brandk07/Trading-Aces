@@ -204,7 +204,8 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
 # emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 
 def getScreenRefreshBackGrounds(screen:pygame.Surface):
-    background = pygame.image.load(r'Assets\GameBackground.png').convert_alpha()
+    # background = pygame.image.load(r'Assets\GameBackground.png').convert_alpha()
+    background = pygame.image.load(r'Assets\Casino-Game-Background-edit-online-1.png').convert_alpha()
     background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
     screen.fill((30,30,30))
     screen.blit(background,(0,0))

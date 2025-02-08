@@ -75,7 +75,7 @@ class StartMain:
         self.menus['play'].reset()
 
     def getSurfs(self):
-        background = pygame.image.load(r'Assets\StartBackground.png').convert_alpha()
+        background = pygame.image.load(r'Assets\Casino-Game-Background-edit-online-1.png').convert_alpha()
         background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
         extraSurf = pygame.Surface((1920,1080))
         extraSurf.fill((60,60,60))
@@ -143,7 +143,7 @@ class StartMain:
 
                     
             pygame.display.flip()
-            clock.tick(180)
+            clock.tick(60)
 
 
 

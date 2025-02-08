@@ -2,7 +2,7 @@ import pygame
 from Defs import *
 
 class OrderBox:
-    def __init__(self,coords:tuple,wh:tuple,gametime) -> None:
+    def __init__(self,coords:tuple,wh:tuple,gametime=None) -> None:
         self.coords = list(coords)
         self.wh = list(wh)
         self.gametime = gametime
@@ -15,14 +15,16 @@ class OrderBox:
         self.extraData = []
         self.quantStr = ""
         
-    def loadData(self,quantStr:str,totalStr:str,extraData:list[tuple[str,str,str]]) -> None:
+    def loadData(self,quantStr:str,totalStr:str,extraData:list[tuple[str,str,str]],showTotal=True) -> None:
         """extraData is [(key,value,middleVal)]"""
         
         # Condensed code
         def update_extra_data():
             self.extraData = extraData
-            self.extraData.append(("Total", totalStr, ""))
             self.quantStr = quantStr
+            if showTotal:
+                self.extraData.append(("Total", totalStr, ""))
+                
 
         if self.stage == 1:
             if self.extraData[0][0] == "Quantity":
@@ -80,7 +82,7 @@ class OrderBox:
             drawLinedInfo(screen,(x,y),(w,h),data,35,(0,0,0),middleData=middle)
 
         if result:
-            if self.gametime.speedBar.getValue() > 0 and not self.gametime.speedBar.frozen:
+            if self.gametime != None and self.gametime.speedBar.getValue() > 0 and not self.gametime.speedBar.frozen:
                 errors.addMessage("Can't Proceed While Game Running")
                 return False
             if self.stage == 0: self.stage = 1# if the proceed button is pressed, move to the next stage
