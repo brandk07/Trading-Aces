@@ -46,7 +46,7 @@ class ScreenManager:
         # t : datetime = gametime.time
         hour = ("0" if (timeStrs['hour']) < 10 else "")+str(timeStrs['hour'])
         # pygame.draw.rect(screen,(0,0,0),pygame.Rect(2,515,180,370),width=5)
-
+        # pygame.draw.rect(screen,backgroundColor,pygame.Rect(10,535,165,375),border_radius=25)
         drawCenterTxt(screen,hour,150,(200,200,200),(92,550),centerY=False)
         drawCenterTxt(screen,f"{timeStrs['minute']}",150,(200,200,200),(92,670),centerY=False)
         drawCenterTxt(screen,f"{timeStrs['dayname'][:3]} {timeStrs['monthname'][:3]} {timeStrs['day']}",50,(200,200,200),(92,785),centerY=False)

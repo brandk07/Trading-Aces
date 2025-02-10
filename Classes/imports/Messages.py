@@ -1,5 +1,5 @@
 import pygame
-# from Defs import *
+from Defs import backgroundColor
 
 # pygame.init()
 # screen = pygame.display.set_mode([900,900])
@@ -14,7 +14,7 @@ class ErrorMessage:
         self.backColor = backColor
         self.s_render = s_render
         self.surf = self.createSurface()
-        self.life = 240
+        self.life = 360
         
 
     def createSurface(self):
@@ -48,7 +48,7 @@ class ErrorMessageHandler:
         self.sRender = s_render
         self.framesAgoAdd = 0
 
-    def addMessage(self,txt:str,txtColor=(190,190,190),backColor=(160,10,10),txtSize=35,coords:list=None):
+    def addMessage(self,txt:str,txtColor=(190,190,190),backColor=backgroundColor,txtSize=35,coords:list=None):
         """If coords aren't given, the message will be displayed at the mouse position"""
         if self.framesAgoAdd == 0:
             coords = pygame.mouse.get_pos() if coords == None else coords

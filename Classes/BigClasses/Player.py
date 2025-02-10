@@ -111,6 +111,7 @@ class Player(Stock):
         """Pays the dividend to the player, called by the stock/index object when it reaches a new quarter/Month
         the stockObj one is called from the stockpriceEffects class in the update() method
         the indexFundObj is called here in the gameTick() method"""
+        if self.runStateCheck(): return
         if stockObj == None and indexFundObj == None:
             return
         if stockObj != None and (stocksToPay:=[stock for stock in self.stocks if stock.stockObj == stockObj]):# if at least 1 of the stock is in the player's portfolio
@@ -168,6 +169,7 @@ class Player(Stock):
 
     def buyAsset(self,newasset,customValue=None):
         """Custom Value will override the current value (Per Share Not Fullvalue)"""
+        if self.runStateCheck(): return
         value = newasset.getValue(bypass=True,fullvalue=False) if customValue == None else customValue
         if newasset.quantity <= 0:
             return
@@ -213,6 +215,7 @@ class Player(Stock):
     def sellAsset(self,asset,quantity,feePercent=1) -> int:
         """sells the quantity number of the asset object given
         won't sell more than the quantity of the asset"""
+        if self.runStateCheck(): return
         if quantity <= 0: return 0
         quantity = int(quantity)
         if isinstance(asset,StockAsset):
@@ -257,6 +260,7 @@ class Player(Stock):
         
     def removeAsset(self,asset):
         """removes the asset from the player's portfolio"""
+        if self.runStateCheck(): return
         if isinstance(asset,StockAsset):
             assetlist = self.stocks 
         elif isinstance(asset,OptionAsset):
@@ -277,6 +281,7 @@ class Player(Stock):
     def exerciseOption(self,optionObj:OptionAsset,quantity):
         """Executes the option
         Assumes that the player has enough money/stocks to execute the option"""
+        if self.runStateCheck(): return
         if quantity <= 0: return 0
         if optionObj.optionType == "call":
             cost = optionObj.getStrike()*quantity*100
@@ -321,6 +326,7 @@ class Player(Stock):
     
     def purchaseCareerUpgrade(self,uString:str,careerRun:CareerRun):
         """Purchases the career upgrade"""
+        if self.runStateCheck(): return
         cost = careerRun.getNextCost(uString)
 
         if self.cash >= cost:
@@ -337,7 +343,11 @@ class Player(Stock):
         else:
             soundEffects['error'].play()
             errors.addMessage('Not Enough Cash',txtSize=100,coords=[960,540])
-
+    def runStateCheck(self):
+        """Check this anytime something is bought or sold"""
+        if self.currentRun.state == 'complete':
+            errors.addMessage('View only mode, run already complete',txtSize=100,coords=[960,540])
+            return True
     def updateRunAssetSpread(self):
         """updates the asset spread of the game run"""
         self.gameRun.updateAssetSpread([sum([asset.getValue() for asset in self.stocks]),sum([asset.getValue() for asset in self.options]),sum([asset.getValue() for asset in self.indexFunds]),self.cash,self.getCurrentDebt()])
@@ -371,6 +381,7 @@ class Player(Stock):
     
     def addLoan(self,loanObj):
         """adds a loan to the player"""
+        if self.runStateCheck(): return
         self.loans.append(loanObj)
         self.underTakenDebt += loanObj.principal
         text = [
@@ -417,7 +428,7 @@ class Player(Stock):
         return 4.5# ACTUALLY NEED TO CODE THIS SOME OTHER TIME IN THE FUTURE THANKS
     def removeLoan(self,loanObj:LoanAsset):
         """removes the loan from the player"""
-        
+        if self.runStateCheck(): return
         text = [
             f"{self.gametime.getDate()}",
             f"Paid off ${limit_digits(loanObj.principal,20,loanObj.principal>1000)} Loan",
@@ -432,7 +443,7 @@ class Player(Stock):
         """adds a monthly payment to the loan
         should be called by the gameTick method
         This method is purely so that it can minus cash and add the transaction"""
-
+        if self.runStateCheck(): return
         amount,interest = loanObj.addMonthlyPayment(self)
         self.cash -= amount
         self.interestPaid += interest
@@ -446,6 +457,7 @@ class Player(Stock):
         self.transact.addTransaction(*text)
     def addLoanPayment(self,loanObj,amount):
         """adds a payment to the loan, NOT A MONTHLY PAYMENT - straight to the principal"""
+        if self.runStateCheck(): return
         self.cash -= loanObj.addPayment(amount,self)
         text = [
             f"{self.gametime.getDate()}",

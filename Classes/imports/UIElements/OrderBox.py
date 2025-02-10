@@ -27,13 +27,14 @@ class OrderBox:
                 
 
         if self.stage == 1:
-            if self.extraData[0][0] == "Quantity":
-                extra_slice = self.extraData[1:-1]
-            else:
-                extra_slice = self.extraData[:-1]
-            if extra_slice != extraData or self.quantStr != quantStr:
-                self.stage = 0
-                update_extra_data()
+            if showTotal:
+                if self.extraData[0][0] == "Quantity":
+                    extra_slice = self.extraData[1:-1]
+                else:
+                    extra_slice = self.extraData[:-1]
+                if extra_slice != extraData or self.quantStr != quantStr:
+                    self.stage = 0
+                    update_extra_data()
         else:
             update_extra_data()
         
@@ -42,7 +43,7 @@ class OrderBox:
     def draw(self,screen:pygame.Surface,resetClicked=True) -> bool:
         """Returns True if the confirm button is pressed resets after confirm button is pressed"""
         
-        pygame.draw.rect(screen,(50,50,50),pygame.Rect(self.coords[0],self.coords[1],self.wh[0],self.wh[1]),border_radius=15)
+        pygame.draw.rect(screen,backgroundColor,pygame.Rect(self.coords[0],self.coords[1],self.wh[0],self.wh[1]),border_radius=15)
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(self.coords[0],self.coords[1],self.wh[0],self.wh[1]),5,15)
 
 

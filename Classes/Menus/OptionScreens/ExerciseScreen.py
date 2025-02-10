@@ -224,7 +224,7 @@ class ExerciseOptionScreen:
         self.selectedGraph.setStockObj(self.selectOption.stockObj)
         self.selectedGraph.drawFull(screen, (200,210),(450,340),"SellSelected",True,"Normal")
         if self.forced:
-            drawCenterTxt(screen, 'Option Expired', 120, (185, 0, 0), (205, 105),centerX=False, centerY=False)
+            drawCenterTxt(screen, 'Option Expired', 120, (185, 0, 0), (450, 0),centerX=True, centerY=False)
 
         self.drawOptionInfo(screen,self.gametime)
         self.drawExerciseChoices(screen)

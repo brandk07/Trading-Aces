@@ -75,13 +75,14 @@ class StartMain:
         self.menus['play'].reset()
 
     def getSurfs(self):
-        background = pygame.image.load(r'Assets\Casino-Game-Background-edit-online-1.png').convert_alpha()
-        background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
+        background = pygame.image.load(r'Assets\back1.jpeg').convert_alpha()
+        background = pygame.transform.smoothscale(background,(1920,1080))
+        background.set_alpha(100)
         extraSurf = pygame.Surface((1920,1080))
         extraSurf.fill((60,60,60))
         extraSurf.blit(background,(0,0))
         tempSurf = pygame.Surface((1920,1080),pygame.SRCALPHA)
-        tempSurf.fill((60,60,60,200))
+        tempSurf.fill((*backgroundColor,200))
         createSurf = pygame.Surface((1920,1080))
         createSurf.blit(extraSurf,(0,0))
         drawBoxedImage(createSurf,(150,10),tempSurf,(1620,1060),25,5)# main box
@@ -96,7 +97,7 @@ class StartMain:
         lastfps = deque(maxlen=300)
         while True:
 
-            if self.gameMode == 'create':
+            if self.gameMode in ['create','play']:
                 screen.blit(createSurf,(0,0))
             else:
                 screen.blit(backSurf,(0,0))

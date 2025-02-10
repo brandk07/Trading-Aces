@@ -12,7 +12,7 @@ TIME_PERIODS = {
     '5Y': relativedelta(years=5) }
 
 class GameRun:
-    def __init__(self,name:str,assetSpread:list,gameMode,gameDate,iconIndex,runManager,startTime:str=None,lastPlayed:str=None) -> None:
+    def __init__(self,name:str,assetSpread:list,gameMode,gameDate,iconIndex,runManager,startTime:str=None,lastPlayed:str=None,state:str="live") -> None:
         """Start time is real time (no relation to the game time) that is why the gameDate is needed"""
         assert type(assetSpread) == list, "The asset spread must be a list"# [stocks, options, indexFunds, cash, loans]
         # assert len(assetSpread) == 5, "The asset spread must have 5 values"
@@ -20,7 +20,7 @@ class GameRun:
         assert (type(gameDate) == str or gameDate == None), "The game date must be a string"
         assert startTime == None or type(startTime) == str, "The start time must be a string"
         assert lastPlayed == None or type(lastPlayed) == str, "The last played time must be a string"
-        
+        self.state = "live" if state == "live" else "complete"# the state of the run (live or complete)
         self.name = name
         self.startTime = datetime.now() if startTime == None else datetime.strptime(startTime,"%m/%d/%Y %I:%M:%S %p")
         self.lastPlayed = datetime.now() if lastPlayed == None else datetime.strptime(lastPlayed,"%m/%d/%Y %I:%M:%S %p")
@@ -123,7 +123,7 @@ class GameRun:
 
 class BlitzRun(GameRun):
 
-    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,gameDuration:str,runManager,endGameDate=None,startTime:str=None,realWrldEndTime:str=None,lastPlayed:str=None) -> None:
+    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,gameDuration:str,runManager,endGameDate=None,startTime:str=None,realWrldEndTime:str=None,lastPlayed:str=None,state:str="live") -> None:
         """Being Clear, the gameDate and endGameDate are the dates in the game not the real time
         and the startTime and realWrldEndTime are the real-life time that the player created and ended the run"""
 
@@ -132,7 +132,7 @@ class BlitzRun(GameRun):
         self.realWrldEndTime = None if realWrldEndTime == None else datetime.strptime(realWrldEndTime,"%m/%d/%Y %I:%M:%S %p")# the time when the run ended/was completed
         self.endGameDate = endGameDate# temporary until the createCustomFile is called - need endGameDate cause we don't track how many days have gone by so when gameDate reaches this then game over
 
-        super().__init__(name,assetSpread,'Blitz',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed)
+        super().__init__(name,assetSpread,'Blitz',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed,state=state)
 
         if type(self.endGameDate) == str:# in case the createCustomFile isn't called since it wasn't just created
             # In theory it shouldn't need the if == None cause it should have been set when it was originally created, but just in case
@@ -168,14 +168,14 @@ class BlitzRun(GameRun):
     
 
 class CareerRun(GameRun):
-    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,unlocks:dict,upgrades:dict,sandBox:bool,runManager,startTime:str=None,lastPlayed:str=None) -> None:
+    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,unlocks:dict,upgrades:dict,sandBox:bool,runManager,startTime:str=None,lastPlayed:str=None,state="live") -> None:
         """Being Clear, the gameDate and endGameDate are the dates in the game not the real time
         and the startTime and realWrldEndTime are the real-life time that the player created and ended the run"""
         self.sandBoxMode = sandBox# if the player is in sandbox mode
         # self.verifyunlocks(unlocks)
         self.unlocks = unlocks# temporary until the verifyunlocks is called
         self.upgrades = upgrades# temporary until the verifyunlocks is called
-        super().__init__(name,assetSpread,'Career',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed)
+        super().__init__(name,assetSpread,'Career',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed,state=state)
         
         self.verifyGameData(unlocks,upgrades)
 
@@ -393,7 +393,7 @@ class CareerRun(GameRun):
             json.dump(game_info, f) 
         
 class GoalRun(GameRun):
-    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,goalNetworth:int,runManager,startTime:str=None,realWrldEndTime:str=None,lastPlayed:str=None) -> None:
+    def __init__(self,name:str,assetSpread:list,gameDate,iconIndex,goalNetworth:int,runManager,startTime:str=None,realWrldEndTime:str=None,lastPlayed:str=None,state:str="live") -> None:
         """Being Clear, the gameDate is the date in the game not the real time
         and the startTime and realWrldEndTime are the real-life time that the player created and ended the run"""
         try:
@@ -402,7 +402,7 @@ class GoalRun(GameRun):
             raise ValueError("The goal networth must be an integer or a string that can be converted to an integer")
         
         self.realWrldEndTime = None if realWrldEndTime == None else datetime.strptime(realWrldEndTime,"%m/%d/%Y %I:%M:%S %p")# the time when the run ended/was completed
-        super().__init__(name,assetSpread,'Goal',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed)
+        super().__init__(name,assetSpread,'Goal',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed,state=state)
 
     def getModeSpecificInfo(self):
         """Returns the mode specific info for the run"""
@@ -424,34 +424,43 @@ class RunManager():
     """This class Manages all the runs in one convenient place"""
     def __init__(self):
         self.pastRuns : dict[str:list[GameRun]] = {'Career':[],'Blitz':[],'Goal':[]}# the past runs that the player has done
-        self.terminatedRuns : dict[str:list[GameRun]] = {'Career':[],'Blitz':[],'Goal':[]}# the terminated runs that the player has don
+        self.completedRuns : dict[str:list[GameRun]] = {'Career':[],'Blitz':[],'Goal':[]}# the complete runs that the player has don
         self.loadPastRuns()
     def reset(self):
         self.pastRuns = {'Career':[],'Blitz':[],'Goal':[]}
-        self.terminatedRuns = {'Career':[],'Blitz':[],'Goal':[]}
+        self.completedRuns = {'Career':[],'Blitz':[],'Goal':[]}
         self.loadPastRuns()
     def getRuns(self,mode:str):
         """Returns the runs of the mode"""
         return self.pastRuns[mode]
-    def getRunsTerminated(self,mode:str):
-        """Returns the terminated runs of the mode"""
-        return self.terminatedRuns[mode]
+    def getRunsCompleted(self,mode:str):
+        """Returns the completedRuns runs of the mode"""
+        return self.completedRuns[mode]
     def getAllRuns(self,inList=False):
         """Returns all the runs in a dictionary or list if inList is True"""
         if inList:
             return [run for mode in self.pastRuns for run in self.pastRuns[mode]]
         return self.pastRuns
-    def getAllTerminatedRuns(self,inList=False):
-        """Returns all the terminated runs in a dictionary or list if inList is True"""
+    def getAllCompletedRuns(self,inList=False):
+        """Returns all the complete runs in a dictionary or list if inList is True"""
         if inList:
-            return [run for mode in self.terminatedRuns for run in self.terminatedRuns[mode]]
-        return self.terminatedRuns
+            return [run for mode in self.completedRuns for run in self.completedRuns[mode]]
+        return self.completedRuns
+    def removeRun(self,run:GameRun):
+        """Removes the run from either the past or complete runs"""
+        if run in self.pastRuns[run.gameMode]:
+            self.pastRuns[run.gameMode].remove(run)
+            os.remove(run.getFileDir())
+
+        elif run in self.completedRuns[run.gameMode]:
+            self.completedRuns[run.gameMode].remove(run)
+            os.remove(run.getFileDir())
     def addRun(self,run:GameRun):
         """Adds the run to the past runs"""
         self.pastRuns[run.gameMode].append(run)
     def getRanking(self,run:GameRun):
         """Returns the ranking of the runs in the mode"""
-        runs = self.pastRuns[run.gameMode]
+        runs = self.pastRuns[run.gameMode]+self.completedRuns[run.gameMode]
         # runs.append(run)
         runs.sort(key=lambda x:x.getNetworth(),reverse=True)
         return runs.index(run)+1
@@ -476,23 +485,23 @@ class RunManager():
                     run = GoalRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['goalNetworth'],self,startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
                 self.pastRuns[mode].append(run)
 
-        for mode in self.terminatedRuns:
-            for runName in os.listdir(os.path.join("Saves","terminated",mode)):
-                with open(os.path.join("Saves","terminated",mode,runName,"BasicInfo.json"),"r") as f:
+        for mode in self.completedRuns:
+            for runName in os.listdir(os.path.join("Saves","complete",mode)):
+                with open(os.path.join("Saves","complete",mode,runName,"BasicInfo.json"),"r") as f:
                     basicInfo = json.load(f)
-                with open(os.path.join("Saves","terminated",mode,runName,"ModeSpecificInfo.json"),"r") as f:
+                with open(os.path.join("Saves","complete",mode,runName,"ModeSpecificInfo.json"),"r") as f:
                     modeSpecificInfo : dict = json.load(f)
                 if mode == 'Career':
                     if len(modeSpecificInfo) > 0:
                         unlocks = {key:modeSpecificInfo[key] for key in ["Pre-Made Options","Custom Options","Stock Reports"]}
                         upgrades = {key:modeSpecificInfo[key] for key in ["Asset Storage","Loan Interest","Max Loan Amount","Tax Rate"]}
                         sandBox = modeSpecificInfo.popitem()[1]
-                    run = CareerRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],unlocks,upgrades,sandBox,self,startTime=basicInfo['startTime'],lastPlayed=basicInfo['lastPlayed'])
+                    run = CareerRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],unlocks,upgrades,sandBox,self,startTime=basicInfo['startTime'],lastPlayed=basicInfo['lastPlayed'],state='complete')
                 elif mode == 'Blitz':
-                    run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],self,endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
+                    run = BlitzRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['duration'],self,endGameDate=modeSpecificInfo['endGameDate'],startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'],state='complete')
                 elif mode == 'Goal':
-                    run = GoalRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['goalNetworth'],self,startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'])
-                self.pastRuns[mode].append(run)
+                    run = GoalRun(basicInfo['name'],basicInfo['assetSpread'],basicInfo['gameDate'],basicInfo['iconIndex'],modeSpecificInfo['goalNetworth'],self,startTime=basicInfo['startTime'],realWrldEndTime=modeSpecificInfo['endTime'],lastPlayed=basicInfo['lastPlayed'],state='complete')
+                self.completedRuns[mode].append(run)
     def validName(self,name:str):
         """returns True if the name is valid"""
         if len(name) < 3:

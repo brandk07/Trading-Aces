@@ -1,3 +1,4 @@
+backgroundColor = (8,56,45)
 import pygame,time
 from pygame import gfxdraw,freetype
 import os,re,json,math,timeit,random
@@ -18,6 +19,7 @@ pygame.init()
 
 TXTCOLOR = (220,220,220)
 POINTSPERGRAPH = 500
+
 MAXSTEP = 50# Max points that can be added to the graph at a time
 
 def timing_decorator(func):
@@ -205,17 +207,22 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
 
 def getScreenRefreshBackGrounds(screen:pygame.Surface):
     # background = pygame.image.load(r'Assets\GameBackground.png').convert_alpha()
-    background = pygame.image.load(r'Assets\Casino-Game-Background-edit-online-1.png').convert_alpha()
-    background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
+    # background = pygame.image.load(r'Assets\Casino-Game-Background-edit-online-1.png').convert_alpha()
+    background = pygame.image.load(r'Assets\back1.jpeg').convert_alpha()
+    background = pygame.transform.smoothscale(background,(1920,1080))
+    # background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
+    background.set_alpha(100)
     screen.fill((30,30,30))
     screen.blit(background,(0,0))
+    gfxdraw.filled_polygon(screen, [(0,0),(185,0),(185,1080),(0,1080)],(*backgroundColor,150))
     surface = screen.copy()
 
     menuSurface = surface.copy()
     screenSurface = surface.copy()
     menupoints = [(185,95),(1910,95),(1910,980),(185,980)]
     # gfxdraw.filled_polygon(menuSurface, menupoints,(40,40,40,150))
-    gfxdraw.filled_polygon(menuSurface, menupoints,(40,40,40,200))
+    
+    gfxdraw.filled_polygon(menuSurface, menupoints,(*backgroundColor,200))
     pygame.draw.polygon(menuSurface, (0,0,0), menupoints,5)
         
     return menuSurface,screenSurface

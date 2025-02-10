@@ -22,7 +22,7 @@ class PlayMenu:
         self.runManager = runManager
         self.selectionBar = MultiSelectionBar()
         self.orderBox = OrderBox((170,640),(530,240))
-        self.liveOrPast = MenuSelection((175,20),(525,95),["Live","Terminated"],55,[(34, 139, 34), (220, 20, 60)])
+        self.liveOrPast = MenuSelection((175,20),(525,95),["Live","Complete"],55,[(34, 139, 34), (220, 20, 60)])
         self.selectionBar.setSelected(["Blitz","Career","Goal"])# sets all the options to be selected
         self.updateRunCards()
 
@@ -30,7 +30,7 @@ class PlayMenu:
         """Fills/Updates the run cards that are used in the vertScroll
         MUST be called anytime something changes like deleting or adding a run"""
         self.runCards : dict = {r.name:StartRunCard(self.vertScroll,r) for r in self.runManager.getAllRuns(True)}
-        self.terminatedCards : dict = {r.name:StartRunCard(self.vertScroll,r) for r in self.runManager.getAllTerminatedRuns(True)}
+        self.completedCards : dict = {r.name:StartRunCard(self.vertScroll,r) for r in self.runManager.getAllCompletedRuns(True)}
         # sort the dict by the lastPlayed attribute - it is a datetime object
         # self.runCards = dict(sorted(self.runCards.items(),key=lambda x: x[1].runObj.lastPlayed,reverse=True))
 
@@ -44,7 +44,7 @@ class PlayMenu:
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(715,115,1040,920),5,border_radius=25)# outline for the latter scroll
 
         # cards = [StartRunCard(self.vertScroll,c) for c in runs]
-        cards = [self.runCards[r.name] for r in runs] if self.liveOrPast.getSelected() == "Live" else [self.terminatedCards[r.name] for r in runs]
+        cards = [self.runCards[r.name] for r in runs] if self.liveOrPast.getSelected() == "Live" else [self.completedCards[r.name] for r in runs]
         cards.sort(key=lambda x: x.runObj.lastPlayed,reverse=True)
         self.vertScroll.loadCards(cards)
         self.vertScroll.draw(screen)
@@ -61,8 +61,15 @@ class PlayMenu:
         
         drawLinedInfo(screen,(170,215),(540,260),info,45,colors=(self.modeColors[run.gameMode],(0,200,0),(180,180,180)))
 
-        self.orderBox.loadData("Removing Run",f"$0",[("Action Irreversible","-","")],showTotal=False)
-        self.orderBox.draw(screen)
+ 
+        self.orderBox.loadData("Deleting Run",f"$0",[("Action Irreversible","","")],showTotal=False)# if the run is completedRuns then the only option is to delete it
+        
+        result = self.orderBox.draw(screen)
+        if result:
+            self.runManager.removeRun(run)
+            self.updateRunCards()
+            
+
         
 
     def draw(self,screen:pygame.Surface):
@@ -71,7 +78,7 @@ class PlayMenu:
             if self.liveOrPast.getSelected() == "Live":
                 runs.extend(self.runManager.getRuns(r))
             else:
-                runs.extend(self.runManager.getRunsTerminated(r))
+                runs.extend(self.runManager.getRunsCompleted(r))
 
         self.drawLatterScroll(screen,runs)
 
@@ -85,7 +92,7 @@ class PlayMenu:
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(150,10,1620,1060),5,border_radius=25)# main box border
 
-        if self.vertScroll.getCard() != None and drawClickableBoxWH(screen,(180,450),(510,110),"PLAY", 65, (0,0,0),(0,210,0)):
+        if self.vertScroll.getCard() != None and drawClickableBoxWH(screen,(180,450),(510,110),"PLAY" if self.liveOrPast.getSelected() == "Live" else "VIEW", 65, (0,0,0),(0,210,0)):
             return self.vertScroll.getCard().runObj
 
         

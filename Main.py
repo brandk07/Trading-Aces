@@ -25,6 +25,9 @@ from Classes.Menus.Menu import ScreenManager
 
 GAMESPEED = 250
 FASTFORWARDSPEED = 1000
+CLICK_COOLDOWN = 0.2  # 100ms cooldown
+last_click_time = 0
+
 pygame.init()
 
 monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
@@ -108,12 +111,16 @@ if __name__ == "__main__":
 
         
         menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(screen)
+
+        
         # ------------------------------------------ Main Game Loop ------------------------------------------
         while True:
             mousex,mousey = pygame.mouse.get_pos()
 
+            if currentRun.state == 'complete':
+                gametime.speedBar.frozen = True; gametime.speedBar.redraw()
             if screenManager.getCurrentScreen(True) in ['Home','Stock']:# if the current screen is a screen, not a menu then draw the background
-                screen.blit(screenBackRefresh,(-200,0))
+                screen.blit(screenBackRefresh,(0,0))
             else:
                 screen.blit(menuBackRefresh,(0,0))
 
@@ -134,7 +141,7 @@ if __name__ == "__main__":
                     
                     for indexfund in indexFunds:
                         indexfund.updategraphs(gametime.speedBar.getValue(),step)
-            if gametime.speedBar.frozen:
+            if gametime.speedBar.frozen and currentRun.state != 'complete':
                 gametime.speedBar.frozen = False
                 gametime.speedBar.redraw()
 
@@ -150,10 +157,11 @@ if __name__ == "__main__":
             for animation in animationList:
                 animation.update(screen)
 
-            if drawClickableBoxWH(screen,(10,970),(165,100),"Main Menu", 50, (0,0,0),(0,210,0)):
+            if drawClickableBoxWH(screen,(10,970),(165,100),"Main Menu", 50, (180,180,180),(255,255,255)):
                 break
             
             mouseButton.update()
+            
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):                
                     saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)
@@ -162,8 +170,12 @@ if __name__ == "__main__":
 
                 # elif event.type == pygame.MOUSEBUTTONDOWN:
                 elif event.type == pygame.MOUSEBUTTONUP:
-                    # print(event.button)
-                    mouseButton.addEvent(event.button)
+                    current_time = time.time()
+                    print(current_time - last_click_time)
+                    if last_click_time-current_time < CLICK_COOLDOWN:# if the time between the last click and the current click is less than the cooldown
+                      mouseButton.addEvent(event.button)
+                      last_click_time = current_time
+
                     if mouseButton.getButtonOveride('left') == 1:
                         print(mousex,mousey)
                     
@@ -182,7 +194,7 @@ if __name__ == "__main__":
 
             pygame.display.update()
 
-            clock.tick(180)
+            clock.tick(60)
 
         # Saves the game when the user goes back to the main menu
         saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)
