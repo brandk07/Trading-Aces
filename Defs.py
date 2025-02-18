@@ -617,7 +617,7 @@ def saveGame(stocklist,player,dataDir,gametime,transact,currentRun,optionTrade):
         stock.save_data()
     player.save_data()# Saves the portfolio and the cashStock data
     transact.storeTransactions(currentRun.getFileDir())
-    currentRun.saveRun()
+    currentRun.saveRun(gametime.time)
     with open(os.path.join(dataDir,"ExtraData.json"),'w') as file:
         file.seek(0)# go to the start of the file
         file.truncate()# clear the file

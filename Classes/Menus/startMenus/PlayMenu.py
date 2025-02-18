@@ -47,7 +47,8 @@ class PlayMenu:
         cards = [self.runCards[r.name] for r in runs] if self.liveOrPast.getSelected() == "Live" else [self.completedCards[r.name] for r in runs]
         cards.sort(key=lambda x: x.runObj.lastPlayed,reverse=True)
         self.vertScroll.loadCards(cards)
-        self.vertScroll.draw(screen)
+        if self.vertScroll.draw(screen):
+            self.orderBox.reset()
     def drawSelected(self,screen:pygame.Surface):
         run = self.vertScroll.getCard().runObj
         

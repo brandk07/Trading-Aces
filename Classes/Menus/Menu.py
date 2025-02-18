@@ -4,8 +4,9 @@ from Classes.Menus.HomeScreen import HomeScreen
 from Classes.imports.UIElements.SelectionElements import SelectionBar
 
 class ScreenManager:
-    def __init__(self,menuDict:dict,homeScreen,stockScreen,gametime) -> None:
+    def __init__(self,menuDict:dict,homeScreen,stockScreen,gametime,currentRun) -> None:
         self.screens = {"Home":homeScreen,"Stock":stockScreen}
+        self.currentRun = currentRun
         self.gameTime = gametime
         for key in menuDict:
             self.screens[key] = menuDict[key]
@@ -42,6 +43,7 @@ class ScreenManager:
 
     def drawTime(self,screen,gametime):
         """Draws the time in the top left corner"""
+        
         timeStrs = gametime.getTimeStrings()
         # t : datetime = gametime.time
         hour = ("0" if (timeStrs['hour']) < 10 else "")+str(timeStrs['hour'])
@@ -51,12 +53,30 @@ class ScreenManager:
         drawCenterTxt(screen,f"{timeStrs['minute']}",150,(200,200,200),(92,670),centerY=False)
         drawCenterTxt(screen,f"{timeStrs['dayname'][:3]} {timeStrs['monthname'][:3]} {timeStrs['day']}",50,(200,200,200),(92,785),centerY=False)
         drawCenterTxt(screen,f"{timeStrs['year']}",80,(200,200,200),(92,840),centerY=False)
+
+        if self.currentRun.gameMode == "Blitz" and self.selectedScreen != "Home":
+            # drawCenterTxt(screen,,50,(200,200,200),(92,920),centerY=False)
+            color = (52, 235, 6) if self.currentRun.getTimeLeftInt(gametime) > 10 else (255, 69, 0)
+            drawCenterTxt(screen,f"Time Left : {self.currentRun.getRemainingTimeStr(gametime)}",80,color,(200,50),centerX=False)
+
+    def drawCompletedText(self,screen):
+        """Draws the text that says the game is complete and view only mode instead of time"""
+        drawCenterTxt(screen,"Run",55,(219, 39, 15),(92,565),centerY=False)
+        drawCenterTxt(screen,"Complete",55,(219, 39, 15),(92,605),centerY=False)
+        drawCenterTxt(screen,"VIEW",80,(210,210,210),(92,695),centerY=False)
+        drawCenterTxt(screen,"MODE",80,(210,210,210),(92,770),centerY=False)
         
     def drawCurrentScreen(self,screen,stocklist,player,gametime):
         self.drawSelector(screen)
         if self.screens['Options'].isForced():#if the options screen is forced
             self.gameTime.speedBar.frozen = True
-        self.drawTime(screen,gametime)
+
+
+        if self.currentRun.state == 'live': 
+            self.drawTime(screen,gametime)
+        elif self.currentRun.state == 'complete':
+            self.drawCompletedText(screen)
+            
         
         self.screens[self.selectedScreen].draw(screen,stocklist,player,gametime)
         

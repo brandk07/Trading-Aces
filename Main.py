@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
         gameModeMenu = GameModeMenu(stocklist,player,pastRuns,currentRun,gametime)
         menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
-        screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
+        screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime,currentRun)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
         player.screenManager = screenManager
         autofastforward = True
 
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         while True:
             mousex,mousey = pygame.mouse.get_pos()
 
-            if currentRun.state == 'complete':
+            if currentRun.getState(gametime) == 'complete':# Checks for completion in getState
                 gametime.speedBar.frozen = True; gametime.speedBar.redraw()
             if screenManager.getCurrentScreen(True) in ['Home','Stock']:# if the current screen is a screen, not a menu then draw the background
                 screen.blit(screenBackRefresh,(0,0))

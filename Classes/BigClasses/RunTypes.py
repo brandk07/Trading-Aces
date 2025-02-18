@@ -102,22 +102,25 @@ class GameRun:
         print('Created files for new run')
 
     def getFileDir(self):
-        return f"Saves/{self.gameMode}/{self.name}/"
+        """Returns the directory of the run"""
+        saveDir = f"Saves/Complete/{self.gameMode}/{self.name}/" if self.state == "complete" else f"Saves/{self.gameMode}/{self.name}/"
+        return saveDir
     def createCustomFile(self):
+        raise NotImplementedError
+    def getState(self):
         raise NotImplementedError
     def getModeSpecificInfo(self):
         raise NotImplementedError
-    def saveRun(self):
+    def saveRun(self,gametime:datetime):
         """Saves the run to the file"""
         save_dir = self.getFileDir()
-        basicInfo = {"name": self.name,"assetSpread": self.assetSpread,"gameMode": self.gameMode,"gameDate": self.gameDate.strftime(DFORMAT),"iconIndex":self.iconIndex,"startTime":self.startTime.strftime(DFORMAT),"lastPlayed":datetime.now().strftime(DFORMAT)}
+        basicInfo = {"name": self.name,"assetSpread": self.assetSpread,"gameMode": self.gameMode,"gameDate": gametime.strftime(DFORMAT),"iconIndex":self.iconIndex,"startTime":self.startTime.strftime(DFORMAT),"lastPlayed":datetime.now().strftime(DFORMAT)}
+        if not os.path.exists(save_dir):# used if the run is being transferred from live to complete (at least right now 2/17/2025)
+            os.makedirs(save_dir, exist_ok=True)# create the directory if it doesn't exist
+            self.massFileCreation(save_dir)# create the files for the new run
         with open(os.path.join(save_dir, "BasicInfo.json"), "w") as f:
-            # f.seek(0)  # go to the start of the file
-            # f.truncate()  # clear the file
             json.dump(basicInfo, f)
         with open(os.path.join(save_dir, "ModeSpecificInfo.json"), "w+") as f:
-            # f.seek(0)  # go to the start of the file
-            # f.truncate()  # clear the file
             json.dump(self.getModeSpecificInfo(), f)
 
 
@@ -157,7 +160,22 @@ class BlitzRun(GameRun):
     def getTimeLeftInt(self,gametime):
         """Returns the time left in days"""
         return (self.endGameDate - gametime.time).days
-    
+    def completeRun(self,gametime):
+        """Completes the run"""
+        self.realWrldEndTime = datetime.now()
+        errors.addMessage(f"Out of Time - Run Completed",coords=(960,300),lifeTime=360)
+        errors.addMessage(f'Now in View Mode',coords=(960,480),lifeTime=360)
+        self.runManager.completeRun(self,gametime)
+
+    def getState(self,gametime):
+        """Returns the state of the run"""
+        if self.state == "complete":
+            return "complete"
+        if self.getTimeLeftInt(gametime) <= 0:# if the time has run out
+            if self.state == "live":# if the run is still live
+                self.completeRun(gametime)
+            return "complete"
+        return 'live'
     def getRemainingTimeStr(self,gametime):
         """Returns the remaining time in a string format"""
         timeleft = self.getTimeLeftInt(gametime)
@@ -446,11 +464,18 @@ class RunManager():
         if inList:
             return [run for mode in self.completedRuns for run in self.completedRuns[mode]]
         return self.completedRuns
+    def completeRun(self,run:GoalRun|BlitzRun,gametime):
+        """Completes the run"""
+        self.completedRuns[run.gameMode].append(run)
+        self.removeRun(run)
+        run.state = "complete"
+        run.saveRun(gametime.time)# saves the run to the file
     def removeRun(self,run:GameRun):
         """Removes the run from either the past or complete runs"""
         if run in self.pastRuns[run.gameMode]:
             self.pastRuns[run.gameMode].remove(run)
-            os.remove(run.getFileDir())
+            # os.remove(run.getFileDir())
+            shutil.rmtree(run.getFileDir())
 
         elif run in self.completedRuns[run.gameMode]:
             self.completedRuns[run.gameMode].remove(run)

@@ -6,7 +6,7 @@ from Defs import backgroundColor
 # pygame.display.set_caption("Pygame Shell")
 
 class ErrorMessage:
-    def __init__(self,coords:list,text:str,txtSize:int,txtColor:tuple,backColor:tuple,s_render) -> None:
+    def __init__(self,coords:list,text:str,txtSize:int,txtColor:tuple,backColor:tuple,s_render,lifeTime) -> None:
         self.coords = list(coords)
         self.text = text
         self.txtSize = txtSize
@@ -14,7 +14,7 @@ class ErrorMessage:
         self.backColor = backColor
         self.s_render = s_render
         self.surf = self.createSurface()
-        self.life = 360
+        self.life = lifeTime
         
 
     def createSurface(self):
@@ -48,11 +48,11 @@ class ErrorMessageHandler:
         self.sRender = s_render
         self.framesAgoAdd = 0
 
-    def addMessage(self,txt:str,txtColor=(190,190,190),backColor=backgroundColor,txtSize=35,coords:list=None):
+    def addMessage(self,txt:str,txtColor=(190,190,190),backColor=backgroundColor,txtSize=35,coords:list=None,lifeTime=360):
         """If coords aren't given, the message will be displayed at the mouse position"""
         if self.framesAgoAdd == 0:
             coords = pygame.mouse.get_pos() if coords == None else coords
-            self.messageList.append(ErrorMessage(coords,txt,txtSize,txtColor,backColor,self.sRender))
+            self.messageList.append(ErrorMessage(coords,txt,txtSize,txtColor,backColor,self.sRender,lifeTime))
             self.framesAgoAdd = 30
 
     

@@ -494,7 +494,7 @@ class VerticalScroll(SideScroll):
     def draw(self, screen):
         """Draws the cards vertically instead of horizontally"""
         minY, maxY = self.coords[1]+20, self.coords[1]+self.wh[1]-20
-        
+        switched = False
         # Handle scrolling
         if mouseButton.getButton('scrollUp'):  # Scroll up
             self.scroll = min(25, self.scroll + 50)
@@ -525,7 +525,8 @@ class VerticalScroll(SideScroll):
             if card.draw(screen, (xpos, ycoord),minY=minY, maxY=maxY):
                 if self.lastSelected != i:
                     self.setCard(i)
+                    switched = True
                 else:
                     self.lastSelected = None
                     
-        return self.getCard()
+        return switched
