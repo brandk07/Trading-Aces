@@ -354,10 +354,15 @@ class Player(Stock):
     def getStockQuantity(self,stockObj):
         """returns the number of stocks the player has of the stockObj"""
         return sum([stock.quantity for stock in self.stocks if stock.stockObj == stockObj])
+        
     def getNumStocks(self,stockObj):
         """returns the number of stocks the player has of the stockObj"""
         return sum([stock.quantity for stock in self.stocks if stock.stockObj == stockObj])
     
+    def getNumIndexFunds(self,indexFundObj):
+        """returns the number of index funds the player has of the indexFundObj"""
+        return sum([asset.quantity for asset in self.indexFunds if asset.stockObj == indexFundObj])
+
     def getNetworth(self):
         """returns the networth of the player"""
         allassets = self.stocks + self.options + self.indexFunds
@@ -399,6 +404,9 @@ class Player(Stock):
     def getCash(self):
         """returns the cash of the player"""
         return self.cash
+    def getMaxPurchaseQty(self,asset):
+        """returns the maximum quantity of stocks the player can buy"""
+        return int(self.cash/asset.price)
     def getMaxLoan(self):
         """returns the maximum amount of money the player can borrow"""
         est = self.getNetworth()*self.currentRun.getCurrVal("Max Loan Amount")

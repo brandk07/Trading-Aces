@@ -64,7 +64,7 @@ class GameRun:
         return self.runManager.getRanking(self)
     def getRankStr(self) -> str:
         """Returns the rank of the run"""
-        return ordinal(self.runManager.getRanking(self))
+        return "N/A" if (rank:=self.runManager.getRanking(self)) == None else ordinal(rank)
     def getAssets(self):
         """Returns all the assets of the run"""
         return self.assetSpread# [stocks, options, indexFunds, cash, loans]
@@ -77,7 +77,7 @@ class GameRun:
         with open(os.path.join(save_dir, "BasicInfo.json"), "w") as f:
             json.dump(basicInfo, f)        
 
-        os.makedirs(os.path.join("Saves", self.gameMode, self.name, "ScreenShots"), exist_ok=True)# create the screenshot folder
+        os.makedirs(os.path.join(save_dir, "ScreenShots"), exist_ok=True)# create the screenshot folder
 
         with open(os.path.join(save_dir, "ExtraData.json"), "w+") as f:
             json.dump([], f)
@@ -163,7 +163,7 @@ class BlitzRun(GameRun):
     def completeRun(self,gametime):
         """Completes the run"""
         self.realWrldEndTime = datetime.now()
-        errors.addMessage(f"Out of Time - Run Completed",coords=(960,300),lifeTime=360)
+        errors.addMessage(f"Out of Time - Run Completed",coords=(960,300),lifeTime=360,txtSize=100)
         errors.addMessage(f'Now in View Mode',coords=(960,480),lifeTime=360)
         self.runManager.completeRun(self,gametime)
 
@@ -199,7 +199,7 @@ class CareerRun(GameRun):
 
     def setSandboxMode(self):
         self.unlocks = {"Pre-Made Options" : True,"Custom Options" : True,"Stock Reports" : True}
-        self.upgrades = {"Asset Storage" : 4,"Loan Interest" : 4,"Max Loan Amount" : 4,"Tax Rate" : 4}
+        self.upgrades = {"Asset Storage" : 5,"Loan Interest" : 5,"Max Loan Amount" : 5,"Tax Rate" : 5}
     def getUpgradeOrUnlock(self,string:str):
         """Returns whether the string (Upgrade or Unlock) is an upgrade or an unlock"""
         assert string in list(self.unlocks.keys())+list(self.upgrades.keys()), "The string must be a key in the unlocks or upgrades"
@@ -347,6 +347,9 @@ class CareerRun(GameRun):
             self.unlocks["Stock Reports"] = True
         if self.upgrades["Max Loan Amount"] < 5:
             self.upgrades["Max Loan Amount"] = min(5,int(self.getNetworth()//170_000))
+    
+    def getState(self,gametime):# always live
+        return 'live'
 
     # def nextUnlock(self,type:str):
     #     """Returns the closest unlock for the type (Networth or paid)"""
@@ -430,6 +433,26 @@ class GoalRun(GameRun):
         return self.goalNetworth
     def getNetworthDelta(self):
         return self.goalNetworth - self.getNetworth()
+    def completeRun(self,gametime):
+        """Completes the run"""
+        self.realWrldEndTime = datetime.now()
+        errors.addMessage(f"Goal Reached - Run Completed",coords=(960,300),lifeTime=360,txtSize=100)
+        errors.addMessage(f'Now in View Mode',coords=(960,480),lifeTime=360)
+        self.runManager.completeRun(self,gametime)
+    def getState(self,gametime):
+        """Returns the state of the run"""
+        if self.state == "complete":
+            return "complete"
+        if self.getNetworthDelta() <= 0:# if the networth has been reached
+            if self.state == "live":# if the run is still live
+                self.completeRun(gametime)
+            return "complete"
+        return 'live'
+    def getTimeToComplete(self):
+        """Returns the amount of time it took to complete the goal"""
+        if self.realWrldEndTime == None:
+            return None
+        return (self.realWrldEndTime - self.startTime).days
     def createCustomFile(self):
         save_dir = os.path.join("Saves", "Goal", self.name)
         os.makedirs(save_dir, exist_ok=True)
@@ -437,6 +460,7 @@ class GoalRun(GameRun):
         game_info = self.getModeSpecificInfo()
         with open(info_path, 'w') as f:
             json.dump(game_info, f) 
+        
 
 class RunManager():
     """This class Manages all the runs in one convenient place"""
@@ -454,6 +478,7 @@ class RunManager():
     def getRunsCompleted(self,mode:str):
         """Returns the completedRuns runs of the mode"""
         return self.completedRuns[mode]
+    
     def getAllRuns(self,inList=False):
         """Returns all the runs in a dictionary or list if inList is True"""
         if inList:
@@ -486,10 +511,17 @@ class RunManager():
     def getRanking(self,run:GameRun):
         """Returns the ranking of the runs in the mode"""
         runs = self.pastRuns[run.gameMode]+self.completedRuns[run.gameMode]
+        if isinstance(run, GoalRun):
+            runs = [run for run in runs if run.getTimeToComplete() != None]
+            runs.sort(key=lambda x:x.getTimeToComplete(),reverse=True)
+        else:
+            runs.sort(key=lambda x:x.getNetworth(),reverse=True)
+            
+        
         # runs.append(run)
-        runs.sort(key=lambda x:x.getNetworth(),reverse=True)
-        return runs.index(run)+1
-        # return "1"
+        
+        rank = runs.index(run) + 1 if run in runs else None
+        return rank
     def loadPastRuns(self):
         for mode in self.pastRuns:
             print(os.listdir(os.path.join("Saves",mode)))

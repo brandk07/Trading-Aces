@@ -132,7 +132,9 @@ class BlitzScreen(BlitzAndGoalScreen):
         
         modeColors = {['Career','Blitz','Goal'][i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
         
-        rankColor = (200,200,200) if self.currentRun.getRankInt() > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][self.currentRun.getRankInt()-1]
+
+        rank = self.currentRun.getRankInt()
+        rankColor = (200,200,200) if rank is None or rank > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][rank-1]
         timeLeftCol = (0, 150, 136) if self.currentRun.getTimeLeftInt(gametime) > 10 else (255, 69, 0)
         colors = [modeColors[self.currentRun.gameMode],rankColor,timeLeftCol,(200,200,200)]
         pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
@@ -150,8 +152,9 @@ class GoalScreen(BlitzAndGoalScreen):
         ]
         
         modeColors = {['Career','Blitz','Goal'][i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
+        rank = self.currentRun.getRankInt()
+        rankColor = (200,200,200) if rank is None or rank > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][rank-1]
         
-        rankColor = (200,200,200) if self.currentRun.getRankInt() > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][self.currentRun.getRankInt()-1]
         timeLeftCol = (0, 150, 136) if self.currentRun.getNetworth() > self.currentRun.getGoalNetworth()*.75 else (255, 69, 0)# if the networth is greater than 75% of the goal
         colors = [modeColors[self.currentRun.gameMode],rankColor,timeLeftCol,(200,200,200)]
         pygame.draw.rect(screen,(0,0,0),(195,185,500,370),5,10)
@@ -376,8 +379,9 @@ class CareerScreen(BlitzAndGoalScreen):
         ]
         
         modeColors = {['Career','Blitz','Goal'][i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
+        rank = self.currentRun.getRankInt()
+        rankColor = (200,200,200) if rank is None or rank > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][rank-1]
         
-        rankColor = (200,200,200) if self.currentRun.getRankInt() > 3 else [(255, 215, 0), (192, 192, 192),(205, 127, 50)][self.currentRun.getRankInt()-1]
         # colors = [modeColors[self.currentRun.gameMode],rankColor,(0, 170, 170),(0, 170, 170),(200,200,200)]
         colors = [modeColors[self.currentRun.gameMode],rankColor,(200,200,200)]
         pygame.draw.rect(screen,(0,0,0),(195,205,500,350),5,10)

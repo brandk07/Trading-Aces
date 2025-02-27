@@ -460,6 +460,12 @@ class InvestmentScreen:#
         info = [(string,value) for string,value in zip(strings,values)]
         drawLinedInfo(screen,(1410,270),(475,380),info,40,TXTCOLOR)
 
+        pygame.draw.rect(screen,(0,0,0),(930,105,950,95),5,border_radius=10)# box for the max qty and qty owned
+        maxQty = limit_digits(self.player.getMaxPurchaseQty(fund),20,True)
+        qtyOwned = limit_digits(self.player.getNumIndexFunds(fund),20,True)
+        drawCenterTxt(screen,f"Max Qty : {maxQty}",65,(180,180,180),(1167,152))
+        drawCenterTxt(screen,f"Qty Owned : {qtyOwned}",65,(180,180,180),(1647,152))
+
     def drawIndexFundInfo(self,screen,gametime,fund):
         """Draws the information for the index fund (middle of the screen)"""
         drawCenterTxt(screen,self.getRealSelc(fund.name),50 if fund.name != "Total" else 60,fund.color,(1167,220),centerY=False)

@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 import pygame
 from Defs import *
 from pygame import gfxdraw
-from Classes.imports.UIElements.SelectionElements import MultiSelectionBar,MenuSelection
+from Classes.imports.UIElements.SelectionElements import MultiSelectionBar,MenuSelection,SelectionBar
 from Classes.imports.UIElements.SideScroll import *
 from Classes.Menus.GameModeMenu import GameRun,BlitzRun,CareerRun,GoalRun,RunManager
 from Classes.imports.UIElements.Latterscroll import LatterScroll
@@ -20,23 +20,25 @@ class PlayMenu:
         self.gameModes = ['Career','Blitz','Goal']
         self.modeColors = {self.gameModes[i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
         self.runManager = runManager
-        self.selectionBar = MultiSelectionBar()
+        self.selectionBar = SelectionBar()
         self.orderBox = OrderBox((170,640),(530,240))
         self.liveOrPast = MenuSelection((175,20),(525,95),["Live","Complete"],55,[(34, 139, 34), (220, 20, 60)])
-        self.selectionBar.setSelected(["Blitz","Career","Goal"])# sets all the options to be selected
+        self.selectionBar.setSelected("Career")# sets initial selected mode
+        self.liveOrPast.setSelected("Live")  # sets initial selected state
         self.updateRunCards()
 
     def updateRunCards(self):
         """Fills/Updates the run cards that are used in the vertScroll
         MUST be called anytime something changes like deleting or adding a run"""
-        self.runCards : dict = {r.name:StartRunCard(self.vertScroll,r) for r in self.runManager.getAllRuns(True)}
-        self.completedCards : dict = {r.name:StartRunCard(self.vertScroll,r) for r in self.runManager.getAllCompletedRuns(True)}
+        self.runCards: dict = {r.name: StartRunCard(self.vertScroll, r) for r in self.runManager.getAllRuns(True)}
+        self.completedCards: dict = {r.name: StartRunCard(self.vertScroll, r) for r in self.runManager.getAllCompletedRuns(True)}
         # sort the dict by the lastPlayed attribute - it is a datetime object
         # self.runCards = dict(sorted(self.runCards.items(),key=lambda x: x[1].runObj.lastPlayed,reverse=True))
 
     def reset(self):
         # self.vertScroll.reset()
-        self.selectionBar.setSelected(["Blitz","Career","Goal"])# sets all the options to be selected
+        self.selectionBar.setSelected("Career")# sets initial selected mode
+        self.liveOrPast.setSelected("Live")
         self.updateRunCards()
 
     def drawLatterScroll(self,screen:pygame.Surface,runs:list[GameRun]):
@@ -74,19 +76,22 @@ class PlayMenu:
         
 
     def draw(self,screen:pygame.Surface):
-        runs = []
-        for r in self.selectionBar.getSelected():
-            if self.liveOrPast.getSelected() == "Live":
-                runs.extend(self.runManager.getRuns(r))
-            else:
-                runs.extend(self.runManager.getRunsCompleted(r))
+        
+        
+        selectMode = self.selectionBar.getSelected()
+        if self.liveOrPast.getSelected() == "Live":
+            runs = self.runManager.getRuns(selectMode)
+   
+        else:
+            runs = self.runManager.getRunsCompleted(selectMode)
+
 
         self.drawLatterScroll(screen,runs)
 
         if self.vertScroll.getCard() != None:
             self.drawSelected(screen)
 
-        self.selectionBar.draw(screen,["Blitz","Career","Goal"],(985,20),(500,85),colors=[(19, 133, 100), (199, 114, 44), (196, 22, 62)],txtsize=50)
+        self.selectionBar.draw(screen,['Career','Blitz','Goal'],(985,20),(500,85),colors=[(19, 133, 100), (199, 114, 44), (196, 22, 62)],txtsize=50)
 
         self.liveOrPast.draw(screen)
         # drawCenterTxt(screen,"Select A Run",85,(200,200,200),(175,25),centerX=False,centerY=False)

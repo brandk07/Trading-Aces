@@ -451,7 +451,7 @@ class PieChartSideInfo:
                             menuDict['Portfolio'].selectedAsset = menuDict['Portfolio'].findAsset(value,name)
                         elif iconName == 'Options':
                             if nameList[i] == "Sell":
-                                menuDict['Options'].screenSelection.setSelected("Sell")
+                                menuDict['Options'].screenSelection.setSelected("Owned")
                             elif nameList[i] == "Buy":
                                 menuDict['Options'].screenSelection.setSelected("Buy")
                         elif iconName == 'Bank':
