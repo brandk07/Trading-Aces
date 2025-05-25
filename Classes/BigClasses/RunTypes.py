@@ -17,20 +17,20 @@ class GameRun:
         assert type(assetSpread) == list, "The asset spread must be a list"# [stocks, options, indexFunds, cash, loans]
         # assert len(assetSpread) == 5, "The asset spread must have 5 values"
         assert gameMode in ['Blitz','Career','Goal'], "The game mode must be either 'Blitz', 'Career', or 'Goal'"
-        assert (type(gameDate) == str or gameDate == None), "The game date must be a string"
-        assert startTime == None or type(startTime) == str, "The start time must be a string"
-        assert lastPlayed == None or type(lastPlayed) == str, "The last played time must be a string"
+        assert (type(gameDate) == str or gameDate is None), "The game date must be a string"
+        assert startTime is None or type(startTime) == str, "The start time must be a string"
+        assert lastPlayed is None or type(lastPlayed) == str, "The last played time must be a string"
         self.state = "live" if state == "live" else "complete"# the state of the run (live or complete)
         self.name = name
-        self.startTime = datetime.now() if startTime == None else datetime.strptime(startTime,"%m/%d/%Y %I:%M:%S %p")
-        self.lastPlayed = datetime.now() if lastPlayed == None else datetime.strptime(lastPlayed,"%m/%d/%Y %I:%M:%S %p")
+        self.startTime = datetime.now() if startTime is None else datetime.strptime(startTime,"%m/%d/%Y %I:%M:%S %p")
+        self.lastPlayed = datetime.now() if lastPlayed is None else datetime.strptime(lastPlayed,"%m/%d/%Y %I:%M:%S %p")
         self.runManager = runManager
         self.assetSpread = assetSpread if len(assetSpread) == 5 else [0,0,0,STARTCASH,0]# end value of all in each category [stocks, options, indexFunds, cash, loans]
         self.iconIndex = iconIndex
         self.runIcon = pygame.image.load(rf'Classes\BigClasses\RunIcons\image ({self.iconIndex}).png').convert_alpha()
         self.gameMode : str = gameMode.capitalize()# the mode of the game (Blitz, Career, Goal)
 
-        if gameDate == None:
+        if gameDate is None:
             self.gameDate = DEFAULTSTARTDATE# default start date
         else:
             self.gameDate = datetime.strptime(gameDate,"%m/%d/%Y %I:%M:%S %p")# the date the game started
@@ -64,7 +64,7 @@ class GameRun:
         return self.runManager.getRanking(self)
     def getRankStr(self) -> str:
         """Returns the rank of the run"""
-        return "N/A" if (rank:=self.runManager.getRanking(self)) == None else ordinal(rank)
+        return "N/A" if (rank:=self.runManager.getRanking(self)) is None else ordinal(rank)
     def getAssets(self):
         """Returns all the assets of the run"""
         return self.assetSpread# [stocks, options, indexFunds, cash, loans]
@@ -132,14 +132,14 @@ class BlitzRun(GameRun):
 
         # These below need to be set before the super call since CreateCustomFile is called in the super call
         self.gameDuration = gameDuration# 1M, 3M, 6M, 1Y, 3Y, 5Y
-        self.realWrldEndTime = None if realWrldEndTime == None else datetime.strptime(realWrldEndTime,"%m/%d/%Y %I:%M:%S %p")# the time when the run ended/was completed
+        self.realWrldEndTime = None if realWrldEndTime is None else datetime.strptime(realWrldEndTime,"%m/%d/%Y %I:%M:%S %p")# the time when the run ended/was completed
         self.endGameDate = endGameDate# temporary until the createCustomFile is called - need endGameDate cause we don't track how many days have gone by so when gameDate reaches this then game over
 
         super().__init__(name,assetSpread,'Blitz',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed,state=state)
 
         if type(self.endGameDate) == str:# in case the createCustomFile isn't called since it wasn't just created
-            # In theory it shouldn't need the if == None cause it should have been set when it was originally created, but just in case
-            self.endGameDate = self.gameDate + TIME_PERIODS[self.gameDuration] if self.endGameDate == None else datetime.strptime(self.endGameDate,"%m/%d/%Y %I:%M:%S %p")
+            # In theory it shouldn't need the if is None cause it should have been set when it was originally created, but just in case
+            self.endGameDate = self.gameDate + TIME_PERIODS[self.gameDuration] if self.endGameDate is None else datetime.strptime(self.endGameDate,"%m/%d/%Y %I:%M:%S %p")
 
 
     def createCustomFile(self):
@@ -154,7 +154,7 @@ class BlitzRun(GameRun):
 
     def getModeSpecificInfo(self):
         """Returns the mode specific info for the run"""
-        endTimestr = None if self.realWrldEndTime == None else self.realWrldEndTime.strftime(DFORMAT)# the time when the run ended/was completed
+        endTimestr = None if self.realWrldEndTime is None else self.realWrldEndTime.strftime(DFORMAT)# the time when the run ended/was completed
         return {"duration": self.gameDuration,"endGameDate": self.endGameDate.strftime(DFORMAT),"endTime":endTimestr} 
     
     def getTimeLeftInt(self,gametime):
@@ -422,12 +422,12 @@ class GoalRun(GameRun):
         except:
             raise ValueError("The goal networth must be an integer or a string that can be converted to an integer")
         
-        self.realWrldEndTime = None if realWrldEndTime == None else datetime.strptime(realWrldEndTime,"%m/%d/%Y %I:%M:%S %p")# the time when the run ended/was completed
+        self.realWrldEndTime = None if realWrldEndTime is None else datetime.strptime(realWrldEndTime,"%m/%d/%Y %I:%M:%S %p")# the time when the run ended/was completed
         super().__init__(name,assetSpread,'Goal',gameDate,iconIndex,runManager,startTime=startTime,lastPlayed=lastPlayed,state=state)
 
     def getModeSpecificInfo(self):
         """Returns the mode specific info for the run"""
-        endTimestr = None if self.realWrldEndTime == None else self.realWrldEndTime.strftime(DFORMAT)# the time when the run ended/was completed
+        endTimestr = None if self.realWrldEndTime is None else self.realWrldEndTime.strftime(DFORMAT)# the time when the run ended/was completed
         return {"duration": self.goalNetworth,"endTime":endTimestr,"goalNetworth":self.goalNetworth}
     def getGoalNetworth(self):
         return self.goalNetworth
@@ -450,7 +450,7 @@ class GoalRun(GameRun):
         return 'live'
     def getTimeToComplete(self):
         """Returns the amount of time it took to complete the goal"""
-        if self.realWrldEndTime == None:
+        if self.realWrldEndTime is None:
             return None
         return (self.realWrldEndTime - self.startTime).days
     def createCustomFile(self):

@@ -24,7 +24,7 @@ class StockVisualizer:
         
     def setStockObj(self,stockobj):
         """Changes the stock object that the visualizer is using"""
-        if stockobj == None:
+        if stockobj is None:
             return
         self.stockObj = stockobj
     
@@ -113,8 +113,8 @@ class StockVisualizer:
                 self.priceMouseOver(screen,graphpoints,spacing,coords,wh,truegraphrange)
             elif not pygame.mouse.get_pressed()[0]:# in the range of the graph but not being clicked
                 longHover = None
-            elif pygame.mouse.get_pressed()[0] and ((longHover == None and collide) or (longHover != None)) :# if the mouse is being clicked
-                if longHover == None:# If the mouse hadn't been clicked before
+            elif pygame.mouse.get_pressed()[0] and ((longHover is None and collide) or (longHover != None)) :# if the mouse is being clicked
+                if longHover is None:# If the mouse hadn't been clicked before
                     longHover = max(coords[0],min(coords[0]+wh[0],mousex))
                     # self.priceMouseOver(screen,graphpoints,spacing,coords,wh,truegraphrange)
                 else:
@@ -241,7 +241,7 @@ class StockVisualizer:
             if pygame.Rect(coords[0]+wh[0],coords[1]+(i*drawingy),blnkspacex,extraheight).collidepoint(pygame.mouse.get_pos()):
                 points = [(coords[0]+wh[0],coords[1]+(i*drawingy)), (coords[0]+wh[0],coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex, coords[1]+(i*drawingy)+extraheight), (coords[0]+wh[0]+blnkspacex,coords[1]+(i*drawingy))]
                 gfxdraw.filled_polygon(screen, points,(100,100,100,150))
-                if mouseButton.getButton('left') and self.longHover == None and self.longHovers.get(graphrange) == None:
+                if mouseButton.getButton('left') and self.longHover is None and self.longHovers.get(graphrange) is None:
                     soundEffects['generalClick'].play()
                     self.storedRanges[graphrange] = txt
           

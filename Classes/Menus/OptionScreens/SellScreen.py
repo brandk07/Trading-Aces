@@ -106,15 +106,15 @@ class SellOptionScreen:
         ommitted = self.ownedScroll.store_rendercoords((205, 270), (455,875),145,0,0,updatefreq=120)
     
         select = self.selectOption if self.selectOption in optionList else None# Ensuring that the selected stock is in the optionlist
-        selectedindex = None if select == None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
+        selectedindex = None if select is None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
 
         # newselected = self.ownedScroll.draw_polys(screen, (205, 270), (370,950), selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         newselected = self.ownedScroll.draw_polys(screen, (205, 270), (455,875), selectedindex, True, *[brightenCol(self.determineColor(option.getType()),0.25) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
 
-        if select == None:# if the latterscroll didn't contain the selected asset before
-            self.selectOption = self.selectOption if newselected == None else optionList[newselected]# Changes selected stock if the new selected has something
+        if select is None:# if the latterscroll didn't contain the selected asset before
+            self.selectOption = self.selectOption if newselected is None else optionList[newselected]# Changes selected stock if the new selected has something
         else:# if the latterscroll contained the selected asset before, then it can set it to none if you select it again
-            self.selectOption = None if newselected == None else optionList[newselected]
+            self.selectOption = None if newselected is None else optionList[newselected]
 
         drawCenterTxt(screen, f"{ommitted[0]} - {ommitted[1]-1} out of {len(optionList)} Options", 35, (0, 0, 0), (432, 875), centerY=False)
     
@@ -160,7 +160,7 @@ class SellOptionScreen:
                 self.selectOption = None
 
 
-            if self.selectOption == None:
+            if self.selectOption is None:
                 # pygame.draw.rect(screen,(0,0,0),pygame.Rect(670, 210, 675, 550),5,10)# box around the select an option
                 drawCenterTxt(screen, 'Select An Option', 80, (180, 180, 180), (1005, 210), centerY=False)
                 drawCenterTxt(screen, 'Once selected, It can be sold or exercised', 40, (180, 180, 180), (1005, 280), centerY=False)

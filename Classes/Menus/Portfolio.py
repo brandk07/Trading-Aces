@@ -94,9 +94,9 @@ class Portfolio(Menu):
         ommitted = self.latterscrollnorm.store_rendercoords((855, 200), scrollmaxcoords,135,0,0,updatefreq=60)
 
         # drawing the latter scroll and assigning the selected asset
-        selectedindex = None if self.selectedAsset == None else sortedassets.index(self.selectedAsset)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
+        selectedindex = None if self.selectedAsset is None else sortedassets.index(self.selectedAsset)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
         newselected = self.latterscrollnorm.draw_polys(screen, (855, 200), scrollmaxcoords, selectedindex, True, *[sasset[0].getPercent() for sasset in sortedassets[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
-        if newselected == None:
+        if newselected is None:
             self.selectedAsset = None
         else:# if the selected asset is not None
             self.selectedAsset = sortedassets[newselected]
@@ -169,7 +169,7 @@ class Portfolio(Menu):
         self.latterscrollselect.store_rendercoords((855, 200), scrollmaxcoords,135,0,0)
         # drawing the latter scroll and assigning the selected asset
         newselected = self.latterscrollselect.draw_polys(screen, (875, 200), scrollmaxcoords, 0, True, *[asset.getPercent()])# draws the latter scroll and returns the selected asset
-        if newselected == None:
+        if newselected is None:
             self.selectedAsset = None
         
     def draw_selected_description(self,screen,asset,player,gametime):
@@ -360,7 +360,7 @@ class Portfolio(Menu):
         mousex, mousey = pygame.mouse.get_pos()
         
         sortedassets = self.get_allassets()# gets the sorted assets of the player
-        # screen.blit(s_render(f"{None if self.selectedAsset == None else self.selectedAsset[1]}", 70, (210, 210, 210)), (200, 1000))
+        # screen.blit(s_render(f"{None if self.selectedAsset is None else self.selectedAsset[1]}", 70, (210, 210, 210)), (200, 1000))
         if self.selectedAsset != None and self.selectedAsset not in sortedassets:# if the selected asset is not in the sorted assets
             if len(sortedassets) > 0:# if there are assets
                 self.selectedAsset = sortedassets[0]# set the selected asset to the first asset in the sorted assets
@@ -368,7 +368,7 @@ class Portfolio(Menu):
                 self.selectedAsset = None# set the selected asset to None
 
         
-        if self.selectedAsset == None:# if the selected asset is None
+        if self.selectedAsset is None:# if the selected asset is None
             self.assetscroll_controls(screen)
 
             self.networthGraph.drawFull(screen,(200,100),(650,500),"Portfolio Networth",True,"Normal")

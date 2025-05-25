@@ -38,9 +38,9 @@ class ScrollCard:
 
     def draw(self,screen,coords,minX=None,maxX=None,minY=None,maxY=None,customWh=None) -> bool:
         """Draws the card onto the screen at the given coords"""
-        if minX == None and maxX == None:
+        if minX is None and maxX is None:
             minX,maxX = 0,screen.get_width()
-        if minY == None and maxY == None:
+        if minY is None and maxY is None:
             minY,maxY = 0,screen.get_height()
         if customWh != None:# if the card was resized, then the card needs to be updated (temporarily)
             self.needToUpdate = True
@@ -52,7 +52,7 @@ class ScrollCard:
             return False
         if self.needToUpdate:
             self.updateSurf(customWh)# update the card's surface
-            if customWh == None:# if the card was resized, then the coords need to be updated again
+            if customWh is None:# if the card was resized, then the coords need to be updated again
                 self.needToUpdate = False
 
         newSurf = self.surf
@@ -87,7 +87,7 @@ class CdCard(ScrollCard):
         """Draws Everything onto the card's surface - Only needs to be called when data changes"""
         # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
         # self.surf.fill((60,60,60,120))
-        if wh == None:
+        if wh is None:
             wh = self.wh
         self.surf = pygame.Surface(wh).convert_alpha()
         
@@ -122,7 +122,7 @@ class LoanCard(ScrollCard):
         """Draws Everything onto the card's surface - Only needs to be called when data changes"""
         # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
         # self.surf.fill((60,60,60,120))
-        if wh == None:
+        if wh is None:
             wh = self.wh
         self.surf = pygame.Surface(wh).convert_alpha()
         
@@ -167,7 +167,7 @@ class RunCard(ScrollCard):
         """Draws Everything onto the card's surface - Only needs to be called when data changes"""
         # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
         # self.surf.fill((60,60,60,120))
-        if wh == None:
+        if wh is None:
             wh = self.wh
         self.surf = pygame.Surface(wh).convert_alpha()
         
@@ -219,7 +219,7 @@ class StartRunCard(ScrollCard):
         """Draws Everything onto the card's surface - Only needs to be called when data changes"""
         # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
         # self.surf.fill((60,60,60,120))
-        if wh == None:
+        if wh is None:
             wh = self.wh
         self.surf = pygame.Surface(wh).convert_alpha()
         
@@ -266,7 +266,7 @@ class UnlockUpgradeCard(ScrollCard):
             level = "Enabled" if self.careerRun.unlocks[self.uString] else "Locked"
         # return {"proximity":f"{self.careerRun.getProximity(self.uString,self.player)}%"}
         cost = self.careerRun.getNextCost(self.uString)
-        if cost == None:
+        if cost is None:
             costTxt = "MAXED"
         else:
             costTxt = f"${limit_digits(cost,24,truncate=True)}"
@@ -277,7 +277,7 @@ class UnlockUpgradeCard(ScrollCard):
         # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
         # self.surf.fill((60,60,60,120))
         self.data = self.dataConfig()
-        if wh == None:
+        if wh is None:
             wh = self.wh
         self.surf = pygame.Surface(wh).convert_alpha()
         
@@ -339,7 +339,7 @@ class ModeMenuRunCard(ScrollCard):
         """Draws Everything onto the card's surface - Only needs to be called when data changes"""
         # pygame.draw.rect(self.surf,(60,60,60),pygame.Rect(0,0,self.wh[0],self.wh[1]))
         # self.surf.fill((60,60,60,120))
-        if wh == None:
+        if wh is None:
             wh = self.wh
         self.surf = pygame.Surface(wh).convert_alpha()
         
@@ -378,7 +378,7 @@ class CreateMenuRunImage(ScrollCard):
 
     def updateSurf(self,wh=None):
         """Draws Everything onto the card's surface - Only needs to be called when data changes"""
-        if wh == None:
+        if wh is None:
             wh = self.wh
 
         self.surf = pygame.Surface(wh).convert_alpha()
@@ -407,7 +407,7 @@ class SideScroll:
         # if self.lastSelected != newSelected:
         #     self.scroll = newSelected*self.cardWH[0]+self.cardWH[0]//2
 
-        if self.lastSelected == None or self.lastSelected >= len(self.cards):
+        if self.lastSelected is None or self.lastSelected >= len(self.cards):
             self.lastSelected = None
             return None
         
@@ -417,7 +417,7 @@ class SideScroll:
         return self.cards[self.lastSelected]
     def setCard(self,index=None,obj=None):
         """Sets the card that is currently in the center of the screen"""
-        if index == None and obj == None:
+        if index is None and obj is None:
             raise ValueError("Either index or obj must be given")
         if index != None:
             self.lastSelected = index

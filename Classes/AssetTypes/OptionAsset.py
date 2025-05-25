@@ -114,7 +114,7 @@ class OptionAsset(Asset):
         self.ogValue = self.ogValue if self.ogValue != None else self.getValue(bypass=True,fullvalue=False)# ogValue is the value the asset orginally had, just for 1 asset
         
         # print(f"{self.name}, {porfolioPercent} {self.portfolioPercent}")
-        if porfolioPercent == None:
+        if porfolioPercent is None:
             
             self.portfolioPercent = self.getValue(bypass=True,fullvalue=True)/(player.getNetworth())# have to set this after the object is created
             # print(f"dont, {self.portfolioPercent}, {ogValue} {networth}") 

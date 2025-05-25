@@ -118,11 +118,11 @@ class CustomLoanCreator:
     def drawLoanAmt(self,screen):
         drawCenterTxt(screen, 'Loan Amount', 45, (180, 180, 180), (575,225), centerX=False,centerY=False)
 
-        if self.loanAmt == None and self.numpadDisplay != "LoanAmt":# if the loan amount has not been set
+        if self.loanAmt is None and self.numpadDisplay != "LoanAmt":# if the loan amount has not been set
             result = drawClickableBoxWH(screen, (565,260), (300,65),"Set Value", 45, (160,160,160), (0,0,0),fill=True)
             if result:
                 self.numpadDisplay = "LoanAmt"; self.numpad.reset()
-        elif self.numpadDisplay == "LoanAmt" and self.loanAmt == None:# if the box has been clicked, but no value has been confirmed
+        elif self.numpadDisplay == "LoanAmt" and self.loanAmt is None:# if the box has been clicked, but no value has been confirmed
             self.numpad.draw(screen,(200,215),(350,280),"",self.player.getCurrentMaxLoan())
             result = drawClickableBoxWH(screen, (210,475), (330,65),"Confirm Loan Amount", 45, (160,160,160), (0,0,0),fill=True)
             drawCenterTxt(screen, f"${self.numpad.getNumstr('',haveSes=False)}", 55, (225,225,225), (715, 292))
@@ -141,11 +141,11 @@ class CustomLoanCreator:
     def drawLoanTerm(self,screen):
         drawCenterTxt(screen, 'Loan Term', 45, (180, 180, 180), (575,330), centerX=False,centerY=False)
 
-        if self.loanTerm == None and self.numpadDisplay != "LoanTerm":
+        if self.loanTerm is None and self.numpadDisplay != "LoanTerm":
             result = drawClickableBoxWH(screen, (565,365), (300,65),"Set Value", 45, (160,160,160), (0,0,0),fill=True)
             if result:
                 self.numpadDisplay = "LoanTerm"; self.numpad.reset()
-        elif self.numpadDisplay == "LoanTerm" and self.loanTerm == None:
+        elif self.numpadDisplay == "LoanTerm" and self.loanTerm is None:
             self.numpad.draw(screen,(200,215),(350,280),"",120)
             # self.numpad.draw(screen,(200,215),(350,335),"Loan Amount",0)
             result = drawClickableBoxWH(screen, (210,475), (330,65),"Confirm Loan Term", 45, (160,160,160), (0,0,0),fill=True)
@@ -239,7 +239,7 @@ class LoanScreen:
         pygame.draw.rect(screen,(0,0,0),(870,350,555,190),5,border_radius=10)# box for the loan info
         drawLinedInfo(screen,(880,355),(535,180),info,38,(220,220,220))
 
-        if self.customLoanCreator.numpadDisplay == None:
+        if self.customLoanCreator.numpadDisplay is None:
             drawCenterTxt(screen,"Custom Loan",70,(220,220,220),(375,225),centerY=False)
             if not self.customLoanCreator.loanAmt or not self.customLoanCreator.loanTerm:
                 drawCenterTxt(screen,"Need to Set",60,(220,220,220),(375,300),centerY=False)
@@ -360,7 +360,7 @@ class LoanScreen:
         if self.sideScroll.getCard() != None:
             self.state = "Modify"
             loanObj : LoanAsset = self.player.loans[self.sideScroll.getCard(index=True)]
-        if self.state == "Modify" and self.sideScroll.getCard() == None:
+        if self.state == "Modify" and self.sideScroll.getCard() is None:
             self.state = "View"
 
         if not self.sideScroll.cards:# if there are no cards

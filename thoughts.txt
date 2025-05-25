@@ -102,7 +102,7 @@ Add quarterly reports (2/4/2024)
     each stock can meet/miss expectations
     get dividends - dividends can change (based on expectations)
 
-Acually fix the problem with the bar class where if it is reversedscroll it will not snap right (2/5/2024)
+
 
 make it so option expirationdate decreases with time (2/9/2024)
 
@@ -120,7 +120,7 @@ Add swap stock (3/3/2024)
 
 get option menu switched to new LatterScroll class (3/3/2024)
 
-Make the mouseover look better and add the hold feature (3/3/2024)
+
 
 Break up the portfolio class somehow (3/19/2024)
 
@@ -150,20 +150,10 @@ Need to test out what happens when you add more than 4 rows to the pie chart (11
 fix the allocation in the portofolio
     -when you sell a share/s it doesn't update so it looks like it has gone down
 
-Add advance current runt to the player tick (11/14/2024)
-
 start off all games with 1 sample run in each category - just so the stuff in gameModeMenu doesn't look empty (11/14/2024)
 
 big time warp (11/16/2024)
 
-autosave (11/16/2024)
-
-change how the options look when they are on the LatterScroll (11/17/2024)
-
-make the piechart in the portfolio have the lines like the other one (11/17/2024)
-
-Create a new animation for selling and for creating a new game (11/24/2024)
-    - one of them should you a sine wave to create a spiral of all the dots
 
 Add credit score for calculating loan price and interest rate (12/10/2024)
 
@@ -175,6 +165,14 @@ create typing class/text box that has everything nice and copyable (12/12/24)
 
 options are priced wrong cause they are filled before the points are modifed, just make them fill if they are empty on each game loop ()
     Also need to store the options
+
+GOING TO DO
+1. Create a new animation for selling and for creating a new game (11/24/2024)
+    - one of them should you a sine wave to create a spiral of all the dots
+2. autosave (11/16/2024)
+3. integral that thang
+4. 
+
 
 D/one ------------------------------
 Add the ablility to mouseover the stock graph and have it show the price & date (12/2/23) - (12/16/23) 10:37am
@@ -227,3 +225,7 @@ Make it so player.price is equal to its networth (2/28/2024)
 Need to add back range controls to stock StockVisualizer or somewhere (2/28/2024)
 make class for drawing the pie chart (2/28/2024)
 create a point in pie for mouseover the pie chart (1/2/2024)
+make the piechart in the portfolio have the lines like the other one (11/17/2024)
+change how the options look when they are on the LatterScroll (11/17/2024)
+Make the mouseover look better and add the hold feature (3/3/2024)
+Acually fix the problem with the bar class where if it is reversedscroll it will not snap right (2/5/2024)

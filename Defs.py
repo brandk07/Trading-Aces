@@ -255,7 +255,7 @@ def text_input(screen, coords, wh, current_str, keyPressed, txtSize=45) -> str:
         "tab": "Tab",
         "escape": "Esc"
     }
-    if keyPressed == None:
+    if keyPressed is None:
         pass
     
     elif keyPressed in list(special_keys.values()):
@@ -306,7 +306,7 @@ def getBorderedImage(image:pygame.Surface,borderWidth:int,borderColor:tuple,wh:t
 def drawBoxedImage(screen,coords,image,wh=None,borderRadius=0,borderWidth=5,borderColor=(0,0,0)):
     """Draws a box around the image, with the border width and color"""
     # screen.blit(image,coords)
-    if wh == None:
+    if wh is None:
         wh = image.get_width(),image.get_height()
     if borderRadius != 0:
         image = getBorderedImage(image,borderWidth,borderColor,wh,borderRadius)
@@ -440,7 +440,7 @@ def checkboxOptions(screen,options,selectedOptions,pos,wh,disabledOptions=None,t
     """Displays the options in options, will return the option that is click (option,index), 
     disabledOptions is a list of options that are disabled,"""
     width = wh[0]//len(options)
-    if disabledOptions == None:
+    if disabledOptions is None:
         disabledOptions = {}
     
     for i,option in enumerate(options):
@@ -498,7 +498,7 @@ def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsi
     Diff sizes can be a tuple containing the sizes of the left and right side text"""
     if middleData != None:
         assert len(infoList) == len(middleData), 'The middleData must be the same length as the infoList'
-    if color == None and colors == None:
+    if color is None and colors is None:
         color = (255,255,255)
     if border:
         assert type(border) == int, 'Border must be an int'
@@ -511,7 +511,7 @@ def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsi
     y += sep/3
     for i, (string,value) in enumerate(infoList):
         newY = y+(i*sep)
-        color = color if colors == None else colors[i]
+        color = color if colors is None else colors[i]
         # screen.blit(s_render(string,txtsize if not diffSizes else diffSizes[0],color),(x+10,newY))# display the string on the left/
         drawCenterTxt(screen,string,txtsize,color,(x+10,newY),centerX=False,centerY=True)
         valueText = s_render(str(value),txtsize if not diffSizes else diffSizes[1],color)# render the value

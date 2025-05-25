@@ -47,11 +47,14 @@ class ErrorMessageHandler:
         self.messageList : list[ErrorMessage] = [] 
         self.sRender = s_render
         self.framesAgoAdd = 0
-
+    def clearMessages(self):
+        """Clears the messages"""
+        self.messageList = []
+        self.framesAgoAdd = 0
     def addMessage(self,txt:str,txtColor=(190,190,190),backColor=backgroundColor,txtSize=35,coords:list=None,lifeTime=360):
         """If coords aren't given, the message will be displayed at the mouse position"""
         if self.framesAgoAdd == 0:
-            coords = pygame.mouse.get_pos() if coords == None else coords
+            coords = pygame.mouse.get_pos() if coords is None else coords
             self.messageList.append(ErrorMessage(coords,txt,txtSize,txtColor,backColor,self.sRender,lifeTime))
             self.framesAgoAdd = 30
 

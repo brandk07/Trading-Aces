@@ -32,7 +32,7 @@ class StockPriceEffects:
 
         self.getQuart = lambda timeobj : (timeobj.month-1)//3+1
         currQ = self.getCurrentQuarter(gametime)
-        if fileData == None:
+        if fileData is None:
             # [time of report,quarter of report,performance]
             self.pastReports:list[Report] = self.createPastReports(gametime,currQ)# Creates past reports if none are given
             self.futureReports:list[Report] = self.createFutureReports(gametime,currQ)# [time of report,quarter]

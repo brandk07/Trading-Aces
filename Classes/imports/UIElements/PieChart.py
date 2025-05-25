@@ -55,8 +55,8 @@ class PieChart:
         Should Usually just use the original coords and radius, but the coords and radius parameters can be used
         """
 
-        self.coords = self.coords if coords == None else coords# if coords is None, then keep the original coords
-        self.radius = self.radius if radius == None else radius# if radius is None, then keep the original radius
+        self.coords = self.coords if coords is None else coords# if coords is None, then keep the original coords
+        self.radius = self.radius if radius is None else radius# if radius is None, then keep the original radius
 
         self.data = data
         self.pieSegments.clear()
@@ -300,8 +300,8 @@ class PieChartSideInfo:
         """
         # self.checkmenuDict()# check if the menuIcons list is up to date
 
-        self.coords = self.coords if coords == None else coords# if coords is None, then keep the original coords
-        self.radius = self.radius if radius == None else radius# if radius is None, then keep the original radius
+        self.coords = self.coords if coords is None else coords# if coords is None, then keep the original coords
+        self.radius = self.radius if radius is None else radius# if radius is None, then keep the original radius
 
         self.data = data
         self.pieSegments.clear()

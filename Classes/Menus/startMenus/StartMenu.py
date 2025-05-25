@@ -42,8 +42,10 @@ class StartMenu:
         # draw a polygon from 0,350 to 1920,890
         # gfxdraw.filled_polygon(screen,[(0,350),(1920,350),(1920,890),(0,890)],(60,60,60,200))
         changeScreen = False
-        for i,txt in enumerate(['Play','Create','Settings','Credits']):
-            if drawClickableBoxWH(screen,(660,350+(140*i)),(600,135),txt, 75, (0,0,0),(200,200,200)) != False:
+        # for i,txt in enumerate(['Play','Create','Settings','Credits']):
+        for i,txt in enumerate(['Play','Create']):
+            # if drawClickableBoxWH(screen,(660,350+(140*i)),(600,135),txt, 75, (0,0,0),(200,200,200)) != False:
+            if drawClickableBoxWH(screen,(660,490+(140*i)),(600,135),txt, 75, (0,0,0),(200,200,200)) != False:
                 changeScreen = txt
 
         # self.drawLineEffect(screen)

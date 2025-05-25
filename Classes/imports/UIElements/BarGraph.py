@@ -26,14 +26,14 @@ class BarGraph:
     def draw(s,screen:pygame.Surface,position=None,absoluteScale=None):
         """Draws the bar graph to the screen, position is optional,
         with absoluteScale you can input the max it will always scale to that value rather than the max value of the data"""
-        # assert absoluteScale == None or type(absoluteScale) == int or type(absoluteScale) == float, 'absoluteScale must be an int or float'
-        assert position == None or type(position) == list or type(position) == tuple, 'position must be a list/tuple'
+        # assert absoluteScale is None or type(absoluteScale) == int or type(absoluteScale) == float, 'absoluteScale must be an int or float'
+        assert position is None or type(position) == list or type(position) == tuple, 'position must be a list/tuple'
         if absoluteScale == 0:
             absoluteScale = 1
 
-        pos = s.pos if position == None else position
+        pos = s.pos if position is None else position
         barwidth = (s.width/len(s.values))
-        scaleFactor = (s.height-25)/max(s.values) if absoluteScale == None else (s.height-25)/absoluteScale
+        scaleFactor = (s.height-25)/max(s.values) if absoluteScale is None else (s.height-25)/absoluteScale
         mousex,mousey = pygame.mouse.get_pos()
 
         pygame.gfxdraw.filled_polygon(screen,[

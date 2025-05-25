@@ -25,8 +25,8 @@ from Classes.Menus.Menu import ScreenManager
 
 GAMESPEED = 250
 FASTFORWARDSPEED = 1000
-CLICK_COOLDOWN = 0.2  # 100ms cooldown
-last_click_time = 0
+CLICK_COOLDOWN = 0.15  # Maybe reduce to 150ms for better responsiveness
+last_click_time = time.time()  # Initialize to current time instead of 0
 
 pygame.init()
 
@@ -168,16 +168,26 @@ if __name__ == "__main__":
                     pygame.quit()
                     quit()
 
-                # elif event.type == pygame.MOUSEBUTTONDOWN:
+                
                 elif event.type == pygame.MOUSEBUTTONUP:
                     current_time = time.time()
-                    print(current_time - last_click_time)
-                    if last_click_time-current_time < CLICK_COOLDOWN:# if the time between the last click and the current click is less than the cooldown
-                      mouseButton.addEvent(event.button)
-                      last_click_time = current_time
+                    if current_time - last_click_time > CLICK_COOLDOWN:  # Only process if enough time has passed
+                        mouseButton.addEvent(event.button)
+                        last_click_time = current_time
+                        
+                        if mouseButton.getButtonOveride('left') == 1:
+                            print(mousex,mousey)
 
-                    if mouseButton.getButtonOveride('left') == 1:
-                        print(mousex,mousey)
+                # elif event.type == pygame.MOUSEBUTTONDOWN:
+                # elif event.type == pygame.MOUSEBUTTONUP:
+                #     current_time = time.time()
+                #     print(current_time - last_click_time)
+                #     if last_click_time-current_time < CLICK_COOLDOWN:# if the time between the last click and the current click is less than the cooldown
+                #       mouseButton.addEvent(event.button)
+                #       last_click_time = current_time
+
+                #     if mouseButton.getButtonOveride('left') == 1:
+                #         print(mousex,mousey)
                     
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_j:
                     # Get timestamp for unique filename

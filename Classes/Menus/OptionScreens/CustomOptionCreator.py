@@ -32,12 +32,12 @@ class CustomOptionCreator:
     def drawStrike(self,screen,stock:Stock):
         drawCenterTxt(screen, 'Strike', 45, (180, 180, 180), (1530, 427), centerX=False)
 
-        if self.strikePrice == None and self.numPadDisplay != "Strike":# if the strike price has not been set
+        if self.strikePrice is None and self.numPadDisplay != "Strike":# if the strike price has not been set
             result = drawClickableBox(screen, (1875, 427), "Set Value", 45, (0,0,0), (160,160,160),centerY=True,fill=True,topLeftX=True)
             if result:# if the box has been clicked to set the value (numpad displayed)
                 self.numPadDisplay = "Strike"# changing it to strike so that the numpad will be displayed
         
-        elif self.numPadDisplay == "Strike" and self.strikePrice == None:# if the box has been clicked, but no value has been confirmed
+        elif self.numPadDisplay == "Strike" and self.strikePrice is None:# if the box has been clicked, but no value has been confirmed
             self.strikePad.draw(screen,(1050,190),(450,340),"",stock.price*2)# draw the numpad
             result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Strike Value", 45, (160,160,160), (0,0,0),fill=True)
 
@@ -57,12 +57,12 @@ class CustomOptionCreator:
         dateTxt = s_render('Exp Date', 40, (200, 200, 200))
         screen.blit(dateTxt, (1530, 537-dateTxt.get_height()/2))
         # print(self.expDate)
-        if self.expDate == None and self.numPadDisplay != "Date":
+        if self.expDate is None and self.numPadDisplay != "Date":
             result = drawClickableBox(screen, (1875, 537), "Set Date", 45, (0,0,0), (170,170,170),centerY=True,fill=True,topLeftX=True)
             if result:# if the box has been clicked to set the date (numpad displayed)
                 self.numPadDisplay = "Date"# changing it to date so that the numpad will be displayed
 
-        elif self.numPadDisplay == "Date" and self.expDate == None:# if the box has been clicked, but no value has been confirmed
+        elif self.numPadDisplay == "Date" and self.expDate is None:# if the box has been clicked, but no value has been confirmed
             
             self.datePad.draw(screen,(1050,190),(450,340),"Day",365*3)# draw the numpad, max value of 3 years
             result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Date", 45, (160,160,160), (0,0,0),fill=True)
@@ -91,10 +91,10 @@ class CustomOptionCreator:
         drawCenterTxt(screen, 'Est Price', 40, (200, 200, 200), (1530, 642), centerX=False)
             
         if self.strikePrice != None and self.expDate != None:# if the strike price and expiration date have been set
-            if self.numPadDisplay == None:# if the value has been confirmed
+            if self.numPadDisplay is None:# if the value has been confirmed
                 timeOffset = (gametime.time+timedelta(days=self.datePad.getValue()))
                 
-                if self.newOptionObj == None:# if the new option object has not been created
+                if self.newOptionObj is None:# if the new option object has not been created
                     self.newOptionObj = OptionAsset(self.player,stock,self.strikePrice,timeOffset,self.oTypeSelect.getSelected(),str(gametime),1)
                 else:# if the new option object has been created
                     self.newOptionObj.setValues(strikePrice=self.strikePrice,expDate=timeOffset,optionType=self.oTypeSelect.getSelected())
@@ -109,7 +109,7 @@ class CustomOptionCreator:
                     self.datePad.reset(); self.strikePad.reset()# reset the numpad
                     self.creatingOption = False# stop creating the option
 
-        if self.strikePrice == None or self.expDate == None or self.numPadDisplay != None:# if the strike price or expiration date have not been set
+        if self.strikePrice is None or self.expDate is None or self.numPadDisplay != None:# if the strike price or expiration date have not been set
             drawCenterTxt(screen, f"N/A", 55, (200, 200, 200), (1860, 620), centerX=False, centerY=False,fullX=True)
 
     def drawCustOptions(self,screen:pygame.Surface,gametime:GameTime,stock:Stock):
@@ -180,17 +180,17 @@ class CustomOptionCreator:
 
         ommitted = self.cucOptionScrll.store_rendercoords((x, y), (w,y+h),120,0,0)
         select = self.selectOption if self.selectOption in optionList else None# Ensuring that the selected stock is in the optionlist
-        selectedindex = None if select == None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
+        selectedindex = None if select is None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
         
         newselected = self.cucOptionScrll.draw_polys(screen, (x, y), (w, y+h),selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
         
         if newselected != None: self.creatingOption = False
-        if select == None:# if the latterscroll didn't contain the selected asset before
-            self.selectOption = self.selectOption if newselected == None else optionList[newselected]
+        if select is None:# if the latterscroll didn't contain the selected asset before
+            self.selectOption = self.selectOption if newselected is None else optionList[newselected]
         else:# if the latterscroll contained the selected asset before, then it can set it to none if you select it again
-            self.selectOption = None if newselected == None else optionList[newselected]
+            self.selectOption = None if newselected is None else optionList[newselected]
 
-        # self.selectOption = self.selectOption if newselected == None else optionList[newselected]# Changes selected stock if the new selected has something
+        # self.selectOption = self.selectOption if newselected is None else optionList[newselected]# Changes selected stock if the new selected has something
         txt = s_render(f"{ommitted[0]} - {ommitted[1]-1} out of {len(optionList)} Options",35,(0,0,0))
         screen.blit(txt,(1700-txt.get_width()/2,950))
         return self.selectOption

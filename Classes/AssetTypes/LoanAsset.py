@@ -29,9 +29,9 @@ class LoanAsset:
         return LoanAsset(self.rate,self.term,self.principal,self.principalLeft,self.interestPaid,self.termLeft)
     def getLoanCalc(self,rate=None,term=None,principal=None) -> float:
         # Calculate the monthly payment
-        rate = self.rate if rate == None else rate
-        term = self.termLeft if term == None else term
-        principal = self.principalLeft if principal == None else principal
+        rate = self.rate if rate is None else rate
+        term = self.termLeft if term is None else term
+        principal = self.principalLeft if principal is None else principal
 
         return npf.pmt(rate / 12, term, -principal)
     def getOGVals(self) -> tuple:

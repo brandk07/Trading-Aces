@@ -23,10 +23,10 @@ class SelectionBar:
         will auto select the first element in the list"""	
         assert len(data) > 0, "Data must have at least one element"
 
-        if self.selected == None or self.selected not in data:
+        if self.selected is None or self.selected not in data:
             self.selected = data[0] if not self.allowSelcNone else None
         
-        if colors == None:
+        if colors is None:
             colors = [(255,255,255)]*len(data)
 
         x,y = coords
@@ -57,7 +57,7 @@ class SelectionBar:
                 if not self.selected == txt:
                     soundEffects['generalClick'].play()
                 self.selected = txt if txt != self.selected else None
-                if not self.allowSelcNone and self.selected == None:
+                if not self.allowSelcNone and self.selected is None:
                     self.selected = txt
                 changed = True
         return changed
@@ -83,10 +83,10 @@ class MultiSelectionBar:
         will auto select the first element in the list"""	
         assert len(data) > 0, "Data must have at least one element"
 
-        # if self.selected == None or self.selected not in data:
+        # if self.selected is None or self.selected not in data:
         #     self.selected = data[0] if not self.allowSelcNone else None
         
-        if colors == None:
+        if colors is None:
             colors = [(255,255,255)]*len(data)
 
         x,y = coords
@@ -117,7 +117,7 @@ class MultiSelectionBar:
                 # if not txt in self.selected:
                 #     soundEffects['generalClick'].play()
                 # self.selected = txt if txt != self.selected else None
-                # if not self.allowSelcNone and self.selected == None:
+                # if not self.allowSelcNone and self.selected is None:
                 #     self.selected = txt
                 soundEffects['generalClick'].play()
                 if txt in self.selected:

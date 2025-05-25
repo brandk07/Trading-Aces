@@ -170,7 +170,7 @@ class OrderScreen:
         # DIFFERENT SPECIFIC FUNCTIONS FOR BUY AND SELL
         if self.transactionType == "Sell":
             self.drawMarketSell(screen,stockObj,player,relaviveCoords)
-            maxNum = 0 if self.selectedAsset == None else self.selectedAsset.quantity
+            maxNum = 0 if self.selectedAsset is None else self.selectedAsset.quantity
             self.numPad.draw(screen,(-5+x,445+y),(450,210),"SHARE",maxNum)# draws the numpad for the shares
         else:# buy
             self.numPad.draw(screen,(-5+x,445+y),(450,210),"SHARE",int(player.cash/stockObj.price))# draws the numpad for the shares
@@ -209,9 +209,9 @@ class OrderScreen:
         # drawing the latter scroll and assigning the selected asset
         if self.selectedAsset not in stocks:
             self.selectedAsset = None
-        selectedindex = None if self.selectedAsset == None else stocks.index(self.selectedAsset)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
+        selectedindex = None if self.selectedAsset is None else stocks.index(self.selectedAsset)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
         newselected = self.latterScroll.draw_polys(screen, (x+wh[0]-440, y+80), scrollmaxcoords, selectedindex, True, *[sasset.getPercent() for sasset in stocks[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
-        if newselected == None:
+        if newselected is None:
             self.selectedAsset = None
         else:# if the selected asset is not None
             self.selectedAsset = stocks[newselected]

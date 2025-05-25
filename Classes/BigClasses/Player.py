@@ -112,7 +112,7 @@ class Player(Stock):
         the stockObj one is called from the stockpriceEffects class in the update() method
         the indexFundObj is called here in the gameTick() method"""
         if self.runStateCheck(): return
-        if stockObj == None and indexFundObj == None:
+        if stockObj is None and indexFundObj is None:
             return
         if stockObj != None and (stocksToPay:=[stock for stock in self.stocks if stock.stockObj == stockObj]):# if at least 1 of the stock is in the player's portfolio
             for stock in stocksToPay:
@@ -170,7 +170,7 @@ class Player(Stock):
     def buyAsset(self,newasset,customValue=None):
         """Custom Value will override the current value (Per Share Not Fullvalue)"""
         if self.runStateCheck(): return
-        value = newasset.getValue(bypass=True,fullvalue=False) if customValue == None else customValue
+        value = newasset.getValue(bypass=True,fullvalue=False) if customValue is None else customValue
         if newasset.quantity <= 0:
             return
         if isinstance(newasset,StockAsset):
@@ -346,7 +346,7 @@ class Player(Stock):
     def runStateCheck(self):
         """Check this anytime something is bought or sold"""
         if self.currentRun.state == 'complete':
-            errors.addMessage('View only mode, run already complete',txtSize=100,coords=[960,540])
+            errors.addMessage('View only mode: run already complete',txtSize=100,coords=[960,540])
             return True
     def updateRunAssetSpread(self):
         """updates the asset spread of the game run"""

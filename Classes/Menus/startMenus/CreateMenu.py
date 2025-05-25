@@ -113,7 +113,7 @@ class CreateMenu:
         drawCenterTxt(screen,"Customization",65,(0,0,0),(730,525),centerX=False,centerY=False,fullY=True)
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(720,530,620,195),5,border_radius=10)# rect under the game mode selector (says more info about the mode)
         if self.mode == 'Blitz':
-            if self.customizeBar.getSelected() == None:
+            if self.customizeBar.getSelected() is None:
                 self.haveError = True
                 drawCenterTxt(screen,"-Must select a time period for Blitz Mode",40,(220,0,0),(730,665),centerX=False,centerY=False)
 
@@ -123,11 +123,11 @@ class CreateMenu:
             
             drawCenterTxt(screen,"Starting Progress",50,(180,180,180),(710+320,545),centerX=True,centerY=False)
             self.customizeBar.draw(screen,['Career','Sandbox'],(730,595),(600,60))
-            if self.customizeBar.getSelected() == None:
+            if self.customizeBar.getSelected() is None:
                 self.customizeBar.setSelected('Career')
 
         elif self.mode == 'Goal':
-            if self.customizeBar.getSelected() == None:
+            if self.customizeBar.getSelected() is None:
                 self.haveError = True
                 drawCenterTxt(screen,"-Must select a financial target for Goal Mode",40,(220,0,0),(730,665),centerX=False,centerY=False)
 

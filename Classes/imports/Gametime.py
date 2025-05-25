@@ -83,8 +83,8 @@ class GameTime:
         returns a tuple of (bool,reason)"""
         if self.speedBar.frozen:
             return False, 'Time Frozen'
-        assert time == None or isinstance(time,datetime), "time must be a datetime object"
-        if time == None:
+        assert time is None or isinstance(time,datetime), "time must be a datetime object"
+        if time is None:
             time = self.time
         if (time.month,time.day) in HOLIDAYS:
             return False, 'Holiday'
@@ -96,8 +96,8 @@ class GameTime:
     def marketOpen(self,time:datetime) -> bool:
         """Returns if the market would be open at a certain time, if time is None, it uses the current time
         DOESN'T TAKE TIMEFROZEN INTO ACCOUNT USE isOpen() FOR THAT"""
-        assert time == None or isinstance(time,datetime), "time must be a datetime object"
-        if time == None:
+        assert time is None or isinstance(time,datetime), "time must be a datetime object"
+        if time is None:
             time = self.time
         if (time.month,time.day) in HOLIDAYS:
             return False

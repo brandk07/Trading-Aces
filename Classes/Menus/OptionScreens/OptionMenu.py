@@ -135,16 +135,16 @@ class Optiontrade(Menu):
             ommitted = self.avaOptionScrll.store_rendercoords((205, 270), (370,950),135,0,0,updatefreq=60)
         
             select = self.selectOption if self.selectOption in optionList else None# Ensuring that the selected stock is in the optionlist
-            selectedindex = None if select == None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
+            selectedindex = None if select is None else optionList.index(select)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
 
             # newselected = self.avaOptionScrll.draw_polys(screen, (205, 270), (370,950), , selectedindex, True, *[self.determineColor(option.getType()) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
             newselected = self.avaOptionScrll.draw_polys(screen, (205, 270), (370,950),selectedindex, True, *[brightenCol(self.determineColor(option.getType()),0.25) for option in optionList[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
             if newselected != None: self.customOptionSc.stopCreating()
 
-            if select == None:# if the latterscroll didn't contain the selected asset before
-                self.selectOption = self.selectOption if newselected == None else optionList[newselected]# Changes selected stock if the new selected has something
+            if select is None:# if the latterscroll didn't contain the selected asset before
+                self.selectOption = self.selectOption if newselected is None else optionList[newselected]# Changes selected stock if the new selected has something
             else:# if the latterscroll contained the selected asset before, then it can set it to none if you select it again
-                self.selectOption = None if newselected == None else optionList[newselected]
+                self.selectOption = None if newselected is None else optionList[newselected]
 
             if self.selectOption != None and self.selectOption not in self.savedOptions:
                 self.customOptionSc.removeSelc()
@@ -180,7 +180,7 @@ class Optiontrade(Menu):
             if changeIt:
                 self.selectOption = result
             else: 
-                self.selectOption = self.selectOption if result == None else result
+                self.selectOption = self.selectOption if result is None else result
 
 
     def drawOptionInfo(self,screen:pygame.Surface, gametime, stock:Stock):
@@ -200,7 +200,7 @@ class Optiontrade(Menu):
         drawLinedInfo(screen,(590,620),(435,330),info,35,TXTCOLOR)
 
     def drawselectOption(self,screen:pygame.Surface,gametime:GameTime,stock:Stock):
-        if self.selectOption == None:
+        if self.selectOption is None:
             return
         option = self.selectOption
         stockNameTxt = s_render(f"{stock.name}", 85, stock.color)# renders the stock name
@@ -244,8 +244,8 @@ class Optiontrade(Menu):
         """Draws the info underneath the stock graph on the left"""
         if self.selectOption != None:
             return
-        # if self.newOptionInfo == None or (self.newOptionInfo and type(self.strikePrice) != bool) and (self.newOptionInfo and type(self.newOptionInfo[1]) != bool):
-        if self.customOptionSc.numPadDisplay == None and self.selectOption == None:   
+        # if self.newOptionInfo is None or (self.newOptionInfo and type(self.strikePrice) != bool) and (self.newOptionInfo and type(self.newOptionInfo[1]) != bool):
+        if self.customOptionSc.numPadDisplay is None and self.selectOption is None:   
             strings = ["Open","High (1M)","Low (1M)","Dividend","Volatility"]
             g = gametime.time
             marketOpenTime = datetime.strptime(f"{g.month}/{g.day}/{g.year} 9:30:00 AM", "%m/%d/%Y %I:%M:%S %p")
@@ -287,7 +287,7 @@ class Optiontrade(Menu):
             stock = self.findStockObj(self.stockSelection.getSelected())
             self.stockGraph.setStockObj(stock)
             self.stockGraph.drawFull(screen, (585,210),(460,350),"OptionMenu Graph",True,"Normal",)
-            # if self.newOptionInfo == None or (self.newOptionInfo and type(self.strikePrice) != bool) and (self.newOptionInfo and type(self.newOptionInfo[1]) != bool):
+            # if self.newOptionInfo is None or (self.newOptionInfo and type(self.strikePrice) != bool) and (self.newOptionInfo and type(self.newOptionInfo[1]) != bool):
             self.drawStockInfo(screen,gametime,stock)
             self.drawAvailableOptions(screen,gametime,stock)
             self.drawCustomOptions(screen,gametime,stock)

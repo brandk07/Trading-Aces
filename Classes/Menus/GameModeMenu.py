@@ -77,7 +77,7 @@ class BlitzAndGoalScreen:
 
 
         pygame.draw.rect(screen,(0,0,0),(195,560,540,355),5,10)# draws the box for the current run
-        maxScale = max(self.currentRun.getAssets()[:-1]) if self.selectedRun == None else max(self.selectedRun.getAssets()[:-1]+self.currentRun.getAssets()[:-1])
+        maxScale = max(self.currentRun.getAssets()[:-1]) if self.selectedRun is None else max(self.selectedRun.getAssets()[:-1]+self.currentRun.getAssets()[:-1])
         # print(maxScale)
         self.currBarGraph.updateValues(self.currentRun.getAssets()[:-1],colors,['$']*4)
         self.currBarGraph.draw(screen,absoluteScale=maxScale)
@@ -111,7 +111,7 @@ class BlitzAndGoalScreen:
     def draw(self,screen,gametime):
         if self.currentRun in self.pastRuns:
             self.pastRuns.remove(self.currentRun)
-        self.selectedRun = None if self.vertScroll.getCard() == None else self.vertScroll.getCard().runObj# gets the selected run
+        self.selectedRun = None if self.vertScroll.getCard() is None else self.vertScroll.getCard().runObj# gets the selected run
         drawCenterTxt(screen,self.currentRun.name,95,(200,200,200),(740,105),centerY=False)
         self.drawPieChart(screen)
         self.drawVertScroll(screen)
@@ -220,7 +220,7 @@ class CareerScreen(BlitzAndGoalScreen):
         """Couldn't use the super draw b/c of current name being drawn elsewhere"""
         if self.currentRun in self.pastRuns:
             self.pastRuns.remove(self.currentRun)
-        self.selectedRun = None if self.vertScroll.getCard() == None else self.vertScroll.getCard().runObj# gets the selected run
+        self.selectedRun = None if self.vertScroll.getCard() is None else self.vertScroll.getCard().runObj# gets the selected run
         drawCenterTxt(screen,self.currentRun.name,85,(200,200,200),(932,110),centerY=False)
         self.drawPieChart(screen)
         self.drawVertScroll(screen)
@@ -228,7 +228,7 @@ class CareerScreen(BlitzAndGoalScreen):
         self.drawBarGraphs(screen)
 
     def drawSelectedUstring(self,screen,mode):
-        if self.uStringScroll.getCard() == None:
+        if self.uStringScroll.getCard() is None:
             self.uStringScroll.setCard(obj=self.menuSpecficCards[mode][0])# sets the card to the first card if there is no card selected
 
         currentCard = self.uStringScroll.getCard()
@@ -243,8 +243,8 @@ class CareerScreen(BlitzAndGoalScreen):
         drawCenterTxt(screen,uString,130,self.menuColors[mode],(1020,245),centerY=False)# draws the name of the unlock/upgrade
         
         requiredVal = self.currentRun.getNextCost(uString)
-        requiredVal = 0 if requiredVal == None else requiredVal
-        # costTxt = "Maxed" if cost == None else f"${limit_digits(cost,30,True)}"
+        requiredVal = 0 if requiredVal is None else requiredVal
+        # costTxt = "Maxed" if cost is None else f"${limit_digits(cost,30,True)}"
         
         cashNet = self.currentRun.getNetOrCash(uString)
         # deficit = max(0,requiredVal-self.player.cash) if cashNet == "Cash" else max(0,requiredVal-self.currentRun.getNetworth())
@@ -340,7 +340,7 @@ class CareerScreen(BlitzAndGoalScreen):
         self.drawSelectedUstring(screen,mode)
 
         # self.uStringScroll.draw(screen)
-        # if self.uStringScroll.getCard() == None:
+        # if self.uStringScroll.getCard() is None:
         #     # drawCenterTxt(screen,"No Unlock Selected",65,(210, 50, 50),(1015,260),centerY=False)
         #     pygame.draw.rect(screen,(0,0,0),(200,210,1200,275),5,10)# box for the explanation 
         #     txt = "There are Unlocks and Upgrades on the right. Unlocks allow you to access new parts of the game, and upgrades enhance your experience. Some unlocks/upgrades are based on networth and will be automatically unlocked, but others must be purchased with cash."

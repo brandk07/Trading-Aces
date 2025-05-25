@@ -65,7 +65,7 @@ class StockScreen:
                     self.picked_stocks.clear()#reset stock list and repopulate it with the correct amount of stocks (using math.prod which is a little unnecessary) in allstocks list
                     self.picked_stocks = self.pickedstockconfig[self.current_config].copy()#uses the pickedstockconfig dict to see which stocks it needs to use
 
-        if collide == None:
+        if collide is None:
             if pygame.Rect(1610,570,150,390).collidepoint(mousex,mousey):
                 collide = 'Not None'#this is just to make it so when you are over the polygon it will remove the hover image, otherwise everytime you go between ui images it will blink
         pygame.draw.rect(screen,(60,60,60),pygame.Rect(1610,570,150,410),border_radius=10)
@@ -106,7 +106,7 @@ class StockScreen:
             mousex, mousey = pygame.mouse.get_pos()
             width = 1400 / len(newlist)
 
-            if self.dragstock[0] == None:# if the stock is not being dragged
+            if self.dragstock[0] is None:# if the stock is not being dragged
                 if pygame.mouse.get_pressed()[0]:# if the mouse is being pressed
                     for i, stock in enumerate(newlist):# for each stock in the list of stocks
                         x = int(200 + (i * width))

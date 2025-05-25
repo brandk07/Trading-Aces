@@ -68,7 +68,7 @@ class Stockbook(Menu):
     def changeSelectedStock(self,name=None,stockobj=None) -> bool:
         if name and isinstance(name,str):
             s = [stock for stock in self.stocklist if stock.name == name]
-            if len(s) == 0 or s == None: return False# something didn't work so return false
+            if len(s) == 0 or s is None: return False# something didn't work so return false
             self.selectedStock = s[0]
             self.stockGraph.setStockObj(self.selectedStock)
             return True
@@ -98,9 +98,9 @@ class Stockbook(Menu):
         ommitted = self.stockLS.store_rendercoords((1470, 135), (435,975),135,0,0,updatefreq=0)
         self.selectedStock = self.selectedStock if self.selectedStock in self.stocklist else None# Ensuring that the selected stock is in the stocklist
 
-        selectedindex = None if self.selectedStock == None else self.stocklist.index(self.selectedStock)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
+        selectedindex = None if self.selectedStock is None else self.stocklist.index(self.selectedStock)# gets the index of the selected asset only uses the first 2 elements of the asset (the class and the ogvalue)
         newselected = self.stockLS.draw_polys(screen, (1470, 135), (435,975), selectedindex, True, *[sasset.getPercent() for sasset in self.stocklist[ommitted[0]-1:]])# draws the latter scroll and returns the selected asset
-        self.selectedStock = self.selectedStock if newselected == None else self.stocklist[newselected]# Changes selected stock if the new selected has something
+        self.selectedStock = self.selectedStock if newselected is None else self.stocklist[newselected]# Changes selected stock if the new selected has something
 
         # screen.blit(s_render(f"Displaying {ommitted[0]} - {ommitted[1]-1} out of {len(self.stocklist)}",35,(220,220,220)),(1535,105))
     

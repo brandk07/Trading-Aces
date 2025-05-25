@@ -7,7 +7,7 @@ class StockAsset(Asset):
         super().__init__(player,stockObj,creationDate,'',ogValue,quantity,portfolioPercent,stockObj.color)
         self.dividends = dividends# the dividends that the stock has given
         
-        if portfolioPercent == None:
+        if portfolioPercent is None:
             self.portfolioPercent = self.getValue(bypass=True)/(player.getNetworth())
 
     def __eq__(self,other):
