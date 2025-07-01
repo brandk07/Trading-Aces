@@ -1,4 +1,5 @@
 import pygame
+import os
 from Defs import *
 from pygame import gfxdraw
 from Classes.Menus.Menu import Menu
@@ -47,7 +48,7 @@ class Stockbook(Menu):
         
 
     def createDescriptions(self,stocknames): 
-        with open(r'Assets\GameTexts\StockDescriptions.txt','r') as descriptions:
+        with open(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GameTexts', 'StockDescriptions.txt'),'r') as descriptions:
             filecontents = descriptions.readlines()
             for i,line in enumerate(filecontents):
                 for stockname in stocknames:
@@ -57,13 +58,13 @@ class Stockbook(Menu):
                         for string in seperatatedstrings:# a list containing 4 strings 
                             self.stocktext[stockname].append(string)
 
-        self.renderedstocknames = {name:fontlist[90].render(name,(150,150,150))[0] for name in stocknames}
+        self.renderedstocknames = {name:get_font('reg', 90).render(name,(150,150,150))[0] for name in stocknames}
         for key,lines in self.stocktext.items():#rendering the text that displays info about the stocks
             for i,line in enumerate(lines):
                 if i == 0:#if its the first line, render it with a larger font and grey color
-                    self.stocktext[key][i] = fontlist[40].render(line,(120, 120, 120))[0]
+                    self.stocktext[key][i] = get_font('reg', 40).render(line,(120, 120, 120))[0]
                 else:#else render it with a smaller font and orange color
-                    self.stocktext[key][i] = fontlist[30].render(line,TXTCOLOR)[0]
+                    self.stocktext[key][i] = get_font('reg', 30).render(line,TXTCOLOR)[0]
 
     def changeSelectedStock(self,name=None,stockobj=None) -> bool:
         if name and isinstance(name,str):

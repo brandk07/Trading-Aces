@@ -34,22 +34,59 @@ def timing_decorator(func):
 
 #  ////////////////////////////////////////////Fonts///////////////////////////////////////////////////////////////////////////////////////
 
-crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)
-pixfonts = lambda font_size: freetype.Font(r'Assets\fonts\Silkscreen\Silkscreen-Regular.ttf', font_size*.75)
-fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Bold.ttf', font_size*.75)
-fontsLight = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Light.ttf', font_size*.75)
+# crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)
+crystalfonts = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'LiquidCrystal', 'Liquid_Crystal_Extra_Characters.otf'), font_size)
+pixfonts = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'Silkscreen', 'Silkscreen-Regular.ttf'), font_size)
+fontsbold = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'antonio', 'Antonio-Bold.ttf'), font_size)
+fontsLight = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'antonio', 'Antonio-Light.ttf'), font_size)
+fonts = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'antonio', 'Antonio-Regular.ttf'), font_size*.75)
 # FUN THEME
 # fonts = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
 # fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
 # fonts = lambda font_size: freetype.Font(r'Assets\antonio\Liquid_Crystal_Extra_Characters.otf', font_size)
-bold40 = fontsbold(45)
-fonts = lambda font_size: freetype.Font(r'Assets\fonts\antonio\Antonio-Regular.ttf', font_size*.75)
-fontlist = [fonts(num) for num in range(0,201)]#list of fonts from 0-100
-fontlistcry = [crystalfonts(num) for num in range(0,201)]#list of fonts from 0-100
-fontlistLight = [fontsLight(num) for num in range(0,201)]#list of fonts from 0-100
-fontlistpix = [pixfonts(num) for num in range(0,201)]#list of fonts from 0-100
-fontlistbold = [fontsbold(num) for num in range(0,201)]#list of fonts from 0-100
-font45 = fonts(45)
+
+# Cached font rendering system
+_font_cache = {}
+
+def get_font(font_type: str, size: int):
+    """
+    Get a cached font object. Renders on first access and caches for future use.
+    font_type: 'reg', 'cry', 'light', 'pix', 'bold'
+    size: font size (0-200)
+    """
+    cache_key = (font_type, size)
+    if cache_key not in _font_cache:
+        if font_type == 'reg':
+            _font_cache[cache_key] = fonts(size)
+        elif font_type == 'cry':
+            _font_cache[cache_key] = crystalfonts(size)
+        elif font_type == 'light':
+            _font_cache[cache_key] = fontsLight(size)
+        elif font_type == 'pix':
+            _font_cache[cache_key] = pixfonts(size)
+        elif font_type == 'bold':
+            _font_cache[cache_key] = fontsbold(size)
+        else:
+            raise ValueError(f"Unknown font type: {font_type}")
+    return _font_cache[cache_key]
+
+# Legacy compatibility - these will now use cached fonts
+class FontList:
+    def __init__(self, font_type):
+        self.font_type = font_type
+    
+    def __getitem__(self, size):
+        return get_font(self.font_type, size)
+
+fontlist = FontList('reg')
+fontlistcry = FontList('cry')
+fontlistLight = FontList('light')
+fontlistpix = FontList('pix')
+fontlistbold = FontList('bold')
+
+# Pre-load commonly used fonts
+bold40 = get_font('bold', 45)
+font45 = get_font('reg', 45)
 GRAPHRANGES = ["1H","1D","5D","1M","6M","1Y","5Y"]
 MINRANGE = GRAPHRANGES[0]
 MAXRANGE = GRAPHRANGES[-1]
@@ -69,15 +106,15 @@ def s_render(string:str, size, color,font='reg') -> pygame.Surface:
     """Caches the renders of the strings, and returns the rendered surface"""
     assert isinstance(string,str), 'The string must be a string'
     if font == 'reg':
-        text = fontlist[size].render(string, (color))[0]
+        text = get_font('reg', size).render(string, (color))[0]
     elif font == 'cry':
-        text = fontlistcry[size].render(string, (color))[0]
+        text = get_font('cry', size).render(string, (color))[0]
     elif font == 'light':
-        text = fontlistLight[size].render(string, (color))[0]
+        text = get_font('light', size).render(string, (color))[0]
     elif font == 'pix':
-        text = fontlistpix[size].render(string, (color))[0]
+        text = get_font('pix', size).render(string, (color))[0]
     elif font == 'bold':
-        text = fontlistbold[size].render(string, (color))[0]
+        text = get_font('bold', size).render(string, (color))[0]
 
     return text
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -135,15 +172,15 @@ mouseButton = Mouse()
 
 soundEffects = {# soundEffects['generalClick'].play()
     # 'menuClick': pygame.mixer.Sound(r'Assets\Soundeffects\menuClick.wav'),
-    'menuClick': pygame.mixer.Sound(r'Assets\SoundEffects\menuClick.wav'),
-    'generalClick': pygame.mixer.Sound(r'Assets\Soundeffects\generalClick.wav'),
-    'error' : pygame.mixer.Sound(r'Assets\Soundeffects\error.wav'),
+    'menuClick': pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'menuClick.wav')),
+    'generalClick': pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'generalClick.wav')),
+    'error' : pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'error.wav')),
     # 'buy': pygame.mixer.Sound(r'Assets\Soundeffects\buy.wav'),
-    'buyStock': pygame.mixer.Sound(r'Assets\SoundEffects\buyStock.wav'),
-    'buyOption': pygame.mixer.Sound(r'Assets\SoundEffects\OptionBuy.wav'),
-    'sellGain' : pygame.mixer.Sound(r'Assets\SoundEffects\sellGain.wav'),
-    'sellLoss' : pygame.mixer.Sound(r'Assets\SoundEffects\sellLoss.wav'),
-    'buyLoan' : pygame.mixer.Sound(r'Assets\SoundEffects\buyStock.wav')
+    'buyStock': pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'buyStock.wav')),
+    'buyOption': pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'OptionBuy.wav')),
+    'sellGain' : pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'sellGain.wav')),
+    'sellLoss' : pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'sellLoss.wav')),
+    'buyLoan' : pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'buyStock.wav'))
 }
 
 # Mostly used for deciding color of the percent change, it was just really annoying to write out the if statements every time
@@ -151,16 +188,49 @@ p3choice = lambda negative, positive, zero, change : (negative if change < 0 els
 
 getTSizeCharsAndNums = lambda chars, xSpace : int(((xSpace/chars)-0.9506)/0.2347)# 
 # strSizes = {'0': (0.259, 1.201), '1': (0.158, 0.697), '2': (0.229, 1.031), '3': (0.25, 1.221), '4': (0.273, 0.977), '5': (0.226, 0.787), '6': (0.262, 0.832), '7': (0.258, 0.987), '8': (0.248, 1.372), '9': (0.248, 0.873), '.': (0.065, 0.885)}
-# returns the font size that will fit the text in the xSpace
-strSizes = {str(num):[fontlist[i].get_rect(str(num)) for i in range(1,199)] for num in range(10)}
-strSizes['.'] = ([fontlist[i].get_rect('.') for i in range(1,199)])
+# Lazy-loaded string sizes cache
+_str_sizes_cache = {}
+
+def get_str_sizes():
+    """Get string sizes cache, build on first access"""
+    if not _str_sizes_cache:
+        _str_sizes_cache.update({str(num):[get_font('reg', i).get_rect(str(num)) for i in range(1,199)] for num in range(10)})
+        _str_sizes_cache['.'] = [get_font('reg', i).get_rect('.') for i in range(1,199)]
+    return _str_sizes_cache
+
+# Legacy compatibility - lazy-loaded strSizes
+class _StrSizesDict:
+    def __init__(self):
+        self._cache = None
+    
+    def __getitem__(self, key):
+        if self._cache is None:
+            self._cache = get_str_sizes()
+        return self._cache[key]
+    
+    def keys(self):
+        if self._cache is None:
+            self._cache = get_str_sizes()
+        return self._cache.keys()
+    
+    def values(self):
+        if self._cache is None:
+            self._cache = get_str_sizes()
+        return self._cache.values()
+    
+    def items(self):
+        if self._cache is None:
+            self._cache = get_str_sizes()
+        return self._cache.items()
+
+strSizes = _StrSizesDict()
 def getTSizeNums(chars:str, xSpace:int,maxsize:int=199) -> int:
     """Returns the font size that will fit the text in the xSpace"""
     xSpace*=.7
     if chars == '': return 1
     def getSize(size, totalSpace, chars, lastwidth:int):
         """Lastwidth is the last width of text, totalSpace is the total space the text should take up, chars is the text to be rendered"""
-        newSum = sum([fontlist[size].get_rect(c).width for c in chars])
+        newSum = sum([get_font('reg', size).get_rect(c).width for c in chars])
         if newSum == totalSpace:
             return size
         elif newSum < totalSpace and lastwidth > totalSpace:# if the current is under, but the last was too big, than current is best
@@ -178,7 +248,7 @@ def getTSizeNums(chars:str, xSpace:int,maxsize:int=199) -> int:
                 print("Min size reached from (getTSizeNums in Defs)")# Won't raise an error, but will return the min size
             return getSize(size-1, totalSpace, chars, newSum)
         else:
-            print(newSum, totalSpace, lastwidth, size, chars, fontlist[size].get_rect(chars).width)
+            print(newSum, totalSpace, lastwidth, size, chars, get_font('reg', size).get_rect(chars).width)
     if chars == '': return 1
     getTSizeNum = lambda chars, xSpace : int(((xSpace/len(chars))+0.8)/0.225)
     testSize = max(min(getTSizeNum(chars, xSpace),maxsize),1)
@@ -197,7 +267,7 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
             renderlist[position].pop(text)  # remove the text from the recentrenders
             renderlist[position][text] = render  # add the text back to the recentrenders - so it is at the end of the dict (doesn't get deleted)
         else:  # if the text is not in the recentrenders or recent renders doesn't have enough texts
-            render = fontlist[textinfo[x][1]].render(text, textinfo[x][0])[0]  # render the text
+            render = get_font('reg', textinfo[x][1]).render(text, textinfo[x][0])[0]  # render the text
             renderlist[position][text] = render  # add the text to the recentrenders
     for text in list(renderlist[position].keys()):
         if text not in texts:
@@ -208,7 +278,7 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
 def getScreenRefreshBackGrounds(screen:pygame.Surface):
     # background = pygame.image.load(r'Assets\GameBackground.png').convert_alpha()
     # background = pygame.image.load(r'Assets\Casino-Game-Background-edit-online-1.png').convert_alpha()
-    background = pygame.image.load(r'Assets\back1.jpeg').convert_alpha()
+    background = pygame.image.load(os.path.join(os.path.dirname(__file__), 'Assets', 'back1.jpeg')).convert_alpha()
     background = pygame.transform.smoothscale(background,(1920,1080))
     # background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
     background.set_alpha(100)
@@ -278,7 +348,7 @@ def text_input(screen, coords, wh, current_str, keyPressed, txtSize=45) -> str:
     # make the cursor blink
     if int(time.time() * 2) % 2 == 0:
         
-        lw = fontlist[txtSize].get_rect(' ' if len(current_str) == 0 else current_str[-1]).width
+        lw = get_font('reg', txtSize).get_rect(' ' if len(current_str) == 0 else current_str[-1]).width
         x = coords[0] + wh[0]//2 + width/2 - lw - 1
         y = coords[1] + wh[1]//2 + 20 + 3
         pygame.draw.rect(screen, (255, 255, 255), pygame.Rect(x,y,lw+4,3))
@@ -756,7 +826,7 @@ def draw_pie_chart(screen: pygame.Surface, values:list, radius, coords):
             screen.blit(text[0], (text_x, text_y)) 
         # draw a circle in the middle of the pie chart
         pygame.draw.circle(screen, (0, 0, 0), (coords[0]+radius,coords[1]+radius), radius, 10)
-        totaltext = fontlist[45].render(f'${total:,.2f}', (0, 0, 0))[0]
+        totaltext = get_font('reg', 45).render(f'${total:,.2f}', (0, 0, 0))[0]
         renderedtext.append([totaltext,f'${total:,.2f}'])
         screen.blit(totaltext, (corners[0][0]+radius-(totaltext.get_width()/2), corners[0][1]+radius-(totaltext.get_height()/2)))
 @lru_cache(maxsize=10)
@@ -822,7 +892,7 @@ def movingRect(screen,value,maxvalue,width,height,x,y):
     pygame.draw.rect(screen, (0,0,0), pygame.Rect(870,y,740,height), width=7, border_radius=10)
 
 def drawgametime(currenttime,screen:pygame.Surface):
-    numtime_text,rect = fontlist[50].render(f'{currenttime[3]}:{"0" if currenttime[4] < 10 else ""}{currenttime[4]}{currenttime[6]}',(255,255,255))
+    numtime_text,rect = get_font('reg', 50).render(f'{currenttime[3]}:{"0" if currenttime[4] < 10 else ""}{currenttime[4]}{currenttime[6]}',(255,255,255))
     numtime_rect = numtime_text.get_rect(center=(100, 950))
     polygon_points = [(25, 925), (175, 925), (175, 975), (25, 975)]
     pygame.draw.polygon(screen, (80, 80, 80), polygon_points)

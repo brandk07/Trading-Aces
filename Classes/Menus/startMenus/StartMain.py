@@ -1,4 +1,5 @@
-import pygame.camera
+import sys
+import os
 from Classes.Menus.startMenus.CreateMenu import *
 from Classes.Menus.startMenus.StartMenu import StartMenu
 from Classes.Menus.startMenus.PlayMenu import PlayMenu
@@ -75,7 +76,7 @@ class StartMain:
         self.menus['play'].reset()
 
     def getSurfs(self):
-        background = pygame.image.load(r'Assets\back1.jpeg').convert_alpha()
+        background = pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'Assets', 'back1.jpeg')).convert_alpha()
         background = pygame.transform.smoothscale(background,(1920,1080))
         background.set_alpha(100)
         extraSurf = pygame.Surface((1920,1080))
@@ -129,7 +130,7 @@ class StartMain:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
-                    quit()
+                    sys.exit()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     
                     mouseButton.addEvent(event.button)

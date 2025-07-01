@@ -4,6 +4,7 @@
 
 # SNTOK (SNT) has announced that they have made a new product that will be released in 2 months
 import pygame
+import os
 from pygame import gfxdraw
 from Defs import *
 from random import randint
@@ -32,7 +33,7 @@ class News():
         
     def loadNewsEvents(self) -> None:
         """Loads the news events from the companyNews.txt file"""
-        with open('Assets\GameTexts\companyNews.txt','r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GameTexts', 'companyNews.txt'),'r') as f:
             lines = f.readlines()
             lines = [l.replace("\n",'') for l in lines]
 

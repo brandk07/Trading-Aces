@@ -4,6 +4,7 @@ if TYPE_CHECKING:
     from Classes.Menus.startMenus.StartMain import StartMain
 
 import pygame
+import os
 from Defs import *
 from pygame import gfxdraw
 from Classes.imports.UIElements.SelectionElements import SelectionBar
@@ -21,7 +22,7 @@ class CreateMenu:
         self.currentName = 'Game Name'
         self.runManager : RunManager = runManager
         
-        self.gameIcons = [pygame.image.load(rf'Classes\BigClasses\RunIcons\image ({i}).png') for i in range(8)]
+        self.gameIcons = [pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'BigClasses', 'RunIcons', f'image ({i}).png')) for i in range(8)]
         self.gameIconScroll = SideScroll((180,325),(520,110),(70,70))# the side scroll for the game icons
         self.runIcons = [pygame.transform.smoothscale(g,(70,70)) for g in self.gameIcons]
         self.runIcons = [CreateMenuRunImage(self.gameIconScroll,g) for g in self.runIcons]

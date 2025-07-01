@@ -1,5 +1,6 @@
 from datetime import datetime
 import pygame
+import os
 from Defs import *
 import shutil
 from dateutil.relativedelta import relativedelta
@@ -27,7 +28,7 @@ class GameRun:
         self.runManager = runManager
         self.assetSpread = assetSpread if len(assetSpread) == 5 else [0,0,0,STARTCASH,0]# end value of all in each category [stocks, options, indexFunds, cash, loans]
         self.iconIndex = iconIndex
-        self.runIcon = pygame.image.load(rf'Classes\BigClasses\RunIcons\image ({self.iconIndex}).png').convert_alpha()
+        self.runIcon = pygame.image.load(os.path.join(os.path.dirname(__file__), 'RunIcons', f'image ({self.iconIndex}).png')).convert_alpha()
         self.gameMode : str = gameMode.capitalize()# the mode of the game (Blitz, Career, Goal)
 
         if gameDate is None:

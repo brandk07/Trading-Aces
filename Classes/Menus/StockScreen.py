@@ -1,4 +1,5 @@
 import pygame
+import os
 from pygame import gfxdraw
 import math
 from Defs import *
@@ -15,10 +16,10 @@ class StockScreen:
             'nona': (3,3),
         }
         self.images = {
-            'single': pygame.image.load('Assets/GraphChoiceIcons/single.png').convert_alpha(),
-            'quad': pygame.image.load('Assets/GraphChoiceIcons/quad.png').convert_alpha(),
-            'six' : pygame.image.load('Assets/GraphChoiceIcons/six.png').convert_alpha(),
-            'nona': pygame.image.load('Assets/GraphChoiceIcons/nona.png').convert_alpha(),
+            'single': pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GraphChoiceIcons', 'single.png')).convert_alpha(),
+            'quad': pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GraphChoiceIcons', 'quad.png')).convert_alpha(),
+            'six' : pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GraphChoiceIcons', 'six.png')).convert_alpha(),
+            'nona': pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GraphChoiceIcons', 'nona.png')).convert_alpha(),
         }
         self.stockGraphs = {stock.name:StockVisualizer(gametime,stock,stocklist) for stock in stocklist}
 
@@ -48,7 +49,7 @@ class StockScreen:
             'nona': [self.allstocks[i] for i in range(9)],
         }
         # self.mcontrolstext = [[fontlist[45].render(text,(220,220,220))[0],text.lower()] for text in ["1H","1D","1W","1M","3M","1Y","Custom"]]
-        self.renderedstocknames = {name:fontlist[25].render(name,(255,255,255))[0] for name in self.allstocks}
+        self.renderedstocknames = {name:get_font('reg', 25).render(name,(255,255,255))[0] for name in self.allstocks}
         self.masterRange = MINRANGE
         self.dragstock = [None,None,None]# [stock object, xoffset, yoffset]
 

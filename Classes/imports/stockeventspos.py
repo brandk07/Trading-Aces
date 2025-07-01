@@ -155,7 +155,7 @@ class StockEvents():
             
 
     def addEvent(self,event:str,duration,color,eventname):
-        self.stockevents[eventname] = ([fontlist[25].render(event,(255,255,255))[0],color,duration])
+        self.stockevents[eventname] = ([get_font('reg', 25).render(event,(255,255,255))[0],color,duration])
 
     def draw(self,screen:pygame.Surface):
         """Draws all the stock events to the screen"""

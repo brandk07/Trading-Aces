@@ -80,7 +80,7 @@
 
 # print(lst)
 # create 9 files using these names in the directory r/Assests/Stockdata/--name--.txt ['SNTOK','KSTON','STKCO','XKSTO','VIXEL','QWIRE','QUBEX','FLYBY','MAGLO']
-directory = r"Assets\Stockdata"
+directory = os.path.join(os.path.dirname(__file__), "Assets", "Stockdata")
 # I want to delete all the files in that directory now so I can create new ones that are .json files
 import json
 import numpy as np
@@ -127,10 +127,10 @@ for name in stocknames:
             json_item = json.dumps([])  # Convert the list to a JSON string
             f.write(json_item + '\n') 
 
-with open(f"Assets/extradata.json", "w+") as f:
+with open(os.path.join(os.path.dirname(__file__), "Assets", "extradata.json"), "w+") as f:
     json.dump([], f)
 
-with open(r"Assets\\transactions.json", "w+") as f:
+with open(os.path.join(os.path.dirname(__file__), "Assets", "transactions.json"), "w+") as f:
     json.dump([], f)
 
 

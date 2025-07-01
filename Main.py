@@ -1,5 +1,5 @@
 import pygame
-from random import randint
+import sys
 import time
 from Defs import *
 from Classes.BigClasses.Stock import Stock
@@ -166,7 +166,7 @@ if __name__ == "__main__":
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):                
                     saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)
                     pygame.quit()
-                    quit()
+                    sys.exit()
 
                 
                 elif event.type == pygame.MOUSEBUTTONUP:
@@ -197,7 +197,7 @@ if __name__ == "__main__":
                     if not os.path.exists(screenshot_dir):
                         os.makedirs(screenshot_dir)
 
-                    filepath = f"{screenshot_dir}/screenshot_{timestamp}.png"
+                    filepath = os.path.join(screenshot_dir, f"screenshot_{timestamp}.png")
                 
                     screenshot = screen.copy()  # screen is your pygame display surface
                     pygame.image.save(screenshot, filepath)
