@@ -9,6 +9,7 @@ from Defs import *
 from pygame import gfxdraw
 from Classes.imports.UIElements.SelectionElements import SelectionBar
 from Classes.imports.UIElements.SideScroll import SideScroll, CreateMenuRunImage
+from Classes.imports.UIElements.TextInput import TextInput
 from Classes.Menus.GameModeMenu import GameRun,BlitzRun,CareerRun,GoalRun,RunManager
 
 class CreateMenu:
@@ -21,6 +22,20 @@ class CreateMenu:
         self.modeColors = {self.gameModes[i]:[(19, 133, 100), (199, 114, 44), (196, 22, 62)][i] for i in range(3)}
         self.currentName = 'Game Name'
         self.runManager : RunManager = runManager
+        
+        # Initialize the new TextInput for game name
+        self.nameInput = TextInput(
+            initial_text='Game Name',
+            max_length=25,
+            font_size=55,
+            text_color=(255, 255, 255),
+            cursor_color=(255, 255, 255),
+            background_color=(60, 60, 60),
+            border_color=(100, 100, 100),
+            border_width=3,
+            border_radius=10,
+            padding=15
+        )
         
         self.gameIcons = [pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'BigClasses', 'RunIcons', f'image ({i}).png')) for i in range(8)]
         self.gameIconScroll = SideScroll((180,325),(520,110),(70,70))# the side scroll for the game icons
@@ -36,6 +51,7 @@ class CreateMenu:
         # self.surf.fill((60,60,60,200))
     def reset(self):
         self.currentName = 'Game Name'
+        self.nameInput.set_text('Game Name')
         self.mode = 'Blitz'
         self.customizeBar.setSelected(None)
         self.modeselectionBar.setSelected(None)
@@ -90,11 +106,22 @@ class CreateMenu:
             drawCenterTxt(screen,txt,45,(160,160,160),(195,665+(i*45)),centerX=False,centerY=False)
 
         
-    def drawModeNameSelection(self,screen,key):
-
-
+    def drawModeNameSelection(self,screen,events):
         drawCenterTxt(screen,"Name",65,(0,0,0),(730,65),centerX=False,centerY=False)
-        self.currentName = text_input(screen,(715,115),(640,75),self.currentName,key,55)
+        
+        # Update the text input and draw it
+        self.nameInput.update()
+        
+        # Handle events for the text input
+        for event in events:
+            self.nameInput.handle_event(event)
+        
+        # Draw the text input
+        name_rect = pygame.Rect(715, 115, 640, 75)
+        self.nameInput.draw(screen, name_rect)
+        
+        # Update current name from text input
+        self.currentName = self.nameInput.get_text()
 
         if type(n:=self.runManager.validName(self.currentName)) != bool:
             self.haveError = True
@@ -180,7 +207,7 @@ class CreateMenu:
             drawCenterTxt(screen,"Please fill out all fields",40,(255,150,150),(mousex+20,mousey),centerX=False,centerY=False,font='light')
         return (n and not self.haveError)
         
-    def draw(self,screen,key):
+    def draw(self,screen,events):
         """Draws the create game menu"""
         self.haveError = False# resets the error for each draw
 
@@ -190,7 +217,7 @@ class CreateMenu:
 
         self.drawModeInfo(screen)# draws the mode info on the right
 
-        self.drawModeNameSelection(screen,key)# draws the name and mode selection
+        self.drawModeNameSelection(screen,events)# draws the name and mode selection
 
         self.drawInDepthInfo(screen)# draws the in depth info about the mode
 

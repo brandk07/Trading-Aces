@@ -72,9 +72,9 @@ class News():
         # drawCenterTxt(screen, txt, 40, (200, 200, 200), (882, 1005), centerX=True, centerY=False)
 
         for i, text in enumerate(separate_strings(self.txt, 3)):
-            x = 290 + (i * 10)
-            y = 820 + (i * 50)
-            renderedTxt = s_render(text, 50, (255, 255, 255),font='cry')
+            x = 285 + (i * 12)
+            y = 810 + (i * 52)
+            renderedTxt = s_render(text, 40, (255, 255, 255),font='cry')
             # drawCenterTxt(screen, text, 50, (255, 255, 255), (x, y), centerX=False, centerY=False,font='cry')
             drawCenterRendered(screen, renderedTxt, (x, y), centerX=False, centerY=False)
             pygame.draw.line(screen, (120, 120, 120), (x, y+5+renderedTxt.get_height()), (x+renderedTxt.get_width(), y+5+renderedTxt.get_height()), 2)

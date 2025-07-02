@@ -109,7 +109,7 @@ class StartMain:
                     if n != None:
                         self.gameMode = n.lower()
                 case 'create':
-                    if self.menus['create'].draw(screen,key):
+                    if self.menus['create'].draw(screen,events):
                         self.runManager.addRun(self.menus['create'].currentRun)
                         return self.menus['create'].currentRun
                 case 'play':
@@ -125,9 +125,12 @@ class StartMain:
                 
 
             key = None
+            events = []  # Collect all events for TextInput
             screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
             mouseButton.update()
             for event in pygame.event.get():
+                events.append(event)  # Store all events
+                
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     pygame.quit()
                     sys.exit()

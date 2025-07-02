@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
             pygame.display.update()
 
-            clock.tick(60)
+            clock.tick(120)
 
         # Saves the game when the user goes back to the main menu
         saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)

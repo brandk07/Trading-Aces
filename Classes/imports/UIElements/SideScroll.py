@@ -400,6 +400,8 @@ class SideScroll:
         self.mouseScrollTime = 0
         self.lastSelected = None
         self.scrollSpeed = 35
+        self.scroll_velocity = 0
+        self.scroll_friction = 0.95
     def getCard(self,index=False):
         """Returns the card that is currently in the center of the screen
         If index is True, it will return the index of the card"""
@@ -438,10 +440,16 @@ class SideScroll:
             card.updateData(data[i])
 
     def scrollControls(self):
+        svalue = self.scroll
+        
         if mouseButton.getButton('scrollUp'):
-            self.scroll += self.scrollSpeed
+            self.scroll_velocity += 10  # Add velocity instead of direct change
         elif mouseButton.getButton('scrollDown'):
-            self.scroll -= self.scrollSpeed
+            self.scroll_velocity -= 10
+        
+        # Apply velocity and friction
+        self.scroll += int(self.scroll_velocity)
+        self.scroll_velocity *= self.scroll_friction
 
         maxVal = (-self.cardWH[0]*(len(self.cards)-1))+175
         minVal = max(self.wh[0]-205,self.cardWH[0]*(len(self.cards)-1)-145)
@@ -490,17 +498,30 @@ class VerticalScroll(SideScroll):
     def __init__(self, coords, wh, cardWH=(170,170)):
         super().__init__(coords, wh, cardWH)
         self.scroll = 25
+        self.scroll_velocity = 0
+        self.scroll_friction = 0.95
+
         
     def draw(self, screen):
         """Draws the cards vertically instead of horizontally"""
         minY, maxY = self.coords[1]+20, self.coords[1]+self.wh[1]-20
         switched = False
-        # Handle scrolling
+        svalue = self.scroll
+        
+        # Handle scrolling with velocity
         if mouseButton.getButton('scrollUp'):  # Scroll up
-            self.scroll = min(25, self.scroll + 50)
+            self.scroll_velocity += 10  # Add velocity instead of direct change
         elif mouseButton.getButton('scrollDown'):  # Scroll down
-            maxScroll = -(len(self.cards) * (self.cardWH[1] + 25) - self.wh[1])
-            self.scroll = max(maxScroll, self.scroll - 50)
+            self.scroll_velocity -= 10
+        
+        # Apply velocity and friction
+        self.scroll += int(self.scroll_velocity)
+        self.scroll_velocity *= self.scroll_friction
+        
+        # Apply bounds
+        maxScroll = -(len(self.cards) * (self.cardWH[1] + 25) - self.wh[1])
+        self.scroll = max(maxScroll, min(25, self.scroll))
+        
         xpos = self.coords[0] + (self.wh[0]//2) - (self.cardWH[0] // 2) 
         index = self.lastSelected
         

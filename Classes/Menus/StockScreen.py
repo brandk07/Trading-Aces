@@ -37,7 +37,7 @@ class StockScreen:
         self.ui_rects = [pygame.Rect(1647,590+(i*90),80,80) for i in range(len(self.images))]
         self.wh = [1400,880]# the start coords of the graph
 
-        self.current_config = 'nona'
+        self.current_config = 'quad'
         self.allstocks = [stock.name for stock in stocklist]
 
         self.picked_stocks = [stock for stock in self.allstocks]

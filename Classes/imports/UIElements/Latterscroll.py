@@ -15,6 +15,8 @@ class LatterScroll():
         self.lasttexts = []# the last texts drawn
         self.lasttextcoords = []# the last textcoords drawn 
         self.textcoords = []
+        self.scroll_velocity = 0
+        self.scroll_friction = 0.95
 
     def decidebottomcolor(self,hover,selectedVal,numdrawn,*args):
         """This can be overriden in child classes"""
@@ -162,13 +164,19 @@ class LatterScroll():
     #             (points[1][0]+10,points[1][1]),]
     
     def scrollcontrols(self, coords, wh):
-        mousex,mousey = pygame.mouse.get_pos()
-        svalue = self.scrollvalue# the scroll value before it changes
-        if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]),mousex,mousey):
-            if mouseButton.getButton('scrollUp') and self.scrollvalue > 0:
-                self.scrollvalue -= 30
-            elif mouseButton.getButton('scrollDown') and self.scrollvalue < len(self.texts)*self.polyheight - self.polyheight*2:
-                self.scrollvalue += 30
+        mousex, mousey = pygame.mouse.get_pos()
+        svalue = self.scrollvalue
+        
+        if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]), mousex, mousey):
+            if mouseButton.getButton('scrollUp'):
+                self.scroll_velocity -= 10 # Add velocity instead of direct change
+            elif mouseButton.getButton('scrollDown'):
+                self.scroll_velocity += 10
+        
+        # Apply velocity and friction
+        self.scrollvalue += int(self.scroll_velocity)
+        self.scroll_velocity *= self.scroll_friction
+
         # checking if the scroll value is out of bounds
         if self.scrollvalue < 0:# if the scroll value is less than 0
             self.scrollvalue = 0
@@ -265,6 +273,8 @@ class LinedLatter():
         self.surf = pygame.Surface((self.wh[0],self.wh[1])).convert_alpha()
         self.needToUpdate = True
         self.scrollvalue = 0
+        self.scroll_velocity = 0
+        self.scroll_friction = 0.95
     
     def setStrings(self,stringData:list[list[str,int,tuple]]):
         """string Data should be [[string,size,color],n times]"""
@@ -304,12 +314,26 @@ class LinedLatter():
                     drawCenterTxt(self.surf,string,size,color,(self.coords[ii][0],self.coords[ii][1]+y),centerY=False)
 
     def scrollcontrols(self, coords, wh):
-        mousex,mousey = pygame.mouse.get_pos()
-        if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]),mousex,mousey):
-            if mouseButton.getButton('scrollDown') and (self.scrollvalue+len(self.data)*self.elementHeight)-self.elementHeight > 0:
-                self.scrollvalue -= 30; self.needToUpdate = True
-            elif mouseButton.getButton('scrollUp') and self.scrollvalue < self.elementHeight:
-                self.scrollvalue += 30; self.needToUpdate = True
+        mousex, mousey = pygame.mouse.get_pos()
+        svalue = self.scrollvalue
+        
+        if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]), mousex, mousey):
+            if mouseButton.getButton('scrollUp'):
+                self.scroll_velocity -= 7 # Add velocity instead of direct change
+            elif mouseButton.getButton('scrollDown'):
+                self.scroll_velocity += 7
+        
+        # Apply velocity and friction
+        self.scrollvalue += int(self.scroll_velocity)
+        self.scroll_velocity *= self.scroll_friction
+
+        # checking if the scroll value is out of bounds
+        if self.scrollvalue < 0:# if the scroll value is less than 0
+            self.scrollvalue = 0
+        elif self.scrollvalue > len(self.data)*self.elementHeight - self.elementHeight:# if the scroll value is greater than the most it should be
+            self.scrollvalue = len(self.data)*self.elementHeight - self.elementHeight# set it to the most it should be
+        if self.scrollvalue != svalue:# if the scroll value changed
+            self.needToUpdate = True
 
     def draw(self,screen,coords:tuple):
         if self.needToUpdate:

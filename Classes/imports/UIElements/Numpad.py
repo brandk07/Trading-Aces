@@ -4,7 +4,7 @@ import pygame.gfxdraw
 from Defs import *
 
 class Numpad:
-    def __init__(self,displayText=True,nums=('DEL','0','MAX'),maxDecimals=2,defaultVal=0,txtSize=35) -> None:
+    def __init__(self,displayText=True,nums=('DEL','0','MAX'),maxDecimals=2,defaultVal=0,txtSize=32) -> None:
         self.value = defaultVal
         self.defaultVal = defaultVal
         self.txtSize = txtSize

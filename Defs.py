@@ -18,7 +18,7 @@ pygame.font.init()
 pygame.init()
 
 TXTCOLOR = (220,220,220)
-POINTSPERGRAPH = 500
+POINTSPERGRAPH = 150
 
 MAXSTEP = 50# Max points that can be added to the graph at a time
 
