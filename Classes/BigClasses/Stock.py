@@ -312,7 +312,7 @@ class Stock():
 
         return lastprice
 
-    def fill_graphs(self):
+    def fill_graphs(self, progress_callback=None):
         
         def getNextLowest(pointsmade):
             
@@ -346,6 +346,7 @@ class Stock():
         self.graphs[MAXRANGE] = deque([self.price],maxlen=POINTSPERGRAPH)
         lastgraphed = MAXRANGE
         pointsmade = 0
+        iteration_count = 0
         while len(self.graphs[MINRANGE]) < POINTSPERGRAPH:
             distance,name = getNextLowest(pointsmade)
 
@@ -353,6 +354,13 @@ class Stock():
             lastgraphed = name
             self.graphs[name].append(newpoint)
             pointsmade += distance
+            
+            # Call progress callback if provided
+            if progress_callback and iteration_count % 50 == 0:  # Update every 50 iterations to avoid excessive calls
+                progress = len(self.graphs[MINRANGE]) / POINTSPERGRAPH
+                progress_callback(progress, f"Filling {self.name} graph data...")
+            
+            iteration_count += 1
         
         self.price = self.graphs[MINRANGE][-1]
 

@@ -319,18 +319,18 @@ class LinedLatter():
         
         if pygame.Rect.collidepoint(pygame.Rect(coords[0],coords[1],wh[0],wh[1]), mousex, mousey):
             if mouseButton.getButton('scrollUp'):
-                self.scroll_velocity -= 7 # Add velocity instead of direct change
+                self.scroll_velocity -= 9 # Add velocity instead of direct change
             elif mouseButton.getButton('scrollDown'):
-                self.scroll_velocity += 7
+                self.scroll_velocity += 9
         
         # Apply velocity and friction
         self.scrollvalue += int(self.scroll_velocity)
         self.scroll_velocity *= self.scroll_friction
 
         # checking if the scroll value is out of bounds
-        if self.scrollvalue < 0:# if the scroll value is less than 0
-            self.scrollvalue = 0
-        elif self.scrollvalue > len(self.data)*self.elementHeight - self.elementHeight:# if the scroll value is greater than the most it should be
+        # if self.scrollvalue < 0:# if the scroll value is less than 0
+        #     self.scrollvalue = 0
+        if self.scrollvalue > len(self.data)*self.elementHeight - self.elementHeight:# if the scroll value is greater than the most it should be
             self.scrollvalue = len(self.data)*self.elementHeight - self.elementHeight# set it to the most it should be
         if self.scrollvalue != svalue:# if the scroll value changed
             self.needToUpdate = True

@@ -3,6 +3,8 @@ import os
 from Classes.Menus.startMenus.CreateMenu import *
 from Classes.Menus.startMenus.StartMenu import StartMenu
 from Classes.Menus.startMenus.PlayMenu import PlayMenu
+import threading
+import time
 
 
 def get_key_name(key_event, shift_pressed=False):
@@ -41,6 +43,11 @@ class StartMain:
         self.gameMode = 'play'# play, create, settings , credit, or start
         self.menus : str[CreateMenu] = {'create':CreateMenu(runManager),'play':PlayMenu(runManager),'settings':None,'credit':None,'start':StartMenu()}
         self.runManager = runManager
+        
+        # Game initialization state
+        self.game_ready = False
+        self.initialized_game_data = None
+        self.initialization_thread = None
 
         # --------------------------------------------- Temporary ---------------------------------------------
         # blitzRuns = [BlitzRun(f'Blitz Run {i}',[randint(0,15000),randint(0,15000),randint(0,15000),randint(0,5000),randint(0,5000)],"1M",'01/02/2030 09:30:00 AM') for i in range(5)]
@@ -74,6 +81,42 @@ class StartMain:
         self.gameMode = 'start'
         self.menus['create'].reset()
         self.menus['play'].reset()
+        self.game_ready = False
+        self.initialized_game_data = None
+        if self.initialization_thread and self.initialization_thread.is_alive():
+            # Note: We can't forcefully stop threads in Python, but we can mark them as obsolete
+            pass
+
+    def start_game_initialization(self, currentRun):
+        """Start game initialization in a separate thread"""
+        def initialize_game():
+            try:
+                # Import here to avoid circular imports
+                from GameInitializer import initialize_game_with_progress
+                
+                def progress_callback(progress, message):
+                    if self.menus['create'].is_creating_game:
+                        self.menus['create'].loading_animation.set_progress(progress, message)
+                
+                # Initialize the game with progress callbacks
+                self.initialized_game_data = initialize_game_with_progress(currentRun, self.runManager.pastRuns, progress_callback)
+                self.game_ready = True
+                
+                # Small delay to show completion
+                time.sleep(0.5)
+                self.menus['create'].loading_animation.stop()
+                self.menus['create'].is_creating_game = False
+                
+            except Exception as e:
+                print(f"Error initializing game: {e}")
+                self.menus['create'].loading_animation.stop()
+                self.menus['create'].is_creating_game = False
+        
+        self.game_ready = False
+        self.initialized_game_data = None
+        self.initialization_thread = threading.Thread(target=initialize_game)
+        self.initialization_thread.daemon = True
+        self.initialization_thread.start()
 
     def getSurfs(self):
         background = pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'Assets', 'back1.jpeg')).convert_alpha()
@@ -109,9 +152,18 @@ class StartMain:
                     if n != None:
                         self.gameMode = n.lower()
                 case 'create':
-                    if self.menus['create'].draw(screen,events):
+                    # Check if game creation was initiated and start initialization
+                    if (self.menus['create'].is_creating_game and 
+                        (not self.initialization_thread or not self.initialization_thread.is_alive())):
+                        self.start_game_initialization(self.menus['create'].currentRun)
+                    
+                    # Check if game is ready to return
+                    if self.game_ready and self.initialized_game_data:
                         self.runManager.addRun(self.menus['create'].currentRun)
                         return self.menus['create'].currentRun
+                    
+                    # Draw the create menu (will show loading animation if creating)
+                    self.menus['create'].draw(screen,events)
                 case 'play':
                     if run:=self.menus['play'].draw(screen):
                         return run

@@ -10,6 +10,7 @@ from pygame import gfxdraw
 from Classes.imports.UIElements.SelectionElements import SelectionBar
 from Classes.imports.UIElements.SideScroll import SideScroll, CreateMenuRunImage
 from Classes.imports.UIElements.TextInput import TextInput
+from Classes.imports.UIElements.LoadingAnimation import LoadingAnimation
 from Classes.Menus.GameModeMenu import GameRun,BlitzRun,CareerRun,GoalRun,RunManager
 
 class CreateMenu:
@@ -46,6 +47,10 @@ class CreateMenu:
         self.haveError = False
 
         self.currentRun = None
+        
+        # Initialize loading animation
+        self.loading_animation = LoadingAnimation()
+        self.is_creating_game = False
 
         # self.surf = pygame.Surface((1920,1080),pygame.SRCALPHA)
         # self.surf.fill((60,60,60,200))
@@ -58,6 +63,8 @@ class CreateMenu:
         self.gameIconScroll.setCard(index=0)
         self.haveError = False
         self.currentRun = None
+        self.is_creating_game = False
+        self.loading_animation.stop()
     def drawModeInfo(self,screen):
         """Draws the info about the mode (Left side of the screen)"""
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(1360,65,395,955),5,border_radius=10)# box for the mode info on right
@@ -177,6 +184,13 @@ class CreateMenu:
             size = getTSizeNums(line,260,65)
             drawCenterTxt(screen,line,size,(200,200,200),(x,80+65*i),centerY=False)
 
+    def startGameCreation(self):
+        """Starts the game creation process with loading animation"""
+        if not self.is_creating_game:  # Prevent multiple creation attempts
+            self.is_creating_game = True
+            self.loading_animation.start("Creating New Game...", "Setting up game environment...")
+            self.createNewRun()
+        
     def createNewRun(self):
         imageInd = self.gameIconScroll.getCard(index=True)
         if self.mode == 'Blitz':# if the mode is Blitz
@@ -201,7 +215,7 @@ class CreateMenu:
         n = drawClickableBoxWH(screen,(170,450),(540,130),"Create Game", 75, (0,0,0),color)
 
         if n and not self.haveError:# if the create game button is pressed and its all good, then create the game and enter it
-            self.createNewRun()
+            self.startGameCreation()
 
         if self.haveError and pygame.Rect(170,450,540,130).collidepoint(mousex,mousey):
             drawCenterTxt(screen,"Please fill out all fields",40,(255,150,150),(mousex+20,mousey),centerX=False,centerY=False,font='light')
@@ -209,6 +223,12 @@ class CreateMenu:
         
     def draw(self,screen,events):
         """Draws the create game menu"""
+        # If creating game, show loading animation
+        if self.is_creating_game:
+            self.loading_animation.update()
+            self.loading_animation.draw(screen)
+            return False  # Don't allow interaction during creation
+            
         self.haveError = False# resets the error for each draw
 
         pygame.draw.rect(screen,(0,0,0),pygame.Rect(150,10,1620,1060),5,border_radius=25)# main box border

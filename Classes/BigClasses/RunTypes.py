@@ -104,7 +104,11 @@ class GameRun:
 
     def getFileDir(self):
         """Returns the directory of the run"""
-        saveDir = f"Saves/Complete/{self.gameMode}/{self.name}/" if self.state == "complete" else f"Saves/{self.gameMode}/{self.name}/"
+        saves_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Saves')
+        if self.state == "complete":
+            saveDir = os.path.join(saves_dir, 'Complete', self.gameMode, self.name)
+        else:
+            saveDir = os.path.join(saves_dir, self.gameMode, self.name)
         return saveDir
     def createCustomFile(self):
         raise NotImplementedError
@@ -145,7 +149,8 @@ class BlitzRun(GameRun):
 
     def createCustomFile(self):
         self.endGameDate = datetime.strptime(self.endGameDate,"%m/%d/%Y %I:%M:%S %p") if self.endGameDate != None else self.gameDate + TIME_PERIODS[self.gameDuration]# the date the game ends
-        save_dir = os.path.join("Saves", "Blitz", self.name)
+        saves_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Saves')
+        save_dir = os.path.join(saves_dir, "Blitz", self.name)
         # os.makedirs(save_dir, exist_ok=True)
         info_path = os.path.join(save_dir, "ModeSpecificInfo.json")
         
@@ -407,7 +412,8 @@ class CareerRun(GameRun):
         return newDict
 
     def createCustomFile(self):
-        save_dir = os.path.join("Saves", "Career", self.name)
+        saves_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Saves')
+        save_dir = os.path.join(saves_dir, "Career", self.name)
         os.makedirs(save_dir, exist_ok=True)
         info_path = os.path.join(save_dir, "ModeSpecificInfo.json")
         game_info = self.getModeSpecificInfo()# change for career mode
@@ -455,7 +461,8 @@ class GoalRun(GameRun):
             return None
         return (self.realWrldEndTime - self.startTime).days
     def createCustomFile(self):
-        save_dir = os.path.join("Saves", "Goal", self.name)
+        saves_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Saves')
+        save_dir = os.path.join(saves_dir, "Goal", self.name)
         os.makedirs(save_dir, exist_ok=True)
         info_path = os.path.join(save_dir, "ModeSpecificInfo.json")
         game_info = self.getModeSpecificInfo()
@@ -524,13 +531,16 @@ class RunManager():
         rank = runs.index(run) + 1 if run in runs else None
         return rank
     def loadPastRuns(self):
+        saves_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'Saves')
         for mode in self.pastRuns:
-            print(os.listdir(os.path.join("Saves",mode)))
-            for runName in os.listdir(os.path.join("Saves",mode)):
-                with open(os.path.join("Saves",mode,runName,"BasicInfo.json"),"r") as f:
-                    basicInfo = json.load(f)
-                with open(os.path.join("Saves",mode,runName,"ModeSpecificInfo.json"),"r") as f:
-                    modeSpecificInfo : dict = json.load(f)
+            mode_dir = os.path.join(saves_dir, mode)
+            if os.path.exists(mode_dir):
+                print(os.listdir(mode_dir))
+                for runName in os.listdir(mode_dir):
+                    with open(os.path.join(mode_dir, runName, "BasicInfo.json"),"r") as f:
+                        basicInfo = json.load(f)
+                    with open(os.path.join(mode_dir, runName, "ModeSpecificInfo.json"),"r") as f:
+                        modeSpecificInfo : dict = json.load(f)
                 if mode == 'Career':
                     if len(modeSpecificInfo) > 0:
                         unlocks = {key:modeSpecificInfo[key] for key in ["Pre-Made Options","Custom Options","Stock Reports"]}
@@ -544,11 +554,13 @@ class RunManager():
                 self.pastRuns[mode].append(run)
 
         for mode in self.completedRuns:
-            for runName in os.listdir(os.path.join("Saves","complete",mode)):
-                with open(os.path.join("Saves","complete",mode,runName,"BasicInfo.json"),"r") as f:
-                    basicInfo = json.load(f)
-                with open(os.path.join("Saves","complete",mode,runName,"ModeSpecificInfo.json"),"r") as f:
-                    modeSpecificInfo : dict = json.load(f)
+            complete_mode_dir = os.path.join(saves_dir, "Complete", mode)
+            if os.path.exists(complete_mode_dir):
+                for runName in os.listdir(complete_mode_dir):
+                    with open(os.path.join(complete_mode_dir, runName, "BasicInfo.json"),"r") as f:
+                        basicInfo = json.load(f)
+                    with open(os.path.join(complete_mode_dir, runName, "ModeSpecificInfo.json"),"r") as f:
+                        modeSpecificInfo : dict = json.load(f)
                 if mode == 'Career':
                     if len(modeSpecificInfo) > 0:
                         unlocks = {key:modeSpecificInfo[key] for key in ["Pre-Made Options","Custom Options","Stock Reports"]}
