@@ -151,13 +151,13 @@ class LoadingAnimation:
         screen.blit(overlay, (0, 0))
         
         # Draw background box
-        box_width, box_height = 500, 200
+        box_width, box_height = 500, 260
         box_rect = pygame.Rect(center_x - box_width // 2, center_y - box_height // 2, box_width, box_height)
         pygame.draw.rect(screen, (60, 60, 60), box_rect, border_radius=15)
         pygame.draw.rect(screen, (120, 120, 120), box_rect, 3, border_radius=15)
         
         # Draw main message
-        drawCenterTxt(screen, self.message, 48, self.text_color, (center_x, center_y - 60))
+        drawCenterTxt(screen, self.message, 52, self.text_color, (center_x, center_y - 90))
         
         # Draw animation based on type
         if self.animation_type == "spinning_circle":
@@ -168,8 +168,8 @@ class LoadingAnimation:
             self.draw_progress_bar(screen, center_x, center_y - 10)
             
         # Draw sub-message
-        drawCenterTxt(screen, self.sub_message, 32, (200, 200, 200), (center_x, center_y + 50))
-        
+        drawCenterTxt(screen, self.sub_message, 36, (200, 200, 200), (center_x, center_y + 70))
+
     def set_animation_type(self, animation_type):
         """Change the animation type"""
         if animation_type in ["spinning_circle", "pulsing_dots", "progress_bar"]:

@@ -22,6 +22,19 @@ from Classes.Menus.GameModeMenu import GameModeMenu,GameRun,RunManager
 from Classes.Menus.startMenus.StartMain import StartMain
 from Classes.Menus.Menu import ScreenManager
 
+# Make the application DPI-aware on Windows
+if sys.platform == "win32":
+    import ctypes
+    try:
+        # Try the newer method first (Windows 10 version 1607+)
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PROCESS_PER_MONITOR_DPI_AWARE
+    except:
+        try:
+            # Fallback to older method
+            ctypes.windll.user32.SetProcessDPIAware()
+        except:
+            pass  # If both fail, continue without DPI awareness
+
 
 GAMESPEED = 250
 FASTFORWARDSPEED = 1000
@@ -34,10 +47,10 @@ monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.
 window_width, window_height = (monitor_width, monitor_height)
 
 # Create the Pygame window with the appropriate size and position and the NOFRAME flag
-screen = pygame.display.set_mode((1920, 1080),pygame.NOFRAME|pygame.HWSURFACE|pygame.SRCALPHA)
+screen = pygame.display.set_mode((monitor_width, monitor_height),pygame.NOFRAME|pygame.HWSURFACE|pygame.SRCALPHA)
 pygame.display.set_caption("Trading Aces")
-pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED) 
-# pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
+# pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED) 
+pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
 
 clock = pygame.time.Clock()
 fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
