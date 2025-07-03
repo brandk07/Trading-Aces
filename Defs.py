@@ -1,7 +1,8 @@
 backgroundColor = (8,56,45)
-import pygame,time
-from pygame import gfxdraw,freetype
-import os,re,json,math,timeit,random
+
+import pygame, time
+from pygame import gfxdraw, freetype
+import os, re, json, math, timeit, random
 from random import randint
 from collections import deque
 from Classes.AssetTypes.OptionAsset import OptionAsset
@@ -10,12 +11,14 @@ from Classes.AssetTypes.IndexFundsAsset import IndexFundAsset
 from Classes.AssetTypes.LoanAsset import LoanAsset
 import numpy as np
 from datetime import datetime, timedelta
-# from PIL import Image, ImageDraw
+# from PIL import Image, ImageDraw  # commented out
 from Classes.imports.Messages import ErrorMessageHandler
 from Classes.imports.Animations import BuyAnimation
-from functools import lru_cache 
+from functools import lru_cache
+
 pygame.font.init()
 pygame.init()
+
 
 TXTCOLOR = (220,220,220)
 POINTSPERGRAPH = 150
@@ -54,6 +57,7 @@ def get_font(font_type: str, size: int):
     font_type: 'reg', 'cry', 'light', 'pix', 'bold'
     size: font size (0-200)
     """
+    # ensure_pygame_init()  # Initialize pygame when first font is needed
     cache_key = (font_type, size)
     if cache_key not in _font_cache:
         if font_type == 'reg':
@@ -84,9 +88,42 @@ fontlistLight = FontList('light')
 fontlistpix = FontList('pix')
 fontlistbold = FontList('bold')
 
-# Pre-load commonly used fonts
-bold40 = get_font('bold', 45)
-font45 = get_font('reg', 45)
+# Lazy-loaded commonly used fonts - only loaded when first accessed
+_bold40 = None
+_font45 = None
+
+def get_bold40():
+    """Get bold 45pt font, lazy loaded"""
+    global _bold40
+    if _bold40 is None:
+        _bold40 = get_font('bold', 45)
+    return _bold40
+
+def get_font45():
+    """Get regular 45pt font, lazy loaded"""
+    global _font45
+    if _font45 is None:
+        _font45 = get_font('reg', 45)
+    return _font45
+
+# For backward compatibility, these can still be accessed but will be lazy loaded
+class _LazyFont:
+    def __init__(self, getter_func):
+        self.getter_func = getter_func
+        self._font = None
+    
+    def __getattr__(self, name):
+        if self._font is None:
+            self._font = self.getter_func()
+        return getattr(self._font, name)
+    
+    def render(self, *args, **kwargs):
+        if self._font is None:
+            self._font = self.getter_func()
+        return self._font.render(*args, **kwargs)
+
+bold40 = _LazyFont(get_bold40)
+font45 = _LazyFont(get_font45)
 GRAPHRANGES = ["1H","1D","5D","1M","6M","1Y","5Y"]
 MINRANGE = GRAPHRANGES[0]
 MAXRANGE = GRAPHRANGES[-1]
@@ -118,8 +155,30 @@ def s_render(string:str, size, color,font='reg') -> pygame.Surface:
 
     return text
 #  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-errors = ErrorMessageHandler(s_render)# error messages DO errors.addMessage(txt:str,coords:list=None)
-animationList : list[BuyAnimation] = []
+# Lazy initialization of expensive objects
+_errors = None
+def get_errors():
+    """Get error message handler, lazy loaded"""
+    global _errors
+    if _errors is None:
+        from Classes.imports.Messages import ErrorMessageHandler
+        _errors = ErrorMessageHandler(s_render)
+    return _errors
+
+# For backward compatibility
+class _LazyErrors:
+    def __getattr__(self, name):
+        return getattr(get_errors(), name)
+
+errors = _LazyErrors()
+
+# Lazy initialization of animation list
+def get_animation_list():
+    """Get animation list, lazy loaded"""
+    from Classes.imports.Animations import BuyAnimation
+    return []
+
+animationList = get_animation_list()
 popUpAuth = []
 # mouseButton.getButton('left')
 class Mouse:
@@ -170,58 +229,92 @@ class Mouse:
 
 mouseButton = Mouse()
 
-soundEffects = {# soundEffects['generalClick'].play()
-    # 'menuClick': pygame.mixer.Sound(r'Assets\Soundeffects\menuClick.wav'),
-    'menuClick': pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'menuClick.wav')),
-    'generalClick': pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'generalClick.wav')),
-    'error' : pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'error.wav')),
-    # 'buy': pygame.mixer.Sound(r'Assets\Soundeffects\buy.wav'),
-    'buyStock': pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'buyStock.wav')),
-    'buyOption': pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'OptionBuy.wav')),
-    'sellGain' : pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'sellGain.wav')),
-    'sellLoss' : pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'sellLoss.wav')),
-    'buyLoan' : pygame.mixer.Sound(os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', 'buyStock.wav'))
-}
+# Lazy-loaded sound effects - only load when first played
+_sound_cache = {}
+
+def get_sound(sound_name):
+    """Lazy load sounds on first access"""
+    # ensure_pygame_init()  # Make sure pygame is initialized before loading sounds
+    if sound_name not in _sound_cache:
+        sound_files = {
+            'menuClick': 'menuClick.wav',
+            'generalClick': 'generalClick.wav',
+            'error': 'error.wav',
+            'buyStock': 'buyStock.wav',
+            'buyOption': 'OptionBuy.wav',
+            'sellGain': 'sellGain.wav',
+            'sellLoss': 'sellLoss.wav',
+            'buyLoan': 'buyStock.wav'
+        }
+        if sound_name in sound_files:
+            file_path = os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', sound_files[sound_name])
+            _sound_cache[sound_name] = pygame.mixer.Sound(file_path)
+        else:
+            raise KeyError(f"Unknown sound effect: {sound_name}")
+    return _sound_cache[sound_name]
+
+class SoundEffects:
+    """Provides dictionary-like access to sound effects with lazy loading"""
+    def __getitem__(self, key):
+        return get_sound(key)
+    
+    def keys(self):
+        return ['menuClick', 'generalClick', 'error', 'buyStock', 'buyOption', 'sellGain', 'sellLoss', 'buyLoan']
+
+soundEffects = SoundEffects()
 
 # Mostly used for deciding color of the percent change, it was just really annoying to write out the if statements every time
 p3choice = lambda negative, positive, zero, change : (negative if change < 0 else positive) if round(change,2) != 0 else zero
 
-getTSizeCharsAndNums = lambda chars, xSpace : int(((xSpace/chars)-0.9506)/0.2347)# 
+# Optimized function using lazy character size loading
+getTSizeCharsAndNums = lambda chars, xSpace : int(((xSpace/chars)-0.9506)/0.2347) if chars > 0 else 1 
 # strSizes = {'0': (0.259, 1.201), '1': (0.158, 0.697), '2': (0.229, 1.031), '3': (0.25, 1.221), '4': (0.273, 0.977), '5': (0.226, 0.787), '6': (0.262, 0.832), '7': (0.258, 0.987), '8': (0.248, 1.372), '9': (0.248, 0.873), '.': (0.065, 0.885)}
-# Lazy-loaded string sizes cache
+# Fully lazy string sizes system - only renders when specific size is requested
 _str_sizes_cache = {}
 
-def get_str_sizes():
-    """Get string sizes cache, build on first access"""
-    if not _str_sizes_cache:
-        _str_sizes_cache.update({str(num):[get_font('reg', i).get_rect(str(num)) for i in range(1,199)] for num in range(10)})
-        _str_sizes_cache['.'] = [get_font('reg', i).get_rect('.') for i in range(1,199)]
-    return _str_sizes_cache
+def get_char_size(char: str, font_size: int):
+    """Get the size of a single character at a specific font size. Caches on first access."""
+    cache_key = (char, font_size)
+    if cache_key not in _str_sizes_cache:
+        _str_sizes_cache[cache_key] = get_font('reg', font_size).get_rect(char)
+    return _str_sizes_cache[cache_key]
 
-# Legacy compatibility - lazy-loaded strSizes
+# Legacy compatibility - fully lazy strSizes that only computes when accessed
 class _StrSizesDict:
-    def __init__(self):
-        self._cache = None
+    """Provides backward compatibility for strSizes dict access pattern.
+    Only renders character sizes when specifically requested."""
     
-    def __getitem__(self, key):
-        if self._cache is None:
-            self._cache = get_str_sizes()
-        return self._cache[key]
+    def __getitem__(self, char):
+        """Returns a list-like object that computes font sizes on demand"""
+        return _CharSizeList(char)
     
     def keys(self):
-        if self._cache is None:
-            self._cache = get_str_sizes()
-        return self._cache.keys()
+        # Return common characters that might be accessed
+        return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.']
     
     def values(self):
-        if self._cache is None:
-            self._cache = get_str_sizes()
-        return self._cache.values()
+        # Return lazy lists for common characters
+        return [_CharSizeList(char) for char in self.keys()]
     
     def items(self):
-        if self._cache is None:
-            self._cache = get_str_sizes()
-        return self._cache.items()
+        # Return (char, lazy_list) pairs
+        return [(char, _CharSizeList(char)) for char in self.keys()]
+
+class _CharSizeList:
+    """Lazy list that computes character sizes for different font sizes only when accessed"""
+    
+    def __init__(self, char):
+        self.char = char
+        self._cached_sizes = {}
+    
+    def __getitem__(self, font_size):
+        """Get character size for specific font size, cache on first access"""
+        if font_size not in self._cached_sizes:
+            self._cached_sizes[font_size] = get_char_size(self.char, font_size)
+        return self._cached_sizes[font_size]
+    
+    def __len__(self):
+        return 200  # Support font sizes 0-199
 
 strSizes = _StrSizesDict()
 def getTSizeNums(chars:str, xSpace:int,maxsize:int=199) -> int:
@@ -230,7 +323,8 @@ def getTSizeNums(chars:str, xSpace:int,maxsize:int=199) -> int:
     if chars == '': return 1
     def getSize(size, totalSpace, chars, lastwidth:int):
         """Lastwidth is the last width of text, totalSpace is the total space the text should take up, chars is the text to be rendered"""
-        newSum = sum([get_font('reg', size).get_rect(c).width for c in chars])
+        # Use lazy loading - only compute character widths when needed
+        newSum = sum([get_char_size(c, size).width for c in chars])
         if newSum == totalSpace:
             return size
         elif newSum < totalSpace and lastwidth > totalSpace:# if the current is under, but the last was too big, than current is best

@@ -40,7 +40,7 @@ class StockScreen:
         self.current_config = 'quad'
         self.allstocks = [stock.name for stock in stocklist]
 
-        self.picked_stocks = [stock for stock in self.allstocks]
+        self.picked_stocks = [stock for stock in self.allstocks[:4]]
         self.mousehovering = None
         self.pickedstockconfig = {#the stocks that are picked for each config
             'single': [self.allstocks[i] for i in range(1)],

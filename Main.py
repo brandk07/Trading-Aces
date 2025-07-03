@@ -1,6 +1,5 @@
-import pygame
 import sys
-import time
+
 from Defs import *
 from Classes.BigClasses.Stock import Stock
 # from Classes.BigClasses.UIControls import UIControls
@@ -22,7 +21,7 @@ from Classes.Menus.GameModeMenu import GameModeMenu,GameRun,RunManager
 from Classes.Menus.startMenus.StartMain import StartMain
 from Classes.Menus.Menu import ScreenManager
 
-# Make the application DPI-aware on Windows
+
 if sys.platform == "win32":
     import ctypes
     try:
@@ -35,13 +34,11 @@ if sys.platform == "win32":
         except:
             pass  # If both fail, continue without DPI awareness
 
-
+print('dfd')
 GAMESPEED = 250
 FASTFORWARDSPEED = 1000
 CLICK_COOLDOWN = 0.15  # Maybe reduce to 150ms for better responsiveness
 last_click_time = time.time()  # Initialize to current time instead of 0
-
-pygame.init()
 
 monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
 window_width, window_height = (monitor_width, monitor_height)

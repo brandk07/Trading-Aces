@@ -39,15 +39,18 @@ class Graph:
         """Draws the graph to the screen"""
         x,y = coords[0],coords[1]
         width,height = wh[0],wh[1]
+
         if not self.needToUpdate and self.surface.get_width() == width and self.surface.get_height() == height:#if the graph doesn't need to be updated then return the graphpoints
             screen.blit(self.surface,(x,y))
             # print("Returning")
             return self.graphpoints,self.lastSpacing,self.lastMinMaxSame
         
-        
+        self.graphpoints = self.lastPoints.copy()#copy the last points to the graphpoints so that it can be drawn
         if self.surface.get_width() != width or self.surface.get_height() != height:
             self.surface = pygame.Surface((width,height))
-        self.surface.fill(backColor)
+        # self.surface.fill(backColor)
+        gfxdraw.filled_polygon(self.surface, ((0,0),(width,0),(width,height),(0,height)), backColor)#fills the background of the graph with the background color
+
         # print("DRAWING THE GRAPH LOOOK HERE --------------SDFSDFJL")
 
         width,height = wh[0],wh[1]-30
@@ -59,7 +62,7 @@ class Graph:
 
         if minpoint != maxpoint:#prevents divide by zero error
             yScale = (height*.75)/(maxpoint-minpoint)#the amount of pixels per point with the y axis
-
+            
             self.graphpoints = (((height*0.75)-((self.graphpoints - minpoint)) * yScale)) + y+height*.25# Doing the math to make the points fit on the graph 
 
             spacing = width/len(self.graphpoints)#the spacing between each point
@@ -84,6 +87,7 @@ class Graph:
             gfxdraw.line(self.surface,x,int(y+height*.5),x+width-5,int(y+height*.5),(255,255,255))#draws a line across the graph
             spacing = width/len(self.graphpoints)#the spacing between each point
             self.graphpoints = [y+height*.5]*(width)#makes the graphingpoints a list of the same y value\
+
         for i in range(len(self.graphpoints)):
             self.graphpoints[i] = self.graphpoints[i]+coords[1]
         self.lastSpacing,self.lastMinMaxSame = spacing,minmaxsame
