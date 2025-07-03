@@ -77,18 +77,19 @@ def main():
         CLICK_COOLDOWN = 0.15
         last_click_time = time.time()
         
-        # Step 5: Create main display
+        # Step 5: Create main display with auto-scaling
         update_instant_startup("Creating game window...", 85)
         
-        # Set up display
+        # Get monitor info
         monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
-        window_width, window_height = (monitor_width, monitor_height)
         
-        # Create the main game window
-        main_screen = pygame.display.set_mode((monitor_width, monitor_height), 
-                                            pygame.NOFRAME|pygame.HWSURFACE|pygame.SRCALPHA|pygame.SCALED)
+        # Create fullscreen display
+        main_screen = pygame.display.set_mode((monitor_width, monitor_height), pygame.FULLSCREEN)
         pygame.display.set_caption("Trading Aces")
-        main_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        
+        # Setup automatic resolution scaling
+        from Defs import resolution_manager
+        game_size = resolution_manager.setup(monitor_width, monitor_height)
         
         # Step 6: Final initialization
         update_instant_startup("Finalizing setup...", 95)

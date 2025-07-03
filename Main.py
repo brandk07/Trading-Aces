@@ -28,6 +28,9 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
     or run directly for backward compatibility.
     """
     
+    # Import resolution manager
+    from Defs import resolution_manager, get_game_surface, scale_mouse_pos
+    
     # Setup that was previously done at module level
     if sys.platform == "win32":
         import ctypes
@@ -50,16 +53,19 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
     # Setup display if not provided (backward compatibility)
     if screen is None:
         monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
-        window_width, window_height = (monitor_width, monitor_height)
-
-        # Create the Pygame window with the appropriate size and position and the NOFRAME flag
-        screen = pygame.display.set_mode((monitor_width, monitor_height),pygame.NOFRAME|pygame.HWSURFACE|pygame.SRCALPHA)
+        
+        # Create fullscreen display
+        screen = pygame.display.set_mode((monitor_width, monitor_height), pygame.FULLSCREEN)
         pygame.display.set_caption("Trading Aces")
-        # pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED) 
-        screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
+        
+        # Setup resolution scaling
+        resolution_manager.setup(monitor_width, monitor_height)
 
     if clock is None:
         clock = pygame.time.Clock()
+    
+    # Get the game surface to draw on (scaled internally)
+    game_surface = get_game_surface()
     
     # if mouseButton is None:
     # mouseButton = Mouse()
@@ -131,19 +137,21 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
             indexfund.fill_graphs()
 
         
-        menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(screen)
+        menuBackRefresh,screenBackRefresh = getScreenRefreshBackGrounds(game_surface)
 
         
         # ------------------------------------------ Main Game Loop ------------------------------------------
         while True:
-            mousex,mousey = pygame.mouse.get_pos()
+            # Get mouse position and scale it to internal coordinates
+            raw_mouse_pos = pygame.mouse.get_pos()
+            mousex, mousey = scale_mouse_pos(raw_mouse_pos)
 
             if currentRun.getState(gametime) == 'complete':# Checks for completion in getState
                 gametime.speedBar.frozen = True; gametime.speedBar.redraw()
             if screenManager.getCurrentScreen(True) in ['Home','Stock']:# if the current screen is a screen, not a menu then draw the background
-                screen.blit(screenBackRefresh,(0,0))
+                game_surface.blit(screenBackRefresh,(0,0))
             else:
-                screen.blit(menuBackRefresh,(0,0))
+                game_surface.blit(menuBackRefresh,(0,0))
 
             if gametime.advanceTime(autofastforward,FASTFORWARDSPEED):# if there is a new trading day
 
@@ -169,16 +177,16 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
             # print(mouseButton.livebuttons,mouseButton.buttons,mouseButton.live)
             player.updateRunAssetSpread()# updates the asset spread for the current run
 
-            screenManager.drawCurrentScreen(screen,stocklist,player,gametime)
+            screenManager.drawCurrentScreen(game_surface,stocklist,player,gametime)
 
-            screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,980),(1900,1010),(1900,1040)]))
-            errors.update(screen)# draws the error messages
+            game_surface.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,980),(1900,1010),(1900,1040)]))
+            errors.update(game_surface)# draws the error messages
 
             
             for animation in animationList:
-                animation.update(screen)
+                animation.update(game_surface)
 
-            if drawClickableBoxWH(screen,(10,970),(165,100),"Main Menu", 50, (180,180,180),(255,255,255)):
+            if drawClickableBoxWH(game_surface,(10,970),(165,100),"Main Menu", 50, (180,180,180),(255,255,255)):
                 break
             
             mouseButton.update()
@@ -220,9 +228,14 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
 
                     filepath = os.path.join(screenshot_dir, f"screenshot_{timestamp}.png")
                 
-                    screenshot = screen.copy()  # screen is your pygame display surface
+                    # Screenshot the game surface at internal resolution
+                    screenshot = game_surface.copy()
                     pygame.image.save(screenshot, filepath)
 
+            # Clear main screen and render scaled game
+            screen.fill((0, 0, 0))  # Black letterbox bars
+            resolution_manager.render_to_screen(screen)
+            
             pygame.display.update()
 
             clock.tick(120)

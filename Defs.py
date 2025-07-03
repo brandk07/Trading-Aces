@@ -370,16 +370,21 @@ def reuserenders(renderlist,texts,textinfo,position) -> list:
 # emptytext = fontlist[45].render('Empty',(190,190,190))[0]
 
 def getScreenRefreshBackGrounds(screen:pygame.Surface):
+    # Use internal resolution for background generation
+    game_surface = resolution_manager.get_surface()
+    if game_surface is None:
+        game_surface = screen
+    
     # background = pygame.image.load(r'Assets\GameBackground.png').convert_alpha()
     # background = pygame.image.load(r'Assets\Casino-Game-Background-edit-online-1.png').convert_alpha()
     background = pygame.image.load(os.path.join(os.path.dirname(__file__), 'Assets', 'back1.jpeg')).convert_alpha()
     background = pygame.transform.smoothscale(background,(1920,1080))
     # background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
     background.set_alpha(100)
-    screen.fill((30,30,30))
-    screen.blit(background,(0,0))
-    gfxdraw.filled_polygon(screen, [(0,0),(185,0),(185,1080),(0,1080)],(*backgroundColor,150))
-    surface = screen.copy()
+    game_surface.fill((30,30,30))
+    game_surface.blit(background,(0,0))
+    gfxdraw.filled_polygon(game_surface, [(0,0),(185,0),(185,1080),(0,1080)],(*backgroundColor,150))
+    surface = game_surface.copy()
 
     menuSurface = surface.copy()
     screenSurface = surface.copy()
@@ -688,7 +693,7 @@ def drawLinedInfo(screen,coord:tuple,wh:tuple,infoList:list[(str,int|str)],txtsi
 
 def drawLinedInfoBigColored(screen,coord:tuple,wh:tuple,infoListL:list,infoListR:list,sizeLg:int,sizeSm:int,colors:list):
     """Displays two lists with str1,value1 on left and str2,value2 on right
-    the str is bigger and the the second dict's str is colored"""
+    the str is bigger and the second dict's str is colored"""
     assert len(infoListL) == len(infoListR), 'The two lists must have the same length'
     sep = wh[1]//len(infoListL)
     x,y = coord
@@ -1104,3 +1109,127 @@ def find_project_root():
         
     # return pygame.image.fromstring(img.tobytes(), img.size, img.mode)
     # # return img
+
+# Resolution scaling system for different monitor sizes
+class ResolutionManager:
+    """Manages automatic scaling to different monitor resolutions"""
+    
+    def __init__(self):
+        # Target internal resolution (what the game is designed for)
+        self.internal_width = 1920
+        self.internal_height = 1080
+        
+        # Current scaling info
+        self.scale_factor = 1.0
+        self.offset_x = 0
+        self.offset_y = 0
+        
+        # Surfaces
+        self.game_surface = None
+        self.monitor_width = 1920
+        self.monitor_height = 1080
+        
+        # Performance optimization
+        self.use_integer_scaling = False
+        
+    def setup(self, monitor_width, monitor_height):
+        """Setup scaling for the given monitor resolution"""
+        self.monitor_width = monitor_width
+        self.monitor_height = monitor_height
+        
+        # Calculate scale factors
+        scale_x = monitor_width / self.internal_width
+        scale_y = monitor_height / self.internal_height
+        
+        # Use uniform scaling to maintain aspect ratio
+        self.scale_factor = min(scale_x, scale_y)
+        
+        # Check if we can use integer scaling for better performance
+        if self.scale_factor >= 2.0 and int(self.scale_factor) == self.scale_factor:
+            self.use_integer_scaling = True
+            self.scale_factor = int(self.scale_factor)
+        
+        # Calculate actual game area size
+        game_width = int(self.internal_width * self.scale_factor)
+        game_height = int(self.internal_height * self.scale_factor)
+        
+        # Calculate offsets to center the game
+        self.offset_x = (monitor_width - game_width) // 2
+        self.offset_y = (monitor_height - game_height) // 2
+        
+        # Create internal game surface
+        self.game_surface = pygame.Surface((self.internal_width, self.internal_height))
+        
+        print(f"Resolution scaling setup:")
+        print(f"  Monitor: {monitor_width}x{monitor_height}")
+        print(f"  Internal: {self.internal_width}x{self.internal_height}")
+        print(f"  Game area: {game_width}x{game_height}")
+        print(f"  Scale factor: {self.scale_factor}")
+        print(f"  Offset: ({self.offset_x}, {self.offset_y})")
+        print(f"  Integer scaling: {self.use_integer_scaling}")
+        
+        return (game_width, game_height)
+    
+    def scale_coordinates(self, x, y):
+        """Convert screen coordinates to internal coordinates"""
+        internal_x = (x - self.offset_x) / self.scale_factor
+        internal_y = (y - self.offset_y) / self.scale_factor
+        return (int(internal_x), int(internal_y))
+    
+    def scale_coordinate_tuple(self, pos):
+        """Convert screen coordinate tuple to internal coordinates"""
+        return self.scale_coordinates(pos[0], pos[1])
+    
+    def get_scaled_font_size(self, base_size):
+        """Get font size adjusted for current scale"""
+        scaled_size = int(base_size * max(0.5, min(2.0, self.scale_factor)))
+        return max(8, scaled_size)  # Minimum readable size
+    
+    def render_to_screen(self, main_screen):
+        """Efficiently render the internal surface to the main screen"""
+        if self.game_surface is None:
+            return
+            
+        if self.scale_factor == 1.0:
+            # No scaling needed, direct blit
+            main_screen.blit(self.game_surface, (self.offset_x, self.offset_y))
+        else:
+            # Scale the internal surface to the game area
+            scaled_size = (
+                int(self.internal_width * self.scale_factor),
+                int(self.internal_height * self.scale_factor)
+            )
+            
+            if self.use_integer_scaling:
+                # Use faster scaling for integer factors
+                scaled_surface = pygame.transform.scale(self.game_surface, scaled_size)
+            else:
+                # Use smooth scaling for non-integer factors
+                scaled_surface = pygame.transform.smoothscale(self.game_surface, scaled_size)
+            
+            main_screen.blit(scaled_surface, (self.offset_x, self.offset_y))
+    
+    def clear_screen(self):
+        """Clear the internal game surface"""
+        if self.game_surface:
+            self.game_surface.fill(backgroundColor)
+    
+    def get_surface(self):
+        """Get the surface to draw on (internal resolution)"""
+        return self.game_surface if self.game_surface else pygame.display.get_surface()
+
+# Global resolution manager instance
+resolution_manager = ResolutionManager()
+
+# Convenience functions for drawing
+def get_game_surface():
+    """Get the surface to draw game content on"""
+    return resolution_manager.get_surface()
+
+def scale_mouse_pos(pos):
+    """Scale mouse position from screen to internal coordinates"""
+    return resolution_manager.scale_coordinate_tuple(pos)
+
+def get_scaled_font_size(size):
+    """Get font size scaled to current resolution"""
+    return resolution_manager.get_scaled_font_size(size)
