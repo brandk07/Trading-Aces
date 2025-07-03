@@ -22,42 +22,54 @@ from Classes.Menus.startMenus.StartMain import StartMain
 from Classes.Menus.Menu import ScreenManager
 
 
-if sys.platform == "win32":
-    import ctypes
-    try:
-        # Try the newer method first (Windows 10 version 1607+)
-        ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PROCESS_PER_MONITOR_DPI_AWARE
-    except:
+def run_main_game(screen=None, clock=None, mouseButton=None):
+    """
+    Main game function that can be called from the loading screen system
+    or run directly for backward compatibility.
+    """
+    
+    # Setup that was previously done at module level
+    if sys.platform == "win32":
+        import ctypes
         try:
-            # Fallback to older method
-            ctypes.windll.user32.SetProcessDPIAware()
+            # Try the newer method first (Windows 10 version 1607+)
+            ctypes.windll.shcore.SetProcessDpiAwareness(2)  # PROCESS_PER_MONITOR_DPI_AWARE
         except:
-            pass  # If both fail, continue without DPI awareness
+            try:
+                # Fallback to older method
+                ctypes.windll.user32.SetProcessDPIAware()
+            except:
+                pass  # If both fail, continue without DPI awareness
 
-print('dfd')
-GAMESPEED = 250
-FASTFORWARDSPEED = 1000
-CLICK_COOLDOWN = 0.15  # Maybe reduce to 150ms for better responsiveness
-last_click_time = time.time()  # Initialize to current time instead of 0
+    # Game constants
+    GAMESPEED = 250
+    FASTFORWARDSPEED = 1000
+    CLICK_COOLDOWN = 0.15  # Maybe reduce to 150ms for better responsiveness
+    last_click_time = time.time()  # Initialize to current time instead of 0
 
-monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
-window_width, window_height = (monitor_width, monitor_height)
+    # Setup display if not provided (backward compatibility)
+    if screen is None:
+        monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
+        window_width, window_height = (monitor_width, monitor_height)
 
-# Create the Pygame window with the appropriate size and position and the NOFRAME flag
-screen = pygame.display.set_mode((monitor_width, monitor_height),pygame.NOFRAME|pygame.HWSURFACE|pygame.SRCALPHA)
-pygame.display.set_caption("Trading Aces")
-# pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED) 
-pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
+        # Create the Pygame window with the appropriate size and position and the NOFRAME flag
+        screen = pygame.display.set_mode((monitor_width, monitor_height),pygame.NOFRAME|pygame.HWSURFACE|pygame.SRCALPHA)
+        pygame.display.set_caption("Trading Aces")
+        # pygame.display.set_mode((0, 0), pygame.WINDOWMAXIMIZED) 
+        screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN) 
 
-clock = pygame.time.Clock()
-fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
+    if clock is None:
+        clock = pygame.time.Clock()
+    
+    # if mouseButton is None:
+    # mouseButton = Mouse()
+    
+    fonts = lambda font_size: pygame.font.SysFont('Cosmic Sans',font_size)
 
+    # ------------------------------------------ Start of the Start Menu ------------------------------------------
+    runManager = RunManager()
+    startmenu = StartMain(runManager)
 
-# ------------------------------------------ Start of the Start Menu ------------------------------------------
-runManager = RunManager()
-startmenu = StartMain(runManager)
-
-if __name__ == "__main__":
     while True:
         runManager.reset()
         startmenu.reset()# resets the start menu
@@ -97,7 +109,6 @@ if __name__ == "__main__":
         portfolio = Portfolio(stocklist,player,gametime,tmarket,currentRun)
         
         bank = BankMenu(stocklist,gametime,player,transact,tmarket,indexFunds,currentRun)
-
         gameModeMenu = GameModeMenu(stocklist,player,pastRuns,currentRun,gametime)
         menuDict = {'Portfolio':portfolio,'Stockbook':stockbook,'Options':optiontrade,'Bank':bank,'Mode':gameModeMenu}
         screenManager = ScreenManager(menuDict,homeScreen,stockScreen,gametime,currentRun)# Handles the drawing of both the screens (stock + home) and the menus (menudict)
@@ -218,6 +229,13 @@ if __name__ == "__main__":
 
         # Saves the game when the user goes back to the main menu
         saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)
+
+
+# For backward compatibility - original entry point
+if __name__ == "__main__":
+    print("Starting Trading Aces...")
+    print("Note: For better startup experience, use 'python main_with_loading.py'")
+    run_main_game()
 
 
 # {"1H":3600,"1D":23_400,"1W":117_000,"1M":491_400,"1Y":5_896_800,"5Y":29_484_000}
