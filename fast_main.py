@@ -80,10 +80,28 @@ def main():
         # Step 5: Create main display with auto-scaling
         update_instant_startup("Creating game window...", 85)
         
-        # Get monitor info
-        monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
+        # Get primary monitor resolution from environment or detect it
+        import os
+        if sys.platform == "win32":
+            # Use primary monitor resolution passed from launcher
+            primary_width = int(os.environ.get('TRADING_ACES_PRIMARY_WIDTH', '1920'))
+            primary_height = int(os.environ.get('TRADING_ACES_PRIMARY_HEIGHT', '1080'))
+            
+            # Ensure we're on the primary monitor
+            import ctypes
+            user32 = ctypes.windll.user32
+            
+            # Set window position to primary monitor (0,0)
+            os.environ['SDL_VIDEO_WINDOW_POS'] = '0,0'
+            
+            monitor_width, monitor_height = primary_width, primary_height
+            print(f"Using primary display: {monitor_width}x{monitor_height}")
+        else:
+            # Fallback for non-Windows systems
+            monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
+            print(f"Using detected display: {monitor_width}x{monitor_height}")
         
-        # Create fullscreen display
+        # Create fullscreen display on primary monitor
         main_screen = pygame.display.set_mode((monitor_width, monitor_height), pygame.FULLSCREEN)
         pygame.display.set_caption("Trading Aces")
         

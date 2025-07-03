@@ -22,15 +22,23 @@ class InstantStartup:
             self.root = tk.Tk()
             self.root.title("Trading Aces")
             
-            # Get screen dimensions
-            screen_width = self.root.winfo_screenwidth()
-            screen_height = self.root.winfo_screenheight()
+            # Get primary monitor dimensions on Windows
+            if sys.platform == "win32":
+                import ctypes
+                user32 = ctypes.windll.user32
+                # Get primary monitor resolution
+                screen_width = user32.GetSystemMetrics(0)  # SM_CXSCREEN
+                screen_height = user32.GetSystemMetrics(1)  # SM_CYSCREEN
+            else:
+                # Fallback for other systems
+                screen_width = self.root.winfo_screenwidth()
+                screen_height = self.root.winfo_screenheight()
             
             # Window size
             window_width = 500
             window_height = 300
             
-            # Center the window
+            # Center the window on primary monitor
             x = (screen_width - window_width) // 2
             y = (screen_height - window_height) // 2
             

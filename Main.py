@@ -52,7 +52,24 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
 
     # Setup display if not provided (backward compatibility)
     if screen is None:
-        monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
+        # Get primary monitor resolution for consistent display
+        import os
+        if sys.platform == "win32":
+            import ctypes
+            user32 = ctypes.windll.user32
+            # Get primary monitor resolution
+            primary_width = user32.GetSystemMetrics(0)  # SM_CXSCREEN  
+            primary_height = user32.GetSystemMetrics(1)  # SM_CYSCREEN
+            
+            # Set window position to primary monitor
+            os.environ['SDL_VIDEO_WINDOW_POS'] = '0,0'
+            os.environ['SDL_VIDEO_CENTERED'] = '0'
+            
+            monitor_width, monitor_height = primary_width, primary_height
+            print(f"Using primary display: {monitor_width}x{monitor_height}")
+        else:
+            monitor_width, monitor_height = pygame.display.Info().current_w, pygame.display.Info().current_h
+            print(f"Using detected display: {monitor_width}x{monitor_height}")
         
         # Create fullscreen display
         screen = pygame.display.set_mode((monitor_width, monitor_height), pygame.FULLSCREEN)
