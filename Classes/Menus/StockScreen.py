@@ -37,10 +37,10 @@ class StockScreen:
         self.ui_rects = [pygame.Rect(1647,590+(i*90),80,80) for i in range(len(self.images))]
         self.wh = [1400,880]# the start coords of the graph
 
-        self.current_config = 'quad'
+        self.current_config = 'nona'
         self.allstocks = [stock.name for stock in stocklist]
 
-        self.picked_stocks = [stock for stock in self.allstocks[:4]]
+        self.picked_stocks = [stock for stock in self.allstocks]
         self.mousehovering = None
         self.pickedstockconfig = {#the stocks that are picked for each config
             'single': [self.allstocks[i] for i in range(1)],

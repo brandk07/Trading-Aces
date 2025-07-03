@@ -29,7 +29,7 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
     """
     
     # Import resolution manager
-    from Defs import resolution_manager, get_game_surface, scale_mouse_pos
+    from Defs import resolution_manager, get_game_surface, scale_mouse_pos, enable_mouse_scaling, disable_mouse_scaling
     
     # Setup that was previously done at module level
     if sys.platform == "win32":
@@ -60,6 +60,9 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
         
         # Setup resolution scaling
         resolution_manager.setup(monitor_width, monitor_height)
+
+    # Enable automatic mouse coordinate scaling
+    enable_mouse_scaling()
 
     if clock is None:
         clock = pygame.time.Clock()
@@ -142,9 +145,8 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
         
         # ------------------------------------------ Main Game Loop ------------------------------------------
         while True:
-            # Get mouse position and scale it to internal coordinates
-            raw_mouse_pos = pygame.mouse.get_pos()
-            mousex, mousey = scale_mouse_pos(raw_mouse_pos)
+            # Get mouse position (now automatically scaled)
+            mousex, mousey = pygame.mouse.get_pos()
 
             if currentRun.getState(gametime) == 'complete':# Checks for completion in getState
                 gametime.speedBar.frozen = True; gametime.speedBar.redraw()
@@ -194,6 +196,7 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):                
                     saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)
+                    disable_mouse_scaling()  # Cleanup mouse scaling
                     pygame.quit()
                     sys.exit()
 
@@ -242,6 +245,9 @@ def run_main_game(screen=None, clock=None, mouseButton=None):
 
         # Saves the game when the user goes back to the main menu
         saveGame(stocklist,player,currentRun.getFileDir(),gametime,transact,currentRun,optiontrade)
+        
+        # Disable mouse scaling when exiting to main menu
+        disable_mouse_scaling()
 
 
 # For backward compatibility - original entry point

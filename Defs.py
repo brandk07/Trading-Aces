@@ -1233,3 +1233,40 @@ def scale_mouse_pos(pos):
 def get_scaled_font_size(size):
     """Get font size scaled to current resolution"""
     return resolution_manager.get_scaled_font_size(size)
+
+# Store original function before defining new functions
+_original_mouse_get_pos = pygame.mouse.get_pos
+
+# Global mouse coordinate functions that work with resolution scaling
+def get_mouse_pos():
+    """Get mouse position scaled to internal coordinates"""
+    raw_pos = _original_mouse_get_pos()  # Always use the original function
+    return resolution_manager.scale_coordinate_tuple(raw_pos)
+
+def get_raw_mouse_pos():
+    """Get raw mouse position (screen coordinates)"""
+    return _original_mouse_get_pos()  # Always use the original function
+
+def scaled_mouse_get_pos():
+    """Replacement for pygame.mouse.get_pos that returns scaled coordinates"""
+    raw_pos = _original_mouse_get_pos()  # Use original function to avoid recursion
+    return resolution_manager.scale_coordinate_tuple(raw_pos)
+
+# Global flag to enable/disable mouse scaling
+_mouse_scaling_enabled = False
+
+def enable_mouse_scaling():
+    """Enable automatic mouse coordinate scaling"""
+    global _mouse_scaling_enabled
+    _mouse_scaling_enabled = True
+    pygame.mouse.get_pos = scaled_mouse_get_pos
+
+def disable_mouse_scaling():
+    """Disable automatic mouse coordinate scaling"""
+    global _mouse_scaling_enabled
+    _mouse_scaling_enabled = False
+    pygame.mouse.get_pos = _original_mouse_get_pos
+
+def is_mouse_scaling_enabled():
+    """Check if mouse scaling is enabled"""
+    return _mouse_scaling_enabled

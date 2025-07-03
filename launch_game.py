@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Trading Aces - Simple launcher with instant startup
+Trading Aces - Simple launcher with instant startup and mouse scaling
 """
 import sys
 import time
@@ -21,11 +21,19 @@ def main():
             update_instant_startup("Loading game engine...", 25)
             time.sleep(0.2)
         
+        # Import resolution manager and mouse scaling
+        if startup_root:
+            update_instant_startup("Setting up resolution scaling...", 50)
+            time.sleep(0.1)
+        
         # Import the fast main
         from fast_main import main as fast_main
         
         # Close instant startup
         close_instant_startup()
+        
+        print("Resolution scaling and mouse coordinate translation enabled!")
+        print("The game will now scale to your monitor resolution automatically.")
         
         # Run the game
         fast_main()

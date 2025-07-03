@@ -133,6 +133,15 @@ class StartMain:
         return createSurf,extraSurf
     
     def drawStartMenu(self, screen: pygame.Surface, clock:pygame.time.Clock):
+        # Import resolution scaling functions
+        from Defs import resolution_manager, get_game_surface, enable_mouse_scaling
+        
+        # Enable mouse scaling for start menus
+        enable_mouse_scaling()
+        
+        # Get the game surface to draw on (scaled internally)
+        game_surface = get_game_surface()
+        
         key = None
 
         createSurf,backSurf = self.getSurfs()
@@ -140,15 +149,17 @@ class StartMain:
 
         lastfps = deque(maxlen=300)
         while True:
-
+            # Clear main screen and draw to game surface
+            screen.fill((0, 0, 0))  # Black background
+            
             if self.gameMode in ['create','play']:
-                screen.blit(createSurf,(0,0))
+                game_surface.blit(createSurf,(0,0))
             else:
-                screen.blit(backSurf,(0,0))
+                game_surface.blit(backSurf,(0,0))
             
             match self.gameMode:
                 case 'start':
-                    n = self.menus['start'].draw(screen)
+                    n = self.menus['start'].draw(game_surface)
                     if n != None:
                         self.gameMode = n.lower()
                 case 'create':
@@ -163,22 +174,26 @@ class StartMain:
                         return self.menus['create'].currentRun
                     
                     # Draw the create menu (will show loading animation if creating)
-                    self.menus['create'].draw(screen,events)
+                    self.menus['create'].draw(game_surface,events)
                 case 'play':
-                    if run:=self.menus['play'].draw(screen):
+                    if run:=self.menus['play'].draw(game_surface):
                         return run
                 case 'settings':
                     pass
                 case 'credit':
                     pass
             if self.gameMode != 'start':
-                if drawClickableBoxWH(screen,(170,905),(540,130),"Return Home", 75, (0,0,0),(0,210,0)):
+                if drawClickableBoxWH(game_surface,(170,905),(540,130),"Return Home", 75, (0,0,0),(0,210,0)):
                     self.gameMode = 'start'
                 
 
             key = None
             events = []  # Collect all events for TextInput
-            screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
+            game_surface.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(1900,0),(1900,30),(1900,60)]))
+            
+            # Render scaled game to main screen
+            resolution_manager.render_to_screen(screen)
+            
             mouseButton.update()
             for event in pygame.event.get():
                 events.append(event)  # Store all events
