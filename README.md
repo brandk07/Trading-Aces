@@ -21,5 +21,6 @@ Important: run LaunchGAME.py, not Main.py. The launcher handles instant startup,
   - Confirm Pygame is installed
   - Run from the project root (`Trading-Aces-2`)
 
-## Largely Written without the use of AI (Other than a few sections where I tried Vibe Coding Unsuccessfully)
+## Largely Written without the use of AI 
+- (Other than a few sections late in development where I tried Vibe Coding Unsuccessfully)
   
