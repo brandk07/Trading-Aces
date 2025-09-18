@@ -1,6 +1,5 @@
 import pygame
 from Defs import *
-from pygame import gfxdraw
 from Classes.Menus.Menu import Menu
 from Classes.imports.StockVisualizer import StockVisualizer
 from Classes.imports.UIElements.SelectionElements import SelectionBar,MenuSelection
@@ -11,7 +10,7 @@ from Classes.AssetTypes.IndexFundsAsset import IndexFundAsset
 from Classes.imports.UIElements.Latterscroll import LinedLatter
 from Classes.AssetTypes.LoanAsset import LoanAsset
 import datetime
-from Classes.imports.UIElements.SideScroll import SideScroll,CdCard,LoanCard
+from Classes.imports.UIElements.SideScroll import SideScroll,LoanCard
 
 
 class BankMenu(Menu):

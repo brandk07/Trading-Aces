@@ -245,7 +245,7 @@ class Optiontrade(Menu):
         if self.selectOption != None:
             return
         # if self.newOptionInfo is None or (self.newOptionInfo and type(self.strikePrice) != bool) and (self.newOptionInfo and type(self.newOptionInfo[1]) != bool):
-        if self.customOptionSc.numPadDisplay is None and self.selectOption is None:   
+        if self.selectOption is None:   
             strings = ["Open","High (1M)","Low (1M)","Dividend","Volatility"]
             g = gametime.time
             marketOpenTime = datetime.strptime(f"{g.month}/{g.day}/{g.year} 9:30:00 AM", "%m/%d/%Y %I:%M:%S %p")

@@ -119,7 +119,8 @@ class StartMain:
         self.initialization_thread.start()
 
     def getSurfs(self):
-        background = pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'Assets', 'back1.jpeg')).convert_alpha()
+        from Defs import get_asset_path, backgroundColor
+        background = pygame.image.load(get_asset_path('back1.jpeg')).convert_alpha()
         background = pygame.transform.smoothscale(background,(1920,1080))
         background.set_alpha(100)
         extraSurf = pygame.Surface((1920,1080))

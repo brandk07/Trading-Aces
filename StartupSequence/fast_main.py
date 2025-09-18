@@ -13,7 +13,7 @@ def main():
     print("Starting Trading Aces...")
     
     # Show instant visual feedback window
-    from instant_startup import show_instant_startup, update_instant_startup, close_instant_startup
+    from StartupSequence.instant_startup import show_instant_startup, update_instant_startup, close_instant_startup
     
     startup_root = show_instant_startup()
     
@@ -34,25 +34,7 @@ def main():
         print(f"Pygame initialization took: {pygame_time:.2f}s")
         
         # Step 2: Load game classes
-        update_instant_startup("Loading game classes...", 40)
-        
-        from Classes.BigClasses.Stock import Stock
-        from Classes.Menus.HomeScreen import HomeScreen
-        from Classes.imports.Gametime import GameTime
-        from Classes.BigClasses.Player import Player
-        from Classes.Menus.StockScreen import StockScreen
-        from Classes.Menus.Portfolio import Portfolio
-        from collections import deque
-        from Classes.imports.IndexFunds import TotalMarket, IndexFund
-        import timeit
-        from Classes.imports.OrderScreen import OrderScreen
-        from Classes.imports.Transactions import Transactions
-        from Classes.Menus.StockBook import Stockbook
-        from Classes.Menus.OptionScreens.OptionMenu import Optiontrade
-        from Classes.Menus.BankMenu import BankMenu
-        from Classes.Menus.GameModeMenu import GameModeMenu, GameRun, RunManager
-        from Classes.Menus.startMenus.StartMain import StartMain
-        from Classes.Menus.Menu import ScreenManager
+        # update_instant_startup("Loading game classes...", 40)
         
         # Step 3: Setup display and DPI awareness
         update_instant_startup("Setting up display...", 60)
@@ -72,10 +54,10 @@ def main():
         update_instant_startup("Loading game data...", 75)
         
         # Game constants
-        GAMESPEED = 250
-        FASTFORWARDSPEED = 1000
-        CLICK_COOLDOWN = 0.15
-        last_click_time = time.time()
+        # GAMESPEED = 250
+        # FASTFORWARDSPEED = 1000
+        # CLICK_COOLDOWN = 0.15
+        # last_click_time = time.time()
         
         # Step 5: Create main display with auto-scaling
         update_instant_startup("Creating game window...", 85)

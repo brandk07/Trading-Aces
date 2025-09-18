@@ -9,7 +9,6 @@ from Classes.imports.UIElements.SelectionElements import MenuSelection
 from Classes.imports.StockVisualizer import StockVisualizer
 from Classes.imports.UIElements.OrderBox import OrderBox
 from Classes.imports.UIElements.SelectionElements import SelectionBar
-from Classes.imports.Bar import ProgressBar
 
 class GameModeMenu(Menu):
     def __init__(self,stocklist,player,pastRuns:dict,currentRun,gametime) -> None:

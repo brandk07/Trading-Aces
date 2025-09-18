@@ -104,15 +104,16 @@ while True:
     #         # if iii == 2 and i == 2:
     #         #     drawCenterTxt(screen,f"{(255-i*10,ii*10,iii*10)}",40,(255-i*10,ii*10,iii*10),(650,50+i*35),centerX=False)
     #         drawCenterTxt(screen,"Hello World",40,(255-i*10,ii*10,0),(0+ii*150,50+i*35),centerX=False)
-    for i in range(100):
-        drawCenterTxt(screen,str(randint(0,10000)),80,(224, 9, 9),(100,i),centerX=False)
+    for i in range(10000):
+        import pygame
+    #     drawCenterTxt(screen,str(randint(0,10000)),80,(224, 9, 9),(100,i),centerX=False)
     # pygame.draw.circle(screen, (255,255,255), (450,450), 100)
     # screen.blit(runCard.draw(),(300,440))
 
     # runCard.draw(screen,(0,0),mousebuttons)
     # screen.blits((text,pos) for text,pos in zip(update_fps(clock,lastfps),[(850,0),(850,30),(850,60)]))
     fps_text = f"FPS: {clock.get_fps():.2f}"
-    drawCenterTxt(screen,fps_text,24,(255,255,255),(10,10),centerX=False)
+    drawCenterTxt(screen,fps_text,24,(255,255,255),(10,200),centerX=False)
     
     pygame.display.flip()
     

@@ -3,12 +3,10 @@ from Defs import *
 from pygame import gfxdraw
 from Classes.imports.Bar import TimeBar
 # from Classes.imports.stockeventspos import StockEvents
-from Classes.imports.UIElements.Latterscroll import LatterScroll
 from Classes.imports.Newsbar import News
 from Classes.BigClasses.Stock import Stock
 from Classes.imports.StockVisualizer import StockVisualizer
 from Classes.imports.UIElements.PieChart import PieChart
-from Classes.imports.Gametime import GameTime
 
 class HomeScreen:
     def __init__(self,stocklist:list,gametime,tmarket,player) -> None:

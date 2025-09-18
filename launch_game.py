@@ -10,11 +10,29 @@ def main():
     
     print("Launching Trading Aces with resolution scaling...")
     
+    # Test asset system first
+    try:
+        from Defs import find_game_root, get_asset_path
+        game_root = find_game_root()
+        print(f"Game root found: {game_root}")
+        
+        # Verify critical assets exist
+        critical_assets = [
+            get_asset_path('back1.jpeg'),
+            get_asset_path('Fonts', 'antonio', 'Antonio-Regular.ttf'),
+        ]
+        
+        for asset in critical_assets:
+            if not os.path.exists(asset):
+                print(f"Warning: Missing asset: {asset}")
+        
+    except Exception as e:
+        print(f"Asset system warning: {e}")
+    
     # Get primary display info before showing startup
     import os
     if sys.platform == "win32":
         import ctypes
-        from ctypes import wintypes
         
         # Get primary monitor info using multiple methods
         user32 = ctypes.windll.user32
@@ -66,15 +84,6 @@ def main():
         os.environ['SDL_VIDEO_WINDOW_POS'] = '0,0'
         os.environ['SDL_VIDEO_CENTERED'] = '0'
         
-        # # Also try to disable DPI awareness to get true resolution
-        # try:
-        #     # This should give us the actual pixel dimensions
-        #     ctypes.windll.shcore.SetProcessDpiAwareness(0)  # PROCESS_DPI_UNAWARE
-        # except:
-        #     try:
-        #         ctypes.windll.user32.SetProcessDPIAware()
-        #     except:
-        #         pass
         
         print(f"Final primary display resolution: {primary_width}x{primary_height}")
         
@@ -87,7 +96,7 @@ def main():
 
     
     # Show instant startup screen immediately
-    from instant_startup import show_instant_startup, update_instant_startup, close_instant_startup
+    from StartupSequence.instant_startup import show_instant_startup, update_instant_startup, close_instant_startup
     
     startup_root = show_instant_startup()
     
@@ -108,7 +117,7 @@ def main():
             os.environ['TRADING_ACES_PRIMARY_HEIGHT'] = str(primary_height)
         
         # Import the fast main
-        from fast_main import main as fast_main
+        from StartupSequence.fast_main import main as fast_main
         
         # Close instant startup
         close_instant_startup()

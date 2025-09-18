@@ -36,7 +36,7 @@ class StartMenu:
     def draw(self,screen:pygame.Surface):
         
         # Title
-        drawCenterTxt(screen,"TRADING ACES",200,(0,0,0),(960,50),centerX=True,centerY=False,font='bold')
+        drawCenterTxt(screen,"TRADING ACES",200,(0,0,0),(960,175),centerX=True,centerY=False,font='bold')
         
         # n = self.customizeBar.draw(screen,["Play","Create","Settings","Credits"],(660,350),(600,550))
         # draw a polygon from 0,350 to 1920,890

@@ -64,8 +64,8 @@ class TimeGetter:
         self.lastvalue = None
         self.optionAsset : OptionAsset = optionAsset
 
-    def __call__(self,year,month,day,hour):
-        if self.lastinputs == (year,month,day,hour):
+    def getTime(self,year,month,day,hour):
+        if self.lastinputs == (year,month,day,hour,self.optionAsset.expirationDate.isoformat()):
             # print("done this", self.lastvalue)
             return self.lastvalue
         currentTime = datetime(year,month,day,9,30)
@@ -92,7 +92,7 @@ class TimeGetter:
         # print(f"hour {hour}, {isOpen(self.gametime.time)}, {self.gametime.time} hours -> {hours}, {daysPast}")
             
             
-        self.lastinputs = (year,month,day,hour)
+        self.lastinputs = (year,month,day,hour,self.optionAsset.expirationDate.isoformat())
         self.lastvalue = round(daysPast + hours - 1,1)
         # print("did it ", self.lastvalue)
         return self.lastvalue
@@ -139,14 +139,20 @@ class OptionAsset(Asset):
         return OptionAsset(self.playerObj,self.stockObj,self.strikePrice,str(self.expirationDate),self.optionType,str(self.date),self.quantity,self.portfolioPercent,ogValue=self.getValue(bypass=True,fullvalue=False),color=self.color)
     def getStrike(self): return self.strikePrice
     def getType(self): return self.optionType
+
     def setValues(self,strikePrice=None,expDate=None,optionType=None,quantity=None,creationDate=None):
         if strikePrice: self.strikePrice = strikePrice
-        if expDate: self.expirationDate = expDate
-        if optionType: self.optionType = optionType
-        if quantity: self.quantity = quantity
+        if expDate: 
+            self.expirationDate = getCloseOpenDate(expDate)# Makes sure the expiration date is a trading day
+
+        if optionType: 
+            self.optionType = optionType
+        if quantity: 
+            self.quantity = quantity
+
         if creationDate: 
             self.date = creationDate if isinstance(creationDate,str) else creationDate.strftime("%m/%d/%Y %I:%M:%S %p")
-        self.expirationDate = getCloseOpenDate(self.expirationDate)# Makes sure the expiration date is a trading day
+        
         self.option.setValues(strike=self.strikePrice*100,days=self.daysToExpiration(),optionType=self.optionType)
         self.ogValue = self.getValue(bypass=True,fullvalue=False); self.portfolioPercent = self.getValue(bypass=True,fullvalue=True)/(self.playerObj.getNetworth())
     def savingInputs(self):
@@ -160,10 +166,9 @@ class OptionAsset(Asset):
         return StockAsset(self.playerObj,self.stockObj,self.gametime.time,self.strikePrice,self.quantity*100)
     def daysToExpiration(self):
         # assert isinstance(gametimeTime,datetime), "gametimeTime must be a datetime object Use .time"
-        
-        # if self in self.playerObj.options:
+            # if self in self.playerObj.options:
         # daysPast = self.getDaysSelf(self.gametime.time.year,self.gametime.time.month,self.gametime.time.day,self.gametime.time.hour)
-        daysPast = self.timeGetter(self.gametime.time.year,self.gametime.time.month,self.gametime.time.day,self.gametime.time.hour)
+        daysPast = self.timeGetter.getTime(self.gametime.time.year,self.gametime.time.month,self.gametime.time.day,self.gametime.time.hour)
         return daysPast
     def optionLive(self):
         return self.daysToExpiration() > 0

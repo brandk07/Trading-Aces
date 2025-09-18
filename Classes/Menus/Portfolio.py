@@ -1,5 +1,3 @@
-import pygame
-import pygame.draw_py
 from Defs import *
 from Classes.Menus.Menu import Menu
 from Classes.imports.UIElements.Latterscroll import *

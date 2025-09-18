@@ -28,7 +28,8 @@ class GameRun:
         self.runManager = runManager
         self.assetSpread = assetSpread if len(assetSpread) == 5 else [0,0,0,STARTCASH,0]# end value of all in each category [stocks, options, indexFunds, cash, loans]
         self.iconIndex = iconIndex
-        self.runIcon = pygame.image.load(os.path.join(os.path.dirname(__file__), 'RunIcons', f'image ({self.iconIndex}).png')).convert_alpha()
+        iconPath = get_asset_path('RunIcons', f'image ({self.iconIndex}).png')
+        self.runIcon = pygame.image.load(iconPath).convert_alpha()
         self.gameMode : str = gameMode.capitalize()# the mode of the game (Blitz, Career, Goal)
 
         if gameDate is None:

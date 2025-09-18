@@ -11,7 +11,6 @@ from Classes.AssetTypes.IndexFundsAsset import IndexFundAsset
 from Classes.AssetTypes.LoanAsset import LoanAsset
 import numpy as np
 from datetime import datetime, timedelta
-# from PIL import Image, ImageDraw  # commented out
 from Classes.imports.Messages import ErrorMessageHandler
 from Classes.imports.Animations import BuyAnimation
 from functools import lru_cache
@@ -37,16 +36,15 @@ def timing_decorator(func):
 
 #  ////////////////////////////////////////////Fonts///////////////////////////////////////////////////////////////////////////////////////
 
-# crystalfonts = lambda font_size: freetype.Font(r'Assets\fonts\LiquidCrystal\Liquid_Crystal_Extra_Characters.otf', font_size*.75)
-crystalfonts = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'LiquidCrystal', 'Liquid_Crystal_Extra_Characters.otf'), font_size)
-pixfonts = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'Silkscreen', 'Silkscreen-Regular.ttf'), font_size)
-fontsbold = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'antonio', 'Antonio-Bold.ttf'), font_size)
-fontsLight = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'antonio', 'Antonio-Light.ttf'), font_size)
-fonts = lambda font_size: freetype.Font(os.path.join(os.path.dirname(__file__), 'Assets', 'fonts', 'antonio', 'Antonio-Regular.ttf'), font_size*.75)
+# Font loading functions using the new asset path system
+crystalfonts = lambda font_size: freetype.Font(get_asset_path('Fonts', 'LiquidCrystal', 'Liquid_Crystal_Extra_Characters.otf'), font_size)
+pixfonts = lambda font_size: freetype.Font(get_asset_path('Fonts', 'Silkscreen', 'Silkscreen-Regular.ttf'), font_size)
+fontsbold = lambda font_size: freetype.Font(get_asset_path('Fonts', 'antonio', 'Antonio-Bold.ttf'), font_size)
+fontsLight = lambda font_size: freetype.Font(get_asset_path('Fonts', 'antonio', 'Antonio-Light.ttf'), font_size)
+fonts = lambda font_size: freetype.Font(get_asset_path('Fonts', 'antonio', 'Antonio-Regular.ttf'), font_size*.75)
 # FUN THEME
-# fonts = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
-# fontsbold = lambda font_size: freetype.Font(r'Assets\fonts\Bangers\Bangers-Regular.ttf', font_size*.75)
-# fonts = lambda font_size: freetype.Font(r'Assets\antonio\Liquid_Crystal_Extra_Characters.otf', font_size)
+# fonts = lambda font_size: freetype.Font(get_asset_path('Fonts', 'Bangers', 'Bangers-Regular.ttf'), font_size*.75)
+# fontsbold = lambda font_size: freetype.Font(get_asset_path('Fonts', 'Bangers', 'Bangers-Regular.ttf'), font_size*.75)
 
 # Cached font rendering system
 _font_cache = {}
@@ -247,7 +245,7 @@ def get_sound(sound_name):
             'buyLoan': 'buyStock.wav'
         }
         if sound_name in sound_files:
-            file_path = os.path.join(os.path.dirname(__file__), 'Assets', 'SoundEffects', sound_files[sound_name])
+            file_path = get_asset_path('SoundEffects', sound_files[sound_name])
             _sound_cache[sound_name] = pygame.mixer.Sound(file_path)
         else:
             raise KeyError(f"Unknown sound effect: {sound_name}")
@@ -377,7 +375,7 @@ def getScreenRefreshBackGrounds(screen:pygame.Surface):
     
     # background = pygame.image.load(r'Assets\GameBackground.png').convert_alpha()
     # background = pygame.image.load(r'Assets\Casino-Game-Background-edit-online-1.png').convert_alpha()
-    background = pygame.image.load(os.path.join(os.path.dirname(__file__), 'Assets', 'back1.jpeg')).convert_alpha()
+    background = pygame.image.load(get_asset_path('back1.jpeg')).convert_alpha()
     background = pygame.transform.smoothscale(background,(1920,1080))
     # background = pygame.transform.smoothscale_by(background,2);background.set_alpha(100)
     background.set_alpha(100)
@@ -734,7 +732,7 @@ def time_it(func):
         print(f"{func.__name__} took {end_time - start_time:.5f} seconds to execute.")
         return result
     return wrapper
-def limit_digits(num:int|float, max_digits,truncate=False) -> str:
+def limit_digits(num:int|float, max_digits=18,truncate=False) -> str:
     assert max_digits > 0, "Max digits must be greater than 0"
     assert isinstance(num, (int, float)), "Number must be an int or float not a " + str(type(num))
     if len("{:,.2f}".format(num)) > max_digits:
@@ -1011,15 +1009,81 @@ def getcolorgrad(percent):
         return (50-gradpercent,50+gradpercent,50-gradpercent)
     else:
         return (50,50,50)
-def find_project_root():
-    """Find the project root directory by looking for a marker file"""
-    # import os
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    while current_dir != os.path.dirname(current_dir):  # Not at filesystem root
-        if os.path.exists(os.path.join(current_dir, 'Main.py')):  # Use Main.py as marker
+def find_game_root():
+    """
+    Find the game root directory that works for both development and compiled executable.
+    Looks for the Assets folder which should always be present.
+    """
+    import sys
+    
+    # For compiled executable (PyInstaller), use the executable's directory
+    if getattr(sys, 'frozen', False):
+        # Running as compiled executable
+        game_root = os.path.dirname(sys.executable)
+    else:
+        # Running as script - start from the directory containing this file
+        game_root = os.path.dirname(os.path.abspath(__file__))
+    
+    # Look for Assets folder starting from the determined root
+    assets_candidates = [
+        game_root,  # Assets in same directory as executable/script
+        os.path.join(game_root, '..'),  # Assets one level up
+        os.path.join(game_root, 'Trading-Aces-7'),  # Assets in Trading-Aces-7 subfolder
+    ]
+    
+    for candidate in assets_candidates:
+        assets_path = os.path.join(candidate, 'Assets')
+        if os.path.exists(assets_path) and os.path.isdir(assets_path):
+            return os.path.abspath(candidate)
+    
+    # Fallback: try to find Assets folder by walking up directories
+    current_dir = game_root
+    max_levels = 5  # Prevent infinite search
+    
+    for _ in range(max_levels):
+        assets_path = os.path.join(current_dir, 'Assets')
+        if os.path.exists(assets_path) and os.path.isdir(assets_path):
             return current_dir
-        current_dir = os.path.dirname(current_dir)
-    raise FileNotFoundError("Could not find project root directory")
+        
+        parent_dir = os.path.dirname(current_dir)
+        if parent_dir == current_dir:  # Reached filesystem root
+            break
+        current_dir = parent_dir
+    
+    # If all else fails, return the initial directory
+    print(f"Warning: Could not find Assets folder. Using: {game_root}")
+    return game_root
+
+def get_asset_path(*path_parts):
+    """
+    Get the full path to an asset file, works for both development and compiled executable.
+    
+    Usage:
+        get_asset_path('fonts', 'antonio', 'Antonio-Regular.ttf')
+        get_asset_path('back1.jpeg')
+        get_asset_path('SoundEffects', 'buyStock.wav')
+    """
+    game_root = find_game_root()
+    return os.path.join(game_root, 'Assets', *path_parts)
+
+def get_save_path(*path_parts):
+    """
+    Get the full path for save files. 
+    For compiled exe, saves go in a 'Saves' folder next to the executable.
+    For development, saves go in the project Saves folder.
+    """
+    game_root = find_game_root()
+    return os.path.join(game_root, 'Saves', *path_parts)
+
+# Global cache for game root to avoid repeated filesystem checks
+_game_root_cache = None
+
+def find_project_root():
+    """Legacy function for backward compatibility - redirects to find_game_root"""
+    global _game_root_cache
+    if _game_root_cache is None:
+        _game_root_cache = find_game_root()
+    return _game_root_cache
 
 # def generate_8bit_character(gender='male'):
 #     width, height = 64, 54

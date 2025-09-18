@@ -10,7 +10,6 @@ from Classes.imports.Gametime import GameTime
 import math
 from Classes.imports.StockVisualizer import StockVisualizer,POINTSPERGRAPH
 from functools import lru_cache
-from faker import Faker
 from Classes.BigClasses.StockPriceEffects import StockPriceEffects
 import calendar
 

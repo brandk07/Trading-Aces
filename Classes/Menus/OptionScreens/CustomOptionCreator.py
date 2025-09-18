@@ -9,19 +9,27 @@ class CustomOptionCreator:
         self.creatingOption = False
         self.player = player
         self.optionObj = optionObj
-        self.strikePad : Numpad = Numpad(displayText=False,nums=('DEL','0','.'))
-        self.datePad : Numpad = Numpad(displayText=False,nums=('DEL','0','MAX'))
         self.oTypeSelect : SelectionBar = SelectionBar()
         self.cucOptionScrll = CustomColorLatter()
-        self.numPadDisplay = None# Strike, or 
         self.selectOption = None
         self.newOptionObj = None
         self.savedOptions : list[OptionAsset] = []# stores the saved options OptionAsset objects
         self.determineColor = lambda optionType: (127,25,255) if optionType == "put" else (50, 180, 169)# determines the color of the asset
+        
+        # Initialize simple keyboard input state
+        self.strike_input_text = ""
+        self.date_input_text = ""
+        self.last_key_time = 0
+        self.key_repeat_delay = 0.5  # Initial delay
+        self.key_repeat_interval = 0.05  # Repeat interval
+        self.inputMode = None  # "strike_keyboard", "date_keyboard", or None
     def removeSelc(self):
         self.selectOption = None
     def stopCreating(self):
         self.creatingOption = False
+        self.inputMode = None
+        self.strike_input_text = ""
+        self.date_input_text = ""
     def loadSavedOptions(self,optionList:list[OptionAsset]):
         self.savedOptions = optionList
     def drawType(self,screen,):
@@ -32,67 +40,53 @@ class CustomOptionCreator:
     def drawStrike(self,screen,stock:Stock):
         drawCenterTxt(screen, 'Strike', 45, (180, 180, 180), (1530, 427), centerX=False)
 
-        if self.strikePrice is None and self.numPadDisplay != "Strike":# if the strike price has not been set
+        if self.strikePrice is None and self.inputMode != "strike_keyboard":# if the strike price has not been set
             result = drawClickableBox(screen, (1875, 427), "Set Value", 45, (0,0,0), (160,160,160),centerY=True,fill=True,topLeftX=True)
-            if result:# if the box has been clicked to set the value (numpad displayed)
-                self.numPadDisplay = "Strike"# changing it to strike so that the numpad will be displayed
+            
+            if result:# if the set value box has been clicked
+                self.inputMode = "strike_keyboard"# enable keyboard input
         
-        elif self.numPadDisplay == "Strike" and self.strikePrice is None:# if the box has been clicked, but no value has been confirmed
-            self.strikePad.draw(screen,(1050,190),(450,340),"",stock.price*2)# draw the numpad
-            result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Strike Value", 45, (160,160,160), (0,0,0),fill=True)
-
-            self.strikePrice = self.strikePad.getValue() if result else self.strikePrice
-            self.numPadDisplay = None if result else self.numPadDisplay
-            drawCenterTxt(screen, f"${self.strikePad.getNumstr(haveSes=False)}", 55, (200, 200, 200), (1850, 428),centerX=False,fullX=True)
-
-            if self.strikePrice == 0: self.strikePrice = None# if the value is 0, then it is not a valid value
+        elif self.inputMode == "strike_keyboard" and self.strikePrice is None:# if keyboard input is being used
+            # Draw the keyboard input interface below the stock graph
+            self.drawKeyboardInput(screen, "strike")
         
         else:# if the value has been confirmed
-            
-            result = drawClickableBox(screen, (1862, 428), f"${self.strikePad.getValue()}", 55, (200,200,200), (0,0,0),centerY=True,border=False,topLeftX=True)
+            result = drawClickableBox(screen, (1862, 428), f"${limit_digits(self.strikePrice, 10)}", 55, (200,200,200), (0,0,0),centerY=True,border=False,topLeftX=True)
             if result: 
-                self.numPadDisplay = "Strike"; self.strikePrice = None
+                self.strikePrice = None; self.inputMode = None
+                self.strike_input_text = ""
 
     def drawDate(self,screen,gametime:GameTime):
         dateTxt = s_render('Exp Date', 40, (200, 200, 200))
         screen.blit(dateTxt, (1530, 537-dateTxt.get_height()/2))
-        # print(self.expDate)
-        if self.expDate is None and self.numPadDisplay != "Date":
+        
+        if self.expDate is None and self.inputMode != "date_keyboard":
             result = drawClickableBox(screen, (1875, 537), "Set Date", 45, (0,0,0), (170,170,170),centerY=True,fill=True,topLeftX=True)
-            if result:# if the box has been clicked to set the date (numpad displayed)
-                self.numPadDisplay = "Date"# changing it to date so that the numpad will be displayed
-
-        elif self.numPadDisplay == "Date" and self.expDate is None:# if the box has been clicked, but no value has been confirmed
             
-            self.datePad.draw(screen,(1050,190),(450,340),"Day",365*3)# draw the numpad, max value of 3 years
-            result = drawClickableBoxWH(screen, (1050, 510), (450,50),"Confirm Date", 45, (160,160,160), (0,0,0),fill=True)
+            if result:# if the set date box has been clicked
+                self.inputMode = "date_keyboard"# enable keyboard input
 
-            self.expDate = self.datePad.getValue() if result else self.expDate
-            self.numPadDisplay = None if result else self.numPadDisplay
-            if result:
-                newNumDays = (getCloseOpenDate(gametime.time+timedelta(days=self.datePad.getValue()))-gametime.time).days# gets the number of days from the current date to the new date (trading day)
-                self.datePad.setValue(newNumDays)
-
-
-            drawCenterTxt(screen, f"{self.datePad.getNumstr('Day',upperCase=False)}", 55, (200, 200, 200), (1860, 500),centerX=False,centerY=False,fullX=True)
-
-            timeOffset = gametime.time+timedelta(days=self.datePad.getValue())
-            drawCenterTxt(screen, f"{timeOffset.strftime('%m/%d/%Y')}", 40, (175, 175, 175), (1860, 545),centerX=False,centerY=False,fullX=True)
-
-            if self.expDate == 0: self.expDate = None
+        elif self.inputMode == "date_keyboard" and self.expDate is None:# if keyboard input is being used
+            # Draw the keyboard input interface below the stock graph
+            self.drawKeyboardInput(screen, "date", gametime)
+        
         else:# if the value has been confirmed
-            result = drawClickableBox(screen, (1885, 485), f"{self.datePad.getNumstr('Day',upperCase=False)}", 55, (200,200,200), (0,0,0),border=False,topLeftX=True)
+            days_text = f"{self.expDate} Day{'s' if self.expDate != 1 else ''}"
+            result = drawClickableBox(screen, (1885, 485), days_text, 55, (200,200,200), (0,0,0),border=False,topLeftX=True)
             if result: 
-                self.numPadDisplay = "Date"; self.expDate = None
-            timeOffset = gametime.time+timedelta(days=self.datePad.getValue())
-            drawCenterTxt(screen, f"{timeOffset.strftime('%m/%d/%Y')}", 40, (120, 120, 120), (1860, 545),centerX=False,centerY=False,fullX=True)
+                self.expDate = None; self.inputMode = None
+                self.date_input_text = ""
+            else:
+
+                timeOffset = gametime.time+timedelta(days=self.expDate)
+                drawCenterTxt(screen, f"{timeOffset.strftime('%m/%d/%Y')}", 40, (120, 120, 120), (1860, 545),centerX=False,centerY=False,fullX=True)
     
     def drawEstPrice(self,screen,saveResult:bool,gametime:GameTime,stock:Stock):
         drawCenterTxt(screen, 'Est Price', 40, (200, 200, 200), (1530, 642), centerX=False)
             
         if self.strikePrice != None and self.expDate != None:# if the strike price and expiration date have been set
-            if self.numPadDisplay is None:# if the value has been confirmed
-                timeOffset = (gametime.time+timedelta(days=self.datePad.getValue()))
+            if self.inputMode is None:# if no input method is active
+                timeOffset = (gametime.time+timedelta(days=self.expDate))
                 
                 if self.newOptionObj is None:# if the new option object has not been created
                     self.newOptionObj = OptionAsset(self.player,stock,self.strikePrice,timeOffset,self.oTypeSelect.getSelected(),str(gametime),1)
@@ -106,15 +100,208 @@ class CustomOptionCreator:
                     self.savedOptions.append(self.newOptionObj)# save the new option
                     self.selectOption = self.newOptionObj# select the new option
                     self.strikePrice,self.newOptionObj,self.expDate = None, None, None# reset the new option info
-                    self.datePad.reset(); self.strikePad.reset()# reset the numpad
+                    self.inputMode = None
+                    self.strike_input_text = ""
+                    self.date_input_text = ""
                     self.creatingOption = False# stop creating the option
 
-        if self.strikePrice is None or self.expDate is None or self.numPadDisplay != None:# if the strike price or expiration date have not been set
+        if self.strikePrice is None or self.expDate is None or self.inputMode is not None:# if the strike price or expiration date have not been set or input is active
             drawCenterTxt(screen, f"N/A", 55, (200, 200, 200), (1860, 620), centerX=False, centerY=False,fullX=True)
+
+    def handleKeyboardInput(self, input_type):
+        """Handle keyboard input for strike price or date input"""
+        import time
+        
+        keys = pygame.key.get_pressed()
+        current_time = time.time()
+        
+        # Handle backspace
+        if keys[pygame.K_BACKSPACE] and current_time - self.last_key_time > 0.1:
+            if input_type == "strike" and self.strike_input_text:
+                self.strike_input_text = self.strike_input_text[:-1]
+                self.last_key_time = current_time
+            elif input_type == "date" and self.date_input_text:
+                self.date_input_text = self.date_input_text[:-1]
+                self.last_key_time = current_time
+        
+        # Handle Enter key (same as confirm)
+        if keys[pygame.K_RETURN] and current_time - self.last_key_time > 0.2:
+            self.last_key_time = current_time
+            if input_type == "strike":
+                try:
+                    value = float(self.strike_input_text) if self.strike_input_text else 0
+                    if value > 0:
+                        self.strikePrice = value
+                        self.inputMode = None
+                        self.strike_input_text = ""
+                except ValueError:
+                    pass
+            elif input_type == "date":
+                try:
+                    days = int(self.date_input_text) if self.date_input_text else 0
+                    if 0 < days <= 365*3:
+                        from Classes.AssetTypes.OptionAsset import getCloseOpenDate
+                        from datetime import timedelta
+                        # Calculate actual trading days
+                        newNumDays = (getCloseOpenDate(self.player.gametime.time+timedelta(days=days))-self.player.gametime.time).days
+                        self.expDate = newNumDays
+                        self.inputMode = None
+                        self.date_input_text = ""
+                except ValueError:
+                    pass
+        
+        # Handle Escape key (same as cancel)
+        if keys[pygame.K_ESCAPE] and current_time - self.last_key_time > 0.2:
+            self.last_key_time = current_time
+            self.inputMode = None
+            if input_type == "strike":
+                self.strike_input_text = ""
+            else:
+                self.date_input_text = ""
+        
+        # Handle number input
+        number_keys = {
+            pygame.K_0: "0", pygame.K_1: "1", pygame.K_2: "2", pygame.K_3: "3", pygame.K_4: "4",
+            pygame.K_5: "5", pygame.K_6: "6", pygame.K_7: "7", pygame.K_8: "8", pygame.K_9: "9",
+            pygame.K_KP0: "0", pygame.K_KP1: "1", pygame.K_KP2: "2", pygame.K_KP3: "3", pygame.K_KP4: "4",
+            pygame.K_KP5: "5", pygame.K_KP6: "6", pygame.K_KP7: "7", pygame.K_KP8: "8", pygame.K_KP9: "9"
+        }
+        
+        for key, char in number_keys.items():
+            if keys[key] and current_time - self.last_key_time > 0.1:
+                if input_type == "strike" and len(self.strike_input_text) < 10:
+                    self.strike_input_text += char
+                    self.last_key_time = current_time
+                elif input_type == "date" and len(self.date_input_text) < 4:
+                    self.date_input_text += char
+                    self.last_key_time = current_time
+        
+        # Handle decimal point for strike price
+        if input_type == "strike" and (keys[pygame.K_PERIOD] or keys[pygame.K_KP_PERIOD]) and current_time - self.last_key_time > 0.1:
+            if "." not in self.strike_input_text and len(self.strike_input_text) < 9:
+                self.strike_input_text += "."
+                self.last_key_time = current_time
+
+    def updateTextInputs(self):
+        """Update text inputs by handling current keys if they are focused"""
+        if self.inputMode == "strike_keyboard":
+            self.handleKeyboardInput("strike")
+        elif self.inputMode == "date_keyboard":
+            self.handleKeyboardInput("date")
+
+    def drawKeyboardInput(self, screen, input_type, gametime=None):
+        """Draw keyboard input interface in the area below the stock graph"""
+        # Main container area: between 585,565 and 1485,945
+        container_x, container_y = 600, 580
+        container_w, container_h = 870, 280
+        
+        # Draw border only (no dark background for performance)
+        pygame.draw.rect(screen, (100, 100, 100), pygame.Rect(container_x, container_y, container_w, container_h), 3, border_radius=10)
+        
+        # Draw title
+        title = "Enter Strike Price" if input_type == "strike" else "Enter Expiration Date"
+        drawCenterTxt(screen, title, 55, (200, 200, 200), (container_x + container_w//2, container_y + 30), centerX=True, centerY=False)
+        
+        # Draw input box
+        input_rect = pygame.Rect(container_x + 50, container_y + 80, container_w - 100, 80)
+        pygame.draw.rect(screen, (40, 40, 40), input_rect, border_radius=5)
+        pygame.draw.rect(screen, (150, 150, 150), input_rect, 3, border_radius=5)
+        
+        # Get current text and format it
+        if input_type == "strike":
+            current_text = self.strike_input_text
+            display_text = f"${limit_digits(float(current_text))}" if current_text else "$0.00"
+        else:
+            current_text = self.date_input_text
+            display_text = f"{limit_digits(float(current_text),truncate=True)} days" if current_text else "0 days"
+        
+        # Draw text or placeholder
+        # if current_text:
+        #     text_surface = s_render(display_text, 50, (200, 200, 200))
+        # else:
+        #     text_surface = s_render(placeholder, 45, (120, 120, 120))
+        
+        # text_x = input_rect.x + 20
+        # text_y = input_rect.y + (input_rect.height - text_surface.get_height()) // 2
+        # screen.blit(text_surface, (text_x, text_y))
+        displayTextRender = s_render(display_text, 50, (200, 200, 200))
+        drawCenterRendered(screen, displayTextRender, (input_rect.x + 20, input_rect.y + input_rect.height//2), centerX=False, centerY=True)
+
+        # Draw blinking cursor
+        import time
+        if int(time.time() * 2) % 2:  # Blink every 0.5 seconds
+            # if input_type == "strike":
+            #     cursor_x = text_x + (displayTextRender.get_width() if current_text else s_render("$", 50, (200, 200, 200)).get_width())
+            # else:
+            #     cursor_x = text_x + (displayTextRender.get_width() if current_text else 0)
+            if input_type == "date":
+                modified_text = f"{limit_digits(float(current_text),truncate=True)}" if current_text else "0"
+                displayTextRender = s_render(modified_text, 50, (200, 200, 200))
+
+            cursor_x = input_rect.x + 20 + displayTextRender.get_width()
+            pygame.draw.line(screen, (200, 200, 200), (cursor_x, input_rect.y + 15), (cursor_x, input_rect.y + input_rect.height - 15), 3)
+        
+        # Draw preview/validation info
+        info_y = container_y + 175
+        if input_type == "strike" and current_text:
+            try:
+                value = float(current_text)
+                if value > 0:
+                    drawCenterTxt(screen, f"Strike Price: ${limit_digits(value, 10)}", 40, (100, 200, 100), (container_x + container_w//2, info_y), centerX=True, centerY=False)
+                else:
+                    drawCenterTxt(screen, "Strike price must be greater than 0", 35, (200, 100, 100), (container_x + container_w//2, info_y), centerX=True, centerY=False)
+            except ValueError:
+                drawCenterTxt(screen, "Invalid number format", 35, (200, 100, 100), (container_x + container_w//2, info_y), centerX=True, centerY=False)
+        elif input_type == "date" and current_text and gametime:
+            try:
+                days = int(current_text)
+                if 0 < days <= 365*3:
+                    timeOffset = gametime.time + timedelta(days=days)
+                    drawCenterTxt(screen, f"Expires in {limit_digits(days, 10)} day{'s' if days > 1 else ''}", 40, (100, 200, 100), (container_x + container_w//2, info_y), centerX=True, centerY=False)
+                    drawCenterTxt(screen, f"Date: {timeOffset.strftime('%m/%d/%Y')}", 35, (150, 150, 150), (container_x + container_w//2, info_y + 35), centerX=True, centerY=False)
+                else:
+                    drawCenterTxt(screen, "Must be between 1 and 1095 days (3 years)", 35, (200, 100, 100), (container_x + container_w//2, info_y), centerX=True, centerY=False)
+            except ValueError:
+                drawCenterTxt(screen, "Invalid number format", 35, (200, 100, 100), (container_x + container_w//2, info_y), centerX=True, centerY=False)
+        
+        # Draw buttons (moved up)
+        button_y = container_y + 210
+        confirm_result = drawClickableBoxWH(screen, (container_x + 50, button_y), (200, 50), "Confirm (Enter)", 40, (0, 0, 0), (0, 180, 0), fill=True)
+        cancel_result = drawClickableBoxWH(screen, (container_x + container_w - 250, button_y), (200, 50), "Cancel (Esc)", 40, (0, 0, 0), (180, 0, 0), fill=True)
+        
+        # Handle button results
+        if confirm_result:
+            if input_type == "strike":
+                try:
+                    value = float(current_text) if current_text else 0
+                    if value > 0:
+                        self.strikePrice = value
+                        self.inputMode = None
+                        self.strike_input_text = ""
+                except ValueError:
+                    pass
+            else:  # date
+                try:
+                    days = int(current_text) if current_text else 0
+                    if 0 < days <= 365*3:
+                        newNumDays = (getCloseOpenDate(gametime.time+timedelta(days=days))-gametime.time).days
+                        self.expDate = newNumDays
+                        self.inputMode = None
+                        self.date_input_text = ""
+                except ValueError:
+                    pass
+        elif cancel_result:
+            self.inputMode = None
+            if input_type == "strike":
+                self.strike_input_text = ""
+            else:
+                self.date_input_text = ""
 
     def drawCustOptions(self,screen:pygame.Surface,gametime:GameTime,stock:Stock):
         """Handles the logic for creating a custom option"""
-
+        
+        # Update text inputs
+        self.updateTextInputs()
         
         if not self.creatingOption:# if there is no new option being created (display the create new option button)
 
@@ -143,6 +330,9 @@ class CustomOptionCreator:
                 self.strikePrice,self.expDate = None,None
                 self.newOptionObj = None
                 self.creatingOption = False
+                self.inputMode = None
+                self.strike_input_text = ""
+                self.date_input_text = ""
         return self.savedOptions
 
     def drawSavedOptions(self,screen:pygame.Surface,gametime:GameTime,stock:Stock):

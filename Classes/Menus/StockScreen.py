@@ -1,9 +1,6 @@
 import pygame
 import os
-from pygame import gfxdraw
-import math
 from Defs import *
-import timeit
 from Classes.imports.StockVisualizer import StockVisualizer
 
 class StockScreen:
@@ -15,11 +12,12 @@ class StockScreen:
             'six' : (3,2),
             'nona': (3,3),
         }
+        from Defs import get_asset_path
         self.images = {
-            'single': pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GraphChoiceIcons', 'single.png')).convert_alpha(),
-            'quad': pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GraphChoiceIcons', 'quad.png')).convert_alpha(),
-            'six' : pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GraphChoiceIcons', 'six.png')).convert_alpha(),
-            'nona': pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GraphChoiceIcons', 'nona.png')).convert_alpha(),
+            'single': pygame.image.load(get_asset_path('GraphChoiceIcons', 'single.png')).convert_alpha(),
+            'quad': pygame.image.load(get_asset_path('GraphChoiceIcons', 'quad.png')).convert_alpha(),
+            'six' : pygame.image.load(get_asset_path('GraphChoiceIcons', 'six.png')).convert_alpha(),
+            'nona': pygame.image.load(get_asset_path('GraphChoiceIcons', 'nona.png')).convert_alpha(),
         }
         self.stockGraphs = {stock.name:StockVisualizer(gametime,stock,stocklist) for stock in stocklist}
 

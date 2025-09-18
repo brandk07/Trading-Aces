@@ -15,7 +15,8 @@ class OrderScreen:
         self.orderType = 'Market'
         self.transactionTypes = ['Buy','Sell']
         self.transactionType = 'Buy'
-        background = pygame.image.load(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'StartBackground.png')).convert_alpha()
+        from Defs import get_asset_path
+        background = pygame.image.load(get_asset_path('StartBackground.png')).convert_alpha()
         background = pygame.transform.smoothscale_by(background,2);background.set_alpha(140)
         self.background = background
         # pygame.draw.rect(self.background,(100,100,100),pygame.Rect(0,0,2000,1200))

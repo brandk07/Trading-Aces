@@ -3,7 +3,6 @@ import os
 from Defs import *
 from pygame import gfxdraw
 from Classes.Menus.Menu import Menu
-import numpy as np
 from Classes.imports.StockVisualizer import StockVisualizer
 # from Classes.imports.OrderScreen import OrderScreen
 from Classes.imports.UIElements.Latterscroll import PortfolioLatter,LatterScroll
@@ -48,7 +47,8 @@ class Stockbook(Menu):
         
 
     def createDescriptions(self,stocknames): 
-        with open(os.path.join(os.path.dirname(__file__), '..', '..', 'Assets', 'GameTexts', 'StockDescriptions.txt'),'r') as descriptions:
+        from Defs import get_asset_path
+        with open(get_asset_path('GameTexts', 'StockDescriptions.txt'),'r') as descriptions:
             filecontents = descriptions.readlines()
             for i,line in enumerate(filecontents):
                 for stockname in stocknames:
